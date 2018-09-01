@@ -18,6 +18,9 @@ namespace i960 {
         Ordinal _higher;
         Ordinal _highest;
     };
+	/**
+	 * Part of the numerics architecture and above
+	 */
     struct Real {
         Real() : Real(0,0,0) { }
         Real(Ordinal frac, Ordinal exponent, Ordinal flag) : _fraction(frac), _exponent(exponent), _flag(flag) { };
@@ -30,6 +33,9 @@ namespace i960 {
             Ordinal _value;
         };
     } __attribute__((packed));
+	/**
+	 * Part of the numerics architecture and above
+	 */
     struct LongReal {
         LongReal() : LongReal(0,0) { }
         LongReal(Ordinal lower, Ordinal upper);
@@ -43,6 +49,9 @@ namespace i960 {
             LongOrdinal _value;
         };
     } __attribute__((packed));
+	/**
+	 * Part of the numerics architecture and above
+	 */
     struct ExtendedReal {
         ExtendedReal(LongOrdinal lower, ShortOrdinal upper) : _lower(lower), _upper(upper) { };
         ExtendedReal() : ExtendedReal(0,0) { }
@@ -50,7 +59,7 @@ namespace i960 {
         union {
             struct {
                 LongOrdinal _fraction : 63;
-                LongOrdinal _integer : 1;
+                LongOrdinal _j : 1;
             };
             LongOrdinal _lower;
         };
@@ -72,6 +81,11 @@ namespace i960 {
         ExtendedReal _real;
     };
 
+	/*
+	constexpr ByteOrdinal makeDecimalDigit(ByteOrdinal digit) noexcept {
+		return (digit & 0x0F) | 
+	}
+	*/
 
     union NormalRegister {
         Ordinal _ordinal;

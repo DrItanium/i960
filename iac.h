@@ -31,7 +31,7 @@ namespace i960::IAC {
 
 	constexpr Ordinal computeProcessorAddress(Ordinal processorIdent, Ordinal priorityLevel) noexcept {
 		// first mask the pieces
-		static constexpr Ordinal interalBitIdentifier = 0b0011000000;
+		static constexpr Ordinal interalBitIdentifier = 0b0011000000 << 4;
 		// lowest four bits are always zero
 		auto maskedIdent = (ProcessorIDMask & processorIdent) << 14;
 		auto maskedPriority = internalBitIdentifier | ((ProcessorPriorityMask & priorityLevel) << 4);
@@ -58,6 +58,12 @@ namespace i960::IAC {
 		 */
 		PurgeInstructionCache,
 
+		/**
+		 * Store into the special break point registers. Field3 and Field4 are
+		 * the values stored into the breakpoint registers. Bit 0 of the values
+		 * are ignored because instructions are word aligned. Bit 1 indicates
+		 * whether the breakpoint is enabled (0) or disabled (1).
+		 */
 		SetBreakpointRegister,
 		/**
 		 * Puts the processor into the stopped state
@@ -75,6 +81,26 @@ namespace i960::IAC {
 		 */
 		ReinitializeProcessor,
 	};
+
+	union InterruptControlRegister {
+		Ordinal _value;
+		/**
+		 * The set of "pins" that the chip responds on
+		 * Int3's vector index must be a higher priority 2 which must be higher
+		 * than 1 which must be higher than 0.
+		 */
+		struct {
+			ByteOrdinal _int0Vector;
+			ByteOrdinal _int1Vector;
+			ByteOrdinal _int2Vector;
+			ByteOrdinal _int3Vector;
+		};
+	};
+	/**
+	 * Memory mapped location of the Interrupt control register. Can only be
+	 * read to and written from using synmov and synld instructions
+	 */
+	constexpr Ordinal InterruptControlRegisterMappedAddress = 0xFF000004;
 } // end namespace i960::IAC
 
 #endif
