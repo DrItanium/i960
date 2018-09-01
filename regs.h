@@ -155,7 +155,6 @@ namespace i960 {
         RoundUp,
         Truncate,
     };
-
 }
 
 #endif
