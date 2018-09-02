@@ -53,23 +53,22 @@ namespace i960 {
 	 * Part of the numerics architecture and above
 	 */
     struct ExtendedReal {
-        ExtendedReal(LongOrdinal lower, ShortOrdinal upper) : _lower(lower), _upper(upper) { };
+        ExtendedReal(LongOrdinal lower, ShortOrdinal upper) : _lower(lower), _upper(upper) { }
         ExtendedReal() : ExtendedReal(0,0) { }
-        ExtendedReal(LongOrdinal frac, LongOrdinal integer, LongOrdinal exponent, LongOrdinal sign) : _fraction(frac), _integer(integer), _exponent(exponent), _sign(sign) { }
-        union {
-            struct {
-                LongOrdinal _fraction : 63;
-                LongOrdinal _j : 1;
-            };
-            LongOrdinal _lower;
-        };
-        union {
-            struct {
-                ShortOrdinal _exponent : 15;
-                ShortOrdinal _sign : 1;
-            };
-            ShortOrdinal _upper;
-        };
+		union {
+			LongOrdinal _lower;
+			struct {
+				LongOrdinal _fraction: 63;
+				LongOrdinal _j : 1;
+			};
+		}; 
+		union {
+			ShortOrdinal _upper;
+			struct {
+				ShortOrdinal _exponent : 15;
+				ShortOrdinal _sign : 1;
+			};
+		};
     } __attribute__((packed));
 
     union TripleWord {
@@ -79,13 +78,7 @@ namespace i960 {
             Ordinal _upper;
         };
         ExtendedReal _real;
-    };
-
-	/*
-	constexpr ByteOrdinal makeDecimalDigit(ByteOrdinal digit) noexcept {
-		return (digit & 0x0F) | 
-	}
-	*/
+    } __attribute__((packed));
 
     union NormalRegister {
         Ordinal _ordinal;

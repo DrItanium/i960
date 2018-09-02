@@ -31,9 +31,9 @@ namespace i960::IAC {
 
 	constexpr Ordinal computeProcessorAddress(Ordinal processorIdent, Ordinal priorityLevel) noexcept {
 		// first mask the pieces
-		static constexpr Ordinal interalBitIdentifier = 0b0011000000 << 4;
+		constexpr Ordinal internalBitIdentifier = 0b0011000000 << 4;
 		// lowest four bits are always zero
-		auto maskedIdent = (ProcessorIDMask & processorIdent) << 14;
+		auto maskedIdent = (ProcessorIdMask & processorIdent) << 14;
 		auto maskedPriority = internalBitIdentifier | ((ProcessorPriorityMask & priorityLevel) << 4);
 		return MessageSpaceStart | maskedIdent | maskedPriority;
 	}
