@@ -339,6 +339,104 @@ namespace i960 {
 		 */
 		constexpr Ordinal InterruptControlRegisterMappedAddress = 0xFF000004;
 	} // end namespace IAC
+	union Instruction {
+		struct REGFormat {
+			Ordinal _source1 : 5;
+			Ordinal _sfr : 2;
+			Ordinal _opcode2 : 4;
+			Ordinal _m1 : 1;
+			Ordinal _m2 : 1;
+			Ordinal _m3 : 1;
+			Ordinal _source2 : 5;
+			Ordinal _src_dest : 5;
+			Ordinal _opcode : 8;
+		};
+		struct COBRFormat {
+			Ordinal _sfr : 1;
+			Ordinal _bp : 1;
+			Ordinal _displacement : 11;
+			Ordinal _m1 : 1;
+			Ordinal _source2 : 5; 
+			Ordinal _source1 : 5;
+			Ordinal _opcode : 8;
+		};
+		struct CTRLFormat {
+			Ordinal _sfr : 1;
+			Ordinal _bp : 1;
+			Ordinal _displacement : 22;
+			Ordinal _opcode : 8;
+		};
+		struct MEMAFormat {
+			enum AddressingModes {
+				Offset = 0,
+				Abase_Plus_Offset = 1,
+			};
+			MEMAFormat() : _unused(0) {
+			}
+			Ordinal _offset : 12;
+			Ordinal _unused : 1;
+			Ordinal _md : 1;
+			Ordinal _abase : 5;
+			Ordinal _src_dest : 5;
+			Ordinal _opcode : 8;
+			AddressingModes getAddressingMode() const noexcept {
+				return static_cast<AddressingModes>(_md);
+			}
+		};
+		struct MEMBFormat {
+			enum AddressingModes {
+				Abase = 0b0100,
+				IP_Plus_Displacement_Plus_8 = 0b0101,
+				Reserved = 0b0110,
+				Abase_Plus_Index_Times_2_Pow_Scale = 0b0111,
+				Displacement = 0b1100,
+				Abase_Plus_Displacement = 0b1101,
+				Index_Times_2_Pow_Scale_Plus_Displacement = 0b1110,
+				Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement = 0b1111,
+			};
+			Ordinal _index : 5;
+			Ordinal _sfr : 2;
+			Ordinal _scale : 3;
+			Ordinal _mode : 4;
+			Ordinal _abase : 5;
+			Ordinal _src_dest : 5;
+			Ordinal _opcode : 8;
+			AddressingModes getAddressingMode() const noexcept {
+				return static_cast<AddressingModes>(_mode);
+			}
+			bool has32bitDisplacement() const noexcept {
+				switch (getAddressingMode()) {
+					case AddressingModes::Abase:
+					case AddressingModes::Abase_Plus_Index_Times_2_Pow_Scale:
+					case AddressingModes::Reserved:
+						return false;
+					default:
+						return true;
+				}
+			}
+			ByteOrdinal getScaleFactor() const noexcept {
+				switch (_scale) {
+					case 0b000: return 1;
+					case 0b001: return 2;
+					case 0b010: return 4;
+					case 0b011: return 8;
+					case 0b100: return 16;
+					default:
+							// TODO raise an invalid opcode fault instead
+							return 0; 
+				}
+			}
+		};
+		Instruction(Ordinal raw) : _raw(raw) { }
+		Instruction() : Instruction(0) { }
+		REGFormat _reg;
+		COBRFormat _cobr;
+		CTRLFormat _ctrl;
+		MEMAFormat _mema;
+		MEMBFormat _memb;
+		Ordinal _raw;
+	} __attribute__((packed));
+
 } // end namespace i960
 
 
@@ -352,5 +450,6 @@ int main() {
 	std::cout << "sizeof(QuadWord): " << sizeof(i960::QuadWord) << std::endl;
 	std::cout << "sizeof(NormalRegister): " << sizeof(i960::NormalRegister) << std::endl;
 	std::cout << "sizeof(ArithmeticControls): " << sizeof(i960::ArithmeticControls) << std::endl;
+	std::cout << "sizeof(Instruction): " << sizeof(i960::Instruction) << std::endl;
 	return 0;
 }
