@@ -193,18 +193,6 @@ namespace i960 {
 	constexpr auto LocalRegisterCount = 16;
 	constexpr Ordinal LargestAddress = 0xFFFF'FFFF;
 	constexpr Ordinal LowestAddress = 0;
-	/**
-	 * Regions zero through two are process specific
-	 * Region three is shared by all processes
-	 */
-	constexpr Ordinal Region0StartAddress = LowestAddress;
-	constexpr Ordinal Region0LastAddress = 0x3FFF'FFFF;
-	constexpr Ordinal Region1StartAddress = 0x4000'0000;
-	constexpr Ordinal Region1LastAddress = 0x7FFF'FFFF;
-	constexpr Ordinal Region2StartAddress = 0x8000'0000;
-	constexpr Ordinal Region2LastAddress = 0xBFFF'FFFF;
-	constexpr Ordinal Region3StartAddress = 0xC000'0000;
-	constexpr Ordinal Region3LastAddress = LargestAddress;
 
 	constexpr Ordinal ConditionCodeTrue = 0b010;
 	constexpr Ordinal ConditionCodeFalse = 0b000;
@@ -449,6 +437,40 @@ namespace i960 {
 		Ordinal _raw;
 
 	} __attribute__((packed));
+
+	// Virtual addressing 
+	// 32-bit address is converted to 
+	// upper 20 bits are translated to the physical address of a page (4k)
+	//   upper 2 bits of the 20 bits is the region identifier
+	//     Four regions total, region 3 (the upper most is shared amongst all
+	//     processes)
+	//   lower 18 bits denote the page in that region
+	// lower 12 bits represent the address within that 4k page
+	// 
+	// There are a total of four regions with region 3 being shared amongst all
+	// processes
+	/**
+	 * Regions zero through two are process specific
+	 * Region three is shared by all processes
+	 */
+	constexpr Ordinal Region0StartAddress = LowestAddress;
+	constexpr Ordinal Region0LastAddress = 0x3FFF'FFFF;
+	constexpr Ordinal Region1StartAddress = 0x4000'0000;
+	constexpr Ordinal Region1LastAddress = 0x7FFF'FFFF;
+	constexpr Ordinal Region2StartAddress = 0x8000'0000;
+	constexpr Ordinal Region2LastAddress = 0xBFFF'FFFF;
+	constexpr Ordinal Region3StartAddress = 0xC000'0000;
+	constexpr Ordinal Region3LastAddress = LargestAddress;
+
+	constexpr Ordinal getRegionId(Ordinal address) noexcept {
+		return (0xC000'0000 & address) >> 30;
+	}
+	constexpr Ordinal getPageAddress(Ordinal address) noexcept {
+		return (0x3FFF'F000 & address) >> 12;
+	}
+	constexpr Ordinal getByteOffset(Ordinal address) noexcept {
+		return (0x0000'0FFF & address);
+	}
 
 } // end namespace i960
 
