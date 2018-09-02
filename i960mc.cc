@@ -350,6 +350,9 @@ namespace i960 {
 			Ordinal _source2 : 5;
 			Ordinal _src_dest : 5;
 			Ordinal _opcode : 8;
+			Ordinal getOpcode() const noexcept {
+				return (_opcode << 4) | _opcode2;
+			}
 		};
 		struct COBRFormat {
 			Ordinal _sfr : 1;
@@ -371,8 +374,6 @@ namespace i960 {
 				Offset = 0,
 				Abase_Plus_Offset = 1,
 			};
-			MEMAFormat() : _unused(0) {
-			}
 			Ordinal _offset : 12;
 			Ordinal _unused : 1;
 			Ordinal _md : 1;
@@ -429,12 +430,24 @@ namespace i960 {
 		};
 		Instruction(Ordinal raw) : _raw(raw) { }
 		Instruction() : Instruction(0) { }
+		Ordinal getBaseOpcode() const noexcept {
+			return 0xFF000000 & _raw >> 24;
+		}
+		Ordinal getOpcode() const noexcept {
+			auto opcode = getBaseOpcode();
+			if (opcode >= 0x58 && opcode < 0x80) {
+				return _reg.getOpcode();
+			} else {
+				return opcode;
+			}
+		}
 		REGFormat _reg;
 		COBRFormat _cobr;
 		CTRLFormat _ctrl;
 		MEMAFormat _mema;
 		MEMBFormat _memb;
 		Ordinal _raw;
+
 	} __attribute__((packed));
 
 } // end namespace i960
