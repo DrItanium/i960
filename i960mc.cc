@@ -422,12 +422,27 @@ namespace i960 {
 			return 0xFF000000 & _raw >> 24;
 		}
 		Ordinal getOpcode() const noexcept {
-			auto opcode = getBaseOpcode();
-			if (opcode >= 0x58 && opcode < 0x80) {
+			if (isRegFormat()) {
 				return _reg.getOpcode();
 			} else {
-				return opcode;
+				return getBaseOpcode();
 			}
+		}
+		bool isControlFormat() const noexcept {
+			return getBaseOpcode() < 0x20;
+		}
+		bool isCompareAndBranchFormat() const noexcept {
+			auto opcode = getBaseOpcode();
+			return opcode >= 0x20 && opcode < 0x40;
+		}
+		bool isMemFormat() const noexcept {
+			return getBaseOpcode() >= 0x80;
+		}
+		bool isRegFormat() const noexcept {
+			// this is a little strange since the opcode is actually 12-bits
+			// instead of 8 bits. Only use the 8bits anyway
+			auto opcode = getBaseOpcode();
+			return opcode >= 0x58 && opcode < 0x80;
 		}
 		REGFormat _reg;
 		COBRFormat _cobr;
