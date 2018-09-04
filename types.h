@@ -191,6 +191,13 @@ namespace i960 {
 			Ordinal _roundingControl : 2;
 		};
 		Ordinal _value;
+        Ordinal modify(Ordinal mask, Ordinal value) noexcept {
+            auto tmp = _value;
+            _value &= ~(mask); // clear out the area we want to mask
+            auto tmp2 = value & mask;
+            _value |= tmp2;
+            return tmp;
+        }
 	};
 	using InstructionPointer = Ordinal;
 	union ProcessControls {

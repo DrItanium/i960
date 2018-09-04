@@ -28,5 +28,5 @@ clean:
 	@echo Cleaning...
 	@rm -f ${OBJS} ${PROGS}
 
-i960ka.o: types.h opcodes.h i960ka.cc
-i960kb.o: types.h opcodes.h i960kb.cc
+i960ka.o: ops.h types.h opcodes.h i960ka.cc
+i960kb.o: ops.h types.h opcodes.h i960kb.cc
