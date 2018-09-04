@@ -192,11 +192,13 @@ namespace i960 {
 		};
 		Ordinal _value;
         Ordinal modify(Ordinal mask, Ordinal value) noexcept {
-            auto tmp = _value;
-            _value &= ~(mask); // clear out the area we want to mask
-            auto tmp2 = value & mask;
-            _value |= tmp2;
-            return tmp;
+            if (mask == 0) {
+                return _value;
+            } else {
+                auto tmp = _value;
+                _value = (value & mask) | (_value & ~(mask));
+                return tmp;
+            }
         }
 	};
 	using InstructionPointer = Ordinal;

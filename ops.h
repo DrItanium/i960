@@ -99,6 +99,9 @@ namespace i960 {
      * @return A value where the bitfield in value is shifted and zeros are put in place of all other values
      */
     Ordinal extract(Ordinal value, Ordinal position, Ordinal length) noexcept;
+    constexpr Ordinal modify(Ordinal value, Ordinal inject, Ordinal mask) noexcept {
+        return (inject & mask) | (value & (~mask));
+    }
     // TODO implement chkbit and alterbit once the control structures have been implemented
     /**
      * Find the most significant set bit
@@ -108,6 +111,35 @@ namespace i960 {
      * Find the most significant clear bit
      */
     Ordinal spanBit(Ordinal value) noexcept;
+#ifdef NUMERICS_ARCHITECTURE
+    constexpr Real add(Real a, Real b) noexcept { return a + b; }
+    constexpr LongReal add(LongReal a, LongReal b) noexcept { return a + b; }
+    constexpr Real subtract(Real a, Real b) noexcept { return a - b; }
+    constexpr LongReal subtract(LongReal a, LongReal b) noexcept { return a - b; }
+    constexpr Real multiply(Real a, Real b) noexcept { return a * b; }
+    constexpr LongReal multiply(LongReal a, LongReal b) noexcept { return a * b; }
+    void classify(ArithmeticControls& ac, Real a) noexcept;
+    void classify(ArithmeticControls& ac, LongReal a) noexcept;
+    Real divide(Real a, Real b) noexcept;
+    LongReal divide(LongReal a, LongReal b) noexcept;
+    Real sine(Real value) noexcept;
+    LongReal sine(LongReal value) noexcept;
+    Real cosine(Real value) noexcept;
+    LongReal cosine(LongReal value) noexcept;
+    Real tangent(Real value) noexcept;
+    LongReal tangent(LongReal value) noexcept;
+    Real squareRoot(Real value) noexcept;
+    LongReal squareRoot(LongReal value) noexcept;
+    Real arcTangent(Real a, Real b) noexcept;
+    LongReal arcTangent(LongReal a, LongReal b) noexcept;
+    Real logarithmBinary(Real a) noexcept;
+    LongReal logarithmBinary(LongReal a) noexcept;
+    Real logarithmEpsilon(Real a, Real b) noexcept;
+    LongReal logarithmEpsilon(LongReal a, LongReal b) noexcept;
+    Real logarithm(Real a, Real b) noexcept;
+    LongReal logarithm(LongReal a, LongReal b) noexcept;
+#endif // end defined(NUMERICS_ARCHITECTURE)
+
 
 } // end namespace i960 
 
