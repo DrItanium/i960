@@ -1,9 +1,10 @@
 include config.mk
 
 OBJS := i960mc.o
+PROG := sim960
 
 all: $(OBJS)
-	${LD} -o sim960 $(OBJS)
+	${LD} -o ${PROG} $(OBJS)
 
 .c.o :
 	@echo CC $<
@@ -15,4 +16,6 @@ all: $(OBJS)
 
 clean: 
 	@echo Cleaning...
-	@rm -r i960mc.o sim960
+	@rm -f ${OBJS} ${PROG}
+
+i960mc.o: opcodes.h i960mc.cc
