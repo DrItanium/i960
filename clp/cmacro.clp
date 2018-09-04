@@ -9,6 +9,11 @@
              (format nil 
                      "#ifndef %s" 
                      ?x))
+(deffunction #ifdef 
+             (?x)
+             (format nil 
+                     "#ifdef %s" 
+                     ?x))
 
 (defmethod #define 
   ((?x LEXEME))
