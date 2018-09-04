@@ -357,65 +357,68 @@ namespace i960 {
 			Ordinal _displacement : 22;
 			Ordinal _opcode : 8;
 		};
-		struct MEMAFormat {
-			enum AddressingModes {
-				Offset = 0,
-				Abase_Plus_Offset = 1,
-			};
-			Ordinal _offset : 12;
-			Ordinal _unused : 1;
-			Ordinal _md : 1;
-			Ordinal _abase : 5;
-			Ordinal _src_dest : 5;
-			Ordinal _opcode : 8;
-			AddressingModes getAddressingMode() const noexcept {
-				return static_cast<AddressingModes>(_md);
-			}
-		};
-		struct MEMBFormat {
-			enum AddressingModes {
-				Abase = 0b0100,
-				IP_Plus_Displacement_Plus_8 = 0b0101,
-				Reserved = 0b0110,
-				Abase_Plus_Index_Times_2_Pow_Scale = 0b0111,
-				Displacement = 0b1100,
-				Abase_Plus_Displacement = 0b1101,
-				Index_Times_2_Pow_Scale_Plus_Displacement = 0b1110,
-				Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement = 0b1111,
-			};
-			Ordinal _index : 5;
-			Ordinal _sfr : 2;
-			Ordinal _scale : 3;
-			Ordinal _mode : 4;
-			Ordinal _abase : 5;
-			Ordinal _src_dest : 5;
-			Ordinal _opcode : 8;
-			AddressingModes getAddressingMode() const noexcept {
-				return static_cast<AddressingModes>(_mode);
-			}
-			bool has32bitDisplacement() const noexcept {
-				switch (getAddressingMode()) {
-					case AddressingModes::Abase:
-					case AddressingModes::Abase_Plus_Index_Times_2_Pow_Scale:
-					case AddressingModes::Reserved:
-						return false;
-					default:
-						return true;
+		union MemFormat {
+			struct {
+				enum AddressingModes {
+					Offset = 0,
+					Abase_Plus_Offset = 1,
+				};
+				Ordinal _offset : 12;
+				Ordinal _unused : 1;
+				Ordinal _md : 1;
+				Ordinal _abase : 5;
+				Ordinal _src_dest : 5;
+				Ordinal _opcode : 8;
+				AddressingModes getAddressingMode() const noexcept {
+					return static_cast<AddressingModes>(_md);
 				}
-			}
-			ByteOrdinal getScaleFactor() const noexcept {
-				switch (_scale) {
-					case 0b000: return 1;
-					case 0b001: return 2;
-					case 0b010: return 4;
-					case 0b011: return 8;
-					case 0b100: return 16;
-					default:
-							// TODO raise an invalid opcode fault instead
-							return 0; 
+			} _mema;
+			struct {
+				enum AddressingModes {
+					Abase = 0b0100,
+					IP_Plus_Displacement_Plus_8 = 0b0101,
+					Reserved = 0b0110,
+					Abase_Plus_Index_Times_2_Pow_Scale = 0b0111,
+					Displacement = 0b1100,
+					Abase_Plus_Displacement = 0b1101,
+					Index_Times_2_Pow_Scale_Plus_Displacement = 0b1110,
+					Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement = 0b1111,
+				};
+				Ordinal _index : 5;
+				Ordinal _sfr : 2;
+				Ordinal _scale : 3;
+				Ordinal _mode : 4;
+				Ordinal _abase : 5;
+				Ordinal _src_dest : 5;
+				Ordinal _opcode : 8;
+				AddressingModes getAddressingMode() const noexcept {
+					return static_cast<AddressingModes>(_mode);
 				}
-			}
+				bool has32bitDisplacement() const noexcept {
+					switch (getAddressingMode()) {
+						case AddressingModes::Abase:
+						case AddressingModes::Abase_Plus_Index_Times_2_Pow_Scale:
+						case AddressingModes::Reserved:
+							return false;
+						default:
+							return true;
+					}
+				}
+				ByteOrdinal getScaleFactor() const noexcept {
+					switch (_scale) {
+						case 0b000: return 1;
+						case 0b001: return 2;
+						case 0b010: return 4;
+						case 0b011: return 8;
+						case 0b100: return 16;
+						default:
+								// TODO raise an invalid opcode fault instead
+								return 0; 
+					}
+				}
+			} _memb;
 		};
+		static_assert(sizeof(MemFormat) == sizeof(Ordinal), "MemFormat must be the size of an ordinal");
 		Instruction(Ordinal raw) : _raw(raw) { }
 		Instruction() : Instruction(0) { }
 		Ordinal getBaseOpcode() const noexcept {
@@ -447,8 +450,7 @@ namespace i960 {
 		REGFormat _reg;
 		COBRFormat _cobr;
 		CTRLFormat _ctrl;
-		MEMAFormat _mema;
-		MEMBFormat _memb;
+		MemFormat _mem;
 		Ordinal _raw;
 
 	} __attribute__((packed));
