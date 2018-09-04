@@ -40,6 +40,14 @@
          =>
          (printout file 
                    tab tab "_" ?name " = " ?code "," crlf))
+(defrule emit-enum-entry:in-numerics-only!
+         (kbopcode (opcode ?code)
+                   (id ?name))
+         (not (mcopcode (opcode ?code)
+                        (id ?name)))
+         =>
+         (printout file 
+                   tab tab "_" ?name " = " ?code "," (single-line-comment ERROR ONLY FOUND IN KB!) crlf))
 
          
 
