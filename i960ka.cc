@@ -20,55 +20,6 @@ namespace i960 {
 	/**
 	 * Part of the numerics architecture and above
 	 */
-	struct Real {
-		Real() : Real(0,0,0) { }
-		Real(Ordinal frac, Ordinal exponent, Ordinal flag) : _fraction(frac), _exponent(exponent), _flag(flag) { };
-		union {
-			struct {
-				Ordinal _fraction : 23;
-				Ordinal _exponent : 8;
-				Ordinal _flag : 1;
-			};
-			Ordinal _value;
-		};
-	} __attribute__((packed));
-	/**
-	 * Part of the numerics architecture and above
-	 */
-	struct LongReal {
-		LongReal() : LongReal(0,0) { }
-		LongReal(Ordinal lower, Ordinal upper);
-		LongReal(LongOrdinal frac, LongOrdinal exponent, LongOrdinal sign) : _fraction(frac), _exponent(exponent), _sign(sign) { };
-		union {
-			struct {
-				LongOrdinal _fraction : 52;
-				LongOrdinal _exponent : 11;
-				LongOrdinal _sign : 1;
-			};
-			LongOrdinal _value;
-		};
-	} __attribute__((packed));
-	/**
-	 * Part of the numerics architecture and above
-	 */
-	struct ExtendedReal {
-		ExtendedReal(LongOrdinal lower, ShortOrdinal upper) : _lower(lower), _upper(upper) { }
-		ExtendedReal() : ExtendedReal(0,0) { }
-		union {
-			LongOrdinal _lower;
-			struct {
-				LongOrdinal _fraction: 63;
-				LongOrdinal _j : 1;
-			};
-		}; 
-		union {
-			ShortOrdinal _upper;
-			struct {
-				ShortOrdinal _exponent : 15;
-				ShortOrdinal _sign : 1;
-			};
-		};
-	} __attribute__((packed));
 
 	union TripleWord {
 		struct {
@@ -76,13 +27,11 @@ namespace i960 {
 			Ordinal _middle;
 			Ordinal _upper;
 		};
-		ExtendedReal _real;
 	} __attribute__((packed));
 
 	union NormalRegister {
 		Ordinal _ordinal;
 		Integer _integer;
-		Real _real;
 	};
 	union ArithmeticControls {
 		struct {
@@ -575,9 +524,6 @@ namespace i960 {
 
 
 int main() {
-	std::cout << "sizeof(ExtendedReal): " << sizeof(i960::ExtendedReal) << std::endl;
-	std::cout << "sizeof(LongReal): " << sizeof(i960::LongReal) << std::endl;
-	std::cout << "sizeof(Real): " << sizeof(i960::Real) << std::endl;
 	std::cout << "sizeof(TripleWord): " << sizeof(i960::TripleWord) << std::endl;
 	std::cout << "sizeof(QuadWord): " << sizeof(i960::QuadWord) << std::endl;
 	std::cout << "sizeof(NormalRegister): " << sizeof(i960::NormalRegister) << std::endl;

@@ -1,10 +1,20 @@
 include config.mk
 
-OBJS := i960ka.o
-PROG := sim960ka
+OBJSKA := i960ka.o
+PROGKA := sim960ka
+OBJSKB := i960kb.o
+PROGKB := sim960kb
 
-all: $(OBJS)
-	${LD} -o ${PROG} $(OBJS)
+OBJS := $(OBJSKA) $(OBJSKB)
+PROGS := $(PROGKA) $(PROGKB)
+
+all: $(PROGKA) $(PROGKB)
+
+$(PROGKA): $(OBJSKA)
+	${LD} -o ${PROGKA} $(OBJSKA)
+
+$(PROGKB): $(OBJSKB)
+	${LD} -o ${PROGKB} $(OBJSKB)
 
 .c.o :
 	@echo CC $<
@@ -16,6 +26,7 @@ all: $(OBJS)
 
 clean: 
 	@echo Cleaning...
-	@rm -f ${OBJS} ${PROG}
+	@rm -f ${OBJS} ${PROGS}
 
 i960ka.o: opcodes.h i960ka.cc
+i960kb.o: opcodes.h i960kb.cc
