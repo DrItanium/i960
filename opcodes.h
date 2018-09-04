@@ -2,13 +2,17 @@
 #define I960_OPCODES_H__
 namespace i960 {
 	enum Opcodes {
+		_andnot = 0x582,
+		_spanbit = 0x640,
+		_scanbyte = 0x5AC,
+		_scanbit = 0x641,
 		_addrl = 0x79F,
 		_subrl = 0x79D,
 		_mulrl = 0x79C,
 		_divrl = 0x79B,
 		_addr = 0x78F,
 		_subr = 0x78D,
-		_muir = 0x78C,
+		_mulr = 0x78C,
 		_divr = 0x78B,
 		_divi = 0x74B,
 		_modi = 0x749,
@@ -24,9 +28,9 @@ namespace i960 {
 		_movr = 0x6C9,
 		_cvtzril = 0x6C3,
 		_cvtzri = 0x6C2,
-		_cvtril = 0x6Cl,
+		_cvtril = 0x6C1,
 		_cvtri = 0x6C0,
-		_c1assrl = 0x69F,
+		_classrl = 0x69F,
 		_tanrl = 0x69E,
 		_cosrl = 0x69D,
 		_sinrl = 0x69C,
@@ -40,7 +44,7 @@ namespace i960 {
 		_logrl = 0x692,
 		_logeprl = 0x691,
 		_atanrl = 0x690,
-		_c1assr = 0x68F,
+		_classr = 0x68F,
 		_tanr = 0x68E,
 		_cosr = 0x68D,
 		_sinr = 0x68C,
@@ -58,41 +62,75 @@ namespace i960 {
 		_scalerl = 0x676,
 		_cvtilr = 0x675,
 		_cvtir = 0x674,
+#ifdef PROTECTED_ARCHITECTURE
 		_ldtime = 0x673,
+#endif // end PROTECTED_ARCHITECTURE
 		_ediv = 0x671,
-		_ernul = 0x670,
+		_emul = 0x670,
 		_syncf = 0x66F,
 		_flushreg = 0x66D,
 		_fmark = 0x66C,
 		_mark = 0x66B,
+#ifdef PROTECTED_ARCHITECTURE
 		_signal = 0x66A,
+#endif // end PROTECTED_ARCHITECTURE
+#ifdef PROTECTED_ARCHITECTURE
 		_wait = 0x669,
+#endif // end PROTECTED_ARCHITECTURE
+#ifdef PROTECTED_ARCHITECTURE
 		_condwait = 0x668,
+#endif // end PROTECTED_ARCHITECTURE
+#ifdef PROTECTED_ARCHITECTURE
 		_saveprcs = 0x666,
+#endif // end PROTECTED_ARCHITECTURE
+#ifdef PROTECTED_ARCHITECTURE
 		_schedprcs = 0x665,
+#endif // end PROTECTED_ARCHITECTURE
+#ifdef PROTECTED_ARCHITECTURE
 		_resumprcs = 0x664,
+#endif // end PROTECTED_ARCHITECTURE
+#ifdef PROTECTED_ARCHITECTURE
 		_sendserv = 0x663,
+#endif // end PROTECTED_ARCHITECTURE
+#ifdef PROTECTED_ARCHITECTURE
 		_send = 0x662,
+#endif // end PROTECTED_ARCHITECTURE
 		_calls = 0x660,
+#ifdef PROTECTED_ARCHITECTURE
 		_receive = 0x656,
+#endif // end PROTECTED_ARCHITECTURE
 		_modpc = 0x655,
 		_modtc = 0x654,
 		_extract = 0x651,
 		_modify = 0x650,
+#ifdef PROTECTED_ARCHITECTURE
 		_condrec = 0x646,
+#endif // end PROTECTED_ARCHITECTURE
 		_modac = 0x645,
 		_dmovt = 0x644,
 		_dsubc = 0x643,
 		_daddc = 0x642,
+#ifdef PROTECTED_ARCHITECTURE
 		_fill = 0x617,
+#endif // end PROTECTED_ARCHITECTURE
 		_synld = 0x615,
+#ifdef PROTECTED_ARCHITECTURE
 		_ldphy = 0x614,
+#endif // end PROTECTED_ARCHITECTURE
+#ifdef PROTECTED_ARCHITECTURE
 		_inspacc = 0x613,
+#endif // end PROTECTED_ARCHITECTURE
 		_atadd = 0x612,
 		_atmod = 0x610,
+#ifdef PROTECTED_ARCHITECTURE
 		_movstr = 0x605,
+#endif // end PROTECTED_ARCHITECTURE
+#ifdef PROTECTED_ARCHITECTURE
 		_movqstr = 0x604,
+#endif // end PROTECTED_ARCHITECTURE
+#ifdef PROTECTED_ARCHITECTURE
 		_cmpstr = 0x603,
+#endif // end PROTECTED_ARCHITECTURE
 		_synmovq = 0x602,
 		_synmovl = 0x601,
 		_synmov = 0x600,
@@ -124,7 +162,7 @@ namespace i960 {
 		_alterbit = 0x58F,
 		_nand = 0x58E,
 		_notor = 0x58D,
-		_c1rbit = 0x58C,
+		_clrbit = 0x58C,
 		_ornot = 0x58B,
 		_not = 0x58A,
 		_xnor = 0x589,
