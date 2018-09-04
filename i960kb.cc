@@ -2,6 +2,7 @@
 #include <cstddef>
 #define NUMERICS_ARCHITECTURE
 #include "types.h"
+#include "ops.h"
 
 int main() {
 	std::cout << "sizeof(ExtendedReal): " << sizeof(i960::ExtendedReal) << std::endl;

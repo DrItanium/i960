@@ -82,7 +82,7 @@ namespace i960 {
     }
     constexpr Ordinal notBit(Ordinal value, Ordinal position) noexcept {
         auto mask = Ordinal(1 << (0b11111 & position));
-        if (Ordinal value = mask & value; value == 0) {
+        if (value & mask == 0) {
             return setBit(value, position);
         } else {
             return clearBit(value, position);
@@ -112,12 +112,12 @@ namespace i960 {
      */
     Ordinal spanBit(Ordinal value) noexcept;
 #ifdef NUMERICS_ARCHITECTURE
-    constexpr Real add(Real a, Real b) noexcept { return a + b; }
-    constexpr LongReal add(LongReal a, LongReal b) noexcept { return a + b; }
-    constexpr Real subtract(Real a, Real b) noexcept { return a - b; }
-    constexpr LongReal subtract(LongReal a, LongReal b) noexcept { return a - b; }
-    constexpr Real multiply(Real a, Real b) noexcept { return a * b; }
-    constexpr LongReal multiply(LongReal a, LongReal b) noexcept { return a * b; }
+    inline Real add(Real a, Real b) noexcept { return a._floating + b._floating; }
+    inline LongReal add(LongReal a, LongReal b) noexcept { return a._floating + b._floating; }
+    inline Real subtract(Real a, Real b) noexcept { return a._floating - b._floating; }
+    inline LongReal subtract(LongReal a, LongReal b) noexcept { return a._floating - b._floating; }
+    inline Real multiply(Real a, Real b) noexcept { return a._floating * b._floating; }
+    inline LongReal multiply(LongReal a, LongReal b) noexcept { return a._floating * b._floating; }
     void classify(ArithmeticControls& ac, Real a) noexcept;
     void classify(ArithmeticControls& ac, LongReal a) noexcept;
     Real divide(Real a, Real b) noexcept;

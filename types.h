@@ -17,6 +17,11 @@ namespace i960 {
 	using ShortInteger = int16_t;
 	using Integer = int32_t;
 	using LongInteger = int64_t;
+    using RawReal = float;
+    using RawLongReal = double;
+
+    static_assert(sizeof(RawReal) == sizeof(Ordinal), "Real must be the same size as Ordinal");
+    static_assert(sizeof(RawLongReal) == sizeof(LongOrdinal), "LongReal must be the same size as LongOrdinal");
 
 	struct QuadWord {
 		Ordinal _lowest;
@@ -31,13 +36,15 @@ namespace i960 {
 	struct Real {
 		Real() : Real(0,0,0) { }
 		Real(Ordinal frac, Ordinal exponent, Ordinal flag) : _fraction(frac), _exponent(exponent), _flag(flag) { };
+        Real(RawReal value) : _floating(value) { }
 		union {
 			struct {
 				Ordinal _fraction : 23;
 				Ordinal _exponent : 8;
 				Ordinal _flag : 1;
 			};
-			Ordinal _value;
+			Ordinal _bits;
+            RawReal _floating;
 		};
 	} __attribute__((packed));
 	/**
@@ -47,13 +54,15 @@ namespace i960 {
 		LongReal() : LongReal(0,0) { }
 		LongReal(Ordinal lower, Ordinal upper);
 		LongReal(LongOrdinal frac, LongOrdinal exponent, LongOrdinal sign) : _fraction(frac), _exponent(exponent), _sign(sign) { };
+        LongReal(RawLongReal value) : _floating(value) { }
 		union {
 			struct {
 				LongOrdinal _fraction : 52;
 				LongOrdinal _exponent : 11;
 				LongOrdinal _sign : 1;
 			};
-			LongOrdinal _value;
+			LongOrdinal _bits;
+            RawLongReal _floating;
 		};
 	} __attribute__((packed));
 	/**
