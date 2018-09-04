@@ -402,29 +402,6 @@ namespace i960 {
 		addrl = 0x79,
 	};
 
-	/* 
-	 * Floating Point Operations (Taken from the manual)
-	 * Move Real 
-	 * Add 
-	 * Subtract 
-	 * Multiply 
-	 * Divide 
-	 * Remainder 
-	 * Scale 
-	 * Round 
-	 * Square Root 
-	 * Sine 
-	 * Cosine 
-	 * Tangent 
-	 * Arctangent 
-	 * Log 
-	 * Log Binary 
-	 * Log Natural 
-	 * Exponent 
-	 * Classify 
-	 * Copy Real Extended 
-	 * Compare 
-	 */
 	union Instruction {
 		struct REGFormat {
 			Ordinal _source1 : 5;
