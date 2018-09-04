@@ -1,7 +1,7 @@
 include config.mk
 
-OBJS := i960mc.o
-PROG := sim960
+OBJS := i960ka.o
+PROG := sim960ka
 
 all: $(OBJS)
 	${LD} -o ${PROG} $(OBJS)
@@ -18,4 +18,4 @@ clean:
 	@echo Cleaning...
 	@rm -f ${OBJS} ${PROG}
 
-i960mc.o: opcodes.h i960mc.cc
+i960ka.o: opcodes.h i960ka.cc
