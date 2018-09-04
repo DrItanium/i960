@@ -194,7 +194,7 @@ namespace i960 {
 	};
 	using InstructionPointer = Ordinal;
 	union ProcessControls {
-
+#ifdef PROTECTED_ARCHITECTURE
 		struct {
 			Ordinal _unused0 : 1;
 			Ordinal _multiprocessorPreempt : 1;
@@ -223,6 +223,21 @@ namespace i960 {
 			Ordinal _priority : 5;
 			Ordinal _internalState : 11;
 		}  _automatic;
+#else // !defined(PROTECTED_ARCHITECTURE)
+        struct {
+            Ordinal _traceEnable : 1;
+            Ordinal _executionMode : 1;
+            Ordinal _unused0 : 7;
+            Ordinal _resume : 1;
+            Ordinal _traceFaultPending : 1;
+            Ordinal _unused1 : 2;
+            Ordinal _state : 1;
+            Ordinal _unused2 : 2;
+            Ordinal _priority : 5;
+            Ordinal _internalState : 11;
+        };
+#endif // end PROTECTED_ARCHITECTURE
+
 		Ordinal _value;
 	} __attribute__((packed));
 
@@ -253,8 +268,6 @@ namespace i960 {
 	} __attribute__((packed));
 
 	MustBeSizeOfOrdinal(TraceControls, "TraceControls must be the size of an ordinal!");
-#ifdef PROTECTED_ARCHITECTURE
-#endif // end PROTECTED_ARCHITECTURE
 
 	constexpr auto GlobalRegisterCount = 16;
 	constexpr auto NumFloatingPointRegs = 4;
