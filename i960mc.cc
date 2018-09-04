@@ -181,16 +181,80 @@ namespace i960 {
 	};
 	using InstructionPointer = Ordinal;
 	union ProcessControls {
-		// TODO add breakdown
+
+		struct {
+			Ordinal _unused0 : 1;
+			Ordinal _multiprocessorPreempt : 1;
+			Ordinal _state : 2;
+			Ordinal _unused1 : 1;
+			Ordinal _nonpreemptLimit : 5;
+			Ordinal _addressingMode : 1;
+			Ordinal _checkDispatchPort : 1;
+			Ordinal _unused2 : 4;
+			Ordinal _interimPriority : 5;
+			Ordinal _unused3 : 10;
+			Ordinal _writeExternalPriority : 1;
+		} _manual;
+		struct {
+			Ordinal _traceEnable : 1;
+			Ordinal _executionMode : 1;
+			Ordinal _unused0 : 4;
+			Ordinal _timeSliceReschedule : 1;
+			Ordinal _timeSlice : 1;
+			Ordinal _resume : 1;
+			Ordinal _traceFaultPending : 1;
+			Ordinal _preempt : 1;
+			Ordinal _refault : 1;
+			Ordinal _state : 2;
+			Ordinal _unused1 : 1;
+			Ordinal _priority : 5;
+			Ordinal _internalState : 11;
+		}  _automatic;
 		Ordinal _value;
-	};
+	} __attribute__((packed));
+
+#define MustBeSizeOfOrdinal(type, message) \
+	static_assert(sizeof(type) == sizeof(Ordinal), message)
+
+	MustBeSizeOfOrdinal(ProcessControls, "ProcessControls is not the size of an ordinal!");
 	union TraceControls {
-		// TODO add value breakdown
+		struct {
+			Ordinal _unused0 : 1;
+			Ordinal _instructionTraceMode : 1;
+			Ordinal _branchTraceMode : 1;
+			Ordinal _returnTraceMode : 1;
+			Ordinal _prereturnTraceMode : 1;
+			Ordinal _supervisorTraceMode : 1;
+			Ordinal _breakPointTraceMode : 1;
+			Ordinal _unused1 : 9;
+			Ordinal _instructionTraceEvent : 1;
+			Ordinal _branchTraceEvent : 1;
+			Ordinal _callTraceEvent : 1;
+			Ordinal _returnTraceEvent : 1;
+			Ordinal _prereturnTraceEvent: 1;
+			Ordinal _supervisorTraceEvent : 1;
+			Ordinal _breakpointTraceEvent : 1;
+			Ordinal _unused2 : 8;
+		};
 		Ordinal _value;
-	};
+	} __attribute__((packed));
+
+	MustBeSizeOfOrdinal(TraceControls, "TraceControls must be the size of an ordinal!");
+
 	constexpr auto GlobalRegisterCount = 16;
 	constexpr auto NumFloatingPointRegs = 4;
 	constexpr auto LocalRegisterCount = 16;
+	// reserved indicies
+	// reserved global registers
+	constexpr auto FramePointerIndex = 15;
+	// reserved local registers
+	constexpr auto PreviousFramePointerIndex = 0;
+	constexpr auto StackPointerIndex = 1;
+	constexpr auto ReturnInstructionPointerIndex = 2;
+
+
+
+
 	constexpr Ordinal LargestAddress = 0xFFFF'FFFF;
 	constexpr Ordinal LowestAddress = 0;
 
@@ -417,6 +481,9 @@ namespace i960 {
 					}
 				}
 			} _memb;
+			bool isMemAFormat() const noexcept {
+				return _mema._unused == 0;
+			}
 		};
 		static_assert(sizeof(MemFormat) == sizeof(Ordinal), "MemFormat must be the size of an ordinal");
 		Instruction(Ordinal raw) : _raw(raw) { }
@@ -454,7 +521,7 @@ namespace i960 {
 		Ordinal _raw;
 
 	} __attribute__((packed));
-
+	static_assert(sizeof(Instruction) == sizeof(Ordinal), "Instruction must be the same size as an ordinal!");
 	// Virtual addressing 
 	// 32-bit address is converted to 
 	// upper 20 bits are translated to the physical address of a page (4k)
