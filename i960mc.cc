@@ -251,6 +251,9 @@ namespace i960 {
 	constexpr auto PreviousFramePointerIndex = 0;
 	constexpr auto StackPointerIndex = 1;
 	constexpr auto ReturnInstructionPointerIndex = 2;
+	constexpr auto GlobalRegisterIndexStartsAt = 0b10000;
+	constexpr auto LocalRegisterIndexStartsAt = 0b00000;
+	constexpr auto FloatingPointIndexStartsAt = 0b00000;
 
 
 
@@ -391,6 +394,37 @@ namespace i960 {
 		 */
 		constexpr Ordinal InterruptControlRegisterMappedAddress = 0xFF000004;
 	} // end namespace IAC
+	enum Opcodes {
+		addc = 0x5B0,
+		addo = 0x590,
+		addi = 0x591,
+		addr = 0x78,
+		addrl = 0x79,
+	};
+
+	/* 
+	 * Floating Point Operations (Taken from the manual)
+	 * Move Real 
+	 * Add 
+	 * Subtract 
+	 * Multiply 
+	 * Divide 
+	 * Remainder 
+	 * Scale 
+	 * Round 
+	 * Square Root 
+	 * Sine 
+	 * Cosine 
+	 * Tangent 
+	 * Arctangent 
+	 * Log 
+	 * Log Binary 
+	 * Log Natural 
+	 * Exponent 
+	 * Classify 
+	 * Copy Real Extended 
+	 * Compare 
+	 */
 	union Instruction {
 		struct REGFormat {
 			Ordinal _source1 : 5;
@@ -476,8 +510,8 @@ namespace i960 {
 						case 0b011: return 8;
 						case 0b100: return 16;
 						default:
-								// TODO raise an invalid opcode fault instead
-								return 0; 
+									// TODO raise an invalid opcode fault instead
+									return 0; 
 					}
 				}
 			} _memb;
@@ -485,7 +519,9 @@ namespace i960 {
 				return _mema._unused == 0;
 			}
 		};
-		static_assert(sizeof(MemFormat) == sizeof(Ordinal), "MemFormat must be the size of an ordinal");
+
+		MustBeSizeOfOrdinal(MemFormat, "MemFormat must be the size of an ordinal!");
+
 		Instruction(Ordinal raw) : _raw(raw) { }
 		Instruction() : Instruction(0) { }
 		Ordinal getBaseOpcode() const noexcept {
@@ -521,7 +557,7 @@ namespace i960 {
 		Ordinal _raw;
 
 	} __attribute__((packed));
-	static_assert(sizeof(Instruction) == sizeof(Ordinal), "Instruction must be the same size as an ordinal!");
+	MustBeSizeOfOrdinal(Instruction, "Instruction must be the size of an ordinal!");
 	// Virtual addressing 
 	// 32-bit address is converted to 
 	// upper 20 bits are translated to the physical address of a page (4k)
