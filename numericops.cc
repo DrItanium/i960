@@ -4,14 +4,6 @@
 #include <cmath>
 namespace i960 {
 #ifdef NUMERICS_ARCHITECTURE // not redundant, makes updates easier
-    Real logarithm(Real a, Real b) noexcept {
-        // taken from the i960 manuals
-        return multiply(b, logarithmBinary(a));
-    }
-    LongReal logarithm(LongReal a, LongReal b) noexcept {
-        // taken from the i960 manuals
-        return multiply(b,logarithmBinary(a));
-    }
     Real convertToReal(LongInteger a) noexcept {
         return Real(RawReal(a));
     }
