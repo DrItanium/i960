@@ -577,6 +577,7 @@ namespace i960 {
 
 	} __attribute__((packed));
 	MustBeSizeOfOrdinal(Instruction, "Instruction must be the size of an ordinal!");
+#ifdef PROTECTED_ARCHITECTURE
 	// Virtual addressing 
 	// 32-bit address is converted to 
 	// upper 20 bits are translated to the physical address of a page (4k)
@@ -610,12 +611,21 @@ namespace i960 {
 	constexpr Ordinal getByteOffset(Ordinal address) noexcept {
 		return (0x0000'0FFF & address);
 	}
+#endif // end PROTECTED_ARCHITECTURE
+
 
     constexpr Ordinal widen(ByteOrdinal value) noexcept {
         return Ordinal(value);
     }
     constexpr Integer widen(ByteInteger value) noexcept {
         return Integer(value);
+    }
+    constexpr Ordinal computeNextFrameStart(Ordinal currentAddress) noexcept {
+        // add 1 to the masked out value to make sure we don't overrun anything
+        return (currentAddress & ~(Ordinal(0b11111))) + 1; // next 64 byte frame start
+    }
+    constexpr Ordinal computeStackFrameStart(Ordinal framePointerAddress) noexcept {
+        return framePointerAddress + 64;
     }
     class Core {
         public:
@@ -630,7 +640,9 @@ namespace i960 {
             // just save the contents of the registers to the stack the logic
             // is always sound to do it this way
             NormalRegister _localRegisters[LocalRegisterCount];
+#ifdef NUMERICS_ARCHITECTURE
             ExtendedReal _floatingPointRegisters[NumFloatingPointRegs];
+#endif // end NUMERICS_ARCHITECTURE
             ArithmeticControls _ac;
             NormalRegister _instructionPointer;
             ProcessControls _pc;
