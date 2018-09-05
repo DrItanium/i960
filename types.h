@@ -13,12 +13,13 @@ namespace i960 {
 	using ShortOrdinal = std::uint16_t;
 	using Ordinal = std::uint32_t;
 	using LongOrdinal = std::uint64_t;
+#define MustBeSizeOfOrdinal(type, message) \
+	static_assert(sizeof(type) == sizeof(Ordinal), message)
 
 	using ByteInteger = std::int8_t;
 	using ShortInteger = std::int16_t;
 	using Integer = std::int32_t;
 	using LongInteger = std::int64_t;
-
 	struct QuadWord {
 		Ordinal _lowest;
 		Ordinal _lower;
@@ -96,14 +97,20 @@ namespace i960 {
 		ExtendedReal _real;
 #endif // end NUMERICS_ARCHITECTURE
 	} __attribute__((packed));
-
 	union NormalRegister {
+        struct {
+            Ordinal _returnCode : 3;
+            Ordinal _prereturnTrace : 1;
+            Ordinal _unused : 2; // 80960 ignores the lower six bits of this register
+            Ordinal _address : 26;
+        } _pfp;
 		Ordinal _ordinal;
 		Integer _integer;
 #ifdef NUMERICS_ARCHITECTURE
 		Real _real;
 #endif // end NUMERICS_ARCHITECTURE
 	};
+    MustBeSizeOfOrdinal(NormalRegister, "NormalRegister must be 32-bits wide!");
 	union ArithmeticControls {
 		struct {
 			Ordinal _conditionCode : 3;
@@ -257,8 +264,6 @@ namespace i960 {
 		Ordinal _value;
 	} __attribute__((packed));
 
-#define MustBeSizeOfOrdinal(type, message) \
-	static_assert(sizeof(type) == sizeof(Ordinal), message)
 
 	MustBeSizeOfOrdinal(ProcessControls, "ProcessControls is not the size of an ordinal!");
 	union TraceControls {
@@ -604,5 +609,6 @@ namespace i960 {
 	constexpr Ordinal getByteOffset(Ordinal address) noexcept {
 		return (0x0000'0FFF & address);
 	}
+
 } // end namespace i960
 #endif // end I960_TYPES_H__
