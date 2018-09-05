@@ -215,6 +215,42 @@ namespace i960 {
                 return tmp;
             }
         }
+
+        // NOTE that both of these methods could return true in some cases
+        // I think that the safest solution is to actually raise a fault if both
+        // are true or both are false.
+
+        bool conditionIsTrue() const noexcept {
+            return _conditionCode == 0b010;
+        }
+        bool conditionIsFalse() const noexcept {
+            return _conditionCode == 0b000;
+        }
+        bool conditionIsUnordered() const noexcept {
+            return _conditionCode == 0b000;
+        }
+        bool conditionIsGreaterThan() const noexcept {
+            return _conditionCode == 0b001;
+        }
+        bool conditionIsEqual() const noexcept {
+            return _conditionCode == 0b010;
+        }
+        bool conditionIsGreaterThanOrEqual() const noexcept {
+            return _conditionCode == 0b011;
+        }
+        bool conditionIsLessThan() const noexcept {
+            return _conditionCode == 0b100;
+        }
+        bool conditionIsNotEqual() const noexcept {
+            return _conditionCode == 0b101;
+        }
+        bool conditionIsLessThanOrEqual() const noexcept {
+            return _conditionCode == 0b110;
+        }
+        bool conditionIsOrdered() const noexcept {
+            return _conditionCode == 0b111;
+        }
+        
 	};
 	using InstructionPointer = Ordinal;
 	union ProcessControls {
