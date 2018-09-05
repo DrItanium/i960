@@ -100,6 +100,9 @@ namespace i960 {
     // TODO signatures for the fp move instructions
     // TODO synld signature
     // TODO synmov, synmovl, synmovq signatures
+    bool isUnordered(Real r) noexcept;
+    bool isUnordered(LongReal r) noexcept;
+    bool isUnordered(ExtendedReal r) noexcept;
 #endif // end defined(NUMERICS_ARCHITECTURE)
 } // end namespace i960 
 

@@ -622,7 +622,6 @@ namespace i960 {
         i960::ShortOrdinal* _shortOrdinals;
         i960::ShortInteger* _shortIntegers;
         i960::Ordinal* _ordinals;
-
     };
 
 } // end namespace i960
