@@ -17,11 +17,6 @@ namespace i960 {
 	using ShortInteger = int16_t;
 	using Integer = int32_t;
 	using LongInteger = int64_t;
-    using RawReal = float;
-    using RawLongReal = double;
-
-    static_assert(sizeof(RawReal) == sizeof(Ordinal), "Real must be the same size as Ordinal");
-    static_assert(sizeof(RawLongReal) == sizeof(LongOrdinal), "LongReal must be the same size as LongOrdinal");
 
 	struct QuadWord {
 		Ordinal _lowest;
@@ -30,6 +25,12 @@ namespace i960 {
 		Ordinal _highest;
 	};
 #ifdef NUMERICS_ARCHITECTURE
+    using RawReal = float;
+    using RawLongReal = double;
+    using RawExtendedReal = long double;
+    static_assert(sizeof(RawReal) == sizeof(Ordinal), "Real must be the same size as Ordinal");
+    static_assert(sizeof(RawLongReal) == sizeof(LongOrdinal), "LongReal must be the same size as LongOrdinal");
+    static_assert(sizeof(RawExtendedReal) >= 10, "ExtendedReal must be at least 10 bytes wide");
 	/**
 	 * Part of the numerics architecture and above
 	 */
@@ -68,23 +69,19 @@ namespace i960 {
 	/**
 	 * Part of the numerics architecture and above
 	 */
-	struct ExtendedReal {
-		ExtendedReal(LongOrdinal lower, ShortOrdinal upper) : _lower(lower), _upper(upper) { }
-		ExtendedReal() : ExtendedReal(0,0) { }
-		union {
-			LongOrdinal _lower;
-			struct {
-				LongOrdinal _fraction: 63;
-				LongOrdinal _j : 1;
-			};
+	union ExtendedReal {
+		ExtendedReal() { }
+		struct {
+            LongOrdinal _fraction: 63;
+            LongOrdinal _j : 1;
+            ShortOrdinal _exponent : 15;
+            ShortOrdinal _sign : 1;
 		}; 
-		union {
-			ShortOrdinal _upper;
-			struct {
-				ShortOrdinal _exponent : 15;
-				ShortOrdinal _sign : 1;
-			};
-		};
+        struct {
+            LongOrdinal _lower;
+            ShortOrdinal _upper;
+        };
+        RawExtendedReal _value;
 	} __attribute__((packed));
 #endif // end NUMERICS_ARCHITECTURE
 

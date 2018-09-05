@@ -11,10 +11,10 @@ PROGS := $(PROGKA) $(PROGKB)
 all: $(PROGKA) $(PROGKB)
 
 $(PROGKA): $(OBJSKA)
-	${LD} -o ${PROGKA} $(OBJSKA)
+	${LD} ${LDFLAGS} -o ${PROGKA} $(OBJSKA)
 
 $(PROGKB): $(OBJSKB)
-	${LD} -o ${PROGKB} $(OBJSKB)
+	${LD} ${LDFLAGS} -o ${PROGKB} $(OBJSKB)
 
 .c.o :
 	@echo CC $<
