@@ -102,7 +102,6 @@ namespace i960 {
     constexpr Ordinal modify(Ordinal value, Ordinal inject, Ordinal mask) noexcept {
         return (inject & mask) | (value & (~mask));
     }
-    // TODO implement chkbit and alterbit once the control structures have been implemented
     /**
      * Find the most significant set bit
      */
@@ -111,19 +110,8 @@ namespace i960 {
      * Find the most significant clear bit
      */
     Ordinal spanBit(Ordinal value) noexcept;
+    void scanByte(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
     Ordinal addWithCarry(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
-    // TODO provide signature for atadd or atomic add
-    // TODO provide signature for branch and link (bal)
-    // TODO provide signature for branch and link extended (balx)
-    // TODO provide signature for branch (b)
-    // TODO provide signature for branch extended (bx)
-    // TODO provide signature for check bit and branch if clear (bbc)
-    // TODO provide signature for check bit and branch if set (bbs)
-    // TODO provide signature for branch if operations (be, bne, bl, ble, bg bge, bo, bno)
-    // TODO provide signature for the call instruction (call)
-    // TODO provide signature for the call supervisor instruction (calls)
-    // TODO provide signature for the call extended instruction (callx)
-    // TODO provide signature for the compare and branch operations
     void checkBit(ArithmeticControls& ac, Ordinal src, Ordinal position) noexcept;
     Ordinal alterBit(const ArithmeticControls& ac, Ordinal src, Ordinal position) noexcept;
     void compare(ArithmeticControls& ac, Integer src1, Integer src2);
@@ -154,6 +142,38 @@ namespace i960 {
     constexpr LongOrdinal extendedMultiply(Ordinal src1, Ordinal src2) noexcept {
         return multiply(LongOrdinal(src1), LongOrdinal(src2));
     }
+
+    Integer modulo(Integer src1, Integer src2) noexcept;
+
+    // TODO provide signatures for the fault instructions
+    // TODO provide signatures for the load instructions
+    // TODO provide signatures for the store instructions
+    // TODO provide signature for the flushreg instruction
+    // TODO provide signature for the fmark instruction
+    // TODO provide signature for the mark instruction
+    // TODO provide signature for the load address instruction
+    // TODO provide signature for the modac instruction
+    // TODO provide signature for the modpc instruction
+    // TODO provide signature for the modtc instruction
+    // TODO provide signatures for the move instructions
+    // TODO provide signature for atadd or atomic add
+    // TODO provide signature for branch and link (bal)
+    // TODO provide signature for branch and link extended (balx)
+    // TODO provide signature for branch (b)
+    // TODO provide signature for branch extended (bx)
+    // TODO provide signature for check bit and branch if clear (bbc)
+    // TODO provide signature for check bit and branch if set (bbs)
+    // TODO provide signature for branch if operations (be, bne, bl, ble, bg bge, bo, bno)
+    // TODO provide signature for the call instruction (call)
+    // TODO provide signature for the call supervisor instruction (calls)
+    // TODO provide signature for the call extended instruction (callx)
+    // TODO provide signature for the compare and branch operations
+    // TODO provide a signature for the ret instruction
+    Ordinal rotate(Ordinal src, Ordinal length) noexcept;
+    // TODO provide a signature for the shift right dividing integer instruction
+    Ordinal subtractWithCarry(Ordinal src1, Ordinal src2) noexcept;
+    // TODO syncf signature
+    // TODO test signatures
 } // end namespace i960 
 
 #endif // end I960_OPS_H__

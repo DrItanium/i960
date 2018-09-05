@@ -43,11 +43,16 @@ namespace i960 {
     Ordinal decimalSubtractWithCarry(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
     Ordinal decimalMoveAndTest(ArithmeticControls& ac, Ordinal src) noexcept;
     Ordinal decimalAddWithCarry(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
+    Real exponent(Real src) noexcept;
+    LongReal exponent(LongReal src) noexcept;
     // TODO support cpysre and cpyrsre
     void compareOrdered(ArithmeticControls& ac, Real src1, Real src2) noexcept;
     void compareOrdered(ArithmeticControls& ac, LongReal src1, LongReal src2) noexcept;
     void compare(ArithmeticControls& ac, Real src1, Real src2) noexcept;
     void compare(ArithmeticControls& ac, LongReal src1, LongReal src2) noexcept;
+    // TODO signatures for the fp move instructions
+    // TODO synld signature
+    // TODO synmov, synmovl, synmovq signatures
 #endif // end defined(NUMERICS_ARCHITECTURE)
 } // end namespace i960 
 
