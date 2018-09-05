@@ -111,6 +111,49 @@ namespace i960 {
      * Find the most significant clear bit
      */
     Ordinal spanBit(Ordinal value) noexcept;
+    Ordinal addWithCarry(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
+    // TODO provide signature for atadd or atomic add
+    // TODO provide signature for branch and link (bal)
+    // TODO provide signature for branch and link extended (balx)
+    // TODO provide signature for branch (b)
+    // TODO provide signature for branch extended (bx)
+    // TODO provide signature for check bit and branch if clear (bbc)
+    // TODO provide signature for check bit and branch if set (bbs)
+    // TODO provide signature for branch if operations (be, bne, bl, ble, bg bge, bo, bno)
+    // TODO provide signature for the call instruction (call)
+    // TODO provide signature for the call supervisor instruction (calls)
+    // TODO provide signature for the call extended instruction (callx)
+    // TODO provide signature for the compare and branch operations
+    void checkBit(ArithmeticControls& ac, Ordinal src, Ordinal position) noexcept;
+    Ordinal alterBit(const ArithmeticControls& ac, Ordinal src, Ordinal position) noexcept;
+    void compare(ArithmeticControls& ac, Integer src1, Integer src2);
+    void compare(ArithmeticControls& ac, Ordinal src1, Ordinal src2);
+    Integer compareAndDecrement(ArithmeticControls& ac, Integer src1, Integer src2);
+    Ordinal compareAndDecrement(ArithmeticControls& ac, Ordinal src1, Ordinal src2);
+    Integer compareAndIncrement(ArithmeticControls& ac, Integer src1, Integer src2);
+    Ordinal compareAndIncrement(ArithmeticControls& ac, Ordinal src1, Ordinal src2);
+    void conditionalCompare(ArithmeticControls& ac, Integer src1, Integer src2);
+    void conditionalCompare(ArithmeticControls& ac, Ordinal src1, Ordinal src2);
+    /**
+     * Divides src2 by src1 and returns the result.
+     * @param src1 a normal ordinal that is the denominator
+     * @param src2 a long ordinal that is the numerator
+     * @return a long ordinal where the lower ordinal is the remainder and the upper ordinal is the quotient
+     */
+    LongOrdinal extendedDivide(Ordinal src1, LongOrdinal src2) noexcept;
+
+    constexpr LongOrdinal multiply(LongOrdinal a, LongOrdinal b) noexcept {
+        return a * b;
+    }
+    /** 
+     * Multiplies src2 by src1 and returns the result.
+     * @param src1 An Ordinal operand
+     * @param src2 An Ordinal operand
+     * @return A LongOrdinal which contains the result of the multiply
+     */
+    constexpr LongOrdinal extendedMultiply(Ordinal src1, Ordinal src2) noexcept {
+        return multiply(LongOrdinal(src1), LongOrdinal(src2));
+    }
 } // end namespace i960 
 
 #endif // end I960_OPS_H__

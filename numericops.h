@@ -44,7 +44,10 @@ namespace i960 {
     Ordinal decimalMoveAndTest(ArithmeticControls& ac, Ordinal src) noexcept;
     Ordinal decimalAddWithCarry(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
     // TODO support cpysre and cpyrsre
-    // TODO support compare operations as well
+    void compareOrdered(ArithmeticControls& ac, Real src1, Real src2) noexcept;
+    void compareOrdered(ArithmeticControls& ac, LongReal src1, LongReal src2) noexcept;
+    void compare(ArithmeticControls& ac, Real src1, Real src2) noexcept;
+    void compare(ArithmeticControls& ac, LongReal src1, LongReal src2) noexcept;
 #endif // end defined(NUMERICS_ARCHITECTURE)
 } // end namespace i960 
 
