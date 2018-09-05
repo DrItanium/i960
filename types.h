@@ -39,7 +39,7 @@ namespace i960 {
 	struct Real {
 		Real() : Real(0,0,0) { }
 		Real(Ordinal frac, Ordinal exponent, Ordinal flag) : _fraction(frac), _exponent(exponent), _flag(flag) { };
-        Real(RawReal value) : _floating(value) { }
+        explicit Real(RawReal value) : _floating(value) { }
 		union {
 			struct {
 				Ordinal _fraction : 23;
@@ -57,7 +57,7 @@ namespace i960 {
 		LongReal() : LongReal(0,0) { }
 		LongReal(Ordinal lower, Ordinal upper);
 		LongReal(LongOrdinal frac, LongOrdinal exponent, LongOrdinal sign) : _fraction(frac), _exponent(exponent), _sign(sign) { };
-        LongReal(RawLongReal value) : _floating(value) { }
+        explicit LongReal(RawLongReal value) : _floating(value) { }
 		union {
 			struct {
 				LongOrdinal _fraction : 52;
@@ -609,6 +609,21 @@ namespace i960 {
 	constexpr Ordinal getByteOffset(Ordinal address) noexcept {
 		return (0x0000'0FFF & address);
 	}
+
+    constexpr Ordinal widen(ByteOrdinal value) noexcept {
+        return Ordinal(value);
+    }
+    constexpr Integer widen(ByteInteger value) noexcept {
+        return Integer(value);
+    }
+    union MemoryView {
+        i960::ByteOrdinal* _byteOrdinals;
+        i960::ByteInteger* _byteIntegers;
+        i960::ShortOrdinal* _shortOrdinals;
+        i960::ShortInteger* _shortIntegers;
+        i960::Ordinal* _ordinals;
+
+    };
 
 } // end namespace i960
 #endif // end I960_TYPES_H__
