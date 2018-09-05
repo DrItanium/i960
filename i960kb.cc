@@ -25,6 +25,11 @@ bool testResult(i960::RawExtendedReal value) {
     std::cout << std::hex << test._k._upper << test._k._lower << std::endl;
     std::cout << std::hex << uint64_t(test2._k >> 64) << uint64_t(test2._k) << std::endl;
     std::cout << std::hex << test3._v << std::endl;
+    if (test3._k._sign == 1) {
+        std::cout << "negative" << std::endl;
+    } else {
+        std::cout << "positive" << std::endl;
+    }
     return value == test3._v;
 }
 int main() {
@@ -39,7 +44,7 @@ int main() {
     std::cout << "sizeof(RawExtendedReal): " << sizeof(i960::RawExtendedReal) << std::endl;
     // test to make sure that we are doing the right thing :D
     // It seems that the 80-bit format is maintained correctly :D
-    if (testResult(-1.0 + 0)) {
+    if (testResult(1.23456 + 0)) {
         std::cout << "It is 80-bits wide :D" << std::endl;
     }
     if (testResult(-0.5)) {
