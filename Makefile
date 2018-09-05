@@ -1,8 +1,8 @@
 include config.mk
 
-OBJSKA := i960ka.o
+OBJSKA := i960ka.o coreops.o
 PROGKA := sim960ka
-OBJSKB := i960kb.o
+OBJSKB := i960kb.o coreops.o numericops.o
 PROGKB := sim960kb
 
 OBJS := $(OBJSKA) $(OBJSKB)
@@ -28,5 +28,7 @@ clean:
 	@echo Cleaning...
 	@rm -f ${OBJS} ${PROGS}
 
-i960ka.o: ops.h types.h opcodes.h i960ka.cc
-i960kb.o: ops.h types.h opcodes.h i960kb.cc
+coreops.o: coreops.h types.h coreops.cc
+numericops.o: numericops.h types.h numericops.cc
+i960ka.o: coreops.h types.h opcodes.h i960ka.cc
+i960kb.o: numericops.h coreops.h types.h opcodes.h i960kb.cc

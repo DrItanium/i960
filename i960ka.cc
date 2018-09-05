@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstddef>
 #include "types.h"
-#include "ops.h"
+#include "coreops.h"
 
 int main() {
 	std::cout << "sizeof(TripleWord): " << sizeof(i960::TripleWord) << std::endl;

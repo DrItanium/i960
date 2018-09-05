@@ -1,5 +1,6 @@
 #ifndef I960_TYPES_H__
 #define I960_TYPES_H__
+#include <cstdint>
 #ifdef PROTECTED_ARCHITECTURE
     #ifndef NUMERICS_ARCHITECTURE
         // protected implies numerics
@@ -8,15 +9,15 @@
 #endif // end PROTECTED_ARCHITECTURE
 namespace i960 {
 
-	using ByteOrdinal = uint8_t;
-	using ShortOrdinal = uint16_t;
-	using Ordinal = uint32_t;
-	using LongOrdinal = uint64_t;
+	using ByteOrdinal = std::uint8_t;
+	using ShortOrdinal = std::uint16_t;
+	using Ordinal = std::uint32_t;
+	using LongOrdinal = std::uint64_t;
 
-	using ByteInteger = int8_t;
-	using ShortInteger = int16_t;
-	using Integer = int32_t;
-	using LongInteger = int64_t;
+	using ByteInteger = std::int8_t;
+	using ShortInteger = std::int16_t;
+	using Integer = std::int32_t;
+	using LongInteger = std::int64_t;
 
 	struct QuadWord {
 		Ordinal _lowest;

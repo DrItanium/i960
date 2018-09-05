@@ -33,7 +33,7 @@ namespace i960 {
     Real convertToReal(LongInteger a) noexcept;
     Real convertToReal(Integer a) noexcept;
     Integer convertToInteger(Real a, bool truncate = false) noexcept;
-    LongInteger convertToLongInteger(LongInteger a, bool truncate = false) noexcept;
+    LongInteger convertToLongInteger(Real a, bool truncate = false) noexcept;
 #endif // end defined(NUMERICS_ARCHITECTURE)
 } // end namespace i960 
 
