@@ -1,6 +1,7 @@
 #ifndef I960_TYPES_H__
 #define I960_TYPES_H__
 #include <cstdint>
+#include <memory>
 #ifdef PROTECTED_ARCHITECTURE
     #ifndef NUMERICS_ARCHITECTURE
         // protected implies numerics
@@ -616,13 +617,28 @@ namespace i960 {
     constexpr Integer widen(ByteInteger value) noexcept {
         return Integer(value);
     }
-    union MemoryView {
-        i960::ByteOrdinal* _byteOrdinals;
-        i960::ByteInteger* _byteIntegers;
-        i960::ShortOrdinal* _shortOrdinals;
-        i960::ShortInteger* _shortIntegers;
-        i960::Ordinal* _ordinals;
+    class Core {
+        public:
+            Core();
+            ~Core();
+            // TODO finish this once we have all the other sub components implemented behind the
+            // scenes
+        private:
+            NormalRegister _globalRegisters[GlobalRegisterCount];
+            // The hardware implementations use register sets, however
+            // to start with, we should just follow the logic as is and 
+            // just save the contents of the registers to the stack the logic
+            // is always sound to do it this way
+            NormalRegister _localRegisters[LocalRegisterCount];
+            ExtendedReal _floatingPointRegisters[NumFloatingPointRegs];
+            ArithmeticControls _ac;
+            NormalRegister _instructionPointer;
+            ProcessControls _pc;
+            TraceControls _tc;
+            NormalRegister _sfr[32]; // not implemented in the documentation I have
+            Ordinal _localRegisterIndex = 0;
     };
+
 
 } // end namespace i960
 #endif // end I960_TYPES_H__
