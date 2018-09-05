@@ -34,6 +34,17 @@ namespace i960 {
     Real convertToReal(Integer a) noexcept;
     Integer convertToInteger(Real a, bool truncate = false) noexcept;
     LongInteger convertToLongInteger(Real a, bool truncate = false) noexcept;
+    Real round(Real a) noexcept;
+    LongReal round(LongReal a) noexcept;
+    Real scale(Real a, Real b) noexcept;
+    LongReal scale(LongReal a, LongReal b) noexcept;
+    Real remainder(Real a, Real b) noexcept;
+    LongReal remainder(LongReal a, LongReal b) noexcept;
+    Ordinal decimalSubtractWithCarry(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
+    Ordinal decimalMoveAndTest(ArithmeticControls& ac, Ordinal src) noexcept;
+    Ordinal decimalAddWithCarry(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
+    // TODO support cpysre and cpyrsre
+    // TODO support compare operations as well
 #endif // end defined(NUMERICS_ARCHITECTURE)
 } // end namespace i960 
 
