@@ -279,7 +279,31 @@ namespace i960 {
         bool roundTowardsZero() const noexcept {
             return _roundingControl == 0b11;
         }
-#endif
+        bool arithmeticStatusIsZero() const noexcept {
+            return (_arithmeticStatusField & 0b0111) == 0;
+        }
+        bool arithmeticStatusIsDenormalizedNumber() const noexcept {
+            return (_arithmeticStatusField & 0b0111) == 1;
+        }
+        bool arithmeticStatusIsNormalFiniteNumber() const noexcept {
+            return (_arithmeticStatusField & 0b0111) == 2;
+        }
+        bool arithmeticStatusIsInfinity() const noexcept {
+            return (_arithmeticStatusField & 0b0111) == 3;
+        }
+        bool arithmeticStatusIsQuietNaN() const noexcept {
+            return (_arithmeticStatusField & 0b0111) == 4;
+        }
+        bool arithmeticStatusIsSignalingNaN() const noexcept {
+            return (_arithmeticStatusField & 0b0111) == 5;
+        }
+        bool arithmeticStatusIsReservedOperand() const noexcept {
+            return (_arithmeticStatusField & 0b0111) == 6;
+        }
+        bool getArithmeticStatusSign() const noexcept {
+            return ((_arithmeticStatusField & 0b1000) >> 3) == 1;
+        }
+#endif // end defined(NUMERICS_ARCHITECTURE)
 
         
 	};
