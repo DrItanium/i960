@@ -105,11 +105,11 @@ namespace i960 {
     /**
      * Find the most significant set bit
      */
-    Ordinal scanBit(Ordinal value) noexcept;
+    Ordinal scanBit(ArithmeticControls& ac, Ordinal value) noexcept;
     /**
      * Find the most significant clear bit
      */
-    Ordinal spanBit(Ordinal value) noexcept;
+    Ordinal spanBit(ArithmeticControls& ac, Ordinal value) noexcept;
     void scanByte(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
     Ordinal addWithCarry(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
     void checkBit(ArithmeticControls& ac, Ordinal src, Ordinal position) noexcept;

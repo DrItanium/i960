@@ -37,19 +37,41 @@ namespace i960 {
         // TODO implement
        return value;
     }
+    constexpr bool mostSignificantBitSet(Ordinal value) noexcept {
+        return (value & 0x8000'0000) != 0;
+    }
+    constexpr bool mostSignificantBitClear(Ordinal value) noexcept {
+        return !mostSignificantBitSet(value);
+    }
     /**
      * Find the most significant set bit
      */
-    Ordinal scanBit(Ordinal value) noexcept {
-        // TODO implement
-        return value;
+    Ordinal scanBit(ArithmeticControls& ac, Ordinal value) noexcept {
+        auto k = value;
+        ac._conditionCode = 0b000;
+        for (int i = 31; i >= 0; --i) {
+            if (mostSignificantBitSet(k)) {
+                ac._conditionCode = 0b010;
+                return Ordinal(i);
+            }
+            k <<= 1;
+        }
+        return 0xFFFF'FFFF;
     }
     /**
      * Find the most significant clear bit
      */
-    Ordinal spanBit(Ordinal value) noexcept {
-        // TODO implement
-        return value;
+    Ordinal spanBit(ArithmeticControls& ac, Ordinal value) noexcept {
+        auto k = value;
+        ac._conditionCode = 0b000;
+        for (int i = 31; i >= 0; --i) {
+            if (mostSignificantBitClear(k)) {
+                ac._conditionCode = 0b010;
+                return Ordinal(i);
+            }
+            k <<= 1;
+        }
+        return 0xFFFF'FFFF;
     }
 
 } // end namespace i960
