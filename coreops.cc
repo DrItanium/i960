@@ -19,7 +19,7 @@ namespace i960 {
         return a % b;
     }
     void checkBit(ArithmeticControls& controls, Ordinal value, Ordinal position) noexcept {
-        // TODO finish
+        controls._conditionCode = ((value & (1 << (position & 0b11111))) == 0) ? 0b000 : 0b010;
     }
     Ordinal alterBit(const ArithmeticControls& controls, Ordinal value, Ordinal position) noexcept {
         // TODO Implement
