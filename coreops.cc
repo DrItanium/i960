@@ -89,5 +89,13 @@ namespace i960 {
 		ac._conditionCode = (carryBit << 1) | v;
 		return result;
 	}
+    Integer modulo(ArithmeticControls& ac, Integer src1, Integer src2) noexcept {
+		// taken from the i960 manual
+		auto result = subtract(src2, multiply(divide(ac, src2, src1), src1));
+		if ((src2 * src1) < 0) {
+			result = result + src1;
+		}
+		return result;
+	}
 
 } // end namespace i960

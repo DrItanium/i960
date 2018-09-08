@@ -154,7 +154,7 @@ namespace i960 {
         return multiply(LongOrdinal(src1), LongOrdinal(src2));
     }
 
-    Integer modulo(Integer src1, Integer src2) noexcept;
+    Integer modulo(ArithmeticControls& ac, Integer src1, Integer src2) noexcept;
 
     constexpr Ordinal rotate(Ordinal src, Ordinal length) noexcept {
 		// taken from the wikipedia entry on circular shifts through my syn
