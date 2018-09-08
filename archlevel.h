@@ -13,7 +13,6 @@ namespace i960 {
 	constexpr bool numericsArchitectureSupported = true;
 	constexpr bool protectedArchitectureSupported = false;
 	constexpr bool extendedArchitectureSupported = false;
-	void outputSupportMessage(std::ostream& os);
 	static_assert(!protectedArchitectureSupported, "Protected architecture is documented but super complex, not currently supported by the simulator!");
 	static_assert(!extendedArchitectureSupported, "Extended Architecture is not well documented so it is not supported at this time!");
 }

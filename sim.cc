@@ -34,8 +34,25 @@ bool testResult(i960::RawExtendedReal value) {
     return value == test3._v;
 }
 constexpr auto mem1G = 0x3FFF'FFFF + 1;
+void archSupport(std::ostream& os) {
+		os << "Supported instruction sets:";
+		if (coreArchitectureSupported) {
+			os << " core";
+		}
+		if (numericsArchitectureSupported) {
+			os << " numerics";
+		}
+		if (protectedArchitectureSupported) {
+			os << " protected";
+		}
+		if (extendedArchitectureSupported) {
+			os << " extended";
+		}
+		os << std::endl;
+}
 int main() {
-	i960::outputSupportMessage(std::cout); std::cout << std::endl;
+	std::cout << "
+	outputSupportMessage(std::cout);
     // allocate 1 gb of space in each region max
     auto region0 = std::make_unique<i960::ByteOrdinal[]>(mem1G);
     auto region1 = std::make_unique<i960::ByteOrdinal[]>(mem1G);
