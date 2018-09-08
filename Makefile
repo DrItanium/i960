@@ -1,8 +1,9 @@
 include config.mk
 
-OBJSKA := i960ka.o coreops.o
+COMMON_OBJS := coreops.o misc.o
+OBJSKA := ${COMMON_OBJS} i960ka.o
 PROGKA := sim960ka
-OBJSKB := i960kb.o coreops.o numericops.o
+OBJSKB := ${COMMON_OBJS} numericops.o i960kb.o
 PROGKB := sim960kb
 
 OBJS := $(OBJSKA) $(OBJSKB)
@@ -42,5 +43,6 @@ coreops.o: operations.h types.h archlevel.h coreops.cc
 numericops.o: operations.h types.h archlevel.h numericops.cc
 i960ka.o: operations.h types.h opcodes.h archlevel.h i960ka.cc
 i960kb.o: operations.h types.h opcodes.h archlevel.h i960kb.cc
+misc.o: archlevel.h types.h misc.cc
 
 .PHONY: options
