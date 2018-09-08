@@ -130,7 +130,7 @@ namespace i960 {
 		Call = 0x09,
 		B = 0x08,
 		Calls = 0x660,
-#ifdef NUMERICS_ARCHITECTURE
+// NUMERICS_ARCHITECTURE begin
 		Addr = 0x78F,
 		Subr = 0x78D,
 		Mulr = 0x78C,
@@ -206,13 +206,6 @@ namespace i960 {
 		Inspacc = 0x613,
 		Ldtime = 0x673,
 #endif // end PROTECTED_ARCHITECTURE
-#endif // end NUMERICS_ARCHITECTURE
 	};
-	//template<Opcodes opcode>
-	//constexpr bool isNumericOperation = false;
-	//template<Opcodes opcode>
-	//constexpr bool isCoreOperation = true;
-	//template<Opcodes opcode>
-	//constexpr bool isProtectedOperation = isCoreOperation<opcode> && isNumericOperation<opcode>;
 } // end namespace i960
 #endif // end I960_OPCODES_H__
