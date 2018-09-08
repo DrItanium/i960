@@ -693,17 +693,24 @@ namespace i960 {
     }
     class Core {
         public:
+			using RegisterWindow = NormalRegister[LocalRegisterCount];
             Core();
             ~Core();
             // TODO finish this once we have all the other sub components implemented behind the
             // scenes
-        private:
-            NormalRegister _globalRegisters[GlobalRegisterCount];
+			/** 
+			 * perform a call
+			 */
+			virtual void call(Ordinal address) = 0;
+			virtual Ordinal load(Ordinal address) = 0;
+			virtual void store(Ordinal address, Ordinal value) = 0;
+        protected:
+            RegisterWindow _globalRegisters;
             // The hardware implementations use register sets, however
             // to start with, we should just follow the logic as is and 
             // just save the contents of the registers to the stack the logic
             // is always sound to do it this way
-            NormalRegister _localRegisters[LocalRegisterCount];
+			RegisterWindow* _localRegisters = nullptr;
             ExtendedReal _floatingPointRegisters[NumFloatingPointRegs];
             ArithmeticControls _ac;
             NormalRegister _instructionPointer;
