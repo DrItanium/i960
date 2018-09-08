@@ -38,9 +38,9 @@ clean:
 	@echo Cleaning...
 	@rm -f ${OBJS} ${PROGS}
 
-coreops.o: operations.h types.h coreops.cc
-numericops.o: operations.h types.h numericops.cc
-i960ka.o: operations.h types.h opcodes.h i960ka.cc
-i960kb.o: operations.h types.h opcodes.h i960kb.cc
+coreops.o: operations.h types.h archlevel.h coreops.cc
+numericops.o: operations.h types.h archlevel.h numericops.cc
+i960ka.o: operations.h types.h opcodes.h archlevel.h i960ka.cc
+i960kb.o: operations.h types.h opcodes.h archlevel.h i960kb.cc
 
 .PHONY: options

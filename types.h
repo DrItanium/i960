@@ -2,12 +2,7 @@
 #define I960_TYPES_H__
 #include <cstdint>
 #include <memory>
-#ifdef PROTECTED_ARCHITECTURE
-    #ifndef NUMERICS_ARCHITECTURE
-        // protected implies numerics
-        #define NUMERICS_ARCHITECTURE
-    #endif // end NUMERICS_ARCHITECTURE
-#endif // end PROTECTED_ARCHITECTURE
+#include "archlevel.h"
 namespace i960 {
 
 	using ByteOrdinal = std::uint8_t;
