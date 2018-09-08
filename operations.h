@@ -156,7 +156,11 @@ namespace i960 {
 
     Integer modulo(Integer src1, Integer src2) noexcept;
 
-    Ordinal rotate(Ordinal src, Ordinal length) noexcept;
+    constexpr Ordinal rotate(Ordinal src, Ordinal length) noexcept {
+		// taken from the wikipedia entry on circular shifts through my syn
+		// project
+		return Ordinal((src << length) | (src >> ((-length) & 31u)));
+	}
     Ordinal subtractWithCarry(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
 	
     inline Real add(Real a, Real b) noexcept { return Real(a._floating + b._floating); }
