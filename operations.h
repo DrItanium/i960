@@ -156,35 +156,9 @@ namespace i960 {
 
     Integer modulo(Integer src1, Integer src2) noexcept;
 
-    // TODO provide signatures for the fault instructions
-    // TODO provide signatures for the load instructions
-    // TODO provide signatures for the store instructions
-    // TODO provide signature for the flushreg instruction
-    // TODO provide signature for the fmark instruction
-    // TODO provide signature for the mark instruction
-    // TODO provide signature for the load address instruction
-    // TODO provide signature for the modac instruction
-    // TODO provide signature for the modpc instruction
-    // TODO provide signature for the modtc instruction
-    // TODO provide signatures for the move instructions
-    // TODO provide signature for atadd or atomic add
-    // TODO provide signature for branch and link (bal)
-    // TODO provide signature for branch and link extended (balx)
-    // TODO provide signature for branch (b)
-    // TODO provide signature for branch extended (bx)
-    // TODO provide signature for check bit and branch if clear (bbc)
-    // TODO provide signature for check bit and branch if set (bbs)
-    // TODO provide signature for branch if operations (be, bne, bl, ble, bg bge, bo, bno)
-    // TODO provide signature for the call instruction (call)
-    // TODO provide signature for the call supervisor instruction (calls)
-    // TODO provide signature for the call extended instruction (callx)
-    // TODO provide signature for the compare and branch operations
-    // TODO provide a signature for the ret instruction
     Ordinal rotate(Ordinal src, Ordinal length) noexcept;
-    // TODO provide a signature for the shift right dividing integer instruction
     Ordinal subtractWithCarry(Ordinal src1, Ordinal src2) noexcept;
-    // TODO syncf signature
-    // TODO test signatures
+	
     inline Real add(Real a, Real b) noexcept { return Real(a._floating + b._floating); }
     inline LongReal add(LongReal a, LongReal b) noexcept { return LongReal(a._floating + b._floating); }
     inline Real subtract(Real a, Real b) noexcept { return Real(a._floating - b._floating); }
@@ -272,17 +246,62 @@ namespace i960 {
     Ordinal decimalAddWithCarry(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
     Real exponent(Real src) noexcept;
     LongReal exponent(LongReal src) noexcept;
-    // TODO support cpysre and cpyrsre
     void compareOrdered(ArithmeticControls& ac, Real src1, Real src2) noexcept;
     void compareOrdered(ArithmeticControls& ac, LongReal src1, LongReal src2) noexcept;
 	void compare(ArithmeticControls& ac, Real src1, Real src2) noexcept;
 	void compare(ArithmeticControls& ac, LongReal src1, LongReal src2) noexcept;
-    // TODO signatures for the fp move instructions
-    // TODO synld signature
-    // TODO synmov, synmovl, synmovq signatures
     bool isUnordered(Real r) noexcept;
     bool isUnordered(LongReal r) noexcept;
     bool isUnordered(ExtendedReal r) noexcept;
+	enum TestTypes {
+		Unordered = 0b000,
+		Greater = 0b001,
+		Equal = 0b010,
+		GreaterOrEqual = 0b011,
+		Less = 0b100,
+		NotEqual = 0b101, 
+		LessOrEqual = 0b110,
+		Ordered = 0b111,
+	};
+	template<TestTypes t>
+	Ordinal test(const ArithmeticControls& ac) noexcept {
+		constexpr auto mask = t & 0b111;
+		if constexpr (mask == TestTypes::Unordered) {
+			return ac._conditionCode == 0 ? 1 : 0;
+		} else {
+			return (mask & ac._conditionCode) != 0 ? 1 : 0;
+		}
+	}
+    // TODO provide signatures for the fault instructions
+    // TODO provide signatures for the load instructions
+    // TODO provide signatures for the store instructions
+    // TODO provide signature for the flushreg instruction
+    // TODO provide signature for the fmark instruction
+    // TODO provide signature for the mark instruction
+    // TODO provide signature for the load address instruction
+    // TODO provide signature for the modac instruction
+    // TODO provide signature for the modpc instruction
+    // TODO provide signature for the modtc instruction
+    // TODO provide signatures for the move instructions
+    // TODO provide signature for atadd or atomic add
+    // TODO provide signature for branch and link (bal)
+    // TODO provide signature for branch and link extended (balx)
+    // TODO provide signature for branch (b)
+    // TODO provide signature for branch extended (bx)
+    // TODO provide signature for check bit and branch if clear (bbc)
+    // TODO provide signature for check bit and branch if set (bbs)
+    // TODO provide signature for branch if operations (be, bne, bl, ble, bg bge, bo, bno)
+    // TODO provide signature for the call instruction (call)
+    // TODO provide signature for the call supervisor instruction (calls)
+    // TODO provide signature for the call extended instruction (callx)
+    // TODO provide signature for the compare and branch operations
+    // TODO provide a signature for the ret instruction
+    // TODO provide a signature for the shift right dividing integer instruction
+    // TODO syncf signature
+    // TODO signatures for the fp move instructions
+    // TODO synld signature
+    // TODO synmov, synmovl, synmovq signatures
+    // TODO support cpysre and cpyrsre
 } // end namespace i960 
 
 #endif // end I960_OPS_H__
