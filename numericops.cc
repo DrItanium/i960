@@ -1,6 +1,6 @@
 #define NUMERICS_ARCHITECTURE
 #include "types.h"
-#include "coreops.h"
+#include "operations.h"
 #include <cmath>
 namespace i960 {
     Real convertToReal(LongInteger a) noexcept {

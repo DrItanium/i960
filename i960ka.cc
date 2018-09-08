@@ -2,7 +2,7 @@
 #include <cstddef>
 #include <memory>
 #include "types.h"
-#include "coreops.h"
+#include "operations.h"
 
 constexpr auto mem1G = 0x3FFF'FFFF + 1;
 int main() {

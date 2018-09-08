@@ -1,5 +1,5 @@
 #include "types.h"
-#include "coreops.h"
+#include "operations.h"
 
 namespace i960 {
     Ordinal divide(ArithmeticControls& ac, Ordinal a, Ordinal b) {
