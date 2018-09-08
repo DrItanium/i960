@@ -34,25 +34,28 @@ bool testResult(i960::RawExtendedReal value) {
     return value == test3._v;
 }
 constexpr auto mem1G = 0x3FFF'FFFF + 1;
-void archSupport(std::ostream& os) {
-		os << "Supported instruction sets:";
-		if (coreArchitectureSupported) {
-			os << " core";
-		}
-		if (numericsArchitectureSupported) {
-			os << " numerics";
-		}
-		if (protectedArchitectureSupported) {
-			os << " protected";
-		}
-		if (extendedArchitectureSupported) {
-			os << " extended";
-		}
-		os << std::endl;
+void bootupMessage(std::ostream& os) {
+	os << "Intel 80960 Simulator" << std::endl;
+	os << "Supported instruction sets:";
+	if (i960::coreArchitectureSupported) {
+		os << " core";
+	}
+	if (i960::numericsArchitectureSupported) {
+		os << " numerics";
+	}
+	if (i960::protectedArchitectureSupported) {
+		os << " protected";
+	}
+	if (i960::extendedArchitectureSupported) {
+		os << " extended";
+	}
+	os << std::endl;
+	std::cout << std::endl; 
+	std::cout << std::endl; 
 }
 int main() {
-	std::cout << "
-	outputSupportMessage(std::cout);
+	bootupMessage(std::cout);
+	std::cout << "Allocating Test Memory And Randomizing" << std::endl;
     // allocate 1 gb of space in each region max
     auto region0 = std::make_unique<i960::ByteOrdinal[]>(mem1G);
     auto region1 = std::make_unique<i960::ByteOrdinal[]>(mem1G);
@@ -64,8 +67,8 @@ int main() {
         region2[i] = 0x56;
         region3[i] = 0x78;
     }
-	std::cout << "sizeof(TripleWord): " << sizeof(i960::TripleWord) << std::endl;
-	std::cout << "sizeof(QuadWord): " << sizeof(i960::QuadWord) << std::endl;
+	std::cout << "Memory Allocation and randomization complete" << std::endl << std::endl;
+	std::cout << "Printing out system type sizes for i960 data types:" << std::endl;
 	std::cout << "sizeof(NormalRegister): " << sizeof(i960::NormalRegister) << std::endl;
 	std::cout << "sizeof(ArithmeticControls): " << sizeof(i960::ArithmeticControls) << std::endl;
 	std::cout << "sizeof(Instruction): " << sizeof(i960::Instruction) << std::endl;
@@ -74,10 +77,8 @@ int main() {
 	std::cout << "sizeof(Real): " << sizeof(i960::Real) << std::endl;
 	std::cout << "sizeof(TripleWord): " << sizeof(i960::TripleWord) << std::endl;
 	std::cout << "sizeof(QuadWord): " << sizeof(i960::QuadWord) << std::endl;
-	std::cout << "sizeof(NormalRegister): " << sizeof(i960::NormalRegister) << std::endl;
-	std::cout << "sizeof(ArithmeticControls): " << sizeof(i960::ArithmeticControls) << std::endl;
-	std::cout << "sizeof(Instruction): " << sizeof(i960::Instruction) << std::endl;
     std::cout << "sizeof(RawExtendedReal): " << sizeof(i960::RawExtendedReal) << std::endl;
+	std::cout << "Performing Tests Relating to the extended real floating point units" << std::endl;
     // test to make sure that we are doing the right thing :D
     // It seems that the 80-bit format is maintained correctly :D
     if (testResult(1.23456 + 0)) {
@@ -87,7 +88,6 @@ int main() {
         std::cout << "It is 80-bits wide :D" << std::endl;
     }
 
-    char donuts;
-    std::cin >>  donuts;
+	std::cout << "Shutting down..." << std::endl;
 	return 0;
 }
