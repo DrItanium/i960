@@ -1,4 +1,3 @@
-#define NUMERICS_ARCHITECTURE
 #include "types.h"
 #include "operations.h"
 #include <cmath>

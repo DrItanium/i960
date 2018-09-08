@@ -1,15 +1,10 @@
 include config.mk
 
-COMMON_OBJS := coreops.o misc.o
-OBJSKA := ${COMMON_OBJS} i960ka.o
-PROGKA := sim960ka
-OBJSKB := ${COMMON_OBJS} numericops.o i960kb.o
-PROGKB := sim960kb
+OBJS := coreops.o misc.o sim.o numericops.o 
+PROG := sim960
 
-OBJS := $(OBJSKA) $(OBJSKB)
-PROGS := $(PROGKA) $(PROGKB)
 
-all: $(PROGKA) $(PROGKB)
+all: $(PROG)
 
 options:
 	@echo Build Options
@@ -18,14 +13,8 @@ options:
 	@echo CXXFLAGS = ${CXXFLAGS}
 	@echo LDFLAGS = ${LDFLAGS}
 	@echo ------------------
-
-$(PROGKA): $(OBJSKA)
-	@${LD} ${LDFLAGS} -o ${PROGKA} $(OBJSKA)
-	@echo LD $<
-
-$(PROGKB): $(OBJSKB)
-	@${LD} ${LDFLAGS} -o ${PROGKB} $(OBJSKB)
-	@echo LD $<
+$(PROG): $(OBJS)
+	@${LD} ${LDFLAGS} -o ${PROG} ${OBJS}
 
 .c.o :
 	@echo CC $<
@@ -41,8 +30,7 @@ clean:
 
 coreops.o: operations.h types.h archlevel.h coreops.cc
 numericops.o: operations.h types.h archlevel.h numericops.cc
-i960ka.o: operations.h types.h opcodes.h archlevel.h i960ka.cc
-i960kb.o: operations.h types.h opcodes.h archlevel.h i960kb.cc
+sim.o: operations.h types.h opcodes.h archlevel.h sim.cc
 misc.o: archlevel.h types.h misc.cc
 
 .PHONY: options

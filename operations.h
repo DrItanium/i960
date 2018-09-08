@@ -185,7 +185,6 @@ namespace i960 {
     Ordinal subtractWithCarry(Ordinal src1, Ordinal src2) noexcept;
     // TODO syncf signature
     // TODO test signatures
-#ifdef NUMERICS_ARCHITECTURE
     inline Real add(Real a, Real b) noexcept { return Real(a._floating + b._floating); }
     inline LongReal add(LongReal a, LongReal b) noexcept { return LongReal(a._floating + b._floating); }
     inline Real subtract(Real a, Real b) noexcept { return Real(a._floating - b._floating); }
@@ -284,7 +283,6 @@ namespace i960 {
     bool isUnordered(Real r) noexcept;
     bool isUnordered(LongReal r) noexcept;
     bool isUnordered(ExtendedReal r) noexcept;
-#endif // end defined(NUMERICS_ARCHITECTURE)
 } // end namespace i960 
 
 #endif // end I960_OPS_H__

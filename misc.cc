@@ -4,16 +4,16 @@
 namespace i960 {
 	void outputSupportMessage(std::ostream& os) {
 		os << "Supported instruction sets:";
-		if (coreArchitectureSupported()) {
+		if (coreArchitectureSupported) {
 			os << " core";
 		}
-		if (numericsArchitectureSupported()) {
+		if (numericsArchitectureSupported) {
 			os << " numerics";
 		}
-		if (protectedArchitectureSupported()) {
+		if (protectedArchitectureSupported) {
 			os << " protected";
 		}
-		if (extendedArchitectureSupported()) {
+		if (extendedArchitectureSupported) {
 			os << " extended";
 		}
 	}
