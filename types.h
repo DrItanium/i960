@@ -704,9 +704,7 @@ namespace i960 {
             // just save the contents of the registers to the stack the logic
             // is always sound to do it this way
             NormalRegister _localRegisters[LocalRegisterCount];
-#ifdef NUMERICS_ARCHITECTURE
             ExtendedReal _floatingPointRegisters[NumFloatingPointRegs];
-#endif // end NUMERICS_ARCHITECTURE
             ArithmeticControls _ac;
             NormalRegister _instructionPointer;
             ProcessControls _pc;
