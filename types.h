@@ -694,8 +694,8 @@ namespace i960 {
     class Core {
         public:
 			using RegisterWindow = NormalRegister[LocalRegisterCount];
-            Core();
-            ~Core();
+            Core() = default;
+            ~Core() = default;
             // TODO finish this once we have all the other sub components implemented behind the
             // scenes
 			/** 
@@ -711,7 +711,6 @@ namespace i960 {
             // just save the contents of the registers to the stack the logic
             // is always sound to do it this way
 			RegisterWindow* _localRegisters = nullptr;
-            ExtendedReal _floatingPointRegisters[NumFloatingPointRegs];
             ArithmeticControls _ac;
             NormalRegister _instructionPointer;
             ProcessControls _pc;
@@ -719,6 +718,13 @@ namespace i960 {
             NormalRegister _sfr[32]; // not implemented in the documentation I have
             Ordinal _localRegisterIndex = 0;
     };
+	class CoreWithFPU : public Core {
+		public:
+			CoreWithFPU() = default;
+			~CoreWithFPU() = default;
+		protected:
+            ExtendedReal _floatingPointRegisters[NumFloatingPointRegs];
+	};
 
 
 } // end namespace i960
