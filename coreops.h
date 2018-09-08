@@ -114,8 +114,18 @@ namespace i960 {
     Ordinal addWithCarry(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
     void checkBit(ArithmeticControls& ac, Ordinal src, Ordinal position) noexcept;
     Ordinal alterBit(const ArithmeticControls& ac, Ordinal src, Ordinal position) noexcept;
-    void compare(ArithmeticControls& ac, Integer src1, Integer src2);
-    void compare(ArithmeticControls& ac, Ordinal src1, Ordinal src2);
+    template<typename T>
+    void compare(ArithmeticControls& ac, T src1, T src2) noexcept {
+        if (src1 < src2) {
+            ac._conditionCode = 0b100;
+        } else if (src1 == src2) {
+            ac._conditionCode = 0b010;
+        } else {
+            ac._conditionCode = 0b001;
+        }
+    }
+    template void compare<Integer>(ArithmeticControls& ac, Integer src1, Integer src2) noexcept;
+    template void compare<Ordinal>(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
     Integer compareAndDecrement(ArithmeticControls& ac, Integer src1, Integer src2);
     Ordinal compareAndDecrement(ArithmeticControls& ac, Ordinal src1, Ordinal src2);
     Integer compareAndIncrement(ArithmeticControls& ac, Integer src1, Integer src2);
