@@ -97,5 +97,10 @@ namespace i960 {
 		}
 		return result;
 	}
+    LongOrdinal extendedDivide(Ordinal src1, LongOrdinal src2) noexcept {
+		Ordinal remainder = (src2 - (src2 / src1) * src1);
+		Ordinal quotient = src2 / src1;
+		return (LongOrdinal(quotient) << 32) | LongOrdinal(remainder);
+	}
 
 } // end namespace i960

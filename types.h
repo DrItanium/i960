@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <memory>
 #include "archlevel.h"
+#include <tuple>
 namespace i960 {
 
 	using ByteOrdinal = std::uint8_t;
