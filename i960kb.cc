@@ -3,7 +3,6 @@
 #define NUMERICS_ARCHITECTURE
 #include "types.h"
 #include "coreops.h"
-#include "numericops.h"
 bool testResult(i960::RawExtendedReal value) {
     union donuts {
         donuts() { };

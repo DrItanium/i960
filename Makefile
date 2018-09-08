@@ -39,8 +39,8 @@ clean:
 	@rm -f ${OBJS} ${PROGS}
 
 coreops.o: coreops.h types.h coreops.cc
-numericops.o: numericops.h types.h numericops.cc
+numericops.o: coreops.h types.h numericops.cc
 i960ka.o: coreops.h types.h opcodes.h i960ka.cc
-i960kb.o: numericops.h coreops.h types.h opcodes.h i960kb.cc
+i960kb.o: coreops.h types.h opcodes.h i960kb.cc
 
 .PHONY: options
