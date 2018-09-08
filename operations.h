@@ -157,7 +157,7 @@ namespace i960 {
     Integer modulo(Integer src1, Integer src2) noexcept;
 
     Ordinal rotate(Ordinal src, Ordinal length) noexcept;
-    Ordinal subtractWithCarry(Ordinal src1, Ordinal src2) noexcept;
+    Ordinal subtractWithCarry(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
 	
     inline Real add(Real a, Real b) noexcept { return Real(a._floating + b._floating); }
     inline LongReal add(LongReal a, LongReal b) noexcept { return LongReal(a._floating + b._floating); }

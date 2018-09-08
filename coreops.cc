@@ -79,5 +79,15 @@ namespace i960 {
         }
         return 0xFFFF'FFFF;
     }
+    Ordinal subtractWithCarry(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept {
+		Ordinal s1 = src1 - 1;
+		Ordinal carryBit = ac._conditionCode & 0b010 != 0 ? 1 : 0;
+		// need to identify if overflow will occur
+		auto result = src2 - s1 + carryBit;
+#warning "subtractWithCarry does not implement integer overflow detection, needs to be implemented"
+		auto v = 0; // TODO fix this by identifying if integer subtraction would've produced an overflow and set v
+		ac._conditionCode = (carryBit << 1) | v;
+		return result;
+	}
 
 } // end namespace i960
