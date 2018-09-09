@@ -92,6 +92,15 @@ bool testLogicalOperations(i960::Ordinal a, i960::Ordinal b) noexcept {
 	testInstructionResult<i960::Ordinal>((~a) | (~b), i960::nand(a, b), "nand") &&
 	testInstructionResult<i960::Ordinal>((~a) & (~b), i960::nor(a, b), "nor");
 }
+bool testShiftOperationsOrdinal(i960::Ordinal a, i960::Ordinal b) { 
+	return testInstructionResult<i960::Ordinal>(a << b, i960::shiftLeft(a, b), "shlo") &&
+		testInstructionResult<i960::Ordinal>(a >> b, i960::shiftRight(a, b), "shro");
+}
+bool testShiftOperationsInteger(i960::Integer a, i960::Integer b) {
+	return testInstructionResult<i960::Integer>(a << b, i960::shiftLeft(a, b), "shli") &&
+		testInstructionResult<i960::Integer>(a >> b, i960::shiftRight(a, b), "shri");
+}
+
 bool performTests() {
 	return testArithmeticOperationsOrdinal(1u, 1u) &&
 	testArithmeticOperationsOrdinal(10u, 100u) &&
@@ -99,8 +108,12 @@ bool performTests() {
 	testArithmeticOperationsInteger(-1, -1) &&
 	testArithmeticOperationsInteger(-10, -50) &&
 	testLogicalOperations(0xFDED, 0x1000) &&
-	testLogicalOperations(0x1234FDED, 0x56789ABC);
+	testLogicalOperations(0x1234FDED, 0x56789ABC) &&
+	testShiftOperationsInteger(-127, 1) &&
+	testShiftOperationsOrdinal(127, 1) &&
+	testInstructionResult<i960::Ordinal>((0xfdedu << 5u) | (0xFDEDu >> (32 - 5)), i960::rotate(0xfded, 5), "rotate");
 }
+
 int main() {
 	int errorCode = 0;
 	bootupMessage(std::cout);

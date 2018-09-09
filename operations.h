@@ -205,8 +205,8 @@ namespace i960 {
     inline T divide(T a, T b) noexcept {
         return T(a._floating / b._floating);
     }
-    template Real divide<Real>(Real a, Real b);
-    template LongReal divide<LongReal>(LongReal a, LongReal b);
+    template Real divide<Real>(Real, Real);
+    template LongReal divide<LongReal>(LongReal, LongReal);
 
     template<typename T>
     inline T sine(T value) noexcept {
