@@ -62,7 +62,7 @@ namespace i960 {
 	}
 
 	template<typename T>
-	constexpr T notOp(T a, T b) noexcept {
+	constexpr T notOp(T a) noexcept {
 		if constexpr (std::is_same<T, bool>()) {
 			return !a;
 		} else {
@@ -81,7 +81,7 @@ namespace i960 {
 
 	template<typename T>
 	constexpr T nor(T a, T b) noexcept {
-		return orOp(notOp(a), notOp(b));
+		return andOp(notOp(a), notOp(b));
 	}
 
 	template<typename T>

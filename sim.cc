@@ -55,40 +55,54 @@ void bootupMessage(std::ostream& os) {
 	std::cout << std::endl; 
 }
 template<typename T>
-void testInstructionResult(T expected, T value, const std::string& instruction) {
-	std::cout << "Testing instruction: " << instruction << " expected: " << std::dec << expected;
-	std::cout << " and got " << std::dec << value << " result: ";
-	if (expected == value) {
-		std::cout << "PASS";
-	} else {
-		std::cout << "FAIL";
-	}
-	std::cout << std::endl;
+bool testInstructionResult(T expected, T value, const std::string& instruction) {
+	if (expected != value) {
+		std::cout << "Testing instruction: " << instruction << " expected: " << std::dec << expected;
+		std::cout << " and got " << std::dec << value << " result: FAIL" << std::endl;
+		return false;
+	} 
+	return true;
 }
-void testArithmeticOperationsOrdinal(i960::Ordinal a, i960::Ordinal b) noexcept {
+bool testArithmeticOperationsOrdinal(i960::Ordinal a, i960::Ordinal b) noexcept {
 	i960::ArithmeticControls ac;
-	testInstructionResult<i960::Ordinal>(a + b, i960::add(a, b), "addo");
-	testInstructionResult<i960::Ordinal>(a - b, i960::subtract(a, b), "subo");
-	testInstructionResult<i960::Ordinal>(a * b, i960::multiply(a, b), "mulo");
-	testInstructionResult<i960::Ordinal>(a / b, i960::divide(ac, a, b), "divo");
+	return testInstructionResult<i960::Ordinal>(a + b, i960::add(a, b), "addo") && 
+	testInstructionResult<i960::Ordinal>(a - b, i960::subtract(a, b), "subo") &&
+	testInstructionResult<i960::Ordinal>(a * b, i960::multiply(a, b), "mulo") &&
+	testInstructionResult<i960::Ordinal>(a / b, i960::divide(ac, a, b), "divo") && 
 	testInstructionResult<i960::Ordinal>(a % b, i960::remainder(ac, a, b), "remo");
 }
-void testArithmeticOperationsInteger(i960::Integer a, i960::Integer b) noexcept {
+bool testArithmeticOperationsInteger(i960::Integer a, i960::Integer b) noexcept {
 	i960::ArithmeticControls ac;
-	testInstructionResult<i960::Integer>(a + b, i960::add(a, b), "addi");
-	testInstructionResult<i960::Integer>(a - b, i960::subtract(a, b), "subi");
-	testInstructionResult<i960::Integer>(a * b, i960::multiply(a, b), "muli");
-	testInstructionResult<i960::Integer>(a / b, i960::divide(ac, a, b), "divi");
+	return testInstructionResult<i960::Integer>(a + b, i960::add(a, b), "addi") &&
+	testInstructionResult<i960::Integer>(a - b, i960::subtract(a, b), "subi") &&
+	testInstructionResult<i960::Integer>(a * b, i960::multiply(a, b), "muli") &&
+	testInstructionResult<i960::Integer>(a / b, i960::divide(ac, a, b), "divi") &&
 	testInstructionResult<i960::Integer>(a % b, i960::remainder(ac, a, b), "remi");
 }
-void performTests() {
-	testArithmeticOperationsOrdinal(1u, 1u);
-	testArithmeticOperationsOrdinal(10u, 100u);
-	testArithmeticOperationsOrdinal(10u, 500u);
-	testArithmeticOperationsInteger(-1, -1);
-	testArithmeticOperationsInteger(-10, -50);
+bool testLogicalOperations(i960::Ordinal a, i960::Ordinal b) noexcept {
+	i960::ArithmeticControls ac;
+	return testInstructionResult<i960::Ordinal>(a & b, i960::andOp(a, b), "and") &&
+	testInstructionResult<i960::Ordinal>((~a) & b, i960::notAnd(a, b), "notand") &&
+	testInstructionResult<i960::Ordinal>((a) & (~b), i960::andNot(a, b), "andnot") &&
+	testInstructionResult<i960::Ordinal>(a | b, i960::orOp(a, b), "or") &&
+	testInstructionResult<i960::Ordinal>((~a) | b, i960::notOr(a, b), "notor") &&
+	testInstructionResult<i960::Ordinal>((a) | (~b), i960::orNot(a, b), "ornot") &&
+	testInstructionResult<i960::Ordinal>((a | b) & (~(a & b)), i960::xorOp(a, b), "xor") &&
+	testInstructionResult<i960::Ordinal>((~(a | b)) | ((a & b)), i960::xnor(a, b), "xnor") &&
+	testInstructionResult<i960::Ordinal>((~a) | (~b), i960::nand(a, b), "nand") &&
+	testInstructionResult<i960::Ordinal>((~a) & (~b), i960::nor(a, b), "nor");
+}
+bool performTests() {
+	return testArithmeticOperationsOrdinal(1u, 1u) &&
+	testArithmeticOperationsOrdinal(10u, 100u) &&
+	testArithmeticOperationsOrdinal(10u, 500u) &&
+	testArithmeticOperationsInteger(-1, -1) &&
+	testArithmeticOperationsInteger(-10, -50) &&
+	testLogicalOperations(0xFDED, 0x1000) &&
+	testLogicalOperations(0x1234FDED, 0x56789ABC);
 }
 int main() {
+	int errorCode = 0;
 	bootupMessage(std::cout);
 	std::cout << "Allocating Test Memory And Randomizing" << std::endl;
     // allocate 1 gb of space in each region max
@@ -118,12 +132,21 @@ int main() {
     // It seems that the 80-bit format is maintained correctly :D
     if (testResult(1.23456 + 0)) {
         std::cout << "It is 80-bits wide :D" << std::endl;
-    }
+    } else {
+		errorCode = 1;
+	}
     if (testResult(-0.5)) {
         std::cout << "It is 80-bits wide :D" << std::endl;
-    }
+    } else {
+		errorCode = 1;
+	}
 	std::cout << "Performing instruction tests" << std::endl;
-	performTests();
+	if(!performTests()) {
+		std::cout << "Tests failed!" << std::endl;
+		errorCode = 1;
+	} else {
+		std::cout << "Tests passed!" << std::endl;
+	}
 	std::cout << "Shutting down..." << std::endl;
-	return 0;
+	return errorCode;
 }
