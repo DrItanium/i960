@@ -63,6 +63,25 @@ bool testInstructionResult(T expected, T value, const std::string& instruction) 
 	} 
 	return true;
 }
+template<> 
+bool testInstructionResult<i960::Real>(i960::Real expected, i960::Real value, const std::string& instruction) {
+	if (expected._floating != value._floating) {
+		std::cout << "Testing instruction: " << instruction << " expected: " << std::dec << expected._floating;
+		std::cout << " and got " << std::dec << value._floating << " result: FAIL" << std::endl;
+		return false;
+	} 
+	return true;
+}
+
+template<> 
+bool testInstructionResult<i960::LongReal>(i960::LongReal expected, i960::LongReal value, const std::string& instruction) {
+	if (expected._floating != value._floating) {
+		std::cout << "Testing instruction: " << instruction << " expected: " << std::dec << expected._floating;
+		std::cout << " and got " << std::dec << value._floating << " result: FAIL" << std::endl;
+		return false;
+	} 
+	return true;
+}
 bool testArithmeticOperationsOrdinal(i960::Ordinal a, i960::Ordinal b) noexcept {
 	i960::ArithmeticControls ac;
 	return testInstructionResult<i960::Ordinal>(a + b, i960::add(a, b), "addo") && 
@@ -78,6 +97,25 @@ bool testArithmeticOperationsInteger(i960::Integer a, i960::Integer b) noexcept 
 	testInstructionResult<i960::Integer>(a * b, i960::multiply(a, b), "muli") &&
 	testInstructionResult<i960::Integer>(a / b, i960::divide(ac, a, b), "divi") &&
 	testInstructionResult<i960::Integer>(a % b, i960::remainder(ac, a, b), "remi");
+}
+
+bool testArithmeticOperationsReal(i960::RawReal a, i960::RawReal b) noexcept {
+	i960::ArithmeticControls ac;
+	i960::Real c(a);
+	i960::Real d(b);
+	return testInstructionResult<i960::Real>(i960::Real(a + b), i960::add(c, d), "addr") &&
+	testInstructionResult<i960::Real>(i960::Real(a - b), i960::subtract(c, d), "subr") &&
+	testInstructionResult<i960::Real>(i960::Real(a * b), i960::multiply(c, d), "mulr") &&
+	testInstructionResult<i960::Real>(i960::Real(a / b), i960::divide(c, d), "divr");
+}
+bool testArithmeticOperationsLongReal(i960::RawLongReal a, i960::RawLongReal b) noexcept {
+	i960::ArithmeticControls ac;
+	i960::LongReal c(a);
+	i960::LongReal d(b);
+	return testInstructionResult<i960::LongReal>(i960::LongReal(a + b), i960::add(c, d), "addrl") &&
+	testInstructionResult<i960::LongReal>(i960::LongReal(a - b), i960::subtract(c, d), "subrl") &&
+	testInstructionResult<i960::LongReal>(i960::LongReal(a * b), i960::multiply(c, d), "mulrl") &&
+	testInstructionResult<i960::LongReal>(i960::LongReal(a / b), i960::divide(c, d), "divrl");
 }
 bool testLogicalOperations(i960::Ordinal a, i960::Ordinal b) noexcept {
 	i960::ArithmeticControls ac;
@@ -111,7 +149,11 @@ bool performTests() {
 	testLogicalOperations(0x1234FDED, 0x56789ABC) &&
 	testShiftOperationsInteger(-127, 1) &&
 	testShiftOperationsOrdinal(127, 1) &&
-	testInstructionResult<i960::Ordinal>((0xfdedu << 5u) | (0xFDEDu >> (32 - 5)), i960::rotate(0xfded, 5), "rotate");
+	testInstructionResult<i960::Ordinal>((0xfdedu << 5u) | (0xFDEDu >> (32 - 5)), i960::rotate(0xfded, 5), "rotate") &&
+	testArithmeticOperationsReal(1.0f, 2.0f) &&
+	testArithmeticOperationsReal(10.0f, 30.0f) &&
+	testArithmeticOperationsLongReal(1.0, 2.0) &&
+	testArithmeticOperationsLongReal(10.0, 30.0);
 }
 
 int main() {
