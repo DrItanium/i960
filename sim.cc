@@ -156,9 +156,19 @@ bool performTests() {
 	testArithmeticOperationsLongReal(10.0, 30.0);
 }
 
-int main() {
-	int errorCode = 0;
-	bootupMessage(std::cout);
+void outputTypeInformation() {
+	std::cout << "Printing out system type sizes for i960 data types:" << std::endl;
+	std::cout << "sizeof(NormalRegister): " << sizeof(i960::NormalRegister) << std::endl;
+	std::cout << "sizeof(ArithmeticControls): " << sizeof(i960::ArithmeticControls) << std::endl;
+	std::cout << "sizeof(Instruction): " << sizeof(i960::Instruction) << std::endl;
+	std::cout << "sizeof(ExtendedReal): " << sizeof(i960::ExtendedReal) << std::endl;
+	std::cout << "sizeof(LongReal): " << sizeof(i960::LongReal) << std::endl;
+	std::cout << "sizeof(Real): " << sizeof(i960::Real) << std::endl;
+	std::cout << "sizeof(TripleWord): " << sizeof(i960::TripleWord) << std::endl;
+	std::cout << "sizeof(QuadWord): " << sizeof(i960::QuadWord) << std::endl;
+    std::cout << "sizeof(RawExtendedReal): " << sizeof(i960::RawExtendedReal) << std::endl;
+}
+void testMemoryAllocation() {
 	std::cout << "Allocating Test Memory And Randomizing" << std::endl;
     // allocate 1 gb of space in each region max
     auto region0 = std::make_unique<i960::ByteOrdinal[]>(mem1G);
@@ -172,16 +182,10 @@ int main() {
         //region3[i] = 0x78;
     }
 	std::cout << "Memory Allocation and randomization complete" << std::endl << std::endl;
-	std::cout << "Printing out system type sizes for i960 data types:" << std::endl;
-	std::cout << "sizeof(NormalRegister): " << sizeof(i960::NormalRegister) << std::endl;
-	std::cout << "sizeof(ArithmeticControls): " << sizeof(i960::ArithmeticControls) << std::endl;
-	std::cout << "sizeof(Instruction): " << sizeof(i960::Instruction) << std::endl;
-	std::cout << "sizeof(ExtendedReal): " << sizeof(i960::ExtendedReal) << std::endl;
-	std::cout << "sizeof(LongReal): " << sizeof(i960::LongReal) << std::endl;
-	std::cout << "sizeof(Real): " << sizeof(i960::Real) << std::endl;
-	std::cout << "sizeof(TripleWord): " << sizeof(i960::TripleWord) << std::endl;
-	std::cout << "sizeof(QuadWord): " << sizeof(i960::QuadWord) << std::endl;
-    std::cout << "sizeof(RawExtendedReal): " << sizeof(i960::RawExtendedReal) << std::endl;
+}
+
+int testExtendedFloatingPoint() {
+	int errorCode = 0;
 	std::cout << "Performing Tests Relating to the extended real floating point units" << std::endl;
     // test to make sure that we are doing the right thing :D
     // It seems that the 80-bit format is maintained correctly :D
@@ -195,6 +199,11 @@ int main() {
     } else {
 		errorCode = 1;
 	}
+	return errorCode;
+}
+
+int performInstructionTests() {
+	int errorCode = 0;
 	std::cout << "Performing instruction tests" << std::endl;
 	if(!performTests()) {
 		std::cout << "Tests failed!" << std::endl;
@@ -202,6 +211,17 @@ int main() {
 	} else {
 		std::cout << "Tests passed!" << std::endl;
 	}
+	return errorCode;
+
+}
+
+int main() {
+	int errorCode = 0;
+	bootupMessage(std::cout);
+	testMemoryAllocation();
+	outputTypeInformation();
+	errorCode = testExtendedFloatingPoint();
+	errorCode = performInstructionTests();
 	std::cout << "Shutting down..." << std::endl;
 	return errorCode;
 }
