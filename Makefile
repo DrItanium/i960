@@ -13,7 +13,9 @@ options:
 	@echo CXXFLAGS = ${CXXFLAGS}
 	@echo LDFLAGS = ${LDFLAGS}
 	@echo ------------------
+
 $(PROG): $(OBJS)
+	@echo LD ${PROG}
 	@${LD} ${LDFLAGS} -o ${PROG} ${OBJS}
 
 .c.o :
@@ -26,7 +28,7 @@ $(PROG): $(OBJS)
 
 clean: 
 	@echo Cleaning...
-	@rm -f ${OBJS} ${PROGS}
+	@rm -f ${OBJS} ${PROG}
 
 coreops.o: operations.h types.h archlevel.h coreops.cc
 numericops.o: operations.h types.h archlevel.h numericops.cc
