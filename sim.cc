@@ -3,6 +3,7 @@
 #include <memory>
 #include "types.h"
 #include "operations.h"
+#include <string>
 
 bool testResult(i960::RawExtendedReal value) {
     union donuts {
@@ -53,19 +54,53 @@ void bootupMessage(std::ostream& os) {
 	std::cout << std::endl; 
 	std::cout << std::endl; 
 }
+template<typename T>
+void testInstructionResult(T expected, T value, const std::string& instruction) {
+	std::cout << "Testing instruction: " << instruction << " expected: " << std::dec << expected;
+	std::cout << " and got " << std::dec << value << " result: ";
+	if (expected == value) {
+		std::cout << "PASS";
+	} else {
+		std::cout << "FAIL";
+	}
+	std::cout << std::endl;
+}
+void testArithmeticOperationsOrdinal(i960::Ordinal a, i960::Ordinal b) noexcept {
+	i960::ArithmeticControls ac;
+	testInstructionResult<i960::Ordinal>(a + b, i960::add(a, b), "addo");
+	testInstructionResult<i960::Ordinal>(a - b, i960::subtract(a, b), "subo");
+	testInstructionResult<i960::Ordinal>(a * b, i960::multiply(a, b), "mulo");
+	testInstructionResult<i960::Ordinal>(a / b, i960::divide(ac, a, b), "divo");
+	testInstructionResult<i960::Ordinal>(a % b, i960::remainder(ac, a, b), "remo");
+}
+void testArithmeticOperationsInteger(i960::Integer a, i960::Integer b) noexcept {
+	i960::ArithmeticControls ac;
+	testInstructionResult<i960::Integer>(a + b, i960::add(a, b), "addi");
+	testInstructionResult<i960::Integer>(a - b, i960::subtract(a, b), "subi");
+	testInstructionResult<i960::Integer>(a * b, i960::multiply(a, b), "muli");
+	testInstructionResult<i960::Integer>(a / b, i960::divide(ac, a, b), "divi");
+	testInstructionResult<i960::Integer>(a % b, i960::remainder(ac, a, b), "remi");
+}
+void performTests() {
+	testArithmeticOperationsOrdinal(1u, 1u);
+	testArithmeticOperationsOrdinal(10u, 100u);
+	testArithmeticOperationsOrdinal(10u, 500u);
+	testArithmeticOperationsInteger(-1, -1);
+	testArithmeticOperationsInteger(-10, -50);
+}
 int main() {
 	bootupMessage(std::cout);
 	std::cout << "Allocating Test Memory And Randomizing" << std::endl;
     // allocate 1 gb of space in each region max
     auto region0 = std::make_unique<i960::ByteOrdinal[]>(mem1G);
-    auto region1 = std::make_unique<i960::ByteOrdinal[]>(mem1G);
-    auto region2 = std::make_unique<i960::ByteOrdinal[]>(mem1G);
-    auto region3 = std::make_unique<i960::ByteOrdinal[]>(mem1G);
+    //auto region1 = std::make_unique<i960::ByteOrdinal[]>(mem1G);
+    //auto region2 = std::make_unique<i960::ByteOrdinal[]>(mem1G);
+    //auto region3 = std::make_unique<i960::ByteOrdinal[]>(mem1G);
     for(int i = 0; i < mem1G; ++i) {
         region0[i] = 0x12;
-        region1[i] = 0x34;
-        region2[i] = 0x56;
-        region3[i] = 0x78;
+        //region1[i] = 0x34;
+        //region2[i] = 0x56;
+        //region3[i] = 0x78;
     }
 	std::cout << "Memory Allocation and randomization complete" << std::endl << std::endl;
 	std::cout << "Printing out system type sizes for i960 data types:" << std::endl;
@@ -87,7 +122,8 @@ int main() {
     if (testResult(-0.5)) {
         std::cout << "It is 80-bits wide :D" << std::endl;
     }
-
+	std::cout << "Performing instruction tests" << std::endl;
+	performTests();
 	std::cout << "Shutting down..." << std::endl;
 	return 0;
 }

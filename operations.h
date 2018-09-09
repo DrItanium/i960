@@ -40,39 +40,71 @@ namespace i960 {
         return a >> b;
     }
 
-    constexpr bool andOp(bool a, bool b) noexcept {
-        return a && b;
-    }
-    constexpr bool notAnd(bool a, bool b) noexcept {
-        return (!a) && b;
-    }
-    constexpr bool andNot(bool a, bool b) noexcept {
-        return a && (!b);
-    }
-    constexpr bool xorOp(bool a, bool b) noexcept {
-        return a ^ b;
-    }
-    constexpr bool orOp(bool a, bool b) noexcept {
-        return a || b;
-    }
-    constexpr bool nor(bool a, bool b) noexcept {
-        return (!a) || (!b);
-    }
-    constexpr bool xnor(bool a, bool b) noexcept {
-        return a == b;
-    }
-    constexpr bool notOp(bool a) noexcept {
-        return !a;
-    }
-    constexpr bool notOr(bool a, bool b) noexcept {
-        return (!a) || b;
-    }
-    constexpr bool orNot(bool a, bool b) noexcept {
-        return a || (!b);
-    }
-    constexpr bool nand(bool a, bool b) {
-        return (!a) || (!b);
-    }
+	template<typename T>
+	constexpr T andOp(T a, T b) noexcept {
+		if constexpr (std::is_same<T, bool>()) {
+			return a && b;
+		} else {
+			return a & b;
+		}
+	}
+	template<typename T>
+	constexpr T orOp(T a, T b) noexcept {
+		if constexpr (std::is_same<T, bool>()) {
+			return a || b;
+		} else {
+			return a | b;
+		}
+	}
+	template<typename T>
+	constexpr T xorOp(T a, T b) noexcept {
+		return a ^ b;
+	}
+
+	template<typename T>
+	constexpr T notOp(T a, T b) noexcept {
+		if constexpr (std::is_same<T, bool>()) {
+			return !a;
+		} else {
+			return ~a;
+		}
+	}
+	template<typename T>
+	constexpr T notAnd(T a, T b) noexcept {
+		return andOp(notOp(a), b);
+	}
+
+	template<typename T>
+	constexpr T andNot(T a, T b) noexcept {
+		return andOp(a, notOp(b));
+	}
+
+	template<typename T>
+	constexpr T nor(T a, T b) noexcept {
+		return orOp(notOp(a), notOp(b));
+	}
+
+	template<typename T>
+	constexpr T xnor(T a, T b) noexcept {
+		return orOp(notOp(orOp(a, b)), andOp(a, b));
+	}
+
+	template<typename T>
+	constexpr T notOr(T a, T b) noexcept {
+		return orOp(notOp(a), b);
+	}
+
+	template<typename T>
+	constexpr T orNot(T a, T b) noexcept {
+		return orOp(a, notOp(b));
+	}
+
+	template<typename T>
+	constexpr T nand(T a, T b) noexcept {
+		return orOp(notOp(a), notOp(b));
+	}
+
+
     constexpr Ordinal clearBit(Ordinal value, Ordinal position) noexcept {
         Ordinal mask = ~(1 << (0b11111 & position));
         return value & mask;
