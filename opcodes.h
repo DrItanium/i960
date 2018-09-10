@@ -206,6 +206,42 @@ namespace i960 {
 		Inspacc = 0x613,
 		Ldtime = 0x673,
 #endif // end PROTECTED_ARCHITECTURE
+        Eshro = 0x5D8, // extended shift right ordinal, found in the 80960 VH
+        Icctl = 0x65B, // instruction cache control, specific to later 80960 cores like the VH, Hx, and Jx series
+        Intctl = 0x658, // global enable and disable of interrupts, VH, Hx, and Jx series cores have this, earlier ones do not
+        Intdis = 0x5B4,  // Global interrupt disable, VH, Hx, and Jx specific
+        Inten = 0x5B5, // global interrupt enable, VH, Hx, and Jx specific
+        Dcctl = 0x65C, // data cache control, found in the VH, Hx, and Jx models
+        // Not implemented in the Cx, Kx, or Sx chips
+        Selno = 0x784, // select not ordered
+        Selg = 0x794, // select greater
+        Sele = 0x7A4, // select equal
+        Selge = 0x7B4, // select greater than or equal
+        Sell = 0x7C4, // select less
+        Selne = 0x7D4, // select not equal 
+        Selle = 0x7E4, // select less than or equal 
+        Selo = 0x7F4, // select ordered
+
+        // Not implemented in the Cx, Kx, or Sx chips
+        Subono = 0x782, // subtract ordinal if unordered
+        Subog = 0x792, // subtract ordinal if greater
+        Suboe = 0x7A2, // subtract ordinal if equal
+        Suboge = 0x7B2, // subtract ordinal if greater than or equal 
+        Subol = 0x7C2, // subtract ordinal if less  
+        Subone = 0x7D2, // subtract ordinal if not equal 
+        Subole = 0x7E2, // subtract ordinal if less than or equal 
+        Suboo = 0x7F2, // subtract ordinal if ordered
+        Subino = 0x783, // subtract integer if unordered
+        Subig = 0x793, // subtract integer if greater 
+        Subie = 0x7A3, // subtract integer if equal 
+        Subige = 0x7B3, // subtract integer if greater than or equal
+        Subil = 0x7C3, // subtract integer if less
+        Subine = 0x7D3, // subtract integer if not equal 
+        Subile = 0x7E3, // subtract integer if less than or equal 
+        Subio = 0x7F3, // subtract integer if ordered
+
+        Sysctl = 0x659, // system call, found in VH, Hx, Jx, and Cx processors.
+
 	};
 } // end namespace i960
 #endif // end I960_OPCODES_H__
