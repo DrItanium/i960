@@ -89,13 +89,17 @@ namespace i960 {
 		};
 		ExtendedReal _real;
 	} __attribute__((packed));
-	union NormalRegister {
+    union PreviousFramePointer {
         struct {
             Ordinal _returnCode : 3;
             Ordinal _prereturnTrace : 1;
             Ordinal _unused : 2; // 80960 ignores the lower six bits of this register
             Ordinal _address : 26;
-        } _pfp;
+        };
+        Ordinal _value;
+    } __attribute__((packed));
+	union NormalRegister {
+        PreviousFramePointer _pfp;
 		Ordinal _ordinal;
 		Integer _integer;
 		Real _real;
@@ -701,30 +705,35 @@ namespace i960 {
 			/** 
 			 * perform a call
 			 */
-			virtual void call(Ordinal address) = 0;
-			virtual Ordinal load(Ordinal address) = 0;
-			virtual void store(Ordinal address, Ordinal value) = 0;
-        protected:
+			virtual void call(Ordinal address);
+			virtual Ordinal load(Ordinal address);
+			virtual void store(Ordinal address, Ordinal value);
+            void saveLocalRegisters() noexcept;
+            void allocateNewLocalRegisterSet() noexcept;
+            void setRegister(ByteOrdinal index, Integer value) noexcept;
+            void setRegister(ByteOrdinal index, Ordinal value) noexcept;
+            void setRegister(ByteOrdinal index, Real value) noexcept;
+            Ordinal getStackPointerAddress() const noexcept;
+            void setFramePointer(Ordinal value) noexcept;
+            Ordinal getFramePointerAddress() const noexcept;
+        private:
+            void callx(Ordinal newAddress) noexcept;
+            void calls(ByteOrdinal procNum);
+        private:
             RegisterWindow _globalRegisters;
             // The hardware implementations use register sets, however
             // to start with, we should just follow the logic as is and 
             // just save the contents of the registers to the stack the logic
             // is always sound to do it this way
-			RegisterWindow* _localRegisters = nullptr;
+#warning "No register window sets implemented at this point in time"
+			RegisterWindow _localRegisters;
             ArithmeticControls _ac;
-            NormalRegister _instructionPointer;
+            Ordinal _instructionPointer;
             ProcessControls _pc;
             TraceControls _tc;
             NormalRegister _sfr[32]; // not implemented in the documentation I have
-    };
-	class CoreWithFPU : public Core {
-		public:
-			CoreWithFPU() = default;
-			~CoreWithFPU() = default;
-		protected:
             ExtendedReal _floatingPointRegisters[NumFloatingPointRegs];
-	};
-
+    };
 
 } // end namespace i960
 #endif // end I960_TYPES_H__

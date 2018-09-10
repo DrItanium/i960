@@ -1,6 +1,6 @@
 include config.mk
 
-OBJS := coreops.o misc.o sim.o numericops.o 
+OBJS := coreops.o misc.o sim.o numericops.o core.o
 PROG := sim960
 
 
@@ -34,5 +34,6 @@ coreops.o: operations.h types.h archlevel.h coreops.cc
 numericops.o: operations.h types.h archlevel.h numericops.cc
 sim.o: operations.h types.h opcodes.h archlevel.h sim.cc
 misc.o: archlevel.h types.h misc.cc
+core.o: archlevel.h types.h core.cc
 
 .PHONY: options
