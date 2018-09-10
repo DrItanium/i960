@@ -3,19 +3,19 @@
 
 namespace i960 {
     Ordinal divide(ArithmeticControls& ac, Ordinal a, Ordinal b) {
-        // TODO: check for zero denominator
+#warning "divide does not check for divison by zero"
         return a / b;
     }
     Integer divide(ArithmeticControls& ac, Integer a, Integer b) {
-        // TODO: check for zero denominator
+#warning "divide does not check for divison by zero"
         return a / b;
     }
     Ordinal remainder(ArithmeticControls& ac, Ordinal a, Ordinal b) {
-        // TODO: check for zero denominator
+#warning "remainder does not check for divison by zero"
         return a % b;
     }
     Integer remainder(ArithmeticControls& ac, Integer a, Integer b) {
-        // TODO: check for zero denominator
+#warning "remainder does not check for divison by zero"
         return a % b;
     }
     void checkBit(ArithmeticControls& controls, Ordinal value, Ordinal position) noexcept {
