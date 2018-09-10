@@ -16,6 +16,11 @@ namespace i960 {
 	using ShortInteger = std::int16_t;
 	using Integer = std::int32_t;
 	using LongInteger = std::int64_t;
+    union Displacement {
+        Displacement(Integer value) : _value(value) { }
+        ~Displacement() = default;
+        Integer _value : 22;
+    };
 	struct QuadWord {
 		Ordinal _lowest;
 		Ordinal _lower;
