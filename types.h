@@ -716,7 +716,6 @@ namespace i960 {
             ProcessControls _pc;
             TraceControls _tc;
             NormalRegister _sfr[32]; // not implemented in the documentation I have
-            Ordinal _localRegisterIndex = 0;
     };
 	class CoreWithFPU : public Core {
 		public:
