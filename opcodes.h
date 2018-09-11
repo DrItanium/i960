@@ -242,6 +242,33 @@ namespace i960 {
 
         Sysctl = 0x659, // system call, found in VH, Hx, Jx, and Cx processors.
 
+        // Not implemented in the Cx, Kx, or Sx chips
+        Addono = 0x780, // add ordinal if unordered
+        Addog = 0x790, // add ordinal if greater
+        Addoe = 0x7A0, // add ordinal if equal
+        Addoge = 0x7B0, // add ordinal if greater than or equal 
+        Addol = 0x7C0, // add ordinal if less  
+        Addone = 0x7D0, // add ordinal if not equal 
+        Addole = 0x7E0, // add ordinal if less than or equal 
+        Addoo = 0x7F0, // add ordinal if ordered
+        Addino = 0x781, // add integer if unordered
+        Addig = 0x791, // add integer if greater 
+        Addie = 0x7A1, // add integer if equal 
+        Addige = 0x7B1, // add integer if greater than or equal
+        Addil = 0x7C1, // add integer if less
+        Addine = 0x7D1, // add integer if not equal 
+        Addile = 0x7E1, // add integer if less than or equal 
+        Addio = 0x7F1, // add integer if ordered
+        BSwap = 0x5AD, // byte swap
+        Cmpib = 0x595,
+        Cmpis = 0x597,
+        Cmpob = 0x594,
+        Cmpos = 0x596,
+
+
+        Sdma = 0x630,
+        Udma = 0x631,
+
 	};
 } // end namespace i960
 #endif // end I960_OPCODES_H__
