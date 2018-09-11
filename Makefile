@@ -34,6 +34,6 @@ coreops.o: operations.h types.h archlevel.h coreops.cc
 numericops.o: operations.h types.h archlevel.h numericops.cc
 sim.o: operations.h types.h opcodes.h archlevel.h sim.cc
 misc.o: archlevel.h types.h misc.cc
-core.o: archlevel.h types.h core.cc
+core.o: archlevel.h types.h operations.h opcodes.h core.cc
 
 .PHONY: options

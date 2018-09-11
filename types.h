@@ -108,6 +108,7 @@ namespace i960 {
 		Ordinal _ordinal;
 		Integer _integer;
 		Real _real;
+        ByteOrdinal _byteOrd;
 	};
     MustBeSizeOfOrdinal(NormalRegister, "NormalRegister must be 32-bits wide!");
 	union ArithmeticControls {
@@ -701,6 +702,8 @@ namespace i960 {
         return framePointerAddress + 64;
     }
     class Core {
+            using SourceRegister = const NormalRegister&;
+            using DestinationRegister = NormalRegister&;
         public:
 			using RegisterWindow = NormalRegister[LocalRegisterCount];
             Core() = default;
@@ -710,7 +713,7 @@ namespace i960 {
 			/** 
 			 * perform a call
 			 */
-			virtual void call(Ordinal address);
+            virtual void call(SourceRegister reg);
 			virtual Ordinal load(Ordinal address);
 			virtual void store(Ordinal address, Ordinal value);
 
@@ -719,17 +722,19 @@ namespace i960 {
             void setRegister(ByteOrdinal index, Integer value) noexcept;
             void setRegister(ByteOrdinal index, Ordinal value) noexcept;
             void setRegister(ByteOrdinal index, Real value) noexcept;
-            void setRegister(ByteOrdinal index, const NormalRegister& other) noexcept;
+            void setRegister(ByteOrdinal index, SourceRegister other) noexcept;
             NormalRegister& getRegister(ByteOrdinal index) noexcept;
             Ordinal getStackPointerAddress() const noexcept;
             void setFramePointer(Ordinal value) noexcept;
             Ordinal getFramePointerAddress() const noexcept;
         private:
-            void move(ByteOrdinal src, ByteOrdinal dest) noexcept;
-            void callx(ByteOrdinal index) noexcept;
-            void callx(const NormalRegister& value) noexcept;
-            void callx(Ordinal value) noexcept;
-            void calls(ByteOrdinal procNum);
+            void move(SourceRegister src, DestinationRegister dest) noexcept;
+            void callx(SourceRegister value) noexcept;
+            void calls(SourceRegister value);
+            void addo(SourceRegister src2, SourceRegister src1, DestinationRegister dest) noexcept;
+            void subo(SourceRegister src2, SourceRegister src1, DestinationRegister dest) noexcept;
+            void mulo(SourceRegister src2, SourceRegister src1, DestinationRegister dest) noexcept;
+            void divo(SourceRegister src2, SourceRegister src1, DestinationRegister dest) noexcept;
         private:
             RegisterWindow _globalRegisters;
             // The hardware implementations use register sets, however

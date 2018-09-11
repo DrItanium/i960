@@ -1,4 +1,5 @@
 #include "types.h"
+#include "operations.h"
 
 namespace i960 {
    Ordinal Core::getStackPointerAddress() const noexcept {
@@ -16,7 +17,8 @@ namespace i960 {
    Ordinal Core::getFramePointerAddress() const noexcept {
        return _globalRegisters[FramePointerIndex]._ordinal & (~0b111111);
    }
-   void Core::call(Ordinal newAddress) {
+   void Core::call(const NormalRegister& reg) {
+       auto newAddress = reg._ordinal;
        auto tmp = (getStackPointerAddress() + 63) && (~63); // round to the next boundary
        setRegister(ReturnInstructionPointerIndex, _instructionPointer);
 #warning "Code for handling multiple internal local register sets not implemented!"
@@ -27,18 +29,8 @@ namespace i960 {
        setFramePointer(tmp);
        setRegister(StackPointerIndex, tmp + 64);
    }
-   void Core::callx(Ordinal newAddress) noexcept {
-       Ordinal tmp = (getStackPointerAddress() + 63u) && (~63u); // round to the next boundary
-       setRegister(ReturnInstructionPointerIndex, _instructionPointer);
-#warning "Code for handling multiple internal local register sets not implemented!"
-       saveLocalRegisters();
-       allocateNewLocalRegisterSet();
-       _instructionPointer = newAddress;
-       setRegister(PreviousFramePointerIndex, getFramePointerAddress());
-       setFramePointer(tmp);
-       setRegister(StackPointerIndex, tmp + 64u);
-   }
-   void Core::calls(ByteOrdinal callNum) {
+   void Core::calls(const NormalRegister& value) {
+       auto callNum = value._byteOrd;
        if (callNum > 259) {
 #warning "Raise protection length fault here"
            return;
@@ -72,15 +64,25 @@ namespace i960 {
    void Core::setRegister(ByteOrdinal index, const NormalRegister& other) noexcept {
        setRegister(index, other._ordinal);
    }
-   void Core::move(ByteOrdinal src, ByteOrdinal dest) noexcept {
-       setRegister(dest, getRegister(src));
-   }
-
-   void Core::callx(ByteOrdinal index) noexcept {
-        callx(getRegister(index));
+   void Core::move(const NormalRegister& src, NormalRegister& dest) noexcept {
+       dest._ordinal = src._ordinal;
    }
    void Core::callx(const NormalRegister& value) noexcept {
-        callx(value._ordinal);
+       auto newAddress = value._ordinal;
+       Ordinal tmp = (getStackPointerAddress() + 63u) && (~63u); // round to the next boundary
+       setRegister(ReturnInstructionPointerIndex, _instructionPointer);
+#warning "Code for handling multiple internal local register sets not implemented!"
+       saveLocalRegisters();
+       allocateNewLocalRegisterSet();
+       _instructionPointer = newAddress;
+       setRegister(PreviousFramePointerIndex, getFramePointerAddress());
+       setFramePointer(tmp);
+       setRegister(StackPointerIndex, tmp + 64u);
    }
+   void Core::addo(Core::SourceRegister src2, Core::SourceRegister src1, Core::DestinationRegister dest) noexcept { dest._ordinal = i960::add(src2._ordinal, src1._ordinal); }
+   void Core::subo(Core::SourceRegister src2, Core::SourceRegister src1, Core::DestinationRegister dest) noexcept { dest._ordinal = i960::subtract(src2._ordinal, src1._ordinal); }
+   void Core::mulo(Core::SourceRegister src2, Core::SourceRegister src1, Core::DestinationRegister dest) noexcept { dest._ordinal = i960::multiply(src2._ordinal, src1._ordinal); }
+   void Core::divo(Core::SourceRegister src2, Core::SourceRegister src1, Core::DestinationRegister dest) noexcept { dest._ordinal = i960::divide(_ac, src2._ordinal, src1._ordinal); }
+
 
 } // end namespace i960
