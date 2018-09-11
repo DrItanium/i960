@@ -713,16 +713,22 @@ namespace i960 {
 			virtual void call(Ordinal address);
 			virtual Ordinal load(Ordinal address);
 			virtual void store(Ordinal address, Ordinal value);
+
             void saveLocalRegisters() noexcept;
             void allocateNewLocalRegisterSet() noexcept;
             void setRegister(ByteOrdinal index, Integer value) noexcept;
             void setRegister(ByteOrdinal index, Ordinal value) noexcept;
             void setRegister(ByteOrdinal index, Real value) noexcept;
+            void setRegister(ByteOrdinal index, const NormalRegister& other) noexcept;
+            NormalRegister& getRegister(ByteOrdinal index) noexcept;
             Ordinal getStackPointerAddress() const noexcept;
             void setFramePointer(Ordinal value) noexcept;
             Ordinal getFramePointerAddress() const noexcept;
         private:
-            void callx(Ordinal newAddress) noexcept;
+            void move(ByteOrdinal src, ByteOrdinal dest) noexcept;
+            void callx(ByteOrdinal index) noexcept;
+            void callx(const NormalRegister& value) noexcept;
+            void callx(Ordinal value) noexcept;
             void calls(ByteOrdinal procNum);
         private:
             RegisterWindow _globalRegisters;

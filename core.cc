@@ -47,25 +47,13 @@ namespace i960 {
    }
 
    void Core::setRegister(ByteOrdinal index, Ordinal value) noexcept {
-       if (auto offset = (index & 0b01111) ; (index & 0b10000) == 0) {
-            _localRegisters[offset]._ordinal = value;
-       } else {
-            _globalRegisters[offset]._ordinal = value;
-       }
+       getRegister(index)._ordinal = value;
    }
    void Core::setRegister(ByteOrdinal index, Integer value) noexcept {
-       if (auto offset = (index & 0b01111) ; (index & 0b10000) == 0) {
-            _localRegisters[offset]._integer = value;
-       } else {
-            _globalRegisters[offset]._integer = value;
-       }
+       getRegister(index)._integer = value;
    }
    void Core::setRegister(ByteOrdinal index, Real value) noexcept {
-       if (auto offset = (index & 0b01111) ; (index & 0b10000) == 0) {
-            _localRegisters[offset]._real = value;
-       } else {
-            _globalRegisters[offset]._real = value;
-       }
+       getRegister(index)._real = value;
    }
    Ordinal Core::load(Ordinal address) {
 #warning "Core::load unimplemented!"
@@ -74,6 +62,25 @@ namespace i960 {
    void Core::store(Ordinal address, Ordinal value) {
 #warning "Core::store unimplemented!"
    }
+   NormalRegister& Core::getRegister(ByteOrdinal index) noexcept {
+       if (auto offset = (index & 0b01111) ; (index & 0b10000) == 0) {
+           return _localRegisters[offset];
+       } else {
+           return _globalRegisters[offset];
+       }
+   }
+   void Core::setRegister(ByteOrdinal index, const NormalRegister& other) noexcept {
+       setRegister(index, other._ordinal);
+   }
+   void Core::move(ByteOrdinal src, ByteOrdinal dest) noexcept {
+       setRegister(dest, getRegister(src));
+   }
 
+   void Core::callx(ByteOrdinal index) noexcept {
+        callx(getRegister(index));
+   }
+   void Core::callx(const NormalRegister& value) noexcept {
+        callx(value._ordinal);
+   }
 
 } // end namespace i960
