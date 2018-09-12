@@ -55,8 +55,8 @@ namespace i960 {
 	 */
 	struct LongReal {
 		LongReal() : LongReal(0,0) { }
-		LongReal(Ordinal lower, Ordinal upper);
-		LongReal(LongOrdinal frac, LongOrdinal exponent, LongOrdinal sign) : _fraction(frac), _exponent(exponent), _sign(sign) { };
+		LongReal(Ordinal lower, Ordinal upper) : _bits(LongOrdinal(lower) | (LongOrdinal(upper) << 32)) { }
+		LongReal(LongOrdinal frac, LongOrdinal exponent, LongOrdinal sign) : _fraction(frac), _exponent(exponent), _sign(sign) { }
         explicit LongReal(RawLongReal value) : _floating(value) { }
         Ordinal lowerHalf() const noexcept { return static_cast<Ordinal>(_bits & 0xFFFF'FFFF); }
         Ordinal upperHalf() const noexcept { return static_cast<Ordinal>((_bits & 0xFFFF'FFFF'0000'0000) >> 32); }

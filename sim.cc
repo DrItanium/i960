@@ -63,6 +63,7 @@ bool testInstructionResult(T expected, T value, const std::string& instruction) 
 	} 
 	return true;
 }
+/*
 template<> 
 bool testInstructionResult<i960::Real>(i960::Real expected, i960::Real value, const std::string& instruction) {
 	if (expected._floating != value._floating) {
@@ -155,6 +156,7 @@ bool performTests() {
 	testArithmeticOperationsLongReal(1.0, 2.0) &&
 	testArithmeticOperationsLongReal(10.0, 30.0);
 }
+*/
 
 void outputTypeInformation() {
 	std::cout << "Printing out system type sizes for i960 data types:" << std::endl;
@@ -202,6 +204,7 @@ int testExtendedFloatingPoint() {
 	return errorCode;
 }
 
+/*
 int performInstructionTests() {
 	int errorCode = 0;
 	std::cout << "Performing instruction tests" << std::endl;
@@ -214,6 +217,7 @@ int performInstructionTests() {
 	return errorCode;
 
 }
+*/
 
 int main() {
 	int errorCode = 0;
@@ -221,7 +225,7 @@ int main() {
 	testMemoryAllocation();
 	outputTypeInformation();
 	errorCode = testExtendedFloatingPoint();
-	errorCode = performInstructionTests();
+	//errorCode = performInstructionTests();
 	std::cout << "Shutting down..." << std::endl;
 	return errorCode;
 }

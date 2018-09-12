@@ -18,8 +18,12 @@ namespace i960 {
    Ordinal Core::getFramePointerAddress() const noexcept {
        return _globalRegisters[FramePointerIndex]._ordinal & (~0b111111);
    }
-   void Core::call(const NormalRegister& reg) {
-       auto newAddress = reg._ordinal;
+   void Core::call(Integer addr) {
+       union {
+           Integer _value : 22;
+       } conv;
+       conv._value = addr;
+       auto newAddress = conv._value;
        auto tmp = (getStackPointerAddress() + 63) && (~63); // round to the next boundary
        setRegister(ReturnInstructionPointerIndex, _instructionPointer);
 #warning "Code for handling multiple internal local register sets not implemented!"
@@ -89,7 +93,8 @@ namespace i960 {
    }
    void Core::addr(__DEFAULT_THREE_ARGS__) noexcept {
 #warning "addr does not implement any fault detection"
-       dest._real = src2._real + src1._real;
+
+       dest._real._floating = (src2._real._floating + src1._real._floating);
    }
    void Core::addrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept {
 #warning "addrl does not implement any fault detection"
@@ -117,7 +122,7 @@ namespace i960 {
    void Core::chkbit(Core::SourceRegister pos, Core::SourceRegister src) noexcept {
         _ac._conditionCode = ((src._ordinal & (1 << (pos._ordinal & 0b11111))) == 0) ? 0b000 : 0b010;
    }
-   void Core::alterbit(__DEFAULT_THREE_ARGS__) noexcept {
+   void Core::alterbit(Core::SourceRegister pos, Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
 		if ((_ac._conditionCode & 0b010) == 0) {
 			dest._ordinal = src._ordinal & (~(1 << (pos._ordinal & 0b11111)));
 		} else {
@@ -125,10 +130,10 @@ namespace i960 {
 		}
    }
    void Core::andOp(__DEFAULT_THREE_ARGS__) noexcept {
-       dest._ordinal = andOp<Ordinal>(src2._ordinal, src1._ordinal);
+       dest._ordinal = i960::andOp<Ordinal>(src2._ordinal, src1._ordinal);
    }
    void Core::andnot(__DEFAULT_THREE_ARGS__) noexcept {
-       dest._ordinal = andnot<Ordinal>(src2._ordinal, src1._ordinal);
+       dest._ordinal = i960::andNot<Ordinal>(src2._ordinal, src1._ordinal);
    }
 
 #undef __DEFAULT_THREE_ARGS__
