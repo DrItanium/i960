@@ -5,41 +5,6 @@
 
 namespace i960 {
 
-    constexpr Ordinal add(Ordinal a, Ordinal b) noexcept {
-        return a + b;
-    }
-    constexpr Integer add(Integer a, Integer b) noexcept {
-        return a + b;
-    }
-    constexpr Ordinal subtract(Ordinal a, Ordinal b) noexcept {
-        return a - b;
-    }
-    constexpr Integer subtract(Integer a, Integer b) noexcept {
-        return a - b;
-    }
-    constexpr Ordinal multiply(Ordinal a, Ordinal b) noexcept {
-        return a * b;
-    }
-    constexpr Integer multiply(Integer a, Integer b) noexcept {
-        return a * b;
-    }
-    Ordinal divide(ArithmeticControls& ac, Ordinal a, Ordinal b);
-    Integer divide(ArithmeticControls& ac, Integer a, Integer b);
-    Ordinal remainder(ArithmeticControls& ac, Ordinal a, Ordinal b);
-    Integer remainder(ArithmeticControls& ac, Integer a, Integer b);
-    constexpr Ordinal shiftLeft(Ordinal a, Ordinal b) noexcept {
-        return a << b;
-    }
-    constexpr Integer shiftLeft(Integer a, Integer b) noexcept {
-        return a << b;
-    }
-    constexpr Ordinal shiftRight(Ordinal a, Ordinal b) noexcept {
-        return a >> b;
-    }
-    constexpr Integer shiftRight(Integer a, Integer b) noexcept {
-        return a >> b;
-    }
-
 	template<typename T>
 	constexpr T andOp(T a, T b) noexcept {
 		if constexpr (std::is_same<T, bool>()) {
@@ -121,8 +86,6 @@ namespace i960 {
             return clearBit(value, position);
         }
     }
-    void checkBit(ArithmeticControls& controls, Ordinal value, Ordinal position) noexcept;
-    Ordinal alterBit(const ArithmeticControls& controls, Ordinal value, Ordinal position) noexcept;
     /**
      * Shifts a specified bit field in value right and fills the bits to the left of
      * the shifted bit field with zeros. 
@@ -144,8 +107,6 @@ namespace i960 {
      */
     Ordinal spanBit(ArithmeticControls& ac, Ordinal value) noexcept;
     void scanByte(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
-    Ordinal addWithCarry(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
-    void checkBit(ArithmeticControls& ac, Ordinal src, Ordinal position) noexcept;
     Ordinal alterBit(const ArithmeticControls& ac, Ordinal src, Ordinal position) noexcept;
     template<typename T>
     void compare(ArithmeticControls& ac, T src1, T src2) noexcept {

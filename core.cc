@@ -1,6 +1,7 @@
 #include "types.h"
 #include "operations.h"
-
+#define __DEFAULT_THREE_ARGS__ Core::SourceRegister src1, Core::SourceRegister src2, Core::DestinationRegister dest
+#define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ Core::SourceRegister src1Lower, Core::SourceRegister src1Upper, Core::SourceRegister src2Lower, Core::SourceRegister src2Upper, Core::DestinationRegister destLower, Core::DestinationRegister destUpper
 namespace i960 {
    Ordinal Core::getStackPointerAddress() const noexcept {
        return _localRegisters[StackPointerIndex]._ordinal;
@@ -79,10 +80,55 @@ namespace i960 {
        setFramePointer(tmp);
        setRegister(StackPointerIndex, tmp + 64u);
    }
-   void Core::addo(Core::SourceRegister src2, Core::SourceRegister src1, Core::DestinationRegister dest) noexcept { dest._ordinal = i960::add(src2._ordinal, src1._ordinal); }
-   void Core::subo(Core::SourceRegister src2, Core::SourceRegister src1, Core::DestinationRegister dest) noexcept { dest._ordinal = i960::subtract(src2._ordinal, src1._ordinal); }
-   void Core::mulo(Core::SourceRegister src2, Core::SourceRegister src1, Core::DestinationRegister dest) noexcept { dest._ordinal = i960::multiply(src2._ordinal, src1._ordinal); }
-   void Core::divo(Core::SourceRegister src2, Core::SourceRegister src1, Core::DestinationRegister dest) noexcept { dest._ordinal = i960::divide(_ac, src2._ordinal, src1._ordinal); }
+   void Core::addo(__DEFAULT_THREE_ARGS__) noexcept {
+       dest._ordinal = src2._ordinal + src1._ordinal; 
+   }
+   void Core::addi(__DEFAULT_THREE_ARGS__) noexcept {
+#warning "addi does not check for integer overflow"
+       dest._integer = src2._integer + src1._integer;
+   }
+   void Core::addr(__DEFAULT_THREE_ARGS__) noexcept {
+#warning "addr does not implement any fault detection"
+       dest._real = src2._real + src1._real;
+   }
+   void Core::addrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept {
+#warning "addrl does not implement any fault detection"
+       LongReal src1(src1Lower._ordinal, src1Upper._ordinal);
+       LongReal src2(src2Lower._ordinal, src2Lower._ordinal);
+       LongReal dest(src1._floating + src2._floating);
+       destLower._ordinal = dest.lowerHalf();
+       destUpper._ordinal = dest.upperHalf();
+   }
+   void Core::subo(__DEFAULT_THREE_ARGS__) noexcept {
+       dest._ordinal = src2._ordinal - src1._ordinal; 
+   }
+   void Core::mulo(__DEFAULT_THREE_ARGS__) noexcept {
+       dest._ordinal = src2._ordinal * src1._ordinal; 
+   }
+   void Core::divo(__DEFAULT_THREE_ARGS__) noexcept {
+#warning "divo does not check for divison by zero"
+       dest._ordinal = src2._ordinal / src1._ordinal;
+   }
+   void Core::remo(__DEFAULT_THREE_ARGS__) noexcept {
+#warning "remo does not check for divison by zero"
+       dest._ordinal = src2._ordinal % src1._ordinal;
+       
+   }
+   void Core::chkbit(Core::SourceRegister pos, Core::SourceRegister src) noexcept {
+        _ac._conditionCode = ((src._ordinal & (1 << (pos._ordinal & 0b11111))) == 0) ? 0b000 : 0b010;
+   }
+   void Core::alterbit(__DEFAULT_THREE_ARGS__) noexcept {
+		if ((_ac._conditionCode & 0b010) == 0) {
+			dest._ordinal = src._ordinal & (~(1 << (pos._ordinal & 0b11111)));
+		} else {
+			dest._ordinal = src._ordinal | (1 << (pos._ordinal & 0b11111));
+		}
+   }
+   void Core::addc(__DEFAULT_THREE_ARGS__) noexcept {
+#warning "addc does not handle carry"
+#warning "addc unimplemented"
+   }
 
-
+#undef __DEFAULT_THREE_ARGS__
+#undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
 } // end namespace i960

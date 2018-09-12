@@ -2,32 +2,6 @@
 #include "operations.h"
 
 namespace i960 {
-    Ordinal divide(ArithmeticControls& ac, Ordinal a, Ordinal b) {
-#warning "divide does not check for divison by zero"
-        return a / b;
-    }
-    Integer divide(ArithmeticControls& ac, Integer a, Integer b) {
-#warning "divide does not check for divison by zero"
-        return a / b;
-    }
-    Ordinal remainder(ArithmeticControls& ac, Ordinal a, Ordinal b) {
-#warning "remainder does not check for divison by zero"
-        return a % b;
-    }
-    Integer remainder(ArithmeticControls& ac, Integer a, Integer b) {
-#warning "remainder does not check for divison by zero"
-        return a % b;
-    }
-    void checkBit(ArithmeticControls& controls, Ordinal value, Ordinal position) noexcept {
-        controls._conditionCode = ((value & (1 << (position & 0b11111))) == 0) ? 0b000 : 0b010;
-    }
-    Ordinal alterBit(const ArithmeticControls& controls, Ordinal value, Ordinal position) noexcept {
-		if ((controls._conditionCode & 0b010) == 0) {
-			return value & (~(1 << (position & 0b11111)));
-		} else {
-			return value | (1 << (position & 0b11111));
-		}
-    }
 
     /**
      * Shifts a specified bit field in value right and fills the bits to the left of
@@ -89,14 +63,14 @@ namespace i960 {
 		ac._conditionCode = (carryBit << 1) | v;
 		return result;
 	}
-    Integer modulo(ArithmeticControls& ac, Integer src1, Integer src2) noexcept {
-		// taken from the i960 manual
-		auto result = subtract(src2, multiply(divide(ac, src2, src1), src1));
-		if ((src2 * src1) < 0) {
-			result = result + src1;
-		}
-		return result;
-	}
+    //Integer modulo(ArithmeticControls& ac, Integer src1, Integer src2) noexcept {
+	//	// taken from the i960 manual
+	//	auto result = subtract(src2, multiply(divide(ac, src2, src1), src1));
+	//	if ((src2 * src1) < 0) {
+	//		result = result + src1;
+	//	}
+	//	return result;
+	//}
     LongOrdinal extendedDivide(Ordinal src1, LongOrdinal src2) noexcept {
 		Ordinal remainder = (src2 - (src2 / src1) * src1);
 		Ordinal quotient = src2 / src1;

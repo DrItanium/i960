@@ -58,6 +58,8 @@ namespace i960 {
 		LongReal(Ordinal lower, Ordinal upper);
 		LongReal(LongOrdinal frac, LongOrdinal exponent, LongOrdinal sign) : _fraction(frac), _exponent(exponent), _sign(sign) { };
         explicit LongReal(RawLongReal value) : _floating(value) { }
+        Ordinal lowerHalf() const noexcept { return static_cast<Ordinal>(_bits & 0xFFFF'FFFF); }
+        Ordinal upperHalf() const noexcept { return static_cast<Ordinal>((_bits & 0xFFFF'FFFF'0000'0000) >> 32); }
 		union {
 			struct {
 				LongOrdinal _fraction : 52;
@@ -702,9 +704,9 @@ namespace i960 {
         return framePointerAddress + 64;
     }
     class Core {
+        public:
             using SourceRegister = const NormalRegister&;
             using DestinationRegister = NormalRegister&;
-        public:
 			using RegisterWindow = NormalRegister[LocalRegisterCount];
             Core() = default;
             ~Core() = default;
@@ -728,13 +730,24 @@ namespace i960 {
             void setFramePointer(Ordinal value) noexcept;
             Ordinal getFramePointerAddress() const noexcept;
         private:
+#define __DEFAULT_THREE_ARGS__ SourceRegister src1, SourceRegister src2, DestinationRegister dest
+#define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ SourceRegister src1Lower, SourceRegister src1Upper, SourceRegister src2Lower, SourceRegister src2Upper, DestinationRegister destLower, DestinationRegister destUpper
             void move(SourceRegister src, DestinationRegister dest) noexcept;
             void callx(SourceRegister value) noexcept;
             void calls(SourceRegister value);
-            void addo(SourceRegister src2, SourceRegister src1, DestinationRegister dest) noexcept;
-            void subo(SourceRegister src2, SourceRegister src1, DestinationRegister dest) noexcept;
-            void mulo(SourceRegister src2, SourceRegister src1, DestinationRegister dest) noexcept;
-            void divo(SourceRegister src2, SourceRegister src1, DestinationRegister dest) noexcept;
+            void addo(__DEFAULT_THREE_ARGS__) noexcept;
+            void addi(__DEFAULT_THREE_ARGS__) noexcept;
+            void addc(__DEFAULT_THREE_ARGS__) noexcept;
+            void addr(__DEFAULT_THREE_ARGS__) noexcept;
+            void addrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
+            void subo(__DEFAULT_THREE_ARGS__) noexcept;
+            void mulo(__DEFAULT_THREE_ARGS__) noexcept;
+            void divo(__DEFAULT_THREE_ARGS__) noexcept;
+            void remo(__DEFAULT_THREE_ARGS__) noexcept;
+            void chkbit(SourceRegister pos, SourceRegister src) noexcept;
+            void alterbit(__DEFAULT_THREE_ARGS__) noexcept;
+#undef __DEFAULT_THREE_ARGS__
+#undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
         private:
             RegisterWindow _globalRegisters;
             // The hardware implementations use register sets, however
