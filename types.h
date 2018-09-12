@@ -732,11 +732,7 @@ namespace i960 {
         private:
 #define __DEFAULT_THREE_ARGS__ SourceRegister src1, SourceRegister src2, DestinationRegister dest
 #define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ SourceRegister src1Lower, SourceRegister src1Upper, SourceRegister src2Lower, SourceRegister src2Upper, DestinationRegister destLower, DestinationRegister destUpper
-#define __GENERATE_DEFAULT_THREE_ARG_SIGS__(name) \
-            void name (__DEFAULT_THREE_ARGS__) noexcept; \
-            void name (Ordinal src1, SourceRegister src2, DestinationRegister dest) noexcept; \
-            void name (SourceRegister src1, Ordinal src2, DestinationRegister dest) noexcept; \
-            void name (Ordinal src1, Ordinal src2, DestinationRegister dest) noexcept
+#define __GENERATE_DEFAULT_THREE_ARG_SIGS__(name) void name (__DEFAULT_THREE_ARGS__) noexcept
 
             void move(SourceRegister src, DestinationRegister dest) noexcept;
             void callx(SourceRegister value) noexcept;
@@ -745,33 +741,17 @@ namespace i960 {
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(addo);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(addi);
             void addr(__DEFAULT_THREE_ARGS__) noexcept;
-            void addr(Real src1, SourceRegister src2, DestinationRegister dest) noexcept;
-            void addr(SourceRegister src1, Real src2, DestinationRegister dest) noexcept;
-            void addr(Real src1, Real src2, DestinationRegister dest) noexcept;
             void addrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
-            void addrl(LongReal src1, SourceRegister src2Lower, SourceRegister src2Upper, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
-            void addrl(SourceRegister src1Lower, SourceRegister src1Upper, LongReal src2, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
-            void addrl(LongReal src1, LongReal src2, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(subo);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(mulo);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(remo);
             void chkbit(SourceRegister pos, SourceRegister src) noexcept;
-            void chkbit(Ordinal pos, SourceRegister src) noexcept;
-            void chkbit(SourceRegister pos, Ordinal src) noexcept;
-            void chkbit(Ordinal pos, Ordinal src) noexcept;
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(alterbit);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(andOp);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(andnot);
             void atadd(__DEFAULT_THREE_ARGS__) noexcept; // TODO add other forms of atadd
             void atan(__DEFAULT_THREE_ARGS__) noexcept;
-            void atan(Real src1, SourceRegister src2, DestinationRegister dest) noexcept;
-            void atan(SourceRegister src1, Real src2, DestinationRegister dest) noexcept;
-            void atan(Real src1, Real src2, DestinationRegister dest) noexcept;
             void atanrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
-            void atanrl(LongReal src1, SourceRegister src2Lower, SourceRegister src2Upper, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
-            void atanrl(SourceRegister src1Lower, SourceRegister src1Upper, LongReal src2, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
-            void atanrl(LongReal src1, LongReal src2, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
-            void atanrl(const ExtendedReal& src1, const ExtendedReal& src2, ExtendedReal& dest) noexcept;
             void atmod(SourceRegister src, SourceRegister mask, DestinationRegister srcDest) noexcept; // TODO check out other forms of this instruction
             void b(Integer displacement) noexcept;
             void bx(SourceRegister targ) noexcept; // TODO check these two instructions out for more variants
@@ -788,91 +768,39 @@ namespace i960 {
             void bo(Integer displacement) noexcept;
             void bno(Integer displacement) noexcept;
             void classr(SourceRegister src) noexcept;
-            void classr(Real src) noexcept;
             void classrl(SourceRegister srcLower, SourceRegister srcUpper) noexcept;
-            void classrl(LongReal src) noexcept;
-            void classrl(const ExtendedReal& src) noexcept;
             void clrbit(SourceRegister pos, SourceRegister src, DestinationRegister dest) noexcept; // TODO look into the various forms further
             void cmpi(SourceRegister src1, SourceRegister src2) noexcept;
-            void cmpi(Ordinal src1, SourceRegister src2) noexcept;
-            void cmpi(SourceRegister src1, Ordinal src2) noexcept;
-            void cmpi(Ordinal src1, Ordinal src2) noexcept;
             void cmpo(SourceRegister src1, SourceRegister src2) noexcept;
-            void cmpo(Ordinal src1, SourceRegister src2) noexcept;
-            void cmpo(SourceRegister src1, Ordinal src2) noexcept;
-            void cmpo(Ordinal src1, Ordinal src2) noexcept;
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(cmpdeci);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(cmpdeco);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(cmpinci);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(cmpinco);
             void cmpor(SourceRegister src1, SourceRegister src2) noexcept;
-            void cmpor(Real src1, SourceRegister src2) noexcept;
-            void cmpor(SourceRegister src1, Real src2) noexcept;
-            void cmpor(Real src1, Real src2) noexcept;
             void cmporl(SourceRegister src1Lower, SourceRegister src1Upper, SourceRegister src2Lower, SourceRegister src2Upper) noexcept;
-            void cmporl(LongReal src1, SourceRegister src2Lower, SourceRegister src2Upper) noexcept;
-            void cmporl(SourceRegister src1Lower, SourceRegister src1Upper, LongReal src2) noexcept;
-            void cmporl(LongReal src1, LongReal src2) noexcept;
-            void cmporl(const ExtendedReal& src1, const ExtendedReal& src2) noexcept;
             void cmpr(SourceRegister src1, SourceRegister src2) noexcept;
-            void cmpr(Real src1, SourceRegister src2) noexcept;
-            void cmpr(SourceRegister src1, Real src2) noexcept;
-            void cmpr(Real src1, Real src2) noexcept;
-            void cmprl(SourceRegister src1Lower, SourceRegister src1Upper, SourceRegister src2Lower, SourceRegister src2Upper) noexcept;
-            void cmprl(LongReal src1, SourceRegister src2Lower, SourceRegister src2Upper) noexcept;
-            void cmprl(SourceRegister src1Lower, SourceRegister src1Upper, LongReal src2) noexcept;
-            void cmprl(LongReal src1, LongReal src2) noexcept;
-            void cmprl(const ExtendedReal& src1, const ExtendedReal& src2) noexcept;
             void cmpstr(SourceRegister src1, SourceRegister src2, SourceRegister len) noexcept;
-            void cmpstr(SourceRegister src1, SourceRegister src2, Ordinal len) noexcept;
             // compare and branch instructions
             void cmpibe(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpibe(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
             void cmpibne(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpibne(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
             void cmpibl(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpibl(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
             void cmpible(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpible(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
             void cmpibg(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpibg(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
             void cmpibge(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpibge(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
             void cmpibo(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpibo(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
             void cmpibno(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpibno(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
             void cmpobe(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpobe(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
             void cmpobne(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpobne(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
             void cmpobl(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpobl(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
             void cmpoble(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpoble(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
             void cmpobg(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpobg(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
             void cmpobge(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpobge(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
             void concompi(SourceRegister src1, SourceRegister src2) noexcept;
-            void concompi(Ordinal src1, SourceRegister src2) noexcept;
-            void concompi(SourceRegister src1, Ordinal src2) noexcept;
-            void concompi(Ordinal src1, Ordinal src2) noexcept;
             void concompo(SourceRegister src1, SourceRegister src2) noexcept;
-            void concompo(Ordinal src1, SourceRegister src2) noexcept;
-            void concompo(SourceRegister src1, Ordinal src2) noexcept;
-            void concompo(Ordinal src1, Ordinal src2) noexcept;
             void condrec(SourceRegister src, DestinationRegister dest) noexcept;
             void condwait(SourceRegister src) noexcept;
             void cos(__DEFAULT_THREE_ARGS__) noexcept;
-            void cos(Real src1, SourceRegister src2, DestinationRegister dest) noexcept;
-            void cos(SourceRegister src1, Real src2, DestinationRegister dest) noexcept;
-            void cos(Real src1, Real src2, DestinationRegister dest) noexcept;
             void cosrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
-            void cosrl(LongReal src1, SourceRegister src2Lower, SourceRegister src2Upper, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
-            void cosrl(SourceRegister src1Lower, SourceRegister src1Upper, LongReal src2, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
-            void cosrl(LongReal src1, LongReal src2, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
-            void cosrl(const ExtendedReal& src1, const ExtendedReal& src2, ExtendedReal& dest) noexcept;
             // TODO signatures for cpyrsre and cpysre. 
             // TODO various other signatures for the numerics extensions that are before divi
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(divo);
@@ -886,9 +814,6 @@ namespace i960 {
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(extract);
             // TODO fault signatures
             void fill(SourceRegister dst, SourceRegister value, SourceRegister len) noexcept;
-            void fill(SourceRegister dst, Ordinal value, SourceRegister len) noexcept;
-            void fill(SourceRegister dst, SourceRegister value, Ordinal len) noexcept;
-            void fill(SourceRegister dst, Ordinal value, Ordinal len) noexcept;
             void flushreg() noexcept;
             void fmark() noexcept;
             // TODO inspacc
@@ -929,6 +854,7 @@ namespace i960 {
             TraceControls _tc;
             NormalRegister _sfr[32]; // not implemented in the documentation I have
             ExtendedReal _floatingPointRegisters[NumFloatingPointRegs];
+            NormalRegister _internalRegisters[8]; // for internal conversion purposes to make decoding regular
     };
 
 } // end namespace i960

@@ -133,7 +133,7 @@ namespace i960 {
        dest._ordinal = i960::andOp<Ordinal>(src2._ordinal, src1._ordinal);
    }
    void Core::andnot(__DEFAULT_THREE_ARGS__) noexcept {
-       dest._ordinal = i960::andNot<Ordinal>(src2._ordinal, src1._ordinal);
+       dest._ordinal = i960::andNot(src2._ordinal, src1._ordinal);
    }
 
 #undef __DEFAULT_THREE_ARGS__
