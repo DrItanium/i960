@@ -11,11 +11,11 @@
 (defmethod generate-moveq ((?src SYMBOL) (?dest SYMBOL)) (format nil "movq %s, %s" ?src ?dest))
 (defmethod generate-moveq ((?src INTEGER) (?dest SYMBOL)) (format nil "movq %d, %s" ?src ?dest))
 (defglobal MAIN
-           ?*registers* = (create$ r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 r15
-                                   g0 g1 g2 g3 g4 g5 g6 g7 g8 g9 g10 g11 g12 g13 g14 g15)
-           ?*long-registers* = (create$ r0 r2 r4 r6 r8 r10 r12 r14
+           ?*registers* = (create$ pfp sp rip r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 r15
+                                   g0 g1 g2 g3 g4 g5 g6 g7 g8 g9 g10 g11 g12 g13 g14 fp)
+           ?*long-registers* = (create$ pfp rip r4 r6 r8 r10 r12 r14
                                    g0 g2 g4 g6 g8 g10 g12 g14)
-           ?*quad-registers* = (create$ r0 r4 r8 r12 
+           ?*quad-registers* = (create$ pfp r4 r8 r12 
                                    g0 g4 g8 g12))
 (deffunction generate-moves
              (?fn ?list)
