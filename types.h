@@ -715,7 +715,7 @@ namespace i960 {
 			/** 
 			 * perform a call
 			 */
-            virtual void call(SourceRegister reg);
+            virtual void call(Integer displacement);
 			virtual Ordinal load(Ordinal address);
 			virtual void store(Ordinal address, Ordinal value);
 
@@ -741,18 +741,9 @@ namespace i960 {
             void move(SourceRegister src, DestinationRegister dest) noexcept;
             void callx(SourceRegister value) noexcept;
             void calls(SourceRegister value);
-            void addc(__DEFAULT_THREE_ARGS__) noexcept;
-            void addc(Ordinal src1, SourceRegister src2, DestinationRegister dest) noexcept;
-            void addc(SourceRegister src1, Ordinal src2, DestinationRegister dest) noexcept;
-            void addc(Ordinal src1, Ordinal src2, DestinationRegister dest) noexcept;
-            void addo(__DEFAULT_THREE_ARGS__) noexcept;
-            void addo(Ordinal src1, SourceRegister src2, DestinationRegister dest) noexcept;
-            void addo(SourceRegister src1, Ordinal src2, DestinationRegister dest) noexcept;
-            void addo(Ordinal src1, Ordinal src2, DestinationRegister dest) noexcept;
-            void addi(__DEFAULT_THREE_ARGS__) noexcept;
-            void addi(Ordinal src1, SourceRegister src2, DestinationRegister dest) noexcept;
-            void addi(SourceRegister src1, Ordinal src2, DestinationRegister dest) noexcept;
-            void addi(Ordinal src1, Ordinal src2, DestinationRegister dest) noexcept;
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(addc);
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(addo);
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(addi);
             void addr(__DEFAULT_THREE_ARGS__) noexcept;
             void addr(Real src1, SourceRegister src2, DestinationRegister dest) noexcept;
             void addr(SourceRegister src1, Real src2, DestinationRegister dest) noexcept;
@@ -766,10 +757,104 @@ namespace i960 {
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(divo);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(remo);
             void chkbit(SourceRegister pos, SourceRegister src) noexcept;
+            void chkbit(Ordinal pos, SourceRegister src) noexcept;
+            void chkbit(SourceRegister pos, Ordinal src) noexcept;
+            void chkbit(Ordinal pos, Ordinal src) noexcept;
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(alterbit);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(andOp);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(andnot);
             void atadd(__DEFAULT_THREE_ARGS__) noexcept; // TODO add other forms of atadd
+            void atan(__DEFAULT_THREE_ARGS__) noexcept;
+            void atan(Real src1, SourceRegister src2, DestinationRegister dest) noexcept;
+            void atan(SourceRegister src1, Real src2, DestinationRegister dest) noexcept;
+            void atan(Real src1, Real src2, DestinationRegister dest) noexcept;
+            void atanrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
+            void atanrl(LongReal src1, SourceRegister src2Lower, SourceRegister src2Upper, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
+            void atanrl(SourceRegister src1Lower, SourceRegister src1Upper, LongReal src2, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
+            void atanrl(LongReal src1, LongReal src2, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
+            void atanrl(const ExtendedReal& src1, const ExtendedReal& src2, ExtendedReal& dest) noexcept;
+            void atmod(SourceRegister src, SourceRegister mask, DestinationRegister srcDest) noexcept; // TODO check out other forms of this instruction
+            void b(Integer displacement) noexcept;
+            void bx(SourceRegister targ) noexcept; // TODO check these two instructions out for more variants
+            void bal(Integer displacement) noexcept;
+            void balx(SourceRegister targ, DestinationRegister dest) noexcept; // TODO check these two instructions out for more variants
+            void bbc(SourceRegister pos, SourceRegister src, Integer targ) noexcept; 
+            void bbs(SourceRegister pos, SourceRegister src, Integer targ) noexcept;
+            void be(Integer displacement) noexcept;
+            void bne(Integer displacement) noexcept;
+            void bl(Integer displacement) noexcept;
+            void ble(Integer displacement) noexcept;
+            void bg(Integer displacement) noexcept;
+            void bge(Integer displacement) noexcept;
+            void bo(Integer displacement) noexcept;
+            void bno(Integer displacement) noexcept;
+            void classr(SourceRegister src) noexcept;
+            void classr(Real src) noexcept;
+            void classrl(SourceRegister srcLower, SourceRegister srcUpper) noexcept;
+            void classrl(LongReal src) noexcept;
+            void classrl(const ExtendedReal& src) noexcept;
+            void clrbit(SourceRegister pos, SourceRegister src, DestinationRegister dest) noexcept; // TODO look into the various forms further
+            void cmpi(SourceRegister src1, SourceRegister src2) noexcept;
+            void cmpi(Ordinal src1, SourceRegister src2) noexcept;
+            void cmpi(SourceRegister src1, Ordinal src2) noexcept;
+            void cmpi(Ordinal src1, Ordinal src2) noexcept;
+            void cmpo(SourceRegister src1, SourceRegister src2) noexcept;
+            void cmpo(Ordinal src1, SourceRegister src2) noexcept;
+            void cmpo(SourceRegister src1, Ordinal src2) noexcept;
+            void cmpo(Ordinal src1, Ordinal src2) noexcept;
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(cmpdeci);
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(cmpdeco);
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(cmpinci);
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(cmpinco);
+            void cmpor(SourceRegister src1, SourceRegister src2) noexcept;
+            void cmpor(Real src1, SourceRegister src2) noexcept;
+            void cmpor(SourceRegister src1, Real src2) noexcept;
+            void cmpor(Real src1, Real src2) noexcept;
+            void cmporl(SourceRegister src1Lower, SourceRegister src1Upper, SourceRegister src2Lower, SourceRegister src2Upper) noexcept;
+            void cmporl(LongReal src1, SourceRegister src2Lower, SourceRegister src2Upper) noexcept;
+            void cmporl(SourceRegister src1Lower, SourceRegister src1Upper, LongReal src2) noexcept;
+            void cmporl(LongReal src1, LongReal src2) noexcept;
+            void cmporl(const ExtendedReal& src1, const ExtendedReal& src2) noexcept;
+            void cmpr(SourceRegister src1, SourceRegister src2) noexcept;
+            void cmpr(Real src1, SourceRegister src2) noexcept;
+            void cmpr(SourceRegister src1, Real src2) noexcept;
+            void cmpr(Real src1, Real src2) noexcept;
+            void cmprl(SourceRegister src1Lower, SourceRegister src1Upper, SourceRegister src2Lower, SourceRegister src2Upper) noexcept;
+            void cmprl(LongReal src1, SourceRegister src2Lower, SourceRegister src2Upper) noexcept;
+            void cmprl(SourceRegister src1Lower, SourceRegister src1Upper, LongReal src2) noexcept;
+            void cmprl(LongReal src1, LongReal src2) noexcept;
+            void cmprl(const ExtendedReal& src1, const ExtendedReal& src2) noexcept;
+            void cmpstr(SourceRegister src1, SourceRegister src2, SourceRegister len) noexcept;
+            void cmpstr(SourceRegister src1, SourceRegister src2, Ordinal len) noexcept;
+            // compare and branch instructions
+            void cmpibe(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpibe(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpibne(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpibne(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpibl(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpibl(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpible(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpible(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpibg(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpibg(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpibge(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpibge(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpibo(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpibo(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpibno(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpibno(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpobe(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpobe(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpobne(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpobne(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpobl(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpobl(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpoble(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpoble(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpobg(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpobg(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpobge(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
+            void cmpobge(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
 #undef __GENERATE_DEFAULT_THREE_ARG_SIGS__
 #undef __DEFAULT_THREE_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
