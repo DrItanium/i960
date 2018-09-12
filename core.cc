@@ -124,9 +124,11 @@ namespace i960 {
 			dest._ordinal = src._ordinal | (1 << (pos._ordinal & 0b11111));
 		}
    }
-   void Core::addc(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "addc does not handle carry"
-#warning "addc unimplemented"
+   void Core::andOp(__DEFAULT_THREE_ARGS__) noexcept {
+       dest._ordinal = andOp<Ordinal>(src2._ordinal, src1._ordinal);
+   }
+   void Core::andnot(__DEFAULT_THREE_ARGS__) noexcept {
+       dest._ordinal = andnot<Ordinal>(src2._ordinal, src1._ordinal);
    }
 
 #undef __DEFAULT_THREE_ARGS__

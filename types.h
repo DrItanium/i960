@@ -732,20 +732,45 @@ namespace i960 {
         private:
 #define __DEFAULT_THREE_ARGS__ SourceRegister src1, SourceRegister src2, DestinationRegister dest
 #define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ SourceRegister src1Lower, SourceRegister src1Upper, SourceRegister src2Lower, SourceRegister src2Upper, DestinationRegister destLower, DestinationRegister destUpper
+#define __GENERATE_DEFAULT_THREE_ARG_SIGS__(name) \
+            void name (__DEFAULT_THREE_ARGS__) noexcept; \
+            void name (Ordinal src1, SourceRegister src2, DestinationRegister dest) noexcept; \
+            void name (SourceRegister src1, Ordinal src2, DestinationRegister dest) noexcept; \
+            void name (Ordinal src1, Ordinal src2, DestinationRegister dest) noexcept
+
             void move(SourceRegister src, DestinationRegister dest) noexcept;
             void callx(SourceRegister value) noexcept;
             void calls(SourceRegister value);
-            void addo(__DEFAULT_THREE_ARGS__) noexcept;
-            void addi(__DEFAULT_THREE_ARGS__) noexcept;
             void addc(__DEFAULT_THREE_ARGS__) noexcept;
+            void addc(Ordinal src1, SourceRegister src2, DestinationRegister dest) noexcept;
+            void addc(SourceRegister src1, Ordinal src2, DestinationRegister dest) noexcept;
+            void addc(Ordinal src1, Ordinal src2, DestinationRegister dest) noexcept;
+            void addo(__DEFAULT_THREE_ARGS__) noexcept;
+            void addo(Ordinal src1, SourceRegister src2, DestinationRegister dest) noexcept;
+            void addo(SourceRegister src1, Ordinal src2, DestinationRegister dest) noexcept;
+            void addo(Ordinal src1, Ordinal src2, DestinationRegister dest) noexcept;
+            void addi(__DEFAULT_THREE_ARGS__) noexcept;
+            void addi(Ordinal src1, SourceRegister src2, DestinationRegister dest) noexcept;
+            void addi(SourceRegister src1, Ordinal src2, DestinationRegister dest) noexcept;
+            void addi(Ordinal src1, Ordinal src2, DestinationRegister dest) noexcept;
             void addr(__DEFAULT_THREE_ARGS__) noexcept;
+            void addr(Real src1, SourceRegister src2, DestinationRegister dest) noexcept;
+            void addr(SourceRegister src1, Real src2, DestinationRegister dest) noexcept;
+            void addr(Real src1, Real src2, DestinationRegister dest) noexcept;
             void addrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
-            void subo(__DEFAULT_THREE_ARGS__) noexcept;
-            void mulo(__DEFAULT_THREE_ARGS__) noexcept;
-            void divo(__DEFAULT_THREE_ARGS__) noexcept;
-            void remo(__DEFAULT_THREE_ARGS__) noexcept;
+            void addrl(LongReal src1, SourceRegister src2Lower, SourceRegister src2Upper, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
+            void addrl(SourceRegister src1Lower, SourceRegister src1Upper, LongReal src2, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
+            void addrl(LongReal src1, LongReal src2, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(subo);
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(mulo);
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(divo);
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(remo);
             void chkbit(SourceRegister pos, SourceRegister src) noexcept;
-            void alterbit(__DEFAULT_THREE_ARGS__) noexcept;
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(alterbit);
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(andOp);
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(andnot);
+            void atadd(__DEFAULT_THREE_ARGS__) noexcept; // TODO add other forms of atadd
+#undef __GENERATE_DEFAULT_THREE_ARG_SIGS__
 #undef __DEFAULT_THREE_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
         private:
