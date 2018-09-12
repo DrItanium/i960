@@ -21,12 +21,6 @@ namespace i960 {
         ~Displacement() = default;
         Integer _value : 22;
     };
-	struct QuadWord {
-		Ordinal _lowest;
-		Ordinal _lower;
-		Ordinal _higher;
-		Ordinal _highest;
-	};
     using RawReal = float;
     using RawLongReal = double;
     using RawExtendedReal = long double;
@@ -70,11 +64,19 @@ namespace i960 {
             RawLongReal _floating;
 		};
 	} __attribute__((packed));
+    constexpr LongOrdinal makeLongOrdinal(Ordinal lower, Ordinal upper) noexcept {
+        return LongOrdinal(lower) | (LongOrdinal(upper) << 32);
+    }
 	/**
 	 * Part of the numerics architecture and above
 	 */
 	union ExtendedReal {
 		ExtendedReal() { }
+        ExtendedReal(Ordinal low, Ordinal mid, Ordinal high) : _lower(makeLongOrdinal(low, mid)), _upper(high) { }
+        Ordinal lowerThird() const noexcept { return static_cast<Ordinal>(_lower); }
+        Ordinal middleThird() const noexcept { return static_cast<Ordinal>(_lower >> 32); }
+        Ordinal upperThird() const noexcept { return static_cast<Ordinal>(_upper); }
+
 		struct {
             LongOrdinal _fraction: 63;
             LongOrdinal _j : 1;
@@ -88,14 +90,6 @@ namespace i960 {
         RawExtendedReal _value;
 	} __attribute__((packed));
 
-	union TripleWord {
-		struct {
-			Ordinal _lower;
-			Ordinal _middle;
-			Ordinal _upper;
-		};
-		ExtendedReal _real;
-	} __attribute__((packed));
     union PreviousFramePointer {
         struct {
             Ordinal _returnCode : 3;
@@ -143,9 +137,54 @@ namespace i960 {
                   static_assert(LegalConversion<K>, "Illegal type requested");
               }
           }
+          void move(const DoubleRegister& other) noexcept;
       private:
           NormalRegister& _lower;
           NormalRegister& _upper;
+    };
+    class TripleRegister {
+      private:
+          template<typename T>
+          static constexpr bool LegalConversion = false;
+      public:
+          TripleRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& upper) : _lower(lower), _mid(mid), _upper(upper) { }
+          ~TripleRegister() = default;
+          template<typename T>
+          T get() const noexcept {
+              using K = std::decay_t<T>;
+              if constexpr(std::is_same_v<K, ExtendedReal>) {
+                return LongReal(_lower._ordinal, _mid._ordinal, _upper._ordinal);
+              } else {
+                  static_assert(LegalConversion<K>, "Illegal type requested");
+              }
+          }
+          template<typename T>
+          void set(T value) noexcept {
+              using K = std::decay_t<T>;
+              if constexpr (std::is_same_v<K, LongReal>) {
+                  _lower._ordinal = value.lowerThird();
+                  _mid._ordinal = value.middleThird();
+                  _upper._ordinal = value.upperThird();
+              } else {
+                  static_assert(LegalConversion<K>, "Illegal type requested");
+              }
+          }
+          void move(const TripleRegister& other) noexcept;
+      private:
+          NormalRegister& _lower;
+          NormalRegister& _mid;
+          NormalRegister& _upper;
+    };
+    class QuadRegister {
+      public:
+          QuadRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& high, NormalRegister& highest) : _lower(lower), _mid(mid), _upper(high), _highest(highest) { }
+          ~QuadRegister() = default;
+          void move(const QuadRegister& other) noexcept;
+      private:
+          NormalRegister& _lower;
+          NormalRegister& _mid;
+          NormalRegister& _upper;
+          NormalRegister& _highest;
     };
     MustBeSizeOfOrdinal(NormalRegister, "NormalRegister must be 32-bits wide!");
 	union ArithmeticControls {
@@ -769,7 +808,6 @@ namespace i960 {
 #define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ const DoubleRegister& src1, const DoubleRegister& src2, DoubleRegister& dest
 #define __GENERATE_DEFAULT_THREE_ARG_SIGS__(name) void name (__DEFAULT_THREE_ARGS__) noexcept
 
-            void move(SourceRegister src, DestinationRegister dest) noexcept;
             void callx(SourceRegister value) noexcept;
             void calls(SourceRegister value);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(addc);
@@ -875,15 +913,20 @@ namespace i960 {
             void ldtime(DestinationRegister dest) noexcept;
             void logbnr(SourceRegister src, DestinationRegister dest) noexcept;
             void logbnrl(SourceRegister srcLower, SourceRegister srcUpper, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
-            // TODO logbnr and logbnrl
-            // TODO logepr and logeprl
-            // TODO logr and logrl
+            void logepr(__DEFAULT_THREE_ARGS__) noexcept;
+            void logeprl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
+            void logr(__DEFAULT_THREE_ARGS__) noexcept;
+            void logrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
             void mark() noexcept;
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(modifyac);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(modi);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(modify);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(modpc);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(modtc);
+            void mov(SourceRegister src, DestinationRegister dest) noexcept;
+            void movl(const DoubleRegister& src, DoubleRegister& dest) noexcept;
+            void movt(const TripleRegister& src, TripleRegister& dest) noexcept;
+            void movq(const QuadRegister& src, QuadRegister& dest) noexcept;
 #undef __GENERATE_DEFAULT_THREE_ARG_SIGS__
 #undef __DEFAULT_THREE_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__

@@ -69,9 +69,6 @@ namespace i960 {
    void Core::setRegister(ByteOrdinal index, const NormalRegister& other) noexcept {
        setRegister(index, other._ordinal);
    }
-   void Core::move(const NormalRegister& src, NormalRegister& dest) noexcept {
-       dest._ordinal = src._ordinal;
-   }
    void Core::callx(const NormalRegister& value) noexcept {
        auto newAddress = value._ordinal;
        Ordinal tmp = (getStackPointerAddress() + 63u) && (~63u); // round to the next boundary
