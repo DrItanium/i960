@@ -73,6 +73,7 @@ namespace i960 {
 	union ExtendedReal {
 		ExtendedReal() { }
         ExtendedReal(Ordinal low, Ordinal mid, Ordinal high) : _lower(makeLongOrdinal(low, mid)), _upper(high) { }
+        explicit ExtendedReal(RawExtendedReal value) : _floating(value) { }
         Ordinal lowerThird() const noexcept { return static_cast<Ordinal>(_lower); }
         Ordinal middleThird() const noexcept { return static_cast<Ordinal>(_lower >> 32); }
         Ordinal upperThird() const noexcept { return static_cast<Ordinal>(_upper); }
@@ -87,7 +88,7 @@ namespace i960 {
             LongOrdinal _lower;
             ShortOrdinal _upper;
         };
-        RawExtendedReal _value;
+        RawExtendedReal _floating;
 	} __attribute__((packed));
 
     union PreviousFramePointer {
@@ -120,6 +121,8 @@ namespace i960 {
                 return LongOrdinal(_lower._ordinal) | (LongOrdinal(_upper._ordinal) << 32);
               } else if constexpr(std::is_same_v<K, LongReal>) {
                 return LongReal(_lower._ordinal, _upper._ordinal);
+              } else if constexpr (std::is_same_v<K, RawLongReal>) {
+                  return get<LongReal>()._floating;
               } else {
                   static_assert(LegalConversion<K>, "Illegal type requested");
               }
@@ -133,6 +136,8 @@ namespace i960 {
               } else if constexpr (std::is_same_v<K, LongReal>) {
                   _lower._ordinal = value.lowerHalf();
                   _upper._ordinal = value.upperHalf();
+              } else if constexpr (std::is_same_v<K, RawLongReal>) {
+                  set<LongReal>(LongReal(value));
               } else {
                   static_assert(LegalConversion<K>, "Illegal type requested");
               }
@@ -153,7 +158,9 @@ namespace i960 {
           T get() const noexcept {
               using K = std::decay_t<T>;
               if constexpr(std::is_same_v<K, ExtendedReal>) {
-                return LongReal(_lower._ordinal, _mid._ordinal, _upper._ordinal);
+                return ExtendedReal(_lower._ordinal, _mid._ordinal, _upper._ordinal);
+              } else if constexpr (std::is_same_v<K, RawExtendedReal>) {
+                  return get<ExtendedReal>()._floating;
               } else {
                   static_assert(LegalConversion<K>, "Illegal type requested");
               }
@@ -161,10 +168,12 @@ namespace i960 {
           template<typename T>
           void set(T value) noexcept {
               using K = std::decay_t<T>;
-              if constexpr (std::is_same_v<K, LongReal>) {
+              if constexpr (std::is_same_v<K, ExtendedReal>) {
                   _lower._ordinal = value.lowerThird();
                   _mid._ordinal = value.middleThird();
                   _upper._ordinal = value.upperThird();
+              } else if constexpr (std::is_same_v<K, RawExtendedReal>) {
+                  set<ExtendedReal>(ExtendedReal(value));
               } else {
                   static_assert(LegalConversion<K>, "Illegal type requested");
               }
@@ -1011,6 +1020,7 @@ namespace i960 {
             void wait(SourceRegister src) noexcept;
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(xnor);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(xorOp);
+            NormalRegister& stashNewLiteral(ByteOrdinal index, Ordinal value) noexcept;
 
 #undef __GENERATE_DEFAULT_THREE_ARG_SIGS__
 #undef __DEFAULT_THREE_ARGS__
