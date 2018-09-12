@@ -132,6 +132,28 @@ namespace i960 {
        dest._ordinal = i960::andNot(src2._ordinal, src1._ordinal);
    }
 
+   void DoubleRegister::move(const DoubleRegister& other) noexcept {
+       _lower._ordinal = other._lower._ordinal;
+       _upper._ordinal = other._upper._ordinal;
+   }
+   void TripleRegister::move(const TripleRegister& other) noexcept {
+       _lower._ordinal = other._lower._ordinal;
+       _mid._ordinal = other._mid._ordinal;
+       _upper._ordinal = other._upper._ordinal;
+
+   }
+   void QuadRegister::move(const QuadRegister& other) noexcept {
+       _lower._ordinal = other._lower._ordinal;
+       _mid._ordinal = other._mid._ordinal;
+       _upper._ordinal = other._upper._ordinal;
+       _highest._ordinal = other._highest._ordinal;
+   }
+
+   void Core::mov(Core::SourceRegister src, Core::DestinationRegister dest) noexcept { dest._ordinal = src._ordinal; }
+   void Core::movl(Core::LongSourceRegister src, Core::LongDestinationRegister dest) noexcept { dest.move(src); }
+   void Core::movt(const TripleRegister& src, TripleRegister& dest) noexcept { dest.move(src); }
+   void Core::movq(const QuadRegister& src, QuadRegister& dest) noexcept { dest.move(src); }
+
 #undef __DEFAULT_THREE_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
 } // end namespace i960
