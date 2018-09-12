@@ -271,7 +271,7 @@ namespace i960 {
 
     };
     constexpr bool isFloatingPoint(Opcodes opcode) noexcept {
-        switch(opcode) {
+        switch (opcode) {
             case Opcodes::Addr: case Opcodes::Addrl:
             case Opcodes::Atanr: case Opcodes::Atanrl:
             case Opcodes::Classr: case Opcodes::Classrl:
@@ -295,6 +295,34 @@ namespace i960 {
             case Opcodes::Sqrtr: case Opcodes::Sqrtrl:
             case Opcodes::Subr: case Opcodes::Subrl:
             case Opcodes::Tanr: case Opcodes::Tanrl:
+                return true;
+            default:
+                return false;
+        }
+    }
+    constexpr bool isLongRealForm(Opcodes opcode) noexcept {
+        switch (opcode) {
+            case Opcodes::Addrl:
+            case Opcodes::Atanrl:
+            case Opcodes::Classrl:
+            case Opcodes::Cmporl:
+            case Opcodes::Cmprl:
+            case Opcodes::Cosrl:
+            case Opcodes::Cvtilr: 
+            case Opcodes::Divrl:
+            case Opcodes::Exprl:
+            case Opcodes::Logbnrl:
+            case Opcodes::Logeprl:
+            case Opcodes::Logrl:
+            case Opcodes::Movrl: 
+            case Opcodes::Mulrl:
+            case Opcodes::Remrl:
+            case Opcodes::Roundrl:
+            case Opcodes::Scalerl:
+            case Opcodes::Sinrl:
+            case Opcodes::Sqrtrl:
+            case Opcodes::Subrl:
+            case Opcodes::Tanrl:
                 return true;
             default:
                 return false;
