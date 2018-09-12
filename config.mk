@@ -1,6 +1,6 @@
-CXX := g++-7.3.0
-CC := gcc-7.3.0
-LD := g++-7.3.0
+CXX := g++
+CC := gcc
+LD := g++
 
 CXXFLAGS := -std=c++17
 CFLAGS := -std=c11
