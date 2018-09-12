@@ -216,20 +216,24 @@ int performInstructionTests() {
 
 }
 */
+void testOverflowOfDisplacement() noexcept {
+    union {
+        i960::Integer _displacement : 24;
+        i960::Integer _value;
+    } converter;
+    converter._value = 0;
+    converter._displacement = -8388608;
 
+    std::cout << "value: " << std::dec << converter._value << ", displacement: " << std::dec << converter._displacement << std::endl;
+}
 int main() {
 	int errorCode = 0;
 	bootupMessage(std::cout);
-	testMemoryAllocation();
+	//testMemoryAllocation();
 	outputTypeInformation();
 	errorCode = testExtendedFloatingPoint();
-    union {
-        i960::Integer _displacement : 22;
-        i960::Integer _value;
-    } converter;
-    converter._displacement = -8388608;
-    std::cout << "value: " << converter._value << ", displacement: " << converter._displacement << std::endl;
 	//errorCode = performInstructionTests();
+    testOverflowOfDisplacement();
 	std::cout << "Shutting down..." << std::endl;
 	return errorCode;
 }

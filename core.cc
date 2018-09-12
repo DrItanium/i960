@@ -178,6 +178,23 @@ namespace i960 {
        return tmp;
    }
 
+   void Core::b(Integer displacement) noexcept {
+       union {
+           Integer _value : 24;
+       } conv;
+       conv._value = displacement;
+       conv._value = conv._value > 8388604 ? 8388604 : conv._value;
+       _instructionPointer += conv._value;
+   }
+   void Core::bx(Core::SourceRegister src) noexcept {
+       _instructionPointer = src._ordinal;
+   }
+   void Core::bal(Integer displacement) noexcept {
+       _globalRegisters[14]._ordinal = _instructionPointer + 4;
+       b(displacement);
+   }
+
+
    // Begin Instruction::REGFormat implementations
    bool Instruction::REGFormat::isFloatingPoint() const noexcept {
        return i960::isFloatingPoint(i960::Opcodes(getOpcode()));
