@@ -178,6 +178,7 @@ namespace i960 {
        return tmp;
    }
 
+   // Begin Instruction::REGFormat implementations
    bool Instruction::REGFormat::isFloatingPoint() const noexcept {
        return i960::isFloatingPoint(i960::Opcodes(getOpcode()));
    }
@@ -227,6 +228,7 @@ namespace i960 {
    bool Instruction::REGFormat::src2IsFloatingPointRegister() const noexcept { 
        return _m2 != 0 && (_source2 < 0b00100); 
    }
+
 #undef __DEFAULT_THREE_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
 } // end namespace i960
