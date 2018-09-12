@@ -754,7 +754,6 @@ namespace i960 {
             void addrl(LongReal src1, LongReal src2, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(subo);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(mulo);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(divo);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(remo);
             void chkbit(SourceRegister pos, SourceRegister src) noexcept;
             void chkbit(Ordinal pos, SourceRegister src) noexcept;
@@ -855,6 +854,64 @@ namespace i960 {
             void cmpobg(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
             void cmpobge(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
             void cmpobge(Ordinal src1, SourceRegister src2, Integer targ) noexcept;
+            void concompi(SourceRegister src1, SourceRegister src2) noexcept;
+            void concompi(Ordinal src1, SourceRegister src2) noexcept;
+            void concompi(SourceRegister src1, Ordinal src2) noexcept;
+            void concompi(Ordinal src1, Ordinal src2) noexcept;
+            void concompo(SourceRegister src1, SourceRegister src2) noexcept;
+            void concompo(Ordinal src1, SourceRegister src2) noexcept;
+            void concompo(SourceRegister src1, Ordinal src2) noexcept;
+            void concompo(Ordinal src1, Ordinal src2) noexcept;
+            void condrec(SourceRegister src, DestinationRegister dest) noexcept;
+            void condwait(SourceRegister src) noexcept;
+            void cos(__DEFAULT_THREE_ARGS__) noexcept;
+            void cos(Real src1, SourceRegister src2, DestinationRegister dest) noexcept;
+            void cos(SourceRegister src1, Real src2, DestinationRegister dest) noexcept;
+            void cos(Real src1, Real src2, DestinationRegister dest) noexcept;
+            void cosrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
+            void cosrl(LongReal src1, SourceRegister src2Lower, SourceRegister src2Upper, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
+            void cosrl(SourceRegister src1Lower, SourceRegister src1Upper, LongReal src2, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
+            void cosrl(LongReal src1, LongReal src2, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
+            void cosrl(const ExtendedReal& src1, const ExtendedReal& src2, ExtendedReal& dest) noexcept;
+            // TODO signatures for cpyrsre and cpysre. 
+            // TODO various other signatures for the numerics extensions that are before divi
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(divo);
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(divi);
+            // TODO divr and divrl
+            // TODO dmovt
+            // TODO dsubc
+            // TODO ediv
+            // TODO emul
+            // TODO expr, exprl
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(extract);
+            // TODO fault signatures
+            void fill(SourceRegister dst, SourceRegister value, SourceRegister len) noexcept;
+            void fill(SourceRegister dst, Ordinal value, SourceRegister len) noexcept;
+            void fill(SourceRegister dst, SourceRegister value, Ordinal len) noexcept;
+            void fill(SourceRegister dst, Ordinal value, Ordinal len) noexcept;
+            void flushreg() noexcept;
+            void fmark() noexcept;
+            // TODO inspacc
+            void ld(SourceRegister src, DestinationRegister dest) noexcept;
+            void ldob(SourceRegister src, DestinationRegister dest) noexcept;
+            void ldos(SourceRegister src, DestinationRegister dest) noexcept;
+            void ldib(SourceRegister src, DestinationRegister dest) noexcept;
+            void ldis(SourceRegister src, DestinationRegister dest) noexcept;
+            void ldl(SourceRegister src, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
+            void ldt(SourceRegister src, DestinationRegister destLow, DestinationRegister destMid, DestinationRegister destHigh) noexcept;
+            void ldq(SourceRegister src, DestinationRegister destLow, DestinationRegister destMid, DestinationRegister destHigh, DestinationRegister destHighest) noexcept;
+            // TODO lda has a special design
+            // TODO ldphy
+            // TODO ldtime
+            // TODO logbnr and logbnrl
+            // TODO logepr and logeprl
+            // TODO logr and logrl
+            void mark() noexcept;
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(modifyac);
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(modi);
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(modify);
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(modpc);
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(modtc);
 #undef __GENERATE_DEFAULT_THREE_ARG_SIGS__
 #undef __DEFAULT_THREE_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
