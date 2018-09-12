@@ -1,5 +1,6 @@
 #include "types.h"
 #include "operations.h"
+#include "opcodes.h"
 #define __DEFAULT_THREE_ARGS__ Core::SourceRegister src1, Core::SourceRegister src2, Core::DestinationRegister dest
 #define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ const DoubleRegister& src1, const DoubleRegister& src2, DoubleRegister& dest
 namespace i960 {
@@ -153,7 +154,32 @@ namespace i960 {
    void Core::movl(Core::LongSourceRegister src, Core::LongDestinationRegister dest) noexcept { dest.move(src); }
    void Core::movt(const TripleRegister& src, TripleRegister& dest) noexcept { dest.move(src); }
    void Core::movq(const QuadRegister& src, QuadRegister& dest) noexcept { dest.move(src); }
+   NormalRegister& Core::stashNewLiteral(ByteOrdinal pos, Ordinal value) noexcept {
+        auto mask = pos & 0xF;
+        _internalRegisters[mask]._ordinal = value;
+        return _internalRegisters[mask];
+   }
+   NormalRegister& Core::stashNewLiteral(ByteOrdinal pos, RawReal value) noexcept {
+       auto mask = pos & 0xF;
+       _internalRegisters[mask]._real._floating = value;
+       return _internalRegisters[mask];
+   }
+   DoubleRegister Core::stashNewLiteral(ByteOrdinal pos, LongOrdinal value) noexcept {
+       auto mask = pos & 0b1110; // must be even
+       DoubleRegister tmp(_internalRegisters[mask], _internalRegisters[mask+1]);
+       tmp.set(value);
+       return tmp;
+   }
+   DoubleRegister Core::stashNewLiteral(ByteOrdinal pos, RawLongReal value) noexcept {
+       auto mask = pos & 0b1110; // must be even
+       DoubleRegister tmp(_internalRegisters[mask], _internalRegisters[mask+1]);
+       tmp.set(value);
+       return tmp;
+   }
 
+   bool Instruction::REGFormat::isFloatingPoint() const noexcept {
+       return i960::isFloatingPoint(i960::Opcodes(getOpcode()));
+   }
 #undef __DEFAULT_THREE_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
 } // end namespace i960

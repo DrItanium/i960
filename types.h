@@ -617,6 +617,11 @@ namespace i960 {
 			Ordinal getOpcode() const noexcept {
 				return (_opcode << 4) | _opcode2;
 			}
+            bool src1IsLiteral() const noexcept { return _m1 != 0; }
+            bool src2IsLiteral() const noexcept { return _m2 != 0; }
+            ByteOrdinal src1ToIntegerLiteral() const noexcept { return _source1; }
+            ByteOrdinal src2ToIntegerLiteral() const noexcept { return _source2; }
+            bool isFloatingPoint() const noexcept;
 		};
 		struct COBRFormat {
 			Ordinal _sfr : 1;
@@ -1021,6 +1026,9 @@ namespace i960 {
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(xnor);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(xorOp);
             NormalRegister& stashNewLiteral(ByteOrdinal index, Ordinal value) noexcept;
+            NormalRegister& stashNewLiteral(ByteOrdinal index, RawReal value) noexcept;
+            DoubleRegister stashNewLiteral(ByteOrdinal index, LongOrdinal value) noexcept;
+            DoubleRegister stashNewLiteral(ByteOrdinal index, RawLongReal value) noexcept;
 
 #undef __GENERATE_DEFAULT_THREE_ARG_SIGS__
 #undef __DEFAULT_THREE_ARGS__
