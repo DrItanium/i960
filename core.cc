@@ -1,7 +1,7 @@
 #include "types.h"
 #include "operations.h"
 #define __DEFAULT_THREE_ARGS__ Core::SourceRegister src1, Core::SourceRegister src2, Core::DestinationRegister dest
-#define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ Core::SourceRegister src1Lower, Core::SourceRegister src1Upper, Core::SourceRegister src2Lower, Core::SourceRegister src2Upper, Core::DestinationRegister destLower, Core::DestinationRegister destUpper
+#define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ const DoubleRegister& src1, const DoubleRegister& src2, DoubleRegister& dest
 namespace i960 {
    Ordinal Core::getStackPointerAddress() const noexcept {
        return _localRegisters[StackPointerIndex]._ordinal;
@@ -98,11 +98,10 @@ namespace i960 {
    }
    void Core::addrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept {
 #warning "addrl does not implement any fault detection"
-       LongReal src1(src1Lower._ordinal, src1Upper._ordinal);
-       LongReal src2(src2Lower._ordinal, src2Lower._ordinal);
-       LongReal dest(src1._floating + src2._floating);
-       destLower._ordinal = dest.lowerHalf();
-       destUpper._ordinal = dest.upperHalf();
+       LongReal s1 = src1.get<LongReal>();
+       LongReal s2 = src2.get<LongReal>();
+       LongReal out(s1._floating + s2._floating);
+       dest.set(out);
    }
    void Core::subo(__DEFAULT_THREE_ARGS__) noexcept {
        dest._ordinal = src2._ordinal - src1._ordinal; 

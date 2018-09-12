@@ -112,6 +112,41 @@ namespace i960 {
 		Real _real;
         ByteOrdinal _byteOrd;
 	};
+    class DoubleRegister {
+      private:
+          template<typename T>
+          static constexpr bool LegalConversion = false;
+      public:
+          DoubleRegister(NormalRegister& lower, NormalRegister& upper) : _lower(lower), _upper(upper) { }
+          ~DoubleRegister() = default;
+          template<typename T>
+          T get() const noexcept {
+              using K = std::decay_t<T>;
+              if constexpr(std::is_same_v<K, LongOrdinal>) {
+                return LongOrdinal(_lower._ordinal) | (LongOrdinal(_upper._ordinal) << 32);
+              } else if constexpr(std::is_same_v<K, LongReal>) {
+                return LongReal(_lower._ordinal, _upper._ordinal);
+              } else {
+                  static_assert(LegalConversion<K>, "Illegal type requested");
+              }
+          }
+          template<typename T>
+          void set(T value) noexcept {
+              using K = std::decay_t<T>;
+              if constexpr(std::is_same_v<K, LongOrdinal>) {
+                  _lower._ordinal = static_cast<Ordinal>(value);
+                  _upper._ordinal = static_cast<Ordinal>(value >> 32);
+              } else if constexpr (std::is_same_v<K, LongReal>) {
+                  _lower._ordinal = value.lowerHalf();
+                  _upper._ordinal = value.upperHalf();
+              } else {
+                  static_assert(LegalConversion<K>, "Illegal type requested");
+              }
+          }
+      private:
+          NormalRegister& _lower;
+          NormalRegister& _upper;
+    };
     MustBeSizeOfOrdinal(NormalRegister, "NormalRegister must be 32-bits wide!");
 	union ArithmeticControls {
 		struct {
@@ -731,7 +766,7 @@ namespace i960 {
             Ordinal getFramePointerAddress() const noexcept;
         private:
 #define __DEFAULT_THREE_ARGS__ SourceRegister src1, SourceRegister src2, DestinationRegister dest
-#define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ SourceRegister src1Lower, SourceRegister src1Upper, SourceRegister src2Lower, SourceRegister src2Upper, DestinationRegister destLower, DestinationRegister destUpper
+#define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ const DoubleRegister& src1, const DoubleRegister& src2, DoubleRegister& dest
 #define __GENERATE_DEFAULT_THREE_ARG_SIGS__(name) void name (__DEFAULT_THREE_ARGS__) noexcept
 
             void move(SourceRegister src, DestinationRegister dest) noexcept;
@@ -803,20 +838,30 @@ namespace i960 {
             void cosrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
             // TODO signatures for cpyrsre and cpysre. 
             // TODO various other signatures for the numerics extensions that are before divi
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(daddc);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(divo);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(divi);
-            // TODO divr and divrl
-            // TODO dmovt
-            // TODO dsubc
-            // TODO ediv
-            // TODO emul
-            // TODO expr, exprl
+            void divr(__DEFAULT_THREE_ARGS__) noexcept; // TODO divr and divrl do not support extended registers yet
+            void divrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
+            void dmovt(SourceRegister src, DestinationRegister dest) noexcept;
+            __GENERATE_DEFAULT_THREE_ARG_SIGS__(dsubc);
+            void ediv(SourceRegister src1, const DoubleRegister& src2, DestinationRegister remainder, DestinationRegister quotient) noexcept;
+            void emul(SourceRegister src1, SourceRegister src2, DoubleRegister& dest) noexcept;
+            void expr(SourceRegister src, DestinationRegister dest) noexcept;
+            void exprl(const DoubleRegister& src, DoubleRegister& dest) noexcept;
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(extract);
-            // TODO fault signatures
+            void faulte() noexcept;
+            void faultne() noexcept;
+            void faultl() noexcept;
+            void faultle() noexcept;
+            void faultg() noexcept;
+            void faultge() noexcept;
+            void faulto() noexcept;
+            void faultno() noexcept;
             void fill(SourceRegister dst, SourceRegister value, SourceRegister len) noexcept;
             void flushreg() noexcept;
             void fmark() noexcept;
-            // TODO inspacc
+            void inspacc(SourceRegister src, DestinationRegister dest) noexcept;
             void ld(SourceRegister src, DestinationRegister dest) noexcept;
             void ldob(SourceRegister src, DestinationRegister dest) noexcept;
             void ldos(SourceRegister src, DestinationRegister dest) noexcept;
@@ -825,9 +870,11 @@ namespace i960 {
             void ldl(SourceRegister src, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
             void ldt(SourceRegister src, DestinationRegister destLow, DestinationRegister destMid, DestinationRegister destHigh) noexcept;
             void ldq(SourceRegister src, DestinationRegister destLow, DestinationRegister destMid, DestinationRegister destHigh, DestinationRegister destHighest) noexcept;
-            // TODO lda has a special design
-            // TODO ldphy
-            // TODO ldtime
+            void lda(SourceRegister src, DestinationRegister dest) noexcept;
+            void ldphy(SourceRegister src, DestinationRegister dest) noexcept;
+            void ldtime(DestinationRegister dest) noexcept;
+            void logbnr(SourceRegister src, DestinationRegister dest) noexcept;
+            void logbnrl(SourceRegister srcLower, SourceRegister srcUpper, DestinationRegister destLower, DestinationRegister destUpper) noexcept;
             // TODO logbnr and logbnrl
             // TODO logepr and logeprl
             // TODO logr and logrl
