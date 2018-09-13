@@ -225,6 +225,10 @@ void testOverflowOfDisplacement() noexcept {
     converter._displacement = -8388608;
 
     std::cout << "value: " << std::dec << converter._value << ", displacement: " << std::dec << converter._displacement << std::endl;
+	i960::Ordinal _base = 0xFF00'0000;
+	std::cout << "Base value: " << _base << std::endl;
+	std::cout << "Combined value: " << (_base + converter._displacement) << std::endl;
+	std::cout << "Combined value is less: " << std::boolalpha << ((_base + converter._displacement) < _base) << std::endl;
 }
 int main() {
 	int errorCode = 0;
