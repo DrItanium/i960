@@ -172,14 +172,26 @@ void testMemoryAllocation() {
 	std::cout << "Allocating Test Memory And Randomizing" << std::endl;
     // allocate 1 gb of space in each region max
     auto region0 = std::make_unique<i960::ByteOrdinal[]>(mem1G);
-    //auto region1 = std::make_unique<i960::ByteOrdinal[]>(mem1G);
-    //auto region2 = std::make_unique<i960::ByteOrdinal[]>(mem1G);
-    //auto region3 = std::make_unique<i960::ByteOrdinal[]>(mem1G);
-    for(int i = 0; i < mem1G; ++i) {
-        region0[i] = 0x12;
-        //region1[i] = 0x34;
-        //region2[i] = 0x56;
-        //region3[i] = 0x78;
+    auto region1 = std::make_unique<i960::ByteOrdinal[]>(mem1G);
+    auto region2 = std::make_unique<i960::ByteOrdinal[]>(mem1G);
+    auto region3 = std::make_unique<i960::ByteOrdinal[]>(mem1G);
+	for (int i = 0; i < mem1G; ++i) {
+		region0[i] = 0x12;
+		region1[i] = 0x34;
+		region2[i] = 0x56;
+		region3[i] = 0x78;
+	}
+	std::cout << "Byte Writing Complete" << std::endl;
+	std::cout << "Starting Long Ordinal Writes" << std::endl;
+	i960::LongOrdinal* r0 = (i960::LongOrdinal*)region0.get();
+	i960::LongOrdinal* r1 = (i960::LongOrdinal*)region1.get();
+	i960::LongOrdinal* r2 = (i960::LongOrdinal*)region2.get();
+	i960::LongOrdinal* r3 = (i960::LongOrdinal*)region3.get();
+    for(int i = 0; i < (mem1G / sizeof(i960::LongOrdinal)); ++i) {
+		r0[i] = 0x123456789ABCDEF0;
+		r1[i] = 0x0123456789ABCDEF;
+		r2[i] = 0xF0123456789ABCDE;
+		r3[i] = 0xEF0123456789ABCD;
     }
 	std::cout << "Memory Allocation and randomization complete" << std::endl << std::endl;
 }
@@ -233,7 +245,7 @@ void testOverflowOfDisplacement() noexcept {
 int main() {
 	int errorCode = 0;
 	bootupMessage(std::cout);
-	//testMemoryAllocation();
+	testMemoryAllocation();
 	outputTypeInformation();
 	errorCode = testExtendedFloatingPoint();
 	//errorCode = performInstructionTests();
