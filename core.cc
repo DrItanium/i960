@@ -90,18 +90,6 @@ namespace i960 {
 #warning "addi does not check for integer overflow"
        dest._integer = src2._integer + src1._integer;
    }
-   void Core::addr(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "addr does not implement any fault detection"
-
-       dest._real._floating = (src2._real._floating + src1._real._floating);
-   }
-   void Core::addrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept {
-#warning "addrl does not implement any fault detection"
-       LongReal s1 = src1.get<LongReal>();
-       LongReal s2 = src2.get<LongReal>();
-       LongReal out(s1._floating + s2._floating);
-       dest.set(out);
-   }
    void Core::subo(__DEFAULT_THREE_ARGS__) noexcept {
        dest._ordinal = src2._ordinal - src1._ordinal; 
    }
@@ -386,6 +374,19 @@ namespace i960 {
         _mid._ordinal = m;
         _upper._ordinal = u;
         _highest._ordinal = h;
+    }
+
+    void Core::addr(__DEFAULT_THREE_ARGS__) noexcept {
+        dest.set(src2.get<RawReal>() + src1.get<RawReal>());
+    }
+    void Core::addrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept {
+        dest.set(src2.get<RawLongReal>() + src1.get<RawLongReal>());
+    }
+    void Core::xnor(__DEFAULT_THREE_ARGS__) noexcept {
+        dest._ordinal = i960::xnor<Ordinal>(src1.get<Ordinal>(), src2.get<Ordinal>());
+    }
+    void Core::xorOp(__DEFAULT_THREE_ARGS__) noexcept {
+        dest._ordinal = i960::xorOp<Ordinal>(src1.get<Ordinal>(), src2.get<Ordinal>());
     }
 
 #undef __DEFAULT_THREE_ARGS__

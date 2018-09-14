@@ -101,16 +101,63 @@ namespace i960 {
         Ordinal _value;
     } __attribute__((packed));
     union NormalRegister {
-        NormalRegister(Ordinal value) : _ordinal(value) { }
-        NormalRegister() : NormalRegister(0u) { }
-        ~NormalRegister() { _ordinal = 0; }
+        private:
+            template<typename T>
+                static constexpr bool LegalConversion = false;
+        public:
+            NormalRegister(Ordinal value) : _ordinal(value) { }
+            NormalRegister() : NormalRegister(0u) { }
+            ~NormalRegister() { _ordinal = 0; }
 
-        PreviousFramePointer _pfp;
-        Ordinal _ordinal;
-        Integer _integer;
-        Real _real;
-        ByteOrdinal _byteOrd;
-        ShortOrdinal _shortOrd;
+            PreviousFramePointer _pfp;
+            Ordinal _ordinal;
+            Integer _integer;
+            Real _real;
+            ByteOrdinal _byteOrd;
+            ShortOrdinal _shortOrd;
+
+            template<typename T>
+                T get() const noexcept {
+                    using K = std::decay_t<T>;
+                    if constexpr(std::is_same_v<K, Ordinal>) {
+                        return _ordinal;
+                    } else if constexpr(std::is_same_v<K, Integer>) {
+                        return _integer;
+                    } else if constexpr(std::is_same_v<K, ByteOrdinal>) {
+                        return _byteOrd;
+                    } else if constexpr(std::is_same_v<K, ShortOrdinal>) {
+                        return _shortOrd;
+                    } else if constexpr(std::is_same_v<K, Real>) {
+                        return _real;
+                    } else if constexpr(std::is_same_v<K, RawReal>) {
+                        return _real._floating;
+                    } else if constexpr(std::is_same_v<K, PreviousFramePointer>) {
+                        return _pfp;
+                    } else {
+                        static_assert(LegalConversion<K>, "Illegal type requested");
+                    }
+                }
+            template<typename T>
+                void set(T value) noexcept {
+                    using K = std::decay_t<T>;
+                    if constexpr(std::is_same_v<K, Ordinal>) {
+                        _ordinal = value;
+                    } else if constexpr(std::is_same_v<K, Integer>) {
+                        _integer = value;
+                    } else if constexpr(std::is_same_v<K, ByteOrdinal>) {
+                        _byteOrd = value;
+                    } else if constexpr(std::is_same_v<K, ShortOrdinal>) {
+                        _shortOrd = value;
+                    } else if constexpr(std::is_same_v<K, Real>) {
+                        _real._floating = value._floating;
+                    } else if constexpr(std::is_same_v<K, RawReal>) {
+                        _real._floating = value;
+                    } else if constexpr(std::is_same_v<K, PreviousFramePointer>) {
+                        _ordinal = value._value;
+                    } else {
+                        static_assert(LegalConversion<K>, "Illegal type requested");
+                    }
+                }
     };
     class DoubleRegister {
         private:

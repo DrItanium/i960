@@ -86,26 +86,9 @@ namespace i960 {
             return clearBit(value, position);
         }
     }
-    /**
-     * Shifts a specified bit field in value right and fills the bits to the left of
-     * the shifted bit field with zeros. 
-     * @param value Data to be shifted
-     * @param position specifies the least significant bit of the bit field to be shifted
-     * @param length specifies the length of the bit field
-     * @return A value where the bitfield in value is shifted and zeros are put in place of all other values
-     */
-    Ordinal extract(Ordinal value, Ordinal position, Ordinal length) noexcept;
     constexpr Ordinal modify(Ordinal value, Ordinal inject, Ordinal mask) noexcept {
         return (inject & mask) | (value & (~mask));
     }
-    /**
-     * Find the most significant set bit
-     */
-    Ordinal scanBit(ArithmeticControls& ac, Ordinal value) noexcept;
-    /**
-     * Find the most significant clear bit
-     */
-    Ordinal spanBit(ArithmeticControls& ac, Ordinal value) noexcept;
     void scanByte(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
     Ordinal alterBit(const ArithmeticControls& ac, Ordinal src, Ordinal position) noexcept;
     template<typename T>
@@ -126,13 +109,6 @@ namespace i960 {
     Ordinal compareAndIncrement(ArithmeticControls& ac, Ordinal src1, Ordinal src2);
     void conditionalCompare(ArithmeticControls& ac, Integer src1, Integer src2);
     void conditionalCompare(ArithmeticControls& ac, Ordinal src1, Ordinal src2);
-    /**
-     * Divides src2 by src1 and returns the result.
-     * @param src1 a normal ordinal that is the denominator
-     * @param src2 a long ordinal that is the numerator
-     * @return a long ordinal where the lower ordinal is the remainder and the upper ordinal is the quotient
-     */
-    LongOrdinal extendedDivide(Ordinal src1, LongOrdinal src2) noexcept;
 
     constexpr LongOrdinal multiply(LongOrdinal a, LongOrdinal b) noexcept {
         return a * b;
@@ -147,14 +123,11 @@ namespace i960 {
         return multiply(LongOrdinal(src1), LongOrdinal(src2));
     }
 
-    Integer modulo(ArithmeticControls& ac, Integer src1, Integer src2) noexcept;
-
     constexpr Ordinal rotate(Ordinal src, Ordinal length) noexcept {
 		// taken from the wikipedia entry on circular shifts through my syn
 		// project
 		return Ordinal((src << length) | (src >> ((-length) & 31u)));
 	}
-    Ordinal subtractWithCarry(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
 	
     inline Real add(Real a, Real b) noexcept { return Real(a._floating + b._floating); }
     inline LongReal add(LongReal a, LongReal b) noexcept { return LongReal(a._floating + b._floating); }
