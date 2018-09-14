@@ -1,6 +1,6 @@
 include config.mk
 
-OBJS := coreops.o misc.o sim.o numericops.o core.o
+OBJS := misc.o sim.o numericops.o core.o
 PROG := sim960
 
 
@@ -30,7 +30,6 @@ clean:
 	@echo Cleaning...
 	@rm -f ${OBJS} ${PROG}
 
-coreops.o: operations.h types.h archlevel.h coreops.cc
 numericops.o: operations.h types.h archlevel.h numericops.cc
 sim.o: operations.h types.h opcodes.h archlevel.h sim.cc
 misc.o: archlevel.h types.h misc.cc

@@ -101,6 +101,10 @@ namespace i960 {
         Ordinal _value;
     } __attribute__((packed));
     union NormalRegister {
+        NormalRegister(Ordinal value) : _ordinal(value) { }
+        NormalRegister() : NormalRegister(0u) { }
+        ~NormalRegister() { _ordinal = 0; }
+
         PreviousFramePointer _pfp;
         Ordinal _ordinal;
         Integer _integer;

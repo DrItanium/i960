@@ -245,6 +245,94 @@ namespace i960 {
    bool Instruction::REGFormat::src2IsFloatingPointRegister() const noexcept { 
        return _m2 != 0 && (_source2 < 0b00100); 
    }
+    /**
+     * Shifts a specified bit field in value right and fills the bits to the left of
+     * the shifted bit field with zeros. 
+     * @param value Data to be shifted
+     * @param position specifies the least significant bit of the bit field to be shifted
+     * @param length specifies the length of the bit field
+     * @return A value where the bitfield in value is shifted and zeros are put in place of all other values
+     */
+    constexpr Ordinal decode(Ordinal value, Ordinal position, Ordinal length) noexcept {
+		auto shifted = value >> (position & 0b11111);
+		auto mask = ((1 << length) - 1); // taken from the i960 documentation
+		return shifted & mask;
+    }
+
+    void Core::extract(Core::SourceRegister bitpos, Core::SourceRegister len, Core::DestinationRegister srcDest) noexcept {
+        srcDest._ordinal = decode(bitpos._ordinal, len._ordinal, srcDest._ordinal);
+    }
+
+    constexpr bool mostSignificantBitSet(Ordinal value) noexcept {
+        return (value & 0x8000'0000) != 0;
+    }
+    constexpr bool mostSignificantBitClear(Ordinal value) noexcept {
+        return !mostSignificantBitSet(value);
+    }
+    /**
+     * Find the most significant set bit
+     */
+    void Core::scanbit(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
+        auto k = src._ordinal;
+        _ac._conditionCode = 0b000;
+        for (int i = 31; i >= 0; --i) {
+            if (mostSignificantBitSet(k)) {
+                _ac._conditionCode = 0b010;
+                dest._ordinal = Ordinal(i);
+                return;
+            }
+            k <<= 1;
+        }
+        dest._ordinal = 0xFFFF'FFFF;
+    }
+    /**
+     * Find the most significant clear bit
+     */
+    void Core::spanbit(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
+        auto k = src._ordinal;
+        _ac._conditionCode = 0b000;
+        for (int i = 31; i >= 0; --i) {
+            if (mostSignificantBitClear(k)) {
+                _ac._conditionCode = 0b010;
+                dest._ordinal = Ordinal(i);
+                return;
+            }
+            k <<= 1;
+        }
+        dest._ordinal = 0xFFFF'FFFF;
+    }
+    void Core::modi(__DEFAULT_THREE_ARGS__) noexcept {
+        NormalRegister internalRegister;
+        divi(src1, src2, internalRegister);
+        auto result = internalRegister._integer * src1._integer;
+        dest._integer = src2._integer - result;
+        if ((src2._integer * src1._integer) < 0) {
+            dest._integer = dest._integer + src1._integer;
+        }
+    }
+    void Core::subc(__DEFAULT_THREE_ARGS__) noexcept {
+		auto s1 = src1._ordinal - 1u;
+		auto carryBit = _ac._conditionCode & 0b010 != 0 ? 1u : 0u;
+		// need to identify if overflow will occur
+        auto result = src2._ordinal - s1;
+        result += carryBit;
+#warning "subc does not implement integer overflow detection, needs to be implemented"
+		auto v = 0; // TODO fix this by identifying if integer subtraction would've produced an overflow and set v
+		_ac._conditionCode = (carryBit << 1) | v;
+        dest._ordinal = result;
+	}
+    void Core::ediv(Core::SourceRegister src1, Core::LongSourceRegister src2, Core::DestinationRegister remainder, Core::DestinationRegister quotient) noexcept {
+        auto s2 = src2.get<LongOrdinal>();
+        auto s1 = src1._ordinal;
+        auto divOp = s2 / s1;
+#warning "ediv does not check for divison by zero!"
+        remainder._ordinal = (s2 - divOp * s1);
+        quotient._ordinal = divOp;
+    }
+    void Core::divi(__DEFAULT_THREE_ARGS__) noexcept {
+#warning "divi does not check for division by zero!"
+        dest._integer = src2._integer / src1._integer;
+    }
 
 #undef __DEFAULT_THREE_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
