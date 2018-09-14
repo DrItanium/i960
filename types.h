@@ -894,6 +894,7 @@ namespace i960 {
 #define __DEFAULT_THREE_ARGS__ SourceRegister src1, SourceRegister src2, DestinationRegister dest
 #define __DEFAULT_TWO_ARGS__ SourceRegister src, DestinationRegister dest
 #define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ LongSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest
+#define __DEFAULT_DOUBLE_WIDE_TWO_ARGS__ LongSourceRegister src, LongDestinationRegister dest
 #define __GENERATE_DEFAULT_THREE_ARG_SIGS__(name) void name (__DEFAULT_THREE_ARGS__) noexcept
 
             void callx(SourceRegister value) noexcept;
@@ -957,8 +958,8 @@ namespace i960 {
             void concompo(SourceRegister src1, SourceRegister src2) noexcept;
             void condrec(SourceRegister src, DestinationRegister dest) noexcept;
             void condwait(SourceRegister src) noexcept;
-            void cos(__DEFAULT_THREE_ARGS__) noexcept;
-            void cosrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
+            void cosr(__DEFAULT_TWO_ARGS__) noexcept;
+            void cosrl(__DEFAULT_DOUBLE_WIDE_TWO_ARGS__) noexcept;
             void cpysre(__DEFAULT_THREE_ARGS__) noexcept; // TODO fix the signature of this function
             void cpyrsre(__DEFAULT_THREE_ARGS__) noexcept; // TODO fix the signature of this function
             void cvtilr(LongSourceRegister src, ExtendedReal& dest) noexcept;
@@ -1061,7 +1062,7 @@ namespace i960 {
             void shrdi(__DEFAULT_THREE_ARGS__) noexcept;
             void signal(SourceRegister src) noexcept;
             void sinr(__DEFAULT_TWO_ARGS__) noexcept; 
-            void sinrl(LongSourceRegister src, LongDestinationRegister dest) noexcept; 
+            void sinrl(__DEFAULT_DOUBLE_WIDE_TWO_ARGS__) noexcept; 
             void spanbit(__DEFAULT_TWO_ARGS__) noexcept;
             void sqrtr(__DEFAULT_TWO_ARGS__) noexcept;
             void sqrtrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
@@ -1105,6 +1106,7 @@ namespace i960 {
 #undef __DEFAULT_THREE_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
 #undef __DEFAULT_TWO_ARGS__
+#undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
         private:
             RegisterWindow _globalRegisters;
             // The hardware implementations use register sets, however
