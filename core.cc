@@ -151,10 +151,18 @@ namespace i960 {
        _highest._ordinal = other._highest._ordinal;
    }
 
-   void Core::mov(Core::SourceRegister src, Core::DestinationRegister dest) noexcept { dest._ordinal = src._ordinal; }
-   void Core::movl(Core::LongSourceRegister src, Core::LongDestinationRegister dest) noexcept { dest.move(src); }
-   void Core::movt(const TripleRegister& src, TripleRegister& dest) noexcept { dest.move(src); }
-   void Core::movq(const QuadRegister& src, QuadRegister& dest) noexcept { dest.move(src); }
+   void Core::mov(Core::SourceRegister src, Core::DestinationRegister dest) noexcept { 
+       dest._ordinal = src._ordinal; 
+   }
+   void Core::movl(Core::LongSourceRegister src, Core::LongDestinationRegister dest) noexcept { 
+       dest.move(src); 
+   }
+   void Core::movt(const TripleRegister& src, TripleRegister& dest) noexcept { 
+       dest.move(src); 
+   }
+   void Core::movq(const QuadRegister& src, QuadRegister& dest) noexcept {
+       dest.move(src); 
+   }
    NormalRegister& Core::stashNewLiteral(ByteOrdinal pos, Ordinal value) noexcept {
         auto mask = pos & 0xF;
         _internalRegisters[mask]._ordinal = value;
@@ -332,6 +340,52 @@ namespace i960 {
     void Core::divi(__DEFAULT_THREE_ARGS__) noexcept {
 #warning "divi does not check for division by zero!"
         dest._integer = src2._integer / src1._integer;
+    }
+
+    void Core::ld(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
+        // this is the base operation for load, src contains the fully computed value
+        // so this will probably be an internal register in most cases.
+#warning "ld not implemented!"
+        dest._ordinal = load(src._ordinal);
+    }
+    void Core::ldob(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
+        dest._byteOrd = load(src._ordinal);
+    }
+    void Core::ldos(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
+        dest._shortOrd = load(src._ordinal);
+    }
+    void Core::ldib(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
+#warning "A special loadbyte instruction is probably necessary"
+        dest._integer = (ByteInteger)load(src._ordinal);
+    }
+    void Core::ldis(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
+#warning "A special loadshort instruction is probably necessary"
+        dest._integer = (ShortInteger)load(src._ordinal);
+    }
+
+    void Core::ldl(Core::SourceRegister src, Core::LongDestinationRegister dest) noexcept {
+        dest.set(load(src._ordinal), load(src._ordinal + 1));
+    }
+    void DoubleRegister::set(Ordinal lower, Ordinal upper) noexcept {
+        _lower._ordinal = lower;
+        _upper._ordinal = upper;
+    }
+    void Core::ldt(Core::SourceRegister src, TripleRegister& dest) noexcept {
+        dest.set(load(src._ordinal), load(src._ordinal + 1), load(src._ordinal + 2));
+    }
+    void TripleRegister::set(Ordinal l, Ordinal m, Ordinal u) noexcept {
+        _lower._ordinal = l;
+        _mid._ordinal = m;
+        _upper._ordinal = u;
+    }
+    void Core::ldq(Core::SourceRegister src, QuadRegister& dest) noexcept {
+        dest.set(load(src._ordinal), load(src._ordinal + 1), load(src._ordinal + 2), load(src._ordinal + 3));
+    }
+    void QuadRegister::set(Ordinal l, Ordinal m, Ordinal u, Ordinal h) noexcept {
+        _lower._ordinal = l;
+        _mid._ordinal = m;
+        _upper._ordinal = u;
+        _highest._ordinal = h;
     }
 
 #undef __DEFAULT_THREE_ARGS__

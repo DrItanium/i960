@@ -110,6 +110,7 @@ namespace i960 {
         Integer _integer;
         Real _real;
         ByteOrdinal _byteOrd;
+        ShortOrdinal _shortOrd;
     };
     class DoubleRegister {
         private:
@@ -146,6 +147,7 @@ namespace i960 {
                         static_assert(LegalConversion<K>, "Illegal type requested");
                     }
                 }
+            void set(Ordinal lower, Ordinal upper) noexcept;
             void move(const DoubleRegister& other) noexcept;
         private:
             NormalRegister& _lower;
@@ -182,6 +184,7 @@ namespace i960 {
                         static_assert(LegalConversion<K>, "Illegal type requested");
                     }
                 }
+            void set(Ordinal lower, Ordinal mid, Ordinal upper) noexcept;
             void move(const TripleRegister& other) noexcept;
         private:
             NormalRegister& _lower;
@@ -192,6 +195,7 @@ namespace i960 {
         public:
             QuadRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& high, NormalRegister& highest) : _lower(lower), _mid(mid), _upper(high), _highest(highest) { }
             ~QuadRegister() = default;
+            void set(Ordinal lower, Ordinal mid, Ordinal upper, Ordinal highest) noexcept;
             void move(const QuadRegister& other) noexcept;
         private:
             NormalRegister& _lower;
