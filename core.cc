@@ -446,8 +446,29 @@ namespace i960 {
 #warning "TODO: implement this"
 	}
 	void Core::dispatch(const Instruction::CTRLFormat& i) noexcept {
-
-#warning "TODO: implement this"
+		Integer displacement = i._displacement;
+		switch (static_cast<Opcodes>(i._opcode)) {
+			case Opcodes::B: 
+				b(displacement); 
+				break;
+			case Opcodes::Call: 
+				call(displacement); 
+				break;
+			case Opcodes::Ret:
+				ret();
+				break;
+			case Opcodes::Bal:
+				bal(displacement);
+				break;
+#define X(kind) \
+			case Opcodes:: B ## kind : b ## kind (displacement) ; break; \
+			case Opcodes:: Fault ## kind : fault ## kind (displacement) ; break;
+#include "conditional_kinds.def"
+#undef X
+			default:
+#warning "Generate illegal instruction fault"
+				throw "Illegal Instruction";
+		}
 	}
 	void Core::dispatch(const Instruction::MemFormat& i) noexcept {
 
