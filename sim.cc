@@ -242,6 +242,12 @@ void testOverflowOfDisplacement() noexcept {
 	std::cout << "Combined value: " << (_base + converter._displacement) << std::endl;
 	std::cout << "Combined value is less: " << std::boolalpha << ((_base + converter._displacement) < _base) << std::endl;
 }
+void testInstructionEncoding() {
+	using Instruction = i960::Instruction;
+	Instruction test(127);
+	std::cout << "test encoding: " << std::hex << test._raw << std::endl;
+	std::cout << "\tencoded format for mema: " << std::hex << test._mem._mema._offset << std::endl;
+}
 int main() {
 	int errorCode = 0;
 	bootupMessage(std::cout);
@@ -250,6 +256,8 @@ int main() {
 	errorCode = testExtendedFloatingPoint();
 	//errorCode = performInstructionTests();
     testOverflowOfDisplacement();
+	testInstructionEncoding();
 	std::cout << "Shutting down..." << std::endl;
+
 	return errorCode;
 }
