@@ -91,18 +91,6 @@ namespace i960 {
     }
     void scanByte(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
     Ordinal alterBit(const ArithmeticControls& ac, Ordinal src, Ordinal position) noexcept;
-    template<typename T>
-    void compare(ArithmeticControls& ac, T src1, T src2) noexcept {
-        if (src1 < src2) {
-            ac._conditionCode = 0b100;
-        } else if (src1 == src2) {
-            ac._conditionCode = 0b010;
-        } else {
-            ac._conditionCode = 0b001;
-        }
-    }
-    template void compare<Integer>(ArithmeticControls& ac, Integer src1, Integer src2) noexcept;
-    template void compare<Ordinal>(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
     Integer compareAndDecrement(ArithmeticControls& ac, Integer src1, Integer src2);
     Ordinal compareAndDecrement(ArithmeticControls& ac, Ordinal src1, Ordinal src2);
     Integer compareAndIncrement(ArithmeticControls& ac, Integer src1, Integer src2);
@@ -218,8 +206,8 @@ namespace i960 {
     LongReal exponent(LongReal src) noexcept;
     void compareOrdered(ArithmeticControls& ac, Real src1, Real src2) noexcept;
     void compareOrdered(ArithmeticControls& ac, LongReal src1, LongReal src2) noexcept;
-	void compare(ArithmeticControls& ac, Real src1, Real src2) noexcept;
-	void compare(ArithmeticControls& ac, LongReal src1, LongReal src2) noexcept;
+	//void compare(ArithmeticControls& ac, Real src1, Real src2) noexcept;
+	//void compare(ArithmeticControls& ac, LongReal src1, LongReal src2) noexcept;
     bool isUnordered(Real r) noexcept;
     bool isUnordered(LongReal r) noexcept;
     bool isUnordered(ExtendedReal r) noexcept;

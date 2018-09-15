@@ -404,6 +404,20 @@ namespace i960 {
     void Core::atanrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept {
         dest.set<RawLongReal>(::atan(src2.get<RawLongReal>() / src1.get<RawLongReal>()));
     }
+    template<typename T>
+    void compare(ArithmeticControls& ac, T src1, T src2) noexcept {
+        if (src1 < src2) {
+            ac._conditionCode = 0b100;
+        } else if (src1 == src2) {
+            ac._conditionCode = 0b010;
+        } else {
+            ac._conditionCode = 0b001;
+        }
+    }
+    void Core::cmpi(Core::SourceRegister src1, Core::SourceRegister src2) noexcept { compare(_ac, src1.get<Integer>(), src2.get<Integer>()); }
+    void Core::cmpo(Core::SourceRegister src1, Core::SourceRegister src2) noexcept { compare(_ac, src1.get<Ordinal>(), src2.get<Ordinal>()); }
+    void Core::cmpr(Core::SourceRegister src1, Core::SourceRegister src2) noexcept { compare(_ac, src1.get<RawReal>(), src2.get<RawReal>()); }
+    void Core::cmprl(Core::LongSourceRegister src1, Core::LongSourceRegister src2) noexcept { compare(_ac, src1.get<RawLongReal>(), src2.get<RawLongReal>()); }
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__

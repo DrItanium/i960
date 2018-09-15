@@ -940,6 +940,7 @@ namespace i960 {
             void cmpor(SourceRegister src1, SourceRegister src2) noexcept;
             void cmporl(SourceRegister src1Lower, SourceRegister src1Upper, SourceRegister src2Lower, SourceRegister src2Upper) noexcept;
             void cmpr(SourceRegister src1, SourceRegister src2) noexcept;
+            void cmprl(LongSourceRegister src1, LongSourceRegister src2) noexcept;
             void cmpstr(SourceRegister src1, SourceRegister src2, SourceRegister len) noexcept;
             // compare and branch instructions
             void cmpibe(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
