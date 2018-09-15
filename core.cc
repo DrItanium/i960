@@ -418,6 +418,41 @@ namespace i960 {
     void Core::cmpo(Core::SourceRegister src1, Core::SourceRegister src2) noexcept { compare(_ac, src1.get<Ordinal>(), src2.get<Ordinal>()); }
     void Core::cmpr(Core::SourceRegister src1, Core::SourceRegister src2) noexcept { compare(_ac, src1.get<RawReal>(), src2.get<RawReal>()); }
     void Core::cmprl(Core::LongSourceRegister src1, Core::LongSourceRegister src2) noexcept { compare(_ac, src1.get<RawLongReal>(), src2.get<RawLongReal>()); }
+	void Core::divr(Core::SourceRegister src1, Core::SourceRegister src2, Core::DestinationRegister dest) noexcept {
+		dest.set<RawReal>(src2.get<RawReal>() / src1.get<RawReal>());
+	}
+	void Core::divrl(Core::LongSourceRegister src1, Core::LongSourceRegister src2, Core::LongDestinationRegister dest) noexcept {
+		dest.set<RawLongReal>(src2.get<RawLongReal>() / src1.get<RawLongReal>());
+	}
+	void Core::dispatch(const Instruction& inst) noexcept {
+		if (inst.isRegFormat()) {
+			dispatch(inst._reg);
+		} else if (inst.isMemFormat()) {
+			dispatch(inst._mem);
+		} else if (inst.isControlFormat()) {
+			dispatch(inst._ctrl);
+		} else if (inst.isCompareAndBranchFormat()) {
+			dispatch(inst._cobr);
+		} else {
+#warning "This throw statement should be a fault of some kind"
+			throw "Illegal instruction";
+		}
+	}
+	void Core::dispatch(const Instruction::REGFormat& i) noexcept {
+#warning "TODO: implement this"
+	} 
+	void Core::dispatch(const Instruction::COBRFormat& i) noexcept {
+
+#warning "TODO: implement this"
+	}
+	void Core::dispatch(const Instruction::CTRLFormat& i) noexcept {
+
+#warning "TODO: implement this"
+	}
+	void Core::dispatch(const Instruction::MemFormat& i) noexcept {
+
+#warning "TODO: implement this"
+	}
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__

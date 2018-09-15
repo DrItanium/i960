@@ -994,6 +994,12 @@ namespace i960 {
 #undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
+		private:
+			void dispatch(const Instruction::REGFormat& inst) noexcept;
+			void dispatch(const Instruction::COBRFormat& inst) noexcept;
+			void dispatch(const Instruction::CTRLFormat& inst) noexcept;
+			void dispatch(const Instruction::MemFormat& inst) noexcept;
+			void dispatch(const Instruction& decodedInstruction) noexcept;
         private:
             RegisterWindow _globalRegisters;
             // The hardware implementations use register sets, however
