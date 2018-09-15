@@ -87,63 +87,60 @@ namespace i960 {
        setRegister(StackPointerIndex, tmp + 64u);
    }
    void Core::addo(__DEFAULT_THREE_ARGS__) noexcept {
-       dest._ordinal = src2.get<Ordinal>() + src1.get<Ordinal>(); 
+       dest.set<Ordinal>(src2.get<Ordinal>() + src1.get<Ordinal>());
    }
    void Core::addi(__DEFAULT_THREE_ARGS__) noexcept {
 #warning "addi does not check for integer overflow"
-       dest._integer = src2._integer + src1._integer;
+       dest.set<Integer>(src2.get<Integer>() + src1.get<Integer>());
    }
    void Core::subo(__DEFAULT_THREE_ARGS__) noexcept {
        dest._ordinal = src2.get<Ordinal>() - src1.get<Ordinal>(); 
    }
    void Core::mulo(__DEFAULT_THREE_ARGS__) noexcept {
-       dest._ordinal = src2.get<Ordinal>() * src1.get<Ordinal>(); 
+       dest.set(src2.get<Ordinal>() * src1.get<Ordinal>());
    }
    void Core::divo(__DEFAULT_THREE_ARGS__) noexcept {
 #warning "divo does not check for divison by zero"
-       dest._ordinal = src2.get<Ordinal>() / src1.get<Ordinal>();
+       dest.set(src2.get<Ordinal>() / src1.get<Ordinal>());
    }
    void Core::remo(__DEFAULT_THREE_ARGS__) noexcept {
 #warning "remo does not check for divison by zero"
-       dest._ordinal = src2.get<Ordinal>() % src1.get<Ordinal>();
+       dest.set(src2.get<Ordinal>() % src1.get<Ordinal>());
        
    }
    void Core::chkbit(Core::SourceRegister pos, Core::SourceRegister src) noexcept {
-        _ac._conditionCode = ((src.get<Ordinal>() & (1 << (pos._ordinal & 0b11111))) == 0) ? 0b000 : 0b010;
+        _ac._conditionCode = ((src.get<Ordinal>() & (1 << (pos.get<Ordinal>() & 0b11111))) == 0) ? 0b000 : 0b010;
    }
    void Core::alterbit(Core::SourceRegister pos, Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
-		if ((_ac._conditionCode & 0b010) == 0) {
-			dest._ordinal = src.get<Ordinal>() & (~(1 << (pos._ordinal & 0b11111)));
-		} else {
-			dest._ordinal = src.get<Ordinal>() | (1 << (pos._ordinal & 0b11111));
-		}
+       auto s = src.get<Ordinal>();
+       auto p = pos.get<Ordinal>() & 0b11111;
+       dest.set<Ordinal>(_ac._conditionCode & 0b010 == 0 ? s & (~(1 << p)) : s | (1 << p));
    }
    void Core::andOp(__DEFAULT_THREE_ARGS__) noexcept {
-       dest._ordinal = i960::andOp<Ordinal>(src2.get<Ordinal>(), src1.get<Ordinal>());
+       dest.set<Ordinal>(i960::andOp<Ordinal>(src2.get<Ordinal>(), src1.get<Ordinal>()));
    }
    void Core::andnot(__DEFAULT_THREE_ARGS__) noexcept {
-       dest._ordinal = i960::andNot(src2.get<Ordinal>(), src1.get<Ordinal>());
+       dest.set<Ordinal>(i960::andNot(src2.get<Ordinal>(), src1.get<Ordinal>()));
    }
 
    void DoubleRegister::move(const DoubleRegister& other) noexcept {
-       _lower._ordinal = other._lower._ordinal;
-       _upper._ordinal = other._upper._ordinal;
+       _lower.move(other._lower):
+       _upper.move(other._upper):
    }
    void TripleRegister::move(const TripleRegister& other) noexcept {
-       _lower._ordinal = other._lower._ordinal;
-       _mid._ordinal = other._mid._ordinal;
-       _upper._ordinal = other._upper._ordinal;
-
+       _lower.move(other._lower):
+       _mid.move(other._mid):
+       _upper.move(other._upper):
    }
    void QuadRegister::move(const QuadRegister& other) noexcept {
-       _lower._ordinal = other._lower._ordinal;
-       _mid._ordinal = other._mid._ordinal;
-       _upper._ordinal = other._upper._ordinal;
-       _highest._ordinal = other._highest._ordinal;
+       _lower.move(other._lower):
+       _mid.move(other._mid):
+       _upper.move(other._upper):
+       _highest.move(other._highest):
    }
 
    void Core::mov(Core::SourceRegister src, Core::DestinationRegister dest) noexcept { 
-       dest._ordinal = src.get<Ordinal>(); 
+       dest.move(src);
    }
    void Core::movl(Core::LongSourceRegister src, Core::LongDestinationRegister dest) noexcept { 
        dest.move(src); 
@@ -153,28 +150,6 @@ namespace i960 {
    }
    void Core::movq(const QuadRegister& src, QuadRegister& dest) noexcept {
        dest.move(src); 
-   }
-   NormalRegister& Core::stashNewLiteral(ByteOrdinal pos, Ordinal value) noexcept {
-        auto mask = pos & 0xF;
-        _internalRegisters[mask]._ordinal = value;
-        return _internalRegisters[mask];
-   }
-   NormalRegister& Core::stashNewLiteral(ByteOrdinal pos, RawReal value) noexcept {
-       auto mask = pos & 0xF;
-       _internalRegisters[mask]._real._floating = value;
-       return _internalRegisters[mask];
-   }
-   DoubleRegister Core::stashNewLiteral(ByteOrdinal pos, LongOrdinal value) noexcept {
-       auto mask = pos & 0b1110; // must be even
-       DoubleRegister tmp(_internalRegisters[mask], _internalRegisters[mask+1]);
-       tmp.set(value);
-       return tmp;
-   }
-   DoubleRegister Core::stashNewLiteral(ByteOrdinal pos, RawLongReal value) noexcept {
-       auto mask = pos & 0b1110; // must be even
-       DoubleRegister tmp(_internalRegisters[mask], _internalRegisters[mask+1]);
-       tmp.set(value);
-       return tmp;
    }
 
    void Core::b(Integer displacement) noexcept {
@@ -293,44 +268,47 @@ namespace i960 {
         for (int i = 31; i >= 0; --i) {
             if (mostSignificantBitClear(k)) {
                 _ac._conditionCode = 0b010;
-                dest._ordinal = Ordinal(i);
+                dest.set<Ordinal>(i);
                 return;
             }
             k <<= 1;
         }
-        dest._ordinal = 0xFFFF'FFFF;
+        dest.set<Ordinal>(0xFFFF'FFFF);
     }
     void Core::modi(__DEFAULT_THREE_ARGS__) noexcept {
+        auto s1 = src1.get<Integer>();
+        auto s2 = src2.get<Integer>();
         NormalRegister internalRegister;
         divi(src1, src2, internalRegister);
-        auto result = internalRegister._integer * src1._integer;
-        dest._integer = src2._integer - result;
-        if ((src2._integer * src1._integer) < 0) {
-            dest._integer = dest._integer + src1._integer;
+        auto result = internalRegister.get<Integer>() * s1;
+        dest.set<Integer>(s2 - result);
+        if ((s2 * s1) < 0) {
+            dest.set<Integer>(dest.get<Integer>() + s1);
         }
     }
     void Core::subc(__DEFAULT_THREE_ARGS__) noexcept {
 		auto s1 = src1.get<Ordinal>() - 1u;
+        auto s2 = src2.get<Ordinal>();
 		auto carryBit = _ac._conditionCode & 0b010 != 0 ? 1u : 0u;
 		// need to identify if overflow will occur
-        auto result = src2.get<Ordinal>() - s1;
+        auto result = s2 - s1;
         result += carryBit;
 #warning "subc does not implement integer overflow detection, needs to be implemented"
 		auto v = 0; // TODO fix this by identifying if integer subtraction would've produced an overflow and set v
 		_ac._conditionCode = (carryBit << 1) | v;
-        dest._ordinal = result;
+        dest.set<Ordinal>(result);
 	}
     void Core::ediv(Core::SourceRegister src1, Core::LongSourceRegister src2, Core::DestinationRegister remainder, Core::DestinationRegister quotient) noexcept {
         auto s2 = src2.get<LongOrdinal>();
         auto s1 = src1.get<Ordinal>();
         auto divOp = s2 / s1;
 #warning "ediv does not check for divison by zero!"
-        remainder._ordinal = (s2 - divOp * s1);
-        quotient._ordinal = divOp;
+        remainder.set<Ordinal>(s2 - divOp * s1);
+        quotient.set<Ordinal>(divOp);
     }
     void Core::divi(__DEFAULT_THREE_ARGS__) noexcept {
 #warning "divi does not check for division by zero!"
-        dest._integer = src2._integer / src1._integer;
+        dest.set<Integer>(src2.get<Integer>() / src1.get<Integer>());
     }
 
     void Core::ld(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
@@ -347,11 +325,11 @@ namespace i960 {
     }
     void Core::ldib(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
 #warning "A special loadbyte instruction is probably necessary"
-        dest._integer = (ByteInteger)load(src.get<Ordinal>());
+        dest.set<Integer>((ByteInteger)load(src.get<Ordinal>()));
     }
     void Core::ldis(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
 #warning "A special loadshort instruction is probably necessary"
-        dest._integer = (ShortInteger)load(src.get<Ordinal>());
+        dest.set<Integer>((ShortInteger)load(src.get<Ordinal>()));
     }
 
     void Core::ldl(Core::SourceRegister src, Core::LongDestinationRegister dest) noexcept {
@@ -359,27 +337,27 @@ namespace i960 {
         dest.set(load(addr), load(addr + 1));
     }
     void DoubleRegister::set(Ordinal lower, Ordinal upper) noexcept {
-        _lower._ordinal = lower;
-        _upper._ordinal = upper;
+        _lower.set<Ordinal>(lower);
+        _upper.set<Ordinal>(upper);
     }
     void Core::ldt(Core::SourceRegister src, TripleRegister& dest) noexcept {
         auto addr = src.get<Ordinal>();
         dest.set(load(addr), load(addr + 1), load(addr + 2));
     }
     void TripleRegister::set(Ordinal l, Ordinal m, Ordinal u) noexcept {
-        _lower._ordinal = l;
-        _mid._ordinal = m;
-        _upper._ordinal = u;
+        _lower.set<Ordinal>(l);
+        _mid.set<Ordinal>(m);
+        _upper.set<Ordinal>(u);
     }
     void Core::ldq(Core::SourceRegister src, QuadRegister& dest) noexcept {
         auto addr = src.get<Ordinal>();
         dest.set(load(addr), load(addr + 1), load(addr + 2), load(addr + 3));
     }
     void QuadRegister::set(Ordinal l, Ordinal m, Ordinal u, Ordinal h) noexcept {
-        _lower._ordinal = l;
-        _mid._ordinal = m;
-        _upper._ordinal = u;
-        _highest._ordinal = h;
+        _lower.set(l);
+        _mid.set(m);
+        _upper.set(u);
+        _highest.set(h);
     }
 
     void Core::addr(__DEFAULT_THREE_ARGS__) noexcept {

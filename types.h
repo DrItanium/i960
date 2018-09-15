@@ -158,6 +158,7 @@ namespace i960 {
                         static_assert(LegalConversion<K>, "Illegal type requested");
                     }
                 }
+            void move(const NormalRegister& other) noexcept { set<Ordinal>(other.get<Ordinal>()); }
     };
     class DoubleRegister {
         private:
@@ -1097,10 +1098,6 @@ namespace i960 {
             void wait(SourceRegister src) noexcept;
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(xnor);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(xorOp);
-            NormalRegister& stashNewLiteral(ByteOrdinal index, Ordinal value) noexcept;
-            NormalRegister& stashNewLiteral(ByteOrdinal index, RawReal value) noexcept;
-            DoubleRegister stashNewLiteral(ByteOrdinal index, LongOrdinal value) noexcept;
-            DoubleRegister stashNewLiteral(ByteOrdinal index, RawLongReal value) noexcept;
 
 #undef __GENERATE_DEFAULT_THREE_ARG_SIGS__
 #undef __DEFAULT_THREE_ARGS__
