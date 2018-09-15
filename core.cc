@@ -438,13 +438,6 @@ namespace i960 {
 			throw "Illegal instruction";
 		}
 	}
-	void Core::dispatch(const Instruction::REGFormat& i) noexcept {
-#warning "TODO: implement this"
-	} 
-	void Core::dispatch(const Instruction::COBRFormat& i) noexcept {
-
-#warning "TODO: implement this"
-	}
 	void Core::dispatch(const Instruction::CTRLFormat& i) noexcept {
 		Integer displacement = i._displacement;
 		switch (static_cast<Opcodes>(i._opcode)) {
@@ -470,10 +463,45 @@ namespace i960 {
 				throw "Illegal Instruction";
 		}
 	}
+	void Core::dispatch(const Instruction::COBRFormat& i) noexcept {
+		static NormalRegister immediateStorage;
+		auto displacement = i._displacement;
+		NormalRegister& src1 = i.src1IsLiteral() ? immediateStorage : getRegister(i._source1);
+		if (i.src1IsLiteral()) {
+			immediateStorage.set<ByteOrdinal>(i._source1);
+		}
+		auto& src2 = getRegister(i._source2);
+		switch(static_cast<Opcodes>(i._opcode)) {
+#define X(kind) case Opcodes:: Test ## kind : test ## kind (src1); break;
+#include "conditional_kinds.def"
+#undef X
+			case Opcodes::Bbc:
+				bbc(src1, src2, displacement);
+				break;
+			case Opcodes::Bbs:
+				bbs(src1, src2, displacement);
+#define X(kind) case Opcodes:: Cmpob ## kind : cmpob ## kind ( src1, src2, displacement ) ; break;
+				X(g)
+				X(e)
+				X(ge)
+				X(l)
+				X(ne)
+				X(le)
+#undef X
+#define X(kind) case Opcodes:: Cmpib ## kind : cmpib ## kind ( src1, src2, displacement ) ; break;
+#include "conditional_kinds.def"
+#undef X
+			default:
+#warning "generate illegal instruction fault"
+				throw "illegal instruction!";
+		}
+	}
 	void Core::dispatch(const Instruction::MemFormat& i) noexcept {
-
 #warning "TODO: implement this"
 	}
+	void Core::dispatch(const Instruction::REGFormat& i) noexcept {
+#warning "TODO: implement this"
+	} 
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__
