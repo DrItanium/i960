@@ -211,20 +211,10 @@ namespace i960 {
     bool isUnordered(Real r) noexcept;
     bool isUnordered(LongReal r) noexcept;
     bool isUnordered(ExtendedReal r) noexcept;
-	enum TestTypes {
-		Unordered = 0b000,
-		Greater = 0b001,
-		Equal = 0b010,
-		GreaterOrEqual = 0b011,
-		Less = 0b100,
-		NotEqual = 0b101, 
-		LessOrEqual = 0b110,
-		Ordered = 0b111,
-	};
 	template<TestTypes t>
 	Ordinal test(const ArithmeticControls& ac) noexcept {
-		constexpr auto mask = t & 0b111;
-		if constexpr (mask == TestTypes::Unordered) {
+		constexpr auto mask = Ordinal(t) & 0b111;
+		if constexpr (mask == Ordinal(TestTypes::Unordered)) {
 			return ac._conditionCode == 0 ? 1 : 0;
 		} else {
 			return (mask & ac._conditionCode) != 0 ? 1 : 0;

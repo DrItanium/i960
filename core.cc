@@ -23,7 +23,7 @@ namespace i960 {
    Ordinal Core::getFramePointerAddress() const noexcept {
        return _globalRegisters[FramePointerIndex].get<Ordinal>() & (~0b111111);
    }
-   void Core::call(Integer addr) {
+   void Core::call(Integer addr) noexcept {
        union {
            Integer _value : 22;
        } conv;
@@ -48,11 +48,11 @@ namespace i960 {
 #warning "implement the rest of calls (call supervisor)"
    }
 
-   Ordinal Core::load(Ordinal address) {
+   Ordinal Core::load(Ordinal address) noexcept {
 #warning "Core::load unimplemented!"
         return -1;
    }
-   void Core::store(Ordinal address, Ordinal value) {
+   void Core::store(Ordinal address, Ordinal value) noexcept {
 #warning "Core::store unimplemented!"
    }
    NormalRegister& Core::getRegister(ByteOrdinal index) noexcept {

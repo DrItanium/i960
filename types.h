@@ -516,26 +516,34 @@ namespace i960 {
     constexpr auto PreviousFramePointerIndex = 0;
     constexpr auto StackPointerIndex = 1;
     constexpr auto ReturnInstructionPointerIndex = 2;
-    constexpr auto GlobalRegisterIndexStartsAt = 0b10000;
-    constexpr auto LocalRegisterIndexStartsAt = 0b00000;
-    constexpr auto FloatingPointIndexStartsAt = 0b00000;
 
 
 
 
     constexpr Ordinal LargestAddress = 0xFFFF'FFFF;
     constexpr Ordinal LowestAddress = 0;
-
-    constexpr Ordinal ConditionCodeTrue = 0b010;
-    constexpr Ordinal ConditionCodeFalse = 0b000;
-    constexpr Ordinal ConditionCodeUnordered = 0b000;
-    constexpr Ordinal ConditionCodeGreaterThan = 0b001;
-    constexpr Ordinal ConditionCodeEqual = 0b010;
-    constexpr Ordinal ConditionCodeLessThan = 0b100;
-    constexpr Ordinal ConditionCodeOrdered = 0b111;
-    constexpr Ordinal ConditionCodeNotEqual = 0b101;
-    constexpr Ordinal ConditionCodeLessThanOrEqual = 0b110;
-    constexpr Ordinal ConditionCodeGreaterThanOrEqual = 0b011;
+	enum class ConditionCode : Ordinal {
+		False = 0b000,
+		Unordered = False,
+		GreaterThan = 0b001,
+		Equal = 0b010,
+		True = Equal,
+		LessThan = 0b100,
+		Ordered = 0b111,
+		NotEqual = 0b101,
+		LessThanOrEqual = 0b110,
+		GreaterThanOrEqual = 0b011,
+	};
+	enum class TestTypes : Ordinal {
+		Unordered = 0b000,
+		Greater = 0b001,
+		Equal = 0b010,
+		GreaterOrEqual = 0b011,
+		Less = 0b100,
+		NotEqual = 0b101, 
+		LessOrEqual = 0b110,
+		Ordered = 0b111,
+	};
 
     /**
      * Aritmetic status bits, four bits wide with a sign bit as the upper most 
@@ -558,107 +566,6 @@ namespace i960 {
         Truncate,
     };
 
-
-    namespace IAC {
-        struct Message {
-            union {
-                Ordinal _word0;
-                struct {
-                    Ordinal _field2 : 16;
-                    Ordinal _field1 : 8;
-                    Ordinal _MsgType : 8;
-                };
-            };
-            Ordinal _field3;
-            Ordinal _field4;
-            Ordinal _field5;
-        };
-        static_assert(sizeof(Message) == 16, "Message is not of the correct size!");
-        /**
-         * The address that a processor can use to send itself IAC messages
-         */
-        constexpr Ordinal ProcessorLoopback = 0xFF000010;
-        /**
-         * Start of IAC memory space
-         */
-        constexpr Ordinal MessageSpaceStart = 0xFF000000;
-        constexpr Ordinal MessageSpaceEnd = 0xFFFFFFF0;
-        constexpr Ordinal ProcessorIdMask = 0b1111111111;
-        constexpr Ordinal ProcessorPriorityMask = 0b11111;
-
-        constexpr Ordinal computeProcessorAddress(Ordinal processorIdent, Ordinal priorityLevel) noexcept {
-            // first mask the pieces
-            constexpr Ordinal internalBitIdentifier = 0b0011000000 << 4;
-            // lowest four bits are always zero
-            auto maskedIdent = (ProcessorIdMask & processorIdent) << 14;
-            auto maskedPriority = internalBitIdentifier | ((ProcessorPriorityMask & priorityLevel) << 4);
-            return MessageSpaceStart | maskedIdent | maskedPriority;
-        }
-
-        enum MessageType {
-            /**
-             * Field1 is an interrupt vector. Generates or posts an interrupt.
-             */
-            Interrupt,
-            /**
-             * Tests for a pending interrupt
-             */
-            TestPendingInterrupts,
-            /**
-             * Field3 is an address. Stores two words beginning at this address;
-             * the values are the addresses of the two initialization data
-             * structures
-             */
-            StoreSystemBase,
-            /**
-             * Invalidates all entries in the instruction cache
-             */
-            PurgeInstructionCache,
-
-            /**
-             * Store into the special break point registers. Field3 and Field4 are
-             * the values stored into the breakpoint registers. Bit 0 of the values
-             * are ignored because instructions are word aligned. Bit 1 indicates
-             * whether the breakpoint is enabled (0) or disabled (1).
-             */
-            SetBreakpointRegister,
-            /**
-             * Puts the processor into the stopped state
-             */
-            Freeze,
-            /**
-             * Puts the processor at step 2 of the initialization sequence.
-             */
-            ContinueInitialization,
-            /**
-             * Field3, field4, and field5 contain, respectively, the
-             * addresses expected in memory locations 0, 4, and 12 during
-             * initialization. Puts the processor at step 4 of the initialization
-             * sequence, using these addresses instead of those from memory
-             */
-            ReinitializeProcessor,
-        };
-
-        union InterruptControlRegister {
-            Ordinal _value;
-            /**
-             * The set of "pins" that the chip responds on
-             * Int3's vector index must be a higher priority 2 which must be higher
-             * than 1 which must be higher than 0.
-             */
-            struct {
-                ByteOrdinal _int0Vector;
-                ByteOrdinal _int1Vector;
-                ByteOrdinal _int2Vector;
-                ByteOrdinal _int3Vector;
-            };
-        };
-        /**
-         * Memory mapped location of the Interrupt control register. Can only be
-         * read to and written from using synmov and synld instructions
-         */
-        constexpr Ordinal InterruptControlRegisterMappedAddress = 0xFF000004;
-    } // end namespace IAC
     union Instruction {
         struct REGFormat {
             Ordinal _source1 : 5;
@@ -878,9 +785,9 @@ namespace i960 {
             /** 
              * perform a call
              */
-            virtual void call(Integer displacement);
-            virtual Ordinal load(Ordinal address);
-            virtual void store(Ordinal address, Ordinal value);
+            void call(Integer displacement) noexcept;
+            Ordinal load(Ordinal address) noexcept;
+            void store(Ordinal address, Ordinal value) noexcept;
 
             void saveLocalRegisters() noexcept;
             void allocateNewLocalRegisterSet() noexcept;
@@ -897,19 +804,19 @@ namespace i960 {
 #define __DEFAULT_TWO_ARGS__ SourceRegister src, DestinationRegister dest
 #define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ LongSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest
 #define __DEFAULT_DOUBLE_WIDE_TWO_ARGS__ LongSourceRegister src, LongDestinationRegister dest
-#define __GENERATE_DEFAULT_THREE_ARG_SIGS__(name) void name (__DEFAULT_THREE_ARGS__) noexcept
+#define __GEN_DEFAULT_THREE_ARG_SIGS__(name) void name (__DEFAULT_THREE_ARGS__) noexcept
 
             void callx(SourceRegister value) noexcept;
             void calls(SourceRegister value);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(addc);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(addo);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(addi);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(addc);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(addo);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(addi);
             void addr(__DEFAULT_THREE_ARGS__) noexcept;
             void addrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
             void chkbit(SourceRegister pos, SourceRegister src) noexcept;
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(alterbit);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(andOp);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(andnot);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(alterbit);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(andOp);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(andnot);
             void atadd(__DEFAULT_THREE_ARGS__) noexcept; // TODO add other forms of atadd
             void atanr(__DEFAULT_THREE_ARGS__) noexcept;
             void atanrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
@@ -920,43 +827,35 @@ namespace i960 {
             void balx(__DEFAULT_TWO_ARGS__) noexcept; // TODO check these two instructions out for more variants
             void bbc(SourceRegister pos, SourceRegister src, Integer targ) noexcept; 
             void bbs(SourceRegister pos, SourceRegister src, Integer targ) noexcept;
-            void be(Integer displacement) noexcept;
-            void bne(Integer displacement) noexcept;
-            void bl(Integer displacement) noexcept;
-            void ble(Integer displacement) noexcept;
-            void bg(Integer displacement) noexcept;
-            void bge(Integer displacement) noexcept;
-            void bo(Integer displacement) noexcept;
-            void bno(Integer displacement) noexcept;
+#define X(kind) void b ## kind (Integer) noexcept;
+#include "conditional_kinds.def"
+#undef X
             void classr(SourceRegister src) noexcept;
             void classrl(SourceRegister srcLower, SourceRegister srcUpper) noexcept;
             void clrbit(SourceRegister pos, SourceRegister src, DestinationRegister dest) noexcept; // TODO look into the various forms further
             void cmpi(SourceRegister src1, SourceRegister src2) noexcept;
             void cmpo(SourceRegister src1, SourceRegister src2) noexcept;
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(cmpdeci);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(cmpdeco);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(cmpinci);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(cmpinco);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(cmpdeci);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(cmpdeco);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(cmpinci);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(cmpinco);
             void cmpor(SourceRegister src1, SourceRegister src2) noexcept;
             void cmporl(SourceRegister src1Lower, SourceRegister src1Upper, SourceRegister src2Lower, SourceRegister src2Upper) noexcept;
             void cmpr(SourceRegister src1, SourceRegister src2) noexcept;
             void cmprl(LongSourceRegister src1, LongSourceRegister src2) noexcept;
             void cmpstr(SourceRegister src1, SourceRegister src2, SourceRegister len) noexcept;
             // compare and branch instructions
-            void cmpibe(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpibne(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpibl(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpible(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpibg(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpibge(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpibo(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpibno(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpobe(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpobne(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpobl(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpoble(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpobg(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
-            void cmpobge(SourceRegister src1, SourceRegister src2, Integer targ) noexcept;
+#define X(kind) void cmpib ## kind ( SourceRegister, SourceRegister, Integer) noexcept;
+#include "conditional_kinds.def"
+#undef X
+#define X(kind) void cmp ## kind ( SourceRegister, SourceRegister, Integer) noexcept;
+			X(obe)
+			X(obne)
+			X(obl)
+			X(oble)
+			X(obg)
+			X(obge)
+#undef X
             void concompi(SourceRegister src1, SourceRegister src2) noexcept;
             void concompo(SourceRegister src1, SourceRegister src2) noexcept;
             void condrec(SourceRegister src, DestinationRegister dest) noexcept;
@@ -971,26 +870,21 @@ namespace i960 {
             void cvtril(SourceRegister src, LongDestinationRegister dest) noexcept; // TODO fix this function as it deals with floating point registers
             void cvtzri(__DEFAULT_TWO_ARGS__) noexcept; // TODO fix this function as it deals with floating point registers
             void cvtzril(SourceRegister src, LongDestinationRegister dest) noexcept; // TODO fix this function as it deals with floating point registers
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(daddc);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(divo);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(divi);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(daddc);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(divo);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(divi);
             void divr(__DEFAULT_THREE_ARGS__) noexcept; // TODO divr and divrl do not support extended registers yet
             void divrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
             void dmovt(SourceRegister src, DestinationRegister dest) noexcept;
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(dsubc);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(dsubc);
             void ediv(SourceRegister src1, LongSourceRegister src2, DestinationRegister remainder, DestinationRegister quotient) noexcept;
             void emul(SourceRegister src1, SourceRegister src2, LongDestinationRegister dest) noexcept;
             void expr(__DEFAULT_TWO_ARGS__) noexcept;
             void exprl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(extract);
-            void faulte() noexcept;
-            void faultne() noexcept;
-            void faultl() noexcept;
-            void faultle() noexcept;
-            void faultg() noexcept;
-            void faultge() noexcept;
-            void faulto() noexcept;
-            void faultno() noexcept;
+            __GEN_DEFAULT_THREE_ARG_SIGS__(extract);
+#define X(kind) void fault ## kind (Integer) noexcept;
+#include "conditional_kinds.def"
+#undef X
             void fill(SourceRegister dst, SourceRegister value, SourceRegister len) noexcept;
             void flushreg() noexcept;
             void fmark() noexcept;
@@ -1013,11 +907,11 @@ namespace i960 {
             void logr(__DEFAULT_THREE_ARGS__) noexcept;
             void logrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
             void mark() noexcept;
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(modifyac);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(modi);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(modify);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(modpc);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(modtc);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(modifyac);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(modi);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(modify);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(modpc);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(modtc);
             void mov(__DEFAULT_TWO_ARGS__) noexcept;
             void movl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             void movt(const TripleRegister& src, TripleRegister& dest) noexcept;
@@ -1027,22 +921,22 @@ namespace i960 {
             void movrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             void movre(const TripleRegister& src, TripleRegister& dest) noexcept;
             void movstr(SourceRegister dst, SourceRegister src, SourceRegister len) noexcept;
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(mulo);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(muli);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(mulo);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(muli);
             void mulr(__DEFAULT_THREE_ARGS__) noexcept;
             void mulrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(nand);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(nor);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(nand);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(nor);
             void notOp(__DEFAULT_TWO_ARGS__) noexcept;
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(notand);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(notbit);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(notor);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(orOp);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(ornot);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(notand);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(notbit);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(notor);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(orOp);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(ornot);
             void receive(__DEFAULT_TWO_ARGS__) noexcept;
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(remo);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(remi);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(remr);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(remo);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(remi);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(remr);
             void remrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
             void resumeprcs(SourceRegister src) noexcept;
             void ret() noexcept;
@@ -1077,9 +971,9 @@ namespace i960 {
             void stl(SourceRegister src, LongDestinationRegister dest) noexcept;
             void stt(SourceRegister src, TripleRegister& dest) noexcept;
             void stq(SourceRegister src, QuadRegister& dest) noexcept;
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(subc); 
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(subo);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(subi);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(subc); 
+            __GEN_DEFAULT_THREE_ARG_SIGS__(subo);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(subi);
             void subr(__DEFAULT_THREE_ARGS__) noexcept;
             void subrl(LongSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest) noexcept;
             void syncf() noexcept;
@@ -1089,19 +983,13 @@ namespace i960 {
             void synmovq(__DEFAULT_TWO_ARGS__) noexcept;
             void tanr(__DEFAULT_TWO_ARGS__) noexcept;
             void tanrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
-            void teste(DestinationRegister dest) noexcept;
-            void testne(DestinationRegister dest) noexcept;
-            void testl(DestinationRegister dest) noexcept;
-            void testle(DestinationRegister dest) noexcept;
-            void testg(DestinationRegister dest) noexcept;
-            void testge(DestinationRegister dest) noexcept;
-            void testo(DestinationRegister dest) noexcept;
-            void testno(DestinationRegister dest) noexcept;
+#define X(kind) void test ## kind ( DestinationRegister) noexcept;
+#include "conditional_kinds.def"
+#undef X
             void wait(SourceRegister src) noexcept;
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(xnor);
-            __GENERATE_DEFAULT_THREE_ARG_SIGS__(xorOp);
-
-#undef __GENERATE_DEFAULT_THREE_ARG_SIGS__
+            __GEN_DEFAULT_THREE_ARG_SIGS__(xnor);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(xorOp);
+#undef __GEN_DEFAULT_THREE_ARG_SIGS__
 #undef __DEFAULT_THREE_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
 #undef __DEFAULT_TWO_ARGS__
@@ -1118,7 +1006,6 @@ namespace i960 {
             Ordinal _instructionPointer;
             ProcessControls _pc;
             TraceControls _tc;
-            NormalRegister _sfr[32]; // not implemented in the documentation I have
             ExtendedReal _floatingPointRegisters[NumFloatingPointRegs];
             NormalRegister _internalRegisters[8]; // for internal conversion purposes to make decoding regular
     };
