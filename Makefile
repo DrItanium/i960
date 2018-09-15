@@ -30,10 +30,9 @@ clean:
 	@echo Cleaning...
 	@rm -f ${OBJS} ${PROG}
 
-types.h: conditional_kinds.def archlevel.h
-numericops.o: operations.h types.h archlevel.h numericops.cc
-sim.o: operations.h types.h opcodes.h archlevel.h sim.cc
-misc.o: archlevel.h types.h misc.cc
-core.o: archlevel.h types.h operations.h opcodes.h core.cc
+numericops.o: operations.h types.h archlevel.h conditional_kinds.def numericops.cc
+sim.o: operations.h types.h opcodes.h archlevel.h conditional_kinds.def sim.cc
+misc.o: archlevel.h types.h conditional_kinds.def misc.cc
+core.o: archlevel.h types.h operations.h opcodes.h conditional_kinds.def core.cc
 
 .PHONY: options
