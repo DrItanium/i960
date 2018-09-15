@@ -9,7 +9,7 @@
 #define __DEFAULT_DOUBLE_WIDE_TWO_ARGS__ const DoubleRegister& src, DoubleRegister& dest
 namespace i960 {
    Ordinal Core::getStackPointerAddress() const noexcept {
-       return _localRegisters[StackPointerIndex]._ordinal;
+       return _localRegisters[StackPointerIndex].get<Ordinal>();
    }
    void Core::saveLocalRegisters() noexcept {
 #warning "saveLocalRegisters unimplemented"
@@ -18,10 +18,10 @@ namespace i960 {
 #warning "allocateNewLocalRegisterSet unimplemented"
    }
    void Core::setFramePointer(Ordinal value) noexcept {
-       _globalRegisters[FramePointerIndex]._ordinal = value;
+       _globalRegisters[FramePointerIndex].set(value);
    }
    Ordinal Core::getFramePointerAddress() const noexcept {
-       return _globalRegisters[FramePointerIndex]._ordinal & (~0b111111);
+       return _globalRegisters[FramePointerIndex].get<Ordinal>() & (~0b111111);
    }
    void Core::call(Integer addr) {
        union {
@@ -40,7 +40,7 @@ namespace i960 {
        setRegister(StackPointerIndex, tmp + 64);
    }
    void Core::calls(const NormalRegister& value) {
-       auto callNum = value._byteOrd;
+       auto callNum = value.get<ByteOrdinal>();
        if (callNum > 259) {
 #warning "Raise protection length fault here"
            return;
@@ -48,15 +48,6 @@ namespace i960 {
 #warning "implement the rest of calls (call supervisor)"
    }
 
-   void Core::setRegister(ByteOrdinal index, Ordinal value) noexcept {
-       getRegister(index)._ordinal = value;
-   }
-   void Core::setRegister(ByteOrdinal index, Integer value) noexcept {
-       getRegister(index)._integer = value;
-   }
-   void Core::setRegister(ByteOrdinal index, Real value) noexcept {
-       getRegister(index)._real = value;
-   }
    Ordinal Core::load(Ordinal address) {
 #warning "Core::load unimplemented!"
         return -1;
@@ -124,32 +115,37 @@ namespace i960 {
    }
 
    void DoubleRegister::move(const DoubleRegister& other) noexcept {
-       _lower.move(other._lower):
-       _upper.move(other._upper):
+       _lower.move(other._lower);
+       _upper.move(other._upper);
    }
    void TripleRegister::move(const TripleRegister& other) noexcept {
-       _lower.move(other._lower):
-       _mid.move(other._mid):
-       _upper.move(other._upper):
+       _lower.move(other._lower);
+       _mid.move(other._mid);
+       _upper.move(other._upper);
    }
    void QuadRegister::move(const QuadRegister& other) noexcept {
-       _lower.move(other._lower):
-       _mid.move(other._mid):
-       _upper.move(other._upper):
-       _highest.move(other._highest):
+       _lower.move(other._lower);
+       _mid.move(other._mid);
+       _upper.move(other._upper);
+       _highest.move(other._highest);
+   }
+
+   template<typename T>
+   void move(const T& src, T& dest) noexcept {
+       dest.move(src);
    }
 
    void Core::mov(Core::SourceRegister src, Core::DestinationRegister dest) noexcept { 
-       dest.move(src);
+       move(src, dest);
    }
    void Core::movl(Core::LongSourceRegister src, Core::LongDestinationRegister dest) noexcept { 
-       dest.move(src); 
+       move(src, dest);
    }
    void Core::movt(const TripleRegister& src, TripleRegister& dest) noexcept { 
-       dest.move(src); 
+       move(src, dest);
    }
    void Core::movq(const QuadRegister& src, QuadRegister& dest) noexcept {
-       dest.move(src); 
+       move(src, dest);
    }
 
    void Core::b(Integer displacement) noexcept {
@@ -252,12 +248,12 @@ namespace i960 {
         for (int i = 31; i >= 0; --i) {
             if (mostSignificantBitSet(k)) {
                 _ac._conditionCode = 0b010;
-                dest._ordinal = Ordinal(i);
+                dest.set<Ordinal>(i);
                 return;
             }
             k <<= 1;
         }
-        dest._ordinal = 0xFFFF'FFFF;
+        dest.set<Ordinal>(0xFFFF'FFFF);
     }
     /**
      * Find the most significant clear bit
@@ -379,10 +375,10 @@ namespace i960 {
         dest.set(src2.get<RawLongReal>() * src1.get<RawLongReal>());
     }
     void Core::xnor(__DEFAULT_THREE_ARGS__) noexcept {
-        dest._ordinal = i960::xnor<Ordinal>(src1.get<Ordinal>(), src2.get<Ordinal>());
+        dest.set<Ordinal>(i960::xnor<Ordinal>(src1.get<Ordinal>(), src2.get<Ordinal>()));
     }
     void Core::xorOp(__DEFAULT_THREE_ARGS__) noexcept {
-        dest._ordinal = i960::xorOp<Ordinal>(src1.get<Ordinal>(), src2.get<Ordinal>());
+        dest.set<Ordinal>(i960::xorOp<Ordinal>(src1.get<Ordinal>(), src2.get<Ordinal>()));
     }
     void Core::tanr(__DEFAULT_TWO_ARGS__) noexcept {
         dest.set<RawReal>(::tan(src.get<RawReal>()));
@@ -401,6 +397,12 @@ namespace i960 {
     }
     void Core::sinrl(__DEFAULT_DOUBLE_WIDE_TWO_ARGS__) noexcept {
         dest.set<RawLongReal>(::sin(src.get<RawLongReal>()));
+    }
+    void Core::atanr(__DEFAULT_THREE_ARGS__) noexcept {
+        dest.set<RawReal>(::atan(src2.get<RawReal>() / src1.get<RawReal>()));
+    }
+    void Core::atanrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept {
+        dest.set<RawLongReal>(::atan(src2.get<RawLongReal>() / src1.get<RawLongReal>()));
     }
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__

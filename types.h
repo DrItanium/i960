@@ -874,6 +874,7 @@ namespace i960 {
             ~Core() = default;
             // TODO finish this once we have all the other sub components implemented behind the
             // scenes
+        private:
             /** 
              * perform a call
              */
@@ -883,15 +884,15 @@ namespace i960 {
 
             void saveLocalRegisters() noexcept;
             void allocateNewLocalRegisterSet() noexcept;
-            void setRegister(ByteOrdinal index, Integer value) noexcept;
-            void setRegister(ByteOrdinal index, Ordinal value) noexcept;
-            void setRegister(ByteOrdinal index, Real value) noexcept;
+            template<typename T>
+            void setRegister(ByteOrdinal index, T value) noexcept {
+                getRegister(index).set<T>(value);
+            }
             void setRegister(ByteOrdinal index, SourceRegister other) noexcept;
             NormalRegister& getRegister(ByteOrdinal index) noexcept;
             Ordinal getStackPointerAddress() const noexcept;
             void setFramePointer(Ordinal value) noexcept;
             Ordinal getFramePointerAddress() const noexcept;
-        private:
 #define __DEFAULT_THREE_ARGS__ SourceRegister src1, SourceRegister src2, DestinationRegister dest
 #define __DEFAULT_TWO_ARGS__ SourceRegister src, DestinationRegister dest
 #define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ LongSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest
@@ -910,7 +911,7 @@ namespace i960 {
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(andOp);
             __GENERATE_DEFAULT_THREE_ARG_SIGS__(andnot);
             void atadd(__DEFAULT_THREE_ARGS__) noexcept; // TODO add other forms of atadd
-            void atan(__DEFAULT_THREE_ARGS__) noexcept;
+            void atanr(__DEFAULT_THREE_ARGS__) noexcept;
             void atanrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
             void atmod(SourceRegister src, SourceRegister mask, DestinationRegister srcDest) noexcept; // TODO check out other forms of this instruction
             void b(Integer displacement) noexcept;
