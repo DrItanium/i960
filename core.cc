@@ -583,6 +583,114 @@ namespace i960 {
 				throw "illegal instruction!";
 		}
 	}
+	void Core::dispatch(const Instruction::MemFormat::MEMBFormat& i) noexcept {
+		static NormalRegister immediateStorage;
+		using K = std::decay_t<decltype(i)>;
+		using E = K::AddressingModes;
+		auto index = i._index;
+		auto scale = i.getScaleFactor();
+		auto mode = i.getAddressingMode();
+		auto displacement = i.has32bitDisplacement() ? getFullDisplacement() : 0;
+		auto srcDest = getRegister(i._src_dest);
+		auto abase = getRegister(i._abase);
+		switch (i.getAddressingMode()) {
+			case E::Abase:
+				immediateStorage.move(abase);
+				break;
+			case E::IP_Plus_Displacement_Plus_8:
+				immediateStorage.set<Ordinal>(_instructionPointer + displacement + 8);
+				break;
+			case E::Abase_Plus_Index_Times_2_Pow_Scale:
+				immediateStorage.set<Ordinal>(abase.get<Ordinal>() + index * scale);
+				break;
+			case E::Displacement:
+				immediateStorage.set(displacement);
+				break;
+			case E::Abase_Plus_Displacement:
+				immediateStorage.set(displacement + abase.get<Ordinal>());
+				break;
+			case E::Index_Times_2_Pow_Scale_Plus_Displacement:
+				immediateStorage.set(index * scale + displacement);
+				break;
+			case E::Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement:
+				immediateStorage.set(abase.get<Ordinal>() + index * scale + displacement);
+				break;
+			default:
+#warning "Fault on illegal mode!"
+				throw "Illegal mode!";
+		}
+		switch(static_cast<Opcodes>(i._opcode)) {
+			case Opcodes::Ldob:
+				ldob(immediateStorage, srcDest);
+				break;
+			case Opcodes::Stob:
+				stob(srcDest, immediateStorage);
+				break;
+			case Opcodes::Bx:
+				bx(immediateStorage);
+				break;
+			case Opcodes::Balx:
+				balx(immediateStorage, srcDest);
+				break;
+			case Opcodes::Callx:
+				callx(immediateStorage);
+				break;
+			case Opcodes::Ldos:
+				ldos(immediateStorage, srcDest);
+				break;
+			case Opcodes::Stos:
+				stos(srcDest, immediateStorage);
+				break;
+			case Opcodes::Lda:
+				stos(immediateStorage, srcDest);
+				break;
+			case Opcodes::Ld:
+				ld(immediateStorage, srcDest);
+				break;
+			case Opcodes::St:
+				st(srcDest, immediateStorage);
+				break;
+			case Opcodes::Ldl:
+#warning "Fault should happen if the dest reg is non even!"
+				ldl(immediateStorage, i._src_dest);
+				break;
+			case Opcodes::Stl:
+#warning "Fault should happen if the src reg is non even!"
+				stl(i._src_dest, immediateStorage);
+				break;
+			case Opcodes::Ldt:
+#warning "Fault should happen if the dest reg is not divisible by four!"
+				ldt(immediateStorage, i._src_dest);
+				break;
+			case Opcodes::Stt:
+#warning "Fault should happen if the src reg is not divisible by four!"
+				stt(i._src_dest, immediateStorage);
+				break;
+			case Opcodes::Ldq:
+#warning "Fault should happen if the dest reg is not divisible by four!"
+				ldq(immediateStorage, i._src_dest);
+				break;
+			case Opcodes::Stq:
+#warning "Fault should happen if the src reg is not divisible by four!"
+				stq(i._src_dest, immediateStorage);
+				break;
+			case Opcodes::Ldib:
+				ldib(immediateStorage, srcDest);
+				break;
+			case Opcodes::Stib:
+				stib(srcDest, immediateStorage);
+				break;
+			case Opcodes::Ldis:
+				ldis(immediateStorage, srcDest);
+				break;
+			case Opcodes::Stis:
+				stis(srcDest, immediateStorage);
+				break;
+			default:
+#warning "generate illegal instruction fault"
+				throw "illegal instruction!";
+		}
+	}
 	void Core::dispatch(const Instruction::REGFormat& i) noexcept {
 #warning "TODO: implement this"
 	} 
