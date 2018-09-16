@@ -692,12 +692,50 @@ namespace i960 {
 		}
 	}
 	void Core::dispatch(const Instruction::REGFormat& i) noexcept {
+		static NormalRegister imm1;
+		static NormalRegister imm2;
+		static NormalRegister imm3;
 		if (i.isFloatingPoint()) {
 			dispatchFP(i);
 			return;
 		}
+		NormalRegister& src1 = i.src1IsLiteral() ? imm1 : getRegister(i._source1);
+		if (i.src1IsLiteral()) {
+			imm1.set(i.src1ToIntegerLiteral());
+		}
+		NormalRegister& src2 = i.src2IsLiteral() ? imm2 : getRegister(i._source2);
+		if (i.src2IsLiteral()) {
+			imm2.set(i.src2ToIntegerLiteral());
+		}
+		NormalRegister& srcDest = i.srcDestIsLiteral() ? imm3 : getRegister(i._src_dest);
+#warning "It is impossible for m3 to be set when srcDest is used as a dest, error out before hand"
 		switch(static_cast<Opcodes>(i.getOpcode())) {
-
+#define StandardThreeArgOp(kind, fn) case Opcodes:: kind : fn ( src1, src2, srcDest ) ; break
+#define StandardTwoArgOp(kind, fn) case Opcodes:: kind : fn ( src1, srcDest ) ; break
+#define StandardThreeArgOpIO(kind, fn) StandardThreeArgOp(kind ## o, fn ## o); StandardThreeArgOp(kind ## i, fn ## i)
+			StandardThreeArgOp(Notbit, notbit);
+			StandardThreeArgOp(And, andOp);
+			StandardThreeArgOp(Andnot, andnot);
+			StandardThreeArgOp(Setbit, setbit);
+			StandardThreeArgOp(Notand, notand);
+			StandardThreeArgOp(Xor, xorOp);
+			StandardThreeArgOp(Or, orOp);
+			StandardThreeArgOp(Nor, nor);
+			StandardThreeArgOp(Xnor, xnor);
+			StandardTwoArgOp(Not, notOp);
+			StandardThreeArgOp(Ornot, ornot);
+			StandardThreeArgOp(Nand, nand);
+			StandardThreeArgOp(Alterbit, alterbit);
+			StandardThreeArgOpIO(Add, add);
+			StandardThreeArgOpIO(Sub, sub);
+			StandardThreeArgOp(Shro, shro);
+			StandardThreeArgOp(Shrdi, shrdi);
+			StandardThreeArgOp(Shri, shri);
+			StandardThreeArgOp(Shlo, shlo);
+			StandardThreeArgOp(Rotate, rotate);
+			StandardThreeArgOp(Shli, shli);
+#undef StandardThreeArgOp
+#undef StandardTwoArgOp
 			default:
 #warning "generate illegal instruction fault"
 				throw "illegal instruction!";
