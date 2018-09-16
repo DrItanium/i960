@@ -692,8 +692,21 @@ namespace i960 {
 		}
 	}
 	void Core::dispatch(const Instruction::REGFormat& i) noexcept {
-#warning "TODO: implement this"
+		if (i.isFloatingPoint()) {
+			dispatchFP(i);
+			return;
+		}
+		switch(static_cast<Opcodes>(i.getOpcode())) {
+
+			default:
+#warning "generate illegal instruction fault"
+				throw "illegal instruction!";
+		}
 	} 
+	void Core::dispatchFP(const Instruction::REGFormat& i) noexcept {
+#warning "implement"
+		// TODO implement
+	}
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__
