@@ -80,7 +80,7 @@ namespace i960 {
         Lda = 0x8C,
         Stos = 0x8A,
         Ldos = 0x88,
-        Calix = 0x86,
+        Callx = 0x86,
         Balx = 0x85,
         Bx = 0x84,
         Stob = 0x82,

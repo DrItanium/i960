@@ -497,7 +497,91 @@ namespace i960 {
 		}
 	}
 	void Core::dispatch(const Instruction::MemFormat& i) noexcept {
-#warning "TODO: implement this"
+		if (i.isMemAFormat()) {
+			dispatch(i._mema);
+		} else {
+			dispatch(i._memb);
+		}
+	}
+	void Core::dispatch(const Instruction::MemFormat::MEMAFormat& i) noexcept {
+		using E = std::decay_t<decltype(i)>;
+		static NormalRegister immediateStorage;
+		auto offset = i._offset;
+		auto mode = i._md == 0 ? E::AddressingModes::Offset : E::AddressingModes::Abase_Plus_Offset;
+		auto abase = getRegister(i._abase);
+		immediateStorage.set<Ordinal>(mode == E::AddressingModes::Offset ? offset : (abase.get<Ordinal>() + offset));
+		auto srcDest = getRegister(i._src_dest);
+		switch(static_cast<Opcodes>(i._opcode)) {
+			case Opcodes::Ldob:
+				ldob(immediateStorage, srcDest);
+				break;
+			case Opcodes::Stob:
+				stob(srcDest, immediateStorage);
+				break;
+			case Opcodes::Bx:
+				bx(immediateStorage);
+				break;
+			case Opcodes::Balx:
+				balx(immediateStorage, srcDest);
+				break;
+			case Opcodes::Callx:
+				callx(immediateStorage);
+				break;
+			case Opcodes::Ldos:
+				ldos(immediateStorage, srcDest);
+				break;
+			case Opcodes::Stos:
+				stos(srcDest, immediateStorage);
+				break;
+			case Opcodes::Lda:
+				stos(immediateStorage, srcDest);
+				break;
+			case Opcodes::Ld:
+				ld(immediateStorage, srcDest);
+				break;
+			case Opcodes::St:
+				st(srcDest, immediateStorage);
+				break;
+			case Opcodes::Ldl:
+#warning "Fault should happen if the dest reg is non even!"
+				ldl(immediateStorage, i._src_dest);
+				break;
+			case Opcodes::Stl:
+#warning "Fault should happen if the src reg is non even!"
+				stl(i._src_dest, immediateStorage);
+				break;
+			case Opcodes::Ldt:
+#warning "Fault should happen if the dest reg is not divisible by four!"
+				ldt(immediateStorage, i._src_dest);
+				break;
+			case Opcodes::Stt:
+#warning "Fault should happen if the src reg is not divisible by four!"
+				stt(i._src_dest, immediateStorage);
+				break;
+			case Opcodes::Ldq:
+#warning "Fault should happen if the dest reg is not divisible by four!"
+				ldq(immediateStorage, i._src_dest);
+				break;
+			case Opcodes::Stq:
+#warning "Fault should happen if the src reg is not divisible by four!"
+				stq(i._src_dest, immediateStorage);
+				break;
+			case Opcodes::Ldib:
+				ldib(immediateStorage, srcDest);
+				break;
+			case Opcodes::Stib:
+				stib(srcDest, immediateStorage);
+				break;
+			case Opcodes::Ldis:
+				ldis(immediateStorage, srcDest);
+				break;
+			case Opcodes::Stis:
+				stis(srcDest, immediateStorage);
+				break;
+			default:
+#warning "generate illegal instruction fault"
+				throw "illegal instruction!";
+		}
 	}
 	void Core::dispatch(const Instruction::REGFormat& i) noexcept {
 #warning "TODO: implement this"

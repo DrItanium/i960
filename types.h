@@ -613,7 +613,7 @@ namespace i960 {
             Ordinal _opcode : 8;
         };
         union MemFormat {
-            struct {
+            struct MEMAFormat {
                 enum AddressingModes {
                     Offset = 0,
                     Abase_Plus_Offset = 1,
@@ -627,8 +627,8 @@ namespace i960 {
                 AddressingModes getAddressingMode() const noexcept {
                     return static_cast<AddressingModes>(_md);
                 }
-            } _mema;
-            struct {
+            };
+            struct MEMBFormat {
                 enum AddressingModes {
                     Abase = 0b0100,
                     IP_Plus_Displacement_Plus_8 = 0b0101,
@@ -676,10 +676,12 @@ namespace i960 {
                             return 0; 
                     }
                 }
-            } _memb;
+            };
             bool isMemAFormat() const noexcept {
                 return _mema._unused == 0;
             }
+			MEMAFormat _mema;
+			MEMBFormat _memb;
         };
 
         MustBeSizeOfOrdinal(MemFormat, "MemFormat must be the size of an ordinal!");
@@ -895,8 +897,20 @@ namespace i960 {
             void ldib(__DEFAULT_TWO_ARGS__) noexcept;
             void ldis(__DEFAULT_TWO_ARGS__) noexcept;
             void ldl(SourceRegister src, LongDestinationRegister dest) noexcept;
+			void ldl(SourceRegister src, Ordinal srcDestIndex) noexcept {
+				DoubleRegister reg(getRegister(srcDestIndex), getRegister(srcDestIndex + 1));
+				ldl(src, reg);
+			}
             void ldt(SourceRegister src, TripleRegister& dest) noexcept;
+			void ldt(SourceRegister src, Ordinal srcDestIndex) noexcept {
+				TripleRegister reg(getRegister(srcDestIndex), getRegister(srcDestIndex + 1), getRegister(srcDestIndex + 2));
+				ldt(src, reg);
+			}
             void ldq(SourceRegister src, QuadRegister& dest) noexcept;
+			void ldq(SourceRegister src, Ordinal index) noexcept {
+				QuadRegister reg(getRegister(index), getRegister(index + 1), getRegister(index + 2), getRegister(index + 3));
+				ldq(src, reg);
+			}
             void lda(__DEFAULT_TWO_ARGS__) noexcept;
             void ldphy(__DEFAULT_TWO_ARGS__) noexcept;
             void ldtime(DestinationRegister dest) noexcept;
@@ -963,14 +977,28 @@ namespace i960 {
             void spanbit(__DEFAULT_TWO_ARGS__) noexcept;
             void sqrtr(__DEFAULT_TWO_ARGS__) noexcept;
             void sqrtrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
-            void st(__DEFAULT_TWO_ARGS__) noexcept;
-            void stob(__DEFAULT_TWO_ARGS__) noexcept;
-            void stos(__DEFAULT_TWO_ARGS__) noexcept;
-            void stib(__DEFAULT_TWO_ARGS__) noexcept;
-            void stis(__DEFAULT_TWO_ARGS__) noexcept;
-            void stl(SourceRegister src, LongDestinationRegister dest) noexcept;
-            void stt(SourceRegister src, TripleRegister& dest) noexcept;
-            void stq(SourceRegister src, QuadRegister& dest) noexcept;
+#define __TWO_SOURCE_REGS__ SourceRegister src, SourceRegister dest
+            void st(__TWO_SOURCE_REGS__) noexcept;
+            void stob(__TWO_SOURCE_REGS__) noexcept;
+            void stos(__TWO_SOURCE_REGS__) noexcept;
+            void stib(__TWO_SOURCE_REGS__) noexcept;
+            void stis(__TWO_SOURCE_REGS__) noexcept;
+            void stl(LongSourceRegister src, SourceRegister dest) noexcept;
+			void stl(Ordinal ind, SourceRegister dest) noexcept {
+				DoubleRegister reg(getRegister(ind), getRegister(ind + 1));
+				stl(reg, dest);
+			}
+            void stt(const TripleRegister& src, SourceRegister dest) noexcept;
+            void stt(Ordinal ind, SourceRegister dest) noexcept {
+				TripleRegister reg(getRegister(ind), getRegister(ind + 1), getRegister(ind + 2));
+				stt(reg, dest);
+			}
+
+            void stq(const QuadRegister& src, SourceRegister dest) noexcept;
+            void stq(Ordinal ind, SourceRegister dest) noexcept {
+				QuadRegister reg(getRegister(ind), getRegister(ind + 1), getRegister(ind + 2), getRegister(ind + 3));
+				stq(reg, dest);
+			}
             __GEN_DEFAULT_THREE_ARG_SIGS__(subc); 
             __GEN_DEFAULT_THREE_ARG_SIGS__(subo);
             __GEN_DEFAULT_THREE_ARG_SIGS__(subi);
@@ -989,6 +1017,7 @@ namespace i960 {
             void wait(SourceRegister src) noexcept;
             __GEN_DEFAULT_THREE_ARG_SIGS__(xnor);
             __GEN_DEFAULT_THREE_ARG_SIGS__(xorOp);
+#undef __TWO_SOURCE_REGS__
 #undef __GEN_DEFAULT_THREE_ARG_SIGS__
 #undef __DEFAULT_THREE_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
@@ -1000,6 +1029,8 @@ namespace i960 {
 			void dispatch(const Instruction::CTRLFormat& inst) noexcept;
 			void dispatch(const Instruction::MemFormat& inst) noexcept;
 			void dispatch(const Instruction& decodedInstruction) noexcept;
+			void dispatch(const Instruction::MemFormat::MEMAFormat& inst) noexcept;
+			void dispatch(const Instruction::MemFormat::MEMBFormat& inst) noexcept;
         private:
             RegisterWindow _globalRegisters;
             // The hardware implementations use register sets, however
