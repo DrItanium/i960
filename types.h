@@ -858,8 +858,8 @@ namespace i960 {
 			X(obg)
 			X(obge)
 #undef X
-            void concompi(SourceRegister src1, SourceRegister src2) noexcept;
-            void concompo(SourceRegister src1, SourceRegister src2) noexcept;
+            void concmpi(SourceRegister src1, SourceRegister src2) noexcept;
+            void concmpo(SourceRegister src1, SourceRegister src2) noexcept;
             void condrec(SourceRegister src, DestinationRegister dest) noexcept;
             void condwait(SourceRegister src) noexcept;
             void cosr(__DEFAULT_TWO_ARGS__) noexcept;

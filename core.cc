@@ -713,6 +713,7 @@ namespace i960 {
 #define StandardThreeArgOp(kind, fn) case Opcodes:: kind : fn ( src1, src2, srcDest ) ; break
 #define StandardTwoArgOp(kind, fn) case Opcodes:: kind : fn ( src1, srcDest ) ; break
 #define StandardThreeArgOpIO(kind, fn) StandardThreeArgOp(kind ## o, fn ## o); StandardThreeArgOp(kind ## i, fn ## i)
+#define StandardTwoArgOpIO(kind, fn) StandardTwoArgOp(kind ## o, fn ## o); StandardTwoArgOp(kind ## i, fn ## i)
 			StandardThreeArgOp(Notbit, notbit);
 			StandardThreeArgOp(And, andOp);
 			StandardThreeArgOp(Andnot, andnot);
@@ -734,6 +735,10 @@ namespace i960 {
 			StandardThreeArgOp(Shlo, shlo);
 			StandardThreeArgOp(Rotate, rotate);
 			StandardThreeArgOp(Shli, shli);
+			StandardTwoArgOpIO(Cmp, cmp);
+			StandardTwoArgOpIO(Concmp, concmp);
+			StandardThreeArgOpIO(Cmpinc, cmpinc);
+			StandardThreeArgOpIO(Cmpdec, cmpdec);
 #undef StandardThreeArgOp
 #undef StandardTwoArgOp
 			default:
