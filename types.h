@@ -845,7 +845,9 @@ namespace i960 {
             void cmporl(SourceRegister src1Lower, SourceRegister src1Upper, SourceRegister src2Lower, SourceRegister src2Upper) noexcept;
             void cmpr(SourceRegister src1, SourceRegister src2) noexcept;
             void cmprl(LongSourceRegister src1, LongSourceRegister src2) noexcept;
+#ifdef PROTECTED_ARCHITECTURE
             void cmpstr(SourceRegister src1, SourceRegister src2, SourceRegister len) noexcept;
+#endif
             // compare and branch instructions
 #define X(kind) void cmpib ## kind ( SourceRegister, SourceRegister, Integer) noexcept;
 #include "conditional_kinds.def"
@@ -860,8 +862,10 @@ namespace i960 {
 #undef X
             void concmpi(SourceRegister src1, SourceRegister src2) noexcept;
             void concmpo(SourceRegister src1, SourceRegister src2) noexcept;
+#ifdef PROTECTED_ARCHITECTURE
             void condrec(SourceRegister src, DestinationRegister dest) noexcept;
             void condwait(SourceRegister src) noexcept;
+#endif
             void cosr(__DEFAULT_TWO_ARGS__) noexcept;
             void cosrl(__DEFAULT_DOUBLE_WIDE_TWO_ARGS__) noexcept;
             void cpysre(__DEFAULT_THREE_ARGS__) noexcept; // TODO fix the signature of this function
@@ -890,7 +894,9 @@ namespace i960 {
             void fill(SourceRegister dst, SourceRegister value, SourceRegister len) noexcept;
             void flushreg() noexcept;
             void fmark() noexcept;
+#ifdef PROTECTED_ARCHITECTURE
             void inspacc(__DEFAULT_TWO_ARGS__) noexcept;
+#endif
             void ld(__DEFAULT_TWO_ARGS__) noexcept;
             void ldob(__DEFAULT_TWO_ARGS__) noexcept;
             void ldos(__DEFAULT_TWO_ARGS__) noexcept;
@@ -912,8 +918,10 @@ namespace i960 {
 				ldq(src, reg);
 			}
             void lda(__DEFAULT_TWO_ARGS__) noexcept;
+#ifdef PROTECTED_ARCHITECTURE
             void ldphy(__DEFAULT_TWO_ARGS__) noexcept;
             void ldtime(DestinationRegister dest) noexcept;
+#endif
             void logbnr(__DEFAULT_TWO_ARGS__) noexcept;
             void logbnrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             void logepr(__DEFAULT_THREE_ARGS__) noexcept;
@@ -930,11 +938,15 @@ namespace i960 {
             void movl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             void movt(const TripleRegister& src, TripleRegister& dest) noexcept;
             void movq(const QuadRegister& src, QuadRegister& dest) noexcept;
+#ifdef PROTECTED_ARCHITECTURE
             void movqstr(SourceRegister dst, SourceRegister src, SourceRegister len) noexcept;
+#endif
             void movr(__DEFAULT_TWO_ARGS__) noexcept;
             void movrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             void movre(const TripleRegister& src, TripleRegister& dest) noexcept;
+#ifdef PROTECTED_ARCHITECTURE
             void movstr(SourceRegister dst, SourceRegister src, SourceRegister len) noexcept;
+#endif
             __GEN_DEFAULT_THREE_ARG_SIGS__(mulo);
             __GEN_DEFAULT_THREE_ARG_SIGS__(muli);
             void mulr(__DEFAULT_THREE_ARGS__) noexcept;
@@ -947,7 +959,9 @@ namespace i960 {
             __GEN_DEFAULT_THREE_ARG_SIGS__(notor);
             __GEN_DEFAULT_THREE_ARG_SIGS__(orOp);
             __GEN_DEFAULT_THREE_ARG_SIGS__(ornot);
+#ifdef PROTECTED_ARCHITECTURE
             void receive(__DEFAULT_TWO_ARGS__) noexcept;
+#endif
             __GEN_DEFAULT_THREE_ARG_SIGS__(remo);
             __GEN_DEFAULT_THREE_ARG_SIGS__(remi);
             __GEN_DEFAULT_THREE_ARG_SIGS__(remr);
@@ -957,21 +971,27 @@ namespace i960 {
             void rotate(__DEFAULT_THREE_ARGS__) noexcept;
             void roundr(__DEFAULT_TWO_ARGS__) noexcept;
             void roundrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
+            void scanbyte(SourceRegister src1, SourceRegister src2) noexcept;
+#ifdef PROTECTED_ARCHITECTURE
             void saveprcs() noexcept;
+#endif
             void scaler(__DEFAULT_THREE_ARGS__) noexcept;
             void scalerl(LongSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest) noexcept;
             void scanbit(__DEFAULT_TWO_ARGS__) noexcept;
-            void scanbyte(SourceRegister src1, SourceRegister src2) noexcept;
+#ifdef PROTECTED_ARCHITECTURE
             void schedprcs(SourceRegister src) noexcept;
             void send(SourceRegister dest, SourceRegister src1, SourceRegister src2) noexcept;
             void sendserv(SourceRegister src) noexcept;
+#endif
             void setbit(__DEFAULT_THREE_ARGS__) noexcept;
             void shlo(__DEFAULT_THREE_ARGS__) noexcept;
             void shro(__DEFAULT_THREE_ARGS__) noexcept;
             void shli(__DEFAULT_THREE_ARGS__) noexcept;
             void shri(__DEFAULT_THREE_ARGS__) noexcept;
             void shrdi(__DEFAULT_THREE_ARGS__) noexcept;
+#ifdef PROTECTED_ARCHITECTURE
             void signal(SourceRegister src) noexcept;
+#endif
             void sinr(__DEFAULT_TWO_ARGS__) noexcept; 
             void sinrl(__DEFAULT_DOUBLE_WIDE_TWO_ARGS__) noexcept; 
             void spanbit(__DEFAULT_TWO_ARGS__) noexcept;
@@ -1014,7 +1034,9 @@ namespace i960 {
 #define X(kind) void test ## kind ( DestinationRegister) noexcept;
 #include "conditional_kinds.def"
 #undef X
+#ifdef PROTECTED_ARCHITECTURE
             void wait(SourceRegister src) noexcept;
+#endif
             __GEN_DEFAULT_THREE_ARG_SIGS__(xnor);
             __GEN_DEFAULT_THREE_ARG_SIGS__(xorOp);
 #undef __TWO_SOURCE_REGS__

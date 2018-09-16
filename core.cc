@@ -710,37 +710,82 @@ namespace i960 {
 		NormalRegister& srcDest = i.srcDestIsLiteral() ? imm3 : getRegister(i._src_dest);
 #warning "It is impossible for m3 to be set when srcDest is used as a dest, error out before hand"
 		switch(static_cast<Opcodes>(i.getOpcode())) {
-#define StandardThreeArgOp(kind, fn) case Opcodes:: kind : fn ( src1, src2, srcDest ) ; break
-#define StandardTwoArgOp(kind, fn) case Opcodes:: kind : fn ( src1, srcDest ) ; break
-#define StandardThreeArgOpIO(kind, fn) StandardThreeArgOp(kind ## o, fn ## o); StandardThreeArgOp(kind ## i, fn ## i)
-#define StandardTwoArgOpIO(kind, fn) StandardTwoArgOp(kind ## o, fn ## o); StandardTwoArgOp(kind ## i, fn ## i)
-			StandardThreeArgOp(Notbit, notbit);
-			StandardThreeArgOp(And, andOp);
-			StandardThreeArgOp(Andnot, andnot);
-			StandardThreeArgOp(Setbit, setbit);
-			StandardThreeArgOp(Notand, notand);
-			StandardThreeArgOp(Xor, xorOp);
-			StandardThreeArgOp(Or, orOp);
-			StandardThreeArgOp(Nor, nor);
-			StandardThreeArgOp(Xnor, xnor);
-			StandardTwoArgOp(Not, notOp);
-			StandardThreeArgOp(Ornot, ornot);
-			StandardThreeArgOp(Nand, nand);
-			StandardThreeArgOp(Alterbit, alterbit);
-			StandardThreeArgOpIO(Add, add);
-			StandardThreeArgOpIO(Sub, sub);
-			StandardThreeArgOp(Shro, shro);
-			StandardThreeArgOp(Shrdi, shrdi);
-			StandardThreeArgOp(Shri, shri);
-			StandardThreeArgOp(Shlo, shlo);
-			StandardThreeArgOp(Rotate, rotate);
-			StandardThreeArgOp(Shli, shli);
-			StandardTwoArgOpIO(Cmp, cmp);
-			StandardTwoArgOpIO(Concmp, concmp);
-			StandardThreeArgOpIO(Cmpinc, cmpinc);
-			StandardThreeArgOpIO(Cmpdec, cmpdec);
-#undef StandardThreeArgOp
-#undef StandardTwoArgOp
+#define Standard3ArgOp(kind, fn) case Opcodes:: kind : fn ( src1, src2, srcDest ) ; break
+#define Standard2ArgOp(kind, fn) case Opcodes:: kind : fn ( src1, srcDest ) ; break
+#define Standard3ArgOpIO(kind, fn) Standard3ArgOp(kind ## o, fn ## o); Standard3ArgOp(kind ## i, fn ## i)
+#define Standard2ArgOpIO(kind, fn) Standard2ArgOp(kind ## o, fn ## o); Standard2ArgOp(kind ## i, fn ## i)
+#define Standard2SourceOp(kind, fn) case Opcodes:: kind : fn ( src1, src2) ; break
+			Standard3ArgOp(Notbit, notbit);
+			Standard3ArgOp(And, andOp);
+			Standard3ArgOp(Andnot, andnot);
+			Standard3ArgOp(Setbit, setbit);
+			Standard3ArgOp(Notand, notand);
+			Standard3ArgOp(Xor, xorOp);
+			Standard3ArgOp(Or, orOp);
+			Standard3ArgOp(Nor, nor);
+			Standard3ArgOp(Xnor, xnor);
+			Standard2ArgOp(Not, notOp);
+			Standard3ArgOp(Ornot, ornot);
+			Standard3ArgOp(Nand, nand);
+			Standard3ArgOp(Alterbit, alterbit);
+			Standard3ArgOpIO(Add, add);
+			Standard3ArgOpIO(Sub, sub);
+			Standard3ArgOp(Shro, shro);
+			Standard3ArgOp(Shrdi, shrdi);
+			Standard3ArgOp(Shri, shri);
+			Standard3ArgOp(Shlo, shlo);
+			Standard3ArgOp(Rotate, rotate);
+			Standard3ArgOp(Shli, shli);
+			Standard2ArgOpIO(Cmp, cmp);
+			Standard2ArgOpIO(Concmp, concmp);
+			Standard3ArgOpIO(Cmpinc, cmpinc);
+			Standard3ArgOpIO(Cmpdec, cmpdec);
+			Standard2SourceOp(Scanbyte, scanbyte);
+			Standard2ArgOp(Chkbit, chkbit);
+			Standard3ArgOp(Addc, addc);
+			Standard3ArgOp(Subc, subc);
+			Standard2ArgOp(Mov, mov);
+			Standard3ArgOp(Atmod, atmod);
+			Standard3ArgOp(Atadd, atadd);
+#warning "movl, movt, and movq have not been implemented as they have special logic"
+#warning "synmovl, synmovt, and synmovq have not been implemented as they have special logic"
+#ifdef PROTECTED_ARCHITECTURE
+#warning "Protected architecture opcodes must be implemented"
+#endif
+			Standard2ArgOp(Spanbit, spanbit);
+			Standard2ArgOp(Scanbit, scanbit);
+			Standard3ArgOp(Daddc, daddc);
+			Standard3ArgOp(Dsubc, dsubc);
+			Standard2ArgOp(Dmovt, dmovt);
+			Standard3ArgOp(Modac, modifyac);
+			Standard3ArgOp(Modify, modify);
+			Standard3ArgOp(Extract, extract);
+			Standard3ArgOp(Modtc, modtc);
+			Standard3ArgOp(Modpc, modpc);
+			case Opcodes::Calls: 
+				calls(src1);
+				break;
+			case Opcodes::Mark:
+				mark();
+				break;
+			case Opcodes::Fmark:
+				fmark();
+				break;
+			case Opcodes::Flushreg:
+				flushreg();
+				break;
+			case Opcodes::Syncf:
+				syncf();
+				break;
+#warning "Emul not impl'd as it is a special form"
+#warning "Ediv not impl'd as it is a special form"
+			Standard3ArgOpIO(Mul, mul);
+			Standard3ArgOpIO(Rem, rem);
+			Standard3ArgOpIO(Div, div);
+#warning "Modi not impl'd as it is a special form"
+#undef Standard3ArgOp
+#undef Standard2ArgOp
+#undef Standard2SourceOp
 			default:
 #warning "generate illegal instruction fault"
 				throw "illegal instruction!";
