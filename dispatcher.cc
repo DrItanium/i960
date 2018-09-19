@@ -376,6 +376,8 @@ namespace i960 {
 #warning "implement"
 		// TODO implement
 	}
+
+
 } // end namespace i960
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__

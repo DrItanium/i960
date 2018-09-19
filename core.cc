@@ -473,6 +473,21 @@ namespace i960 {
     void Core::modac(__DEFAULT_THREE_ARGS__) noexcept {
 #warning "unimplemented"
     }
+    void Core::addc(__DEFAULT_THREE_ARGS__) noexcept {
+#warning "addc unimplemented"
+    }
+    template<TestTypes t>
+    void testGeneric(const ArithmeticControls& ac, Core::DestinationRegister dest) noexcept {
+        dest.set<Ordinal>((ac._conditionCode & (Ordinal(t))) != 0 ? 1 : 0);
+    }
+    void Core::testno(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Unordered>(_ac, dest); }
+    void Core::testg(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Greater>(_ac, dest); }
+    void Core::teste(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Equal>(_ac, dest); }
+    void Core::testge(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::GreaterOrEqual>(_ac, dest); }
+    void Core::testl(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Less>(_ac, dest); }
+    void Core::testne(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::NotEqual>(_ac, dest); }
+    void Core::testle(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::LessOrEqual>(_ac, dest); }
+    void Core::testo(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Ordered>(_ac, dest); }
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__
