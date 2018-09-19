@@ -939,7 +939,7 @@ namespace i960 {
             void logr(__DEFAULT_THREE_ARGS__) noexcept;
             void logrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
             void mark() noexcept;
-            __GEN_DEFAULT_THREE_ARG_SIGS__(modifyac);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(modac);
             __GEN_DEFAULT_THREE_ARG_SIGS__(modi);
             __GEN_DEFAULT_THREE_ARG_SIGS__(modify);
             __GEN_DEFAULT_THREE_ARG_SIGS__(modpc);
