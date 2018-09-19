@@ -424,6 +424,32 @@ namespace i960 {
 	void Core::divrl(Core::LongSourceRegister src1, Core::LongSourceRegister src2, Core::LongDestinationRegister dest) noexcept {
 		dest.set<RawLongReal>(src2.get<RawLongReal>() / src1.get<RawLongReal>());
 	}
+    void Core::muli(Core::SourceRegister src1, Core::SourceRegister src2, Core::DestinationRegister dest) noexcept {
+#warning "No faults raised!"
+        dest.set(src2.get<Integer>() * src1.get<Integer>());
+    }
+    void Core::remi(Core::SourceRegister src1, Core::SourceRegister src2, Core::DestinationRegister dest) noexcept {
+#warning "No divide by zero check"
+        dest.set(src2.get<Integer>() % src1.get<Integer>());
+    }
+    void Core::stl(Core::LongSourceRegister src, Core::SourceRegister dest) noexcept {
+        store(dest.get<Ordinal>(), src.getLowerHalf());
+        store(dest.get<Ordinal>() + sizeof(Ordinal), src.getUpperHalf());
+    }
+    void Core::stt(const TripleRegister& src, Core::SourceRegister dest) noexcept {
+        auto addr = dest.get<Ordinal>();
+        store(addr, src.getLowerPart());
+        store(addr + sizeof(Ordinal), src.getMiddlePart());
+        store(addr + (2 * sizeof(Ordinal)), src.getUpperPart());
+    }
+    void Core::stq(const QuadRegister& src, Core::SourceRegister dest) noexcept {
+        auto addr = dest.get<Ordinal>();
+        store(addr, src.getLowestPart());
+        store(addr + sizeof(Ordinal), src.getLowerPart());
+        store(addr + (2 * sizeof(Ordinal)), src.getHigherPart());
+        store(addr + (3 * sizeof(Ordinal)), src.getHighestPart());
+    }
+    // Begin Dispatcher Logic
 	void Core::dispatch(const Instruction& inst) noexcept {
 		if (inst.isRegFormat()) {
 			dispatch(inst._reg);
@@ -799,4 +825,5 @@ namespace i960 {
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
+    // end dispatch logic
 } // end namespace i960
