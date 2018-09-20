@@ -255,6 +255,20 @@ namespace i960 {
 #undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
+            template<typename T>
+            void compare(T src1, T src2) noexcept {
+                if (src1 < src2) {
+                    _ac._conditionCode = 0b100;
+                } else if (src1 == src2) {
+                    _ac._conditionCode = 0b010;
+                } else {
+                    _ac._conditionCode = 0b001;
+                }
+            }
+            template<TestTypes t>
+            void testGeneric(Core::DestinationRegister dest) noexcept {
+                dest.set<Ordinal>((_ac._conditionCode & (Ordinal(t))) != 0 ? 1 : 0);
+            }
 		private:
 			void dispatch(const Instruction::REGFormat& inst) noexcept;
 			void dispatch(const Instruction::COBRFormat& inst) noexcept;
