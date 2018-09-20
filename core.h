@@ -29,6 +29,7 @@ namespace i960 {
             }
             void setRegister(ByteOrdinal index, SourceRegister other) noexcept;
             NormalRegister& getRegister(ByteOrdinal index) noexcept;
+            PreviousFramePointer& getPFP() noexcept;
             Ordinal getStackPointerAddress() const noexcept;
             void setFramePointer(Ordinal value) noexcept;
             Ordinal getFramePointerAddress() const noexcept;

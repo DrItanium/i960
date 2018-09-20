@@ -26,6 +26,9 @@ namespace i960 {
    Ordinal Core::getFramePointerAddress() const noexcept {
        return _globalRegisters[FramePointerIndex].get<Ordinal>() & (~0b111111);
    }
+   auto Core::getPFP() noexcept -> PreviousFramePointer& {
+       return _localRegisters[PreviousFramePointerIndex]._pfp;
+   }
    void Core::call(Integer addr) noexcept {
        union {
            Integer _value : 22;
@@ -387,7 +390,8 @@ namespace i960 {
         store(addr + (3 * sizeof(Ordinal)), src.getHighestPart());
     }
     void Core::syncf() noexcept {
-#warning "syncf unimplemented"
+        // this does nothing for the time being because this implementation does not execute instructions 
+        // in parallel. When we get there this will become an important instruction
     }
     void Core::mark() noexcept {
 #warning "mark unimplemented"
@@ -396,7 +400,8 @@ namespace i960 {
 #warning "fmark unimplemented"
     }
     void Core::flushreg() noexcept {
-#warning "flushreg unimplemented"
+        // this will nop currently as I'm saving all local registers to the 
+        // stack when a call happens
     }
     void Core::subi(__DEFAULT_THREE_ARGS__) noexcept {
         dest.set<Integer>(src2.get<Integer>() - src1.get<Integer>());
@@ -408,10 +413,15 @@ namespace i960 {
 #warning "unimplemented"
     }
     void Core::modac(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "unimplemented"
+        auto tmp = _ac._value;
+        auto src = src2.get<Ordinal>();
+        auto mask = src1.get<Ordinal>();
+        auto ac = _ac._value;
+        _ac._value = (src & mask) | (ac & (~mask));
+        dest.set<Ordinal>(tmp);
     }
     void Core::addc(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "addc unimplemented"
+#warning "unimplemented"
     }
     void Core::testno(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Unordered>(dest); }
     void Core::testg(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Greater>( dest); }
@@ -422,7 +432,33 @@ namespace i960 {
     void Core::testle(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::LessOrEqual>( dest); }
     void Core::testo(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Ordered>( dest); }
     void Core::ret() noexcept {
-#warning "unimplemented"
+        auto pfp = getPFP();
+
+        switch(pfp._returnCode) {
+            case 0b000:
+                // TODO
+                break;
+            case 0b001:
+                // TODO
+                break;
+            case 0b010:
+                // TODO
+                break;
+            case 0b011:
+                // TODO
+                break;
+            case 0b110:
+                // TODO
+                break;
+            case 0b111:
+                // TODO
+                break;
+            case 0b100:
+            case 0b101:
+            default:
+                throw "Undefined code!";
+                
+        }
     }
     void Core::be(Integer addr) noexcept {
 #warning "unimplemented"
@@ -539,7 +575,7 @@ namespace i960 {
 #warning "unimplemented"
     }
     void Core::notbit(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "unimplemented"
+        dest.set<Ordinal>(i960::notBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
     }
     void Core::notand(__DEFAULT_THREE_ARGS__) noexcept {
         dest.set<Ordinal>(i960::notAnd(src2.get<Ordinal>(), src1.get<Ordinal>()));
