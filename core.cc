@@ -621,10 +621,22 @@ namespace i960 {
 #warning "unimplemented"
     }
     void Core::concmpo(__TWO_SOURCE_REGS__) noexcept {
-#warning "unimplemented"
+        if ((_ac._conditionCode & 0b100) == 0) {
+            if (auto s1 = src1.get<Ordinal>(), s2 = src2.get<Ordinal>(); s1 <= s2) {
+                _ac._conditionCode = 0b010;
+            } else {
+                _ac._conditionCode = 0b001;
+            }
+        }
     }
     void Core::concmpi(__TWO_SOURCE_REGS__) noexcept {
-#warning "unimplemented"
+        if ((_ac._conditionCode & 0b100) == 0) {
+            if (auto s1 = src1.get<Integer>(), s2 = src2.get<Integer>(); s1 <= s2) {
+                _ac._conditionCode = 0b010;
+            } else {
+                _ac._conditionCode = 0b001;
+            }
+        }
     }
     void Core::cmpinco(__DEFAULT_THREE_ARGS__) noexcept {
 #warning "no overflow detection"
