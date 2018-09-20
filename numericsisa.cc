@@ -58,8 +58,8 @@ namespace i960 {
     void Core::atanrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept {
         dest.set<RawLongReal>(::atan(src2.get<RawLongReal>() / src1.get<RawLongReal>()));
     }
-    void Core::cmpr(Core::SourceRegister src1, Core::SourceRegister src2) noexcept { compare(_ac, src1.get<RawReal>(), src2.get<RawReal>()); }
-    void Core::cmprl(Core::LongSourceRegister src1, Core::LongSourceRegister src2) noexcept { compare(_ac, src1.get<RawLongReal>(), src2.get<RawLongReal>()); }
+    void Core::cmpr(Core::SourceRegister src1, Core::SourceRegister src2) noexcept { compare( src1.get<RawReal>(), src2.get<RawReal>()); }
+    void Core::cmprl(Core::LongSourceRegister src1, Core::LongSourceRegister src2) noexcept { compare( src1.get<RawLongReal>(), src2.get<RawLongReal>()); }
 	void Core::divr(Core::SourceRegister src1, Core::SourceRegister src2, Core::DestinationRegister dest) noexcept {
 		dest.set<RawReal>(src2.get<RawReal>() / src1.get<RawReal>());
 	}

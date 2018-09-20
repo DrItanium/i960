@@ -357,8 +357,8 @@ namespace i960 {
         _highest.set(h);
     }
 
-    void Core::cmpi(Core::SourceRegister src1, Core::SourceRegister src2) noexcept { compare(_ac, src1.get<Integer>(), src2.get<Integer>()); }
-    void Core::cmpo(Core::SourceRegister src1, Core::SourceRegister src2) noexcept { compare(_ac, src1.get<Ordinal>(), src2.get<Ordinal>()); }
+    void Core::cmpi(Core::SourceRegister src1, Core::SourceRegister src2) noexcept { compare(src1.get<Integer>(), src2.get<Integer>()); }
+    void Core::cmpo(Core::SourceRegister src1, Core::SourceRegister src2) noexcept { compare(src1.get<Ordinal>(), src2.get<Ordinal>()); }
     void Core::muli(Core::SourceRegister src1, Core::SourceRegister src2, Core::DestinationRegister dest) noexcept {
 #warning "No faults raised!"
         dest.set(src2.get<Integer>() * src1.get<Integer>());
@@ -411,14 +411,14 @@ namespace i960 {
     void Core::addc(__DEFAULT_THREE_ARGS__) noexcept {
 #warning "addc unimplemented"
     }
-    void Core::testno(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Unordered>(_ac, dest); }
-    void Core::testg(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Greater>(_ac, dest); }
-    void Core::teste(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Equal>(_ac, dest); }
-    void Core::testge(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::GreaterOrEqual>(_ac, dest); }
-    void Core::testl(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Less>(_ac, dest); }
-    void Core::testne(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::NotEqual>(_ac, dest); }
-    void Core::testle(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::LessOrEqual>(_ac, dest); }
-    void Core::testo(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Ordered>(_ac, dest); }
+    void Core::testno(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Unordered>(dest); }
+    void Core::testg(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Greater>( dest); }
+    void Core::teste(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Equal>( dest); }
+    void Core::testge(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::GreaterOrEqual>( dest); }
+    void Core::testl(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Less>( dest); }
+    void Core::testne(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::NotEqual>( dest); }
+    void Core::testle(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::LessOrEqual>( dest); }
+    void Core::testo(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Ordered>( dest); }
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__
