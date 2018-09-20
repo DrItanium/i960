@@ -33,7 +33,7 @@ clean:
 numericops.o: operations.h types.h archlevel.h conditional_kinds.def numericops.cc
 sim.o: operations.h types.h opcodes.h archlevel.h conditional_kinds.def sim.cc
 misc.o: archlevel.h types.h conditional_kinds.def misc.cc
-core.o: archlevel.h types.h operations.h opcodes.h conditional_kinds.def core.cc
-dispatcher.o: archlevel.h types.h opcodes.h conditional_kinds.def dispatcher.cc
+core.o: archlevel.h types.h core.h operations.h opcodes.h conditional_kinds.def core.cc
+dispatcher.o: archlevel.h types.h core.h opcodes.h conditional_kinds.def dispatcher.cc
 
 .PHONY: options

@@ -1,4 +1,5 @@
 #include "types.h"
+#include "core.h"
 #include "operations.h"
 #include "opcodes.h"
 #include <limits>
