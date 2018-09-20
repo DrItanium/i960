@@ -467,11 +467,7 @@ namespace i960 {
     void Core::bg(Integer addr) noexcept { branchIfGeneric<ConditionCode::GreaterThan>(addr); }
     void Core::bge(Integer addr) noexcept { branchIfGeneric<ConditionCode::GreaterThanOrEqual>(addr); }
     void Core::bo(Integer addr) noexcept { branchIfGeneric<ConditionCode::Ordered>(addr); }
-    void Core::bno(Integer addr) noexcept {
-        if (_ac._conditionCode == 0b000) {
-            b(addr);
-        }
-    }
+    void Core::bno(Integer addr) noexcept { branchIfGeneric<ConditionCode::Unordered>(addr); }
     void Core::faulte(Integer addr) noexcept {
 #warning "unimplemented"
     }

@@ -272,9 +272,14 @@ namespace i960 {
             }
             template<ConditionCode cc>
             void branchIfGeneric(Integer addr) noexcept {
-                static_assert(cc != ConditionCode::Unordered, "Unordered has special logic");
-                if (((Ordinal(cc)) & _ac._conditionCode) != 0) {
-                    b(addr);
+                if constexpr (cc == ConditionCode::Unordered) {
+                    if (_ac._conditionCode == 0) {
+                        b(addr);
+                    }
+                } else {
+                    if (((Ordinal(cc)) & _ac._conditionCode) != 0) {
+                        b(addr);
+                    }
                 }
             }
 		private:
