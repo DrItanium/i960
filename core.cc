@@ -538,6 +538,60 @@ namespace i960 {
     void Core::st(__TWO_SOURCE_REGS__) noexcept {
 #warning "unimplemented"
     }
+    void Core::notbit(__DEFAULT_THREE_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::setbit(__DEFAULT_THREE_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::notand(__DEFAULT_THREE_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::orOp(__DEFAULT_THREE_ARGS__) noexcept {
+        dest.set(i960::orOp<Ordinal>(src2.get<Ordinal>(), src1.get<Ordinal>()));
+    }
+    void Core::nor(__DEFAULT_THREE_ARGS__) noexcept {
+        dest.set(i960::nor(src2.get<Ordinal>(), src1.get<Ordinal>()));
+    }
+    void Core::notOp(__DEFAULT_TWO_ARGS__) noexcept {
+        dest.set(i960::notOp(src.get<Ordinal>()));
+    }
+    void Core::ornot(__DEFAULT_THREE_ARGS__) noexcept {
+        dest.set(i960::orNot(src2.get<Ordinal>(), src1.get<Ordinal>()));
+    }
+    void Core::nand(__DEFAULT_THREE_ARGS__) noexcept {
+        dest.set(i960::nand(src2.get<Ordinal>(), src1.get<Ordinal>()));
+    }
+    void Core::shro(__DEFAULT_THREE_ARGS__) noexcept {
+        dest.set(src2.get<Ordinal>() >> (src1.get<Ordinal>() & 0b11111));
+    }
+    void Core::shri(__DEFAULT_THREE_ARGS__) noexcept {
+        dest.set(src2.get<Integer>() >> (src1.get<Integer>() & 0b11111));
+    }
+    void Core::shlo(__DEFAULT_THREE_ARGS__) noexcept {
+        dest.set(src2.get<Ordinal>() << (src1.get<Ordinal>() & 0b11111));
+    }
+    void Core::shli(__DEFAULT_THREE_ARGS__) noexcept {
+        dest.set(src2.get<Integer>() << (src1.get<Integer>() & 0b11111));
+    }
+    void Core::shrdi(__DEFAULT_THREE_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::rotate(__DEFAULT_THREE_ARGS__) noexcept {
+        dest.set<Ordinal>(i960::rotate(src2.get<Ordinal>(), src1.get<Ordinal>()));
+    }
+    void Core::modify(__DEFAULT_THREE_ARGS__) noexcept {
+        dest.set<Ordinal>(i960::modify(dest.get<Ordinal>(), src2.get<Ordinal>(), src1.get<Ordinal>()));
+    }
+    void Core::scanbyte(__TWO_SOURCE_REGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::atmod(__DEFAULT_THREE_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::atadd(__DEFAULT_THREE_ARGS__) noexcept {
+#warning "unimplemented"
+    }
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__
