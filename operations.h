@@ -86,18 +86,6 @@ namespace i960 {
             return clearBit(value, position);
         }
     }
-    constexpr Ordinal modify(Ordinal value, Ordinal inject, Ordinal mask) noexcept {
-        return (inject & mask) | (value & (~mask));
-    }
-    void scanByte(ArithmeticControls& ac, Ordinal src1, Ordinal src2) noexcept;
-    Ordinal alterBit(const ArithmeticControls& ac, Ordinal src, Ordinal position) noexcept;
-    Integer compareAndDecrement(ArithmeticControls& ac, Integer src1, Integer src2);
-    Ordinal compareAndDecrement(ArithmeticControls& ac, Ordinal src1, Ordinal src2);
-    Integer compareAndIncrement(ArithmeticControls& ac, Integer src1, Integer src2);
-    Ordinal compareAndIncrement(ArithmeticControls& ac, Ordinal src1, Ordinal src2);
-    void conditionalCompare(ArithmeticControls& ac, Integer src1, Integer src2);
-    void conditionalCompare(ArithmeticControls& ac, Ordinal src1, Ordinal src2);
-
     constexpr LongOrdinal multiply(LongOrdinal a, LongOrdinal b) noexcept {
         return a * b;
     }

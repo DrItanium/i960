@@ -563,25 +563,33 @@ namespace i960 {
         dest.set(i960::nand(src2.get<Ordinal>(), src1.get<Ordinal>()));
     }
     void Core::shro(__DEFAULT_THREE_ARGS__) noexcept {
-        dest.set(src2.get<Ordinal>() >> (src1.get<Ordinal>() & 0b11111));
+        auto shift = src1.get<Ordinal>();
+        dest.set<Ordinal>((shift < 32u) ? src2.get<Ordinal>() >> shift : 0u);
     }
     void Core::shri(__DEFAULT_THREE_ARGS__) noexcept {
-        dest.set(src2.get<Integer>() >> (src1.get<Integer>() & 0b11111));
+        dest.set(src2.get<Integer>() >> src1.get<Integer>());
     }
     void Core::shlo(__DEFAULT_THREE_ARGS__) noexcept {
-        dest.set(src2.get<Ordinal>() << (src1.get<Ordinal>() & 0b11111));
+        auto shift = src1.get<Ordinal>();
+        dest.set<Ordinal>((shift < 32u) ? src2.get<Ordinal>() << shift : 0u);
     }
     void Core::shli(__DEFAULT_THREE_ARGS__) noexcept {
-        dest.set(src2.get<Integer>() << (src1.get<Integer>() & 0b11111));
+        dest.set(src2.get<Integer>() << src1.get<Integer>());
     }
-    void Core::shrdi(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "unimplemented"
+    void Core::shrdi(Core::SourceRegister len, Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
+        auto result = src.get<Integer>() >> len.get<Integer>();
+        if (result < 0) {
+            result += 1;
+        }
+        dest.set<Integer>(result);
     }
     void Core::rotate(__DEFAULT_THREE_ARGS__) noexcept {
         dest.set<Ordinal>(i960::rotate(src2.get<Ordinal>(), src1.get<Ordinal>()));
     }
-    void Core::modify(__DEFAULT_THREE_ARGS__) noexcept {
-        dest.set<Ordinal>(i960::modify(dest.get<Ordinal>(), src2.get<Ordinal>(), src1.get<Ordinal>()));
+    void Core::modify(Core::SourceRegister mask, Core::SourceRegister src, Core::DestinationRegister srcDest) noexcept {
+        auto s = src.get<Ordinal>();
+        auto m = mask.get<Ordinal>();
+        srcDest.set<Ordinal>((s & m) | (srcDest.get<Ordinal>() & (~m)));
     }
     void Core::scanbyte(__TWO_SOURCE_REGS__) noexcept {
 #warning "unimplemented"
