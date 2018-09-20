@@ -541,9 +541,6 @@ namespace i960 {
     void Core::notbit(__DEFAULT_THREE_ARGS__) noexcept {
 #warning "unimplemented"
     }
-    void Core::setbit(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "unimplemented"
-    }
     void Core::notand(__DEFAULT_THREE_ARGS__) noexcept {
         dest.set<Ordinal>(i960::notAnd(src2.get<Ordinal>(), src1.get<Ordinal>()));
     }
@@ -620,6 +617,12 @@ namespace i960 {
     }
     void Core::cmpdeci(__DEFAULT_THREE_ARGS__) noexcept {
 #warning "unimplemented"
+    }
+    void Core::clrbit(__DEFAULT_THREE_ARGS__) noexcept {
+        dest.set<Ordinal>(i960::clearBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
+    }
+    void Core::setbit(__DEFAULT_THREE_ARGS__) noexcept {
+        dest.set<Ordinal>(i960::setBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
     }
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
