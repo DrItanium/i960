@@ -270,6 +270,13 @@ namespace i960 {
             void testGeneric(Core::DestinationRegister dest) noexcept {
                 dest.set<Ordinal>((_ac._conditionCode & (Ordinal(t))) != 0 ? 1 : 0);
             }
+            template<ConditionCode cc>
+            void branchIfGeneric(Integer addr) noexcept {
+                static_assert(cc != ConditionCode::Unordered, "Unordered has special logic");
+                if (((Ordinal(cc)) & _ac._conditionCode) != 0) {
+                    b(addr);
+                }
+            }
 		private:
 			void dispatch(const Instruction::REGFormat& inst) noexcept;
 			void dispatch(const Instruction::COBRFormat& inst) noexcept;
