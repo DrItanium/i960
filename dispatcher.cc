@@ -298,6 +298,7 @@ namespace i960 {
 #define Standard2ArgOpIO(kind, fn) Standard2ArgOp(kind ## o, fn ## o); Standard2ArgOp(kind ## i, fn ## i)
 #define Standard2SourceOp(kind, fn) case Opcodes:: kind : fn ( src1, src2) ; break
 			Standard3ArgOp(Notbit, notbit);
+            Standard3ArgOp(Notor, notor);
 			Standard3ArgOp(And, andOp);
 			Standard3ArgOp(Andnot, andnot);
 			Standard3ArgOp(Setbit, setbit);

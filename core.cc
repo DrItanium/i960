@@ -545,7 +545,10 @@ namespace i960 {
 #warning "unimplemented"
     }
     void Core::notand(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "unimplemented"
+        dest.set<Ordinal>(i960::notAnd(src2.get<Ordinal>(), src1.get<Ordinal>()));
+    }
+    void Core::notor(__DEFAULT_THREE_ARGS__) noexcept {
+        dest.set<Ordinal>(i960::notOr(src2.get<Ordinal>(), src1.get<Ordinal>()));
     }
     void Core::orOp(__DEFAULT_THREE_ARGS__) noexcept {
         dest.set(i960::orOp<Ordinal>(src2.get<Ordinal>(), src1.get<Ordinal>()));
