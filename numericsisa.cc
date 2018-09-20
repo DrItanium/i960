@@ -78,6 +78,15 @@ namespace i960 {
     void Core::cmporl(Core::LongSourceRegister src1, Core::LongSourceRegister src2) noexcept {
 #warning "unimplemented"
     }
+    void Core::daddc(__DEFAULT_THREE_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::dsubc(__DEFAULT_THREE_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::dmovt(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
+#warning "unimplemented"
+    }
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__

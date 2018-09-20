@@ -8,6 +8,8 @@
 #define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ const DoubleRegister& src1, const DoubleRegister& src2, DoubleRegister& dest
 #define __DEFAULT_TWO_ARGS__ Core::SourceRegister src, Core::DestinationRegister dest
 #define __DEFAULT_DOUBLE_WIDE_TWO_ARGS__ const DoubleRegister& src, DoubleRegister& dest
+#define __TWO_SOURCE_AND_INT_ARGS__ Core::SourceRegister src1, Core::SourceRegister src2, Integer targ
+#define __TWO_SOURCE_REGS__ Core::SourceRegister src1, Core::SourceRegister src2
 namespace i960 {
    Ordinal Core::getStackPointerAddress() const noexcept {
        return _localRegisters[StackPointerIndex].get<Ordinal>();
@@ -470,8 +472,75 @@ namespace i960 {
     void Core::faultno(Integer addr) noexcept {
 #warning "unimplemented"
     }
+    void Core::bbc(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::bbs(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::cmpobg(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::cmpobe(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::cmpobge(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::cmpobl(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::cmpobne(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::cmpoble(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::cmpibg(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::cmpibe(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::cmpibge(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::cmpibl(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::cmpibne(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::cmpible(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::cmpibo(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::cmpibno(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::balx(__DEFAULT_TWO_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::stob(__TWO_SOURCE_REGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::stos(__TWO_SOURCE_REGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::stib(__TWO_SOURCE_REGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::stis(__TWO_SOURCE_REGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::st(__TWO_SOURCE_REGS__) noexcept {
+#warning "unimplemented"
+    }
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
+#undef __TWO_SOURCE_REGS__
 } // end namespace i960

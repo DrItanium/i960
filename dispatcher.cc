@@ -378,6 +378,10 @@ namespace i960 {
 		// TODO implement
 	}
 
+    Integer Core::getFullDisplacement() noexcept {
+#warning "unimplemented"
+        return -1;
+    }
 
 } // end namespace i960
 #undef __DEFAULT_TWO_ARGS__
