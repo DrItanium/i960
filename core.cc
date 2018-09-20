@@ -627,16 +627,22 @@ namespace i960 {
 #warning "unimplemented"
     }
     void Core::cmpinco(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "unimplemented"
+#warning "no overflow detection"
+        cmpo(src1, src2);
+        dest.set<Ordinal>(src2.get<Ordinal>() + 1);
     }
     void Core::cmpinci(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "unimplemented"
+        cmpi(src1, src2);
+        dest.set<Integer>(src2.get<Integer>() + 1); // overflow suppressed
     }
     void Core::cmpdeco(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "unimplemented"
+#warning "no overflow detection"
+        cmpo(src1, src2);
+        dest.set<Ordinal>(src2.get<Ordinal>() - 1);
     }
     void Core::cmpdeci(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "unimplemented"
+        cmpi(src1, src2);
+        dest.set<Integer>(src2.get<Integer>() - 1);
     }
     void Core::clrbit(__DEFAULT_THREE_ARGS__) noexcept {
         dest.set<Ordinal>(i960::clearBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
