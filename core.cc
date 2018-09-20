@@ -419,6 +419,57 @@ namespace i960 {
     void Core::testne(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::NotEqual>( dest); }
     void Core::testle(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::LessOrEqual>( dest); }
     void Core::testo(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Ordered>( dest); }
+    void Core::ret() noexcept {
+#warning "unimplemented"
+    }
+    void Core::be(Integer addr) noexcept {
+#warning "unimplemented"
+    }
+    void Core::faulte(Integer addr) noexcept {
+#warning "unimplemented"
+    }
+    void Core::bne(Integer addr) noexcept {
+#warning "unimplemented"
+    }
+    void Core::faultne(Integer addr) noexcept {
+#warning "unimplemented"
+    }
+    void Core::bl(Integer addr) noexcept {
+#warning "unimplemented"
+    }
+    void Core::faultl(Integer addr) noexcept {
+#warning "unimplemented"
+    }
+    void Core::ble(Integer addr) noexcept {
+#warning "unimplemented"
+    }
+    void Core::faultle(Integer addr) noexcept {
+#warning "unimplemented"
+    }
+    void Core::bg(Integer addr) noexcept {
+#warning "unimplemented"
+    }
+    void Core::faultg(Integer addr) noexcept {
+#warning "unimplemented"
+    }
+    void Core::bge(Integer addr) noexcept {
+#warning "unimplemented"
+    }
+    void Core::faultge(Integer addr) noexcept {
+#warning "unimplemented"
+    }
+    void Core::bo(Integer addr) noexcept {
+#warning "unimplemented"
+    }
+    void Core::faulto(Integer addr) noexcept {
+#warning "unimplemented"
+    }
+    void Core::bno(Integer addr) noexcept {
+#warning "unimplemented"
+    }
+    void Core::faultno(Integer addr) noexcept {
+#warning "unimplemented"
+    }
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__

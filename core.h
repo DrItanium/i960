@@ -64,7 +64,7 @@ namespace i960 {
 #include "conditional_kinds.def"
 #undef X
             void classr(SourceRegister src) noexcept;
-            void classrl(SourceRegister srcLower, SourceRegister srcUpper) noexcept;
+            void classrl(LongSourceRegister src) noexcept;
             void clrbit(SourceRegister pos, SourceRegister src, DestinationRegister dest) noexcept; // TODO look into the various forms further
             void cmpi(SourceRegister src1, SourceRegister src2) noexcept;
             void cmpo(SourceRegister src1, SourceRegister src2) noexcept;
@@ -73,7 +73,7 @@ namespace i960 {
             __GEN_DEFAULT_THREE_ARG_SIGS__(cmpinci);
             __GEN_DEFAULT_THREE_ARG_SIGS__(cmpinco);
             void cmpor(SourceRegister src1, SourceRegister src2) noexcept;
-            void cmporl(SourceRegister src1Lower, SourceRegister src1Upper, SourceRegister src2Lower, SourceRegister src2Upper) noexcept;
+            void cmporl(LongSourceRegister src1, LongSourceRegister src2) noexcept;
             void cmpr(SourceRegister src1, SourceRegister src2) noexcept;
             void cmprl(LongSourceRegister src1, LongSourceRegister src2) noexcept;
             // compare and branch instructions
