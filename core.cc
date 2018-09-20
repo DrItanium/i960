@@ -592,6 +592,24 @@ namespace i960 {
     void Core::atadd(__DEFAULT_THREE_ARGS__) noexcept {
 #warning "unimplemented"
     }
+    void Core::concmpo(__TWO_SOURCE_REGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::concmpi(__TWO_SOURCE_REGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::cmpinco(__DEFAULT_THREE_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::cmpinci(__DEFAULT_THREE_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::cmpdeco(__DEFAULT_THREE_ARGS__) noexcept {
+#warning "unimplemented"
+    }
+    void Core::cmpdeci(__DEFAULT_THREE_ARGS__) noexcept {
+#warning "unimplemented"
+    }
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__
