@@ -556,7 +556,7 @@ namespace i960 {
 #warning "unimplemented"
     }
     void Core::st(__TWO_SOURCE_REGS__) noexcept {
-#warning "unimplemented"
+        store(src2.get<Ordinal>(), src1.get<Ordinal>());
     }
     void Core::notbit(__DEFAULT_THREE_ARGS__) noexcept {
         dest.set<Ordinal>(i960::notBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
