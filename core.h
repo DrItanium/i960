@@ -1,5 +1,11 @@
 #ifndef I960_CORE_H__
 #define I960_CORE_H__
+#define __DEFAULT_THREE_ARGS__ SourceRegister src1, SourceRegister src2, DestinationRegister dest
+#define __DEFAULT_TWO_ARGS__ SourceRegister src, DestinationRegister dest
+#define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ LongSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest
+#define __DEFAULT_DOUBLE_WIDE_TWO_ARGS__ LongSourceRegister src, LongDestinationRegister dest
+#define __GEN_DEFAULT_THREE_ARG_SIGS__(name) void name (__DEFAULT_THREE_ARGS__) noexcept
+#define __TWO_SOURCE_REGS__ SourceRegister src, SourceRegister dest
 #include "types.h"
 namespace i960 {
     class Core {
@@ -33,27 +39,17 @@ namespace i960 {
             Ordinal getStackPointerAddress() const noexcept;
             void setFramePointer(Ordinal value) noexcept;
             Ordinal getFramePointerAddress() const noexcept;
-#define __DEFAULT_THREE_ARGS__ SourceRegister src1, SourceRegister src2, DestinationRegister dest
-#define __DEFAULT_TWO_ARGS__ SourceRegister src, DestinationRegister dest
-#define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ LongSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest
-#define __DEFAULT_DOUBLE_WIDE_TWO_ARGS__ LongSourceRegister src, LongDestinationRegister dest
-#define __GEN_DEFAULT_THREE_ARG_SIGS__(name) void name (__DEFAULT_THREE_ARGS__) noexcept
-#define __TWO_SOURCE_REGS__ SourceRegister src, SourceRegister dest
-
+            // begin core architecture
             void callx(SourceRegister value) noexcept;
             void calls(SourceRegister value);
             __GEN_DEFAULT_THREE_ARG_SIGS__(addc);
             __GEN_DEFAULT_THREE_ARG_SIGS__(addo);
             __GEN_DEFAULT_THREE_ARG_SIGS__(addi);
-            void addr(__DEFAULT_THREE_ARGS__) noexcept;
-            void addrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
             void chkbit(SourceRegister pos, SourceRegister src) noexcept;
             __GEN_DEFAULT_THREE_ARG_SIGS__(alterbit);
             __GEN_DEFAULT_THREE_ARG_SIGS__(andOp);
             __GEN_DEFAULT_THREE_ARG_SIGS__(andnot);
             void atadd(__DEFAULT_THREE_ARGS__) noexcept; // TODO add other forms of atadd
-            void atanr(__DEFAULT_THREE_ARGS__) noexcept;
-            void atanrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
             void atmod(SourceRegister src, SourceRegister mask, DestinationRegister srcDest) noexcept; // TODO check out other forms of this instruction
             void b(Integer displacement) noexcept;
             void bx(SourceRegister targ) noexcept; // TODO check these two instructions out for more variants
@@ -61,11 +57,23 @@ namespace i960 {
             void balx(__DEFAULT_TWO_ARGS__) noexcept; // TODO check these two instructions out for more variants
             void bbc(SourceRegister pos, SourceRegister src, Integer targ) noexcept; 
             void bbs(SourceRegister pos, SourceRegister src, Integer targ) noexcept;
-#define X(kind) void b ## kind (Integer) noexcept;
+            // compare and branch instructions as well
+            // faults too
+#define X(kind) \
+            void b ## kind (Integer) noexcept; \
+            void cmpib ## kind ( SourceRegister, SourceRegister, Integer) noexcept; \
+            void fault ## kind ( Integer ) noexcept; \
+            void test ## kind ( DestinationRegister) noexcept;
+#define Y(kind) void cmp ## kind ( SourceRegister, SourceRegister, Integer) noexcept;
 #include "conditional_kinds.def"
+			Y(obe)
+			Y(obne)
+			Y(obl)
+			Y(oble)
+			Y(obg)
+			Y(obge)
 #undef X
-            void classr(SourceRegister src) noexcept;
-            void classrl(LongSourceRegister src) noexcept;
+#undef Y
             void clrbit(SourceRegister pos, SourceRegister src, DestinationRegister dest) noexcept; // TODO look into the various forms further
             void cmpi(SourceRegister src1, SourceRegister src2) noexcept;
             void cmpo(SourceRegister src1, SourceRegister src2) noexcept;
@@ -73,49 +81,13 @@ namespace i960 {
             __GEN_DEFAULT_THREE_ARG_SIGS__(cmpdeco);
             __GEN_DEFAULT_THREE_ARG_SIGS__(cmpinci);
             __GEN_DEFAULT_THREE_ARG_SIGS__(cmpinco);
-            void cmpor(SourceRegister src1, SourceRegister src2) noexcept;
-            void cmporl(LongSourceRegister src1, LongSourceRegister src2) noexcept;
-            void cmpr(SourceRegister src1, SourceRegister src2) noexcept;
-            void cmprl(LongSourceRegister src1, LongSourceRegister src2) noexcept;
-            // compare and branch instructions
-#define X(kind) void cmpib ## kind ( SourceRegister, SourceRegister, Integer) noexcept;
-#include "conditional_kinds.def"
-#undef X
-#define X(kind) void cmp ## kind ( SourceRegister, SourceRegister, Integer) noexcept;
-			X(obe)
-			X(obne)
-			X(obl)
-			X(oble)
-			X(obg)
-			X(obge)
-#undef X
             void concmpi(SourceRegister src1, SourceRegister src2) noexcept;
             void concmpo(SourceRegister src1, SourceRegister src2) noexcept;
-            void cosr(__DEFAULT_TWO_ARGS__) noexcept;
-            void cosrl(__DEFAULT_DOUBLE_WIDE_TWO_ARGS__) noexcept;
-            void cpysre(__DEFAULT_THREE_ARGS__) noexcept; // TODO fix the signature of this function
-            void cpyrsre(__DEFAULT_THREE_ARGS__) noexcept; // TODO fix the signature of this function
-            void cvtilr(LongSourceRegister src, ExtendedReal& dest) noexcept;
-            void cvtir(SourceRegister src, ExtendedReal& dest) noexcept;
-            void cvtri(__DEFAULT_TWO_ARGS__) noexcept; // TODO fix this function as it deals with floating point registers
-            void cvtril(SourceRegister src, LongDestinationRegister dest) noexcept; // TODO fix this function as it deals with floating point registers
-            void cvtzri(__DEFAULT_TWO_ARGS__) noexcept; // TODO fix this function as it deals with floating point registers
-            void cvtzril(SourceRegister src, LongDestinationRegister dest) noexcept; // TODO fix this function as it deals with floating point registers
-            __GEN_DEFAULT_THREE_ARG_SIGS__(daddc);
             __GEN_DEFAULT_THREE_ARG_SIGS__(divo);
             __GEN_DEFAULT_THREE_ARG_SIGS__(divi);
-            void divr(__DEFAULT_THREE_ARGS__) noexcept; // TODO divr and divrl do not support extended registers yet
-            void divrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
-            void dmovt(SourceRegister src, DestinationRegister dest) noexcept;
-            __GEN_DEFAULT_THREE_ARG_SIGS__(dsubc);
             void ediv(SourceRegister src1, LongSourceRegister src2, DestinationRegister remainder, DestinationRegister quotient) noexcept;
             void emul(SourceRegister src1, SourceRegister src2, LongDestinationRegister dest) noexcept;
-            void expr(__DEFAULT_TWO_ARGS__) noexcept;
-            void exprl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             __GEN_DEFAULT_THREE_ARG_SIGS__(extract);
-#define X(kind) void fault ## kind (Integer) noexcept;
-#include "conditional_kinds.def"
-#undef X
             void fill(SourceRegister dst, SourceRegister value, SourceRegister len) noexcept;
             void flushreg() noexcept;
             void fmark() noexcept;
@@ -140,12 +112,6 @@ namespace i960 {
 				ldq(src, reg);
 			}
             void lda(__DEFAULT_TWO_ARGS__) noexcept;
-            void logbnr(__DEFAULT_TWO_ARGS__) noexcept;
-            void logbnrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
-            void logepr(__DEFAULT_THREE_ARGS__) noexcept;
-            void logeprl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
-            void logr(__DEFAULT_THREE_ARGS__) noexcept;
-            void logrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
             void mark() noexcept;
             __GEN_DEFAULT_THREE_ARG_SIGS__(modac);
             __GEN_DEFAULT_THREE_ARG_SIGS__(modi);
@@ -171,13 +137,8 @@ namespace i960 {
                 QuadRegister d(getRegister(dest), getRegister(dest + 1), getRegister(dest + 2), getRegister(dest + 3));
                 movq(s, d);
             }
-            void movr(__DEFAULT_TWO_ARGS__) noexcept;
-            void movrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
-            void movre(const TripleRegister& src, TripleRegister& dest) noexcept;
             __GEN_DEFAULT_THREE_ARG_SIGS__(mulo);
             __GEN_DEFAULT_THREE_ARG_SIGS__(muli);
-            void mulr(__DEFAULT_THREE_ARGS__) noexcept;
-            void mulrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
             __GEN_DEFAULT_THREE_ARG_SIGS__(nand);
             __GEN_DEFAULT_THREE_ARG_SIGS__(nor);
             void notOp(__DEFAULT_TWO_ARGS__) noexcept;
@@ -188,16 +149,10 @@ namespace i960 {
             __GEN_DEFAULT_THREE_ARG_SIGS__(ornot);
             __GEN_DEFAULT_THREE_ARG_SIGS__(remo);
             __GEN_DEFAULT_THREE_ARG_SIGS__(remi);
-            __GEN_DEFAULT_THREE_ARG_SIGS__(remr);
-            void remrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
             void resumeprcs(SourceRegister src) noexcept;
             void ret() noexcept;
             void rotate(__DEFAULT_THREE_ARGS__) noexcept;
-            void roundr(__DEFAULT_TWO_ARGS__) noexcept;
-            void roundrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             void scanbyte(SourceRegister src1, SourceRegister src2) noexcept;
-            void scaler(__DEFAULT_THREE_ARGS__) noexcept;
-            void scalerl(LongSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest) noexcept;
             void scanbit(__DEFAULT_TWO_ARGS__) noexcept;
             void setbit(__DEFAULT_THREE_ARGS__) noexcept;
             void shlo(__DEFAULT_THREE_ARGS__) noexcept;
@@ -205,11 +160,7 @@ namespace i960 {
             void shli(__DEFAULT_THREE_ARGS__) noexcept;
             void shri(__DEFAULT_THREE_ARGS__) noexcept;
             void shrdi(__DEFAULT_THREE_ARGS__) noexcept;
-            void sinr(__DEFAULT_TWO_ARGS__) noexcept; 
-            void sinrl(__DEFAULT_DOUBLE_WIDE_TWO_ARGS__) noexcept; 
             void spanbit(__DEFAULT_TWO_ARGS__) noexcept;
-            void sqrtr(__DEFAULT_TWO_ARGS__) noexcept;
-            void sqrtrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             void st(__TWO_SOURCE_REGS__) noexcept;
             void stob(__TWO_SOURCE_REGS__) noexcept;
             void stos(__TWO_SOURCE_REGS__) noexcept;
@@ -234,18 +185,68 @@ namespace i960 {
             __GEN_DEFAULT_THREE_ARG_SIGS__(subc); 
             __GEN_DEFAULT_THREE_ARG_SIGS__(subo);
             __GEN_DEFAULT_THREE_ARG_SIGS__(subi);
+            void syncf() noexcept;
+            __GEN_DEFAULT_THREE_ARG_SIGS__(xnor);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(xorOp);
+            // end core architecture
+            // begin numerics architecture 
+            void addr(__DEFAULT_THREE_ARGS__) noexcept;
+            void addrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
+            void atanr(__DEFAULT_THREE_ARGS__) noexcept;
+            void atanrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
+            void tanr(__DEFAULT_TWO_ARGS__) noexcept;
+            void tanrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
+            void classr(SourceRegister src) noexcept;
+            void classrl(LongSourceRegister src) noexcept;
+            void cmpor(SourceRegister src1, SourceRegister src2) noexcept;
+            void cmporl(LongSourceRegister src1, LongSourceRegister src2) noexcept;
+            void cmpr(SourceRegister src1, SourceRegister src2) noexcept;
+            void cmprl(LongSourceRegister src1, LongSourceRegister src2) noexcept;
             void subr(__DEFAULT_THREE_ARGS__) noexcept;
             void subrl(LongSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest) noexcept;
-            void syncf() noexcept;
+            void cosr(__DEFAULT_TWO_ARGS__) noexcept;
+            void cosrl(__DEFAULT_DOUBLE_WIDE_TWO_ARGS__) noexcept;
+            void cpysre(__DEFAULT_THREE_ARGS__) noexcept; // TODO fix the signature of this function
+            void cpyrsre(__DEFAULT_THREE_ARGS__) noexcept; // TODO fix the signature of this function
+            void divr(__DEFAULT_THREE_ARGS__) noexcept; // TODO divr and divrl do not support extended registers yet
+            void divrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
+            void expr(__DEFAULT_TWO_ARGS__) noexcept;
+            void exprl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
+            void logbnr(__DEFAULT_TWO_ARGS__) noexcept;
+            void logbnrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
+            void logepr(__DEFAULT_THREE_ARGS__) noexcept;
+            void logeprl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
+            void logr(__DEFAULT_THREE_ARGS__) noexcept;
+            void logrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
+            void mulr(__DEFAULT_THREE_ARGS__) noexcept;
+            void mulrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
+            void roundr(__DEFAULT_TWO_ARGS__) noexcept;
+            void roundrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
+            void cvtilr(LongSourceRegister src, ExtendedReal& dest) noexcept;
+            void cvtir(SourceRegister src, ExtendedReal& dest) noexcept;
+            void cvtri(__DEFAULT_TWO_ARGS__) noexcept; // TODO fix this function as it deals with floating point registers
+            void cvtril(SourceRegister src, LongDestinationRegister dest) noexcept; // TODO fix this function as it deals with floating point registers
+            void cvtzri(__DEFAULT_TWO_ARGS__) noexcept; // TODO fix this function as it deals with floating point registers
+            void cvtzril(SourceRegister src, LongDestinationRegister dest) noexcept; // TODO fix this function as it deals with floating point registers
+            __GEN_DEFAULT_THREE_ARG_SIGS__(daddc);
+            void dmovt(SourceRegister src, DestinationRegister dest) noexcept;
+            __GEN_DEFAULT_THREE_ARG_SIGS__(dsubc);
+            void movr(__DEFAULT_TWO_ARGS__) noexcept;
+            void movrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
+            void movre(const TripleRegister& src, TripleRegister& dest) noexcept;
+            __GEN_DEFAULT_THREE_ARG_SIGS__(remr);
+            void remrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
+            void scaler(__DEFAULT_THREE_ARGS__) noexcept;
+            void scalerl(LongSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest) noexcept;
+            void sinr(__DEFAULT_TWO_ARGS__) noexcept; 
+            void sinrl(__DEFAULT_DOUBLE_WIDE_TWO_ARGS__) noexcept; 
+            void sqrtr(__DEFAULT_TWO_ARGS__) noexcept;
+            void sqrtrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             void synld(__DEFAULT_TWO_ARGS__) noexcept;
             void synmov(__DEFAULT_TWO_ARGS__) noexcept;
             void synmovl(__DEFAULT_TWO_ARGS__) noexcept;
             void synmovq(__DEFAULT_TWO_ARGS__) noexcept;
-            void tanr(__DEFAULT_TWO_ARGS__) noexcept;
-            void tanrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
-#define X(kind) void test ## kind ( DestinationRegister) noexcept;
-#include "conditional_kinds.def"
-#undef X
+            // end numerics architecture 
 #ifdef PROTECTED_ARCHITECTURE
             void cmpstr(SourceRegister src1, SourceRegister src2, SourceRegister len) noexcept;
             void condrec(SourceRegister src, DestinationRegister dest) noexcept;
@@ -263,14 +264,6 @@ namespace i960 {
             void signal(SourceRegister src) noexcept;
             void wait(SourceRegister src) noexcept;
 #endif
-            __GEN_DEFAULT_THREE_ARG_SIGS__(xnor);
-            __GEN_DEFAULT_THREE_ARG_SIGS__(xorOp);
-#undef __TWO_SOURCE_REGS__
-#undef __GEN_DEFAULT_THREE_ARG_SIGS__
-#undef __DEFAULT_THREE_ARGS__
-#undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
-#undef __DEFAULT_TWO_ARGS__
-#undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
             template<typename T>
             void compare(T src1, T src2) noexcept {
                 if (src1 < src2) {
@@ -323,4 +316,10 @@ namespace i960 {
     };
 
 }
+#undef __TWO_SOURCE_REGS__
+#undef __GEN_DEFAULT_THREE_ARG_SIGS__
+#undef __DEFAULT_THREE_ARGS__
+#undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
+#undef __DEFAULT_TWO_ARGS__
+#undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #endif // end I960_CORE_H__
