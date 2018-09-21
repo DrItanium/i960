@@ -312,7 +312,6 @@ namespace i960 {
             ProcessControls _pc;
             TraceControls _tc;
             ExtendedReal _floatingPointRegisters[NumFloatingPointRegs];
-            NormalRegister _internalRegisters[8]; // for internal conversion purposes to make decoding regular
     };
 
 }
