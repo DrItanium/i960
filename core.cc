@@ -424,15 +424,11 @@ namespace i960 {
         _ac._value = (src & mask) | (ac & (~mask));
         dest.set<Ordinal>(tmp);
     }
-    constexpr bool carrySet(Ordinal code) noexcept {
-        return (code & 0b010) != 0;
-    }
     void Core::addc(__DEFAULT_THREE_ARGS__) noexcept {
-        LongOrdinal combination = ((LongOrdinal)src2.get<Ordinal>()) + ((LongOrdinal)src1.get<Ordinal>()) + (carrySet(_ac._conditionCode) ? 1 : 0);
+        LongOrdinal combination = ((LongOrdinal)src2.get<Ordinal>()) + ((LongOrdinal)src1.get<Ordinal>()) + _ac.getCarryValue();
         auto lower = static_cast<Ordinal>(combination);
-        auto upper = combination & 0xFFFF'FFFF'0000'0000;
-        auto setCarry = upper > 0 ? 0b010 : 0;
-        auto intOverflowHappened = lower > 0x7FFF'FFFF ? 0b001 : 0;
+        auto setCarry = setCarryBitFromOrdinal(combination) ? 0b010 : 0;
+        auto intOverflowHappened = isIntegerOverflow(lower) ? 0b001 : 0;
         _ac._conditionCode = setCarry | intOverflowHappened;
         dest.set<Ordinal>(lower);
     }
@@ -710,6 +706,9 @@ namespace i960 {
     }
     void Core::emul(SourceRegister src1, SourceRegister src2, LongDestinationRegister dest) noexcept {
         dest.set<LongOrdinal>(src2.get<LongOrdinal>() * src1.get<LongOrdinal>());
+    }
+    void Core::lda(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
+        dest.move(src);
     }
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
