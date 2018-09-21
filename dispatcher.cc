@@ -175,7 +175,7 @@ namespace i960 {
 		auto displacement = i.has32bitDisplacement() ? getFullDisplacement() : 0;
 		auto srcDest = getRegister(i._src_dest);
 		auto abase = getRegister(i._abase);
-		switch (i.getAddressingMode()) {
+		switch (mode) {
 			case E::Abase:
 				immediateStorage.move(abase);
 				break;

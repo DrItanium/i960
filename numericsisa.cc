@@ -79,13 +79,14 @@ namespace i960 {
 #warning "unimplemented"
     }
     void Core::daddc(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "unimplemented"
+        //TODO implement
     }
     void Core::dsubc(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "unimplemented"
+        //TODO implement
     }
     void Core::dmovt(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
-#warning "unimplemented"
+        dest.move(src);
+        //TODO implement the range check
     }
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
