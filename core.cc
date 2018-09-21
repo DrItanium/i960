@@ -550,10 +550,15 @@ namespace i960 {
 #warning "unimplemented"
     }
     void Core::stib(__TWO_SOURCE_REGS__) noexcept {
-#warning "unimplemented"
+        auto upper = load(src2.get<Ordinal>()) & 0xFFFFFF00;
+        auto lower = Ordinal(src1.get<Integer>() & 0x000000FF);
+        store(src2.get<Ordinal>(), upper | lower);
     }
     void Core::stis(__TWO_SOURCE_REGS__) noexcept {
-#warning "unimplemented"
+        // load the complete value
+        auto upper = load(src2.get<Ordinal>()) & 0xFFFF0000;
+        auto lower = Ordinal(src1.get<Integer>() & 0x0000FFFF);
+        store(src2.get<Ordinal>(), upper | lower);
     }
     void Core::st(__TWO_SOURCE_REGS__) noexcept {
         store(src2.get<Ordinal>(), src1.get<Ordinal>());
