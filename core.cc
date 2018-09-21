@@ -541,7 +541,9 @@ namespace i960 {
 #warning "unimplemented"
     }
     void Core::balx(__DEFAULT_TWO_ARGS__) noexcept {
-#warning "unimplemented"
+       // TODO support 4 or 8 byte versions
+       dest.set<Ordinal>(_instructionPointer + 4);
+       _instructionPointer = src.get<Ordinal>();
     }
     void Core::stob(__TWO_SOURCE_REGS__) noexcept {
         auto upper = load(src2.get<Ordinal>()) & 0xFFFFFF00;
