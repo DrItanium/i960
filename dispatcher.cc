@@ -376,13 +376,17 @@ namespace i960 {
 		}
 	} 
 	void Core::dispatchFP(const Instruction::REGFormat& i) noexcept {
-#warning "implement"
 		// TODO implement
 	}
 
     Integer Core::getFullDisplacement() noexcept {
-#warning "unimplemented"
-        return -1;
+        auto addr = _instructionPointer + 4;
+        union {
+            Ordinal _ord;
+            Integer _int;
+        } conv;
+        conv._ord = load(addr);
+        return conv._int;
     }
 
 } // end namespace i960
