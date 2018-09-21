@@ -156,6 +156,21 @@ namespace i960 {
             void movl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             void movt(const TripleRegister& src, TripleRegister& dest) noexcept;
             void movq(const QuadRegister& src, QuadRegister& dest) noexcept;
+            void movl(ByteOrdinal src, ByteOrdinal dest) noexcept {
+                DoubleRegister s(getRegister(src), getRegister(src + 1));
+                DoubleRegister d(getRegister(dest), getRegister(dest + 1));
+                movl(s, d);
+            }
+            void movt(ByteOrdinal src, ByteOrdinal dest) noexcept {
+                TripleRegister s(getRegister(src), getRegister(src + 1), getRegister(src + 2));
+                TripleRegister d(getRegister(dest), getRegister(dest + 1), getRegister(dest + 2));
+                movt(s, d);
+            }
+            void movq(ByteOrdinal src, ByteOrdinal dest) noexcept {
+                QuadRegister s(getRegister(src), getRegister(src + 1), getRegister(src + 2), getRegister(src + 3));
+                QuadRegister d(getRegister(dest), getRegister(dest + 1), getRegister(dest + 2), getRegister(dest + 3));
+                movq(s, d);
+            }
             void movr(__DEFAULT_TWO_ARGS__) noexcept;
             void movrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             void movre(const TripleRegister& src, TripleRegister& dest) noexcept;

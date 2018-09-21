@@ -331,7 +331,9 @@ namespace i960 {
 			Standard2ArgOp(Mov, mov);
 			Standard3ArgOp(Atmod, atmod);
 			Standard3ArgOp(Atadd, atadd);
-#warning "movl, movt, and movq have not been implemented as they have special logic"
+            case Opcodes::Movl: movl(i._source1, i._source2); break;
+            case Opcodes::Movt: movt(i._source1, i._source2); break;
+            case Opcodes::Movq: movq(i._source1, i._source2); break;
 #warning "synmovl, synmovt, and synmovq have not been implemented as they have special logic"
 #ifdef PROTECTED_ARCHITECTURE
 #warning "Protected architecture opcodes must be implemented"
