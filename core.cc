@@ -544,10 +544,14 @@ namespace i960 {
 #warning "unimplemented"
     }
     void Core::stob(__TWO_SOURCE_REGS__) noexcept {
-#warning "unimplemented"
+        auto upper = load(src2.get<Ordinal>()) & 0xFFFFFF00;
+        auto lower = src1.get<ByteOrdinal>();
+        store(src2.get<Ordinal>(), upper | lower);
     }
     void Core::stos(__TWO_SOURCE_REGS__) noexcept {
-#warning "unimplemented"
+        auto upper = load(src2.get<Ordinal>()) & 0xFFFF0000;
+        auto lower = src1.get<ShortOrdinal>();
+        store(src2.get<Ordinal>(), upper | lower);
     }
     void Core::stib(__TWO_SOURCE_REGS__) noexcept {
         auto upper = load(src2.get<Ordinal>()) & 0xFFFFFF00;
