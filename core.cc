@@ -424,8 +424,17 @@ namespace i960 {
         _ac._value = (src & mask) | (ac & (~mask));
         dest.set<Ordinal>(tmp);
     }
+    constexpr bool carrySet(Ordinal code) noexcept {
+        return (code & 0b010) != 0;
+    }
     void Core::addc(__DEFAULT_THREE_ARGS__) noexcept {
-		//TODO implement
+        LongOrdinal combination = ((LongOrdinal)src2.get<Ordinal>()) + ((LongOrdinal)src1.get<Ordinal>()) + (carrySet(_ac._conditionCode) ? 1 : 0);
+        auto lower = static_cast<Ordinal>(combination);
+        auto upper = combination & 0xFFFF'FFFF'0000'0000;
+        auto setCarry = upper > 0 ? 0b010 : 0;
+        auto intOverflowHappened = lower > 0x7FFF'FFFF ? 0b001 : 0;
+        _ac._conditionCode = setCarry | intOverflowHappened;
+        dest.set<Ordinal>(lower);
     }
     void Core::testno(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Unordered>(dest); }
     void Core::testg(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Greater>( dest); }
