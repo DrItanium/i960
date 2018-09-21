@@ -67,16 +67,16 @@ namespace i960 {
 		dest.set<RawLongReal>(src2.get<RawLongReal>() / src1.get<RawLongReal>());
 	}
     void Core::classr(Core::SourceRegister src) noexcept {
-#warning "unimplemented"
+        //TODO implement
     }
     void Core::classrl(Core::LongSourceRegister src) noexcept {
-#warning "unimplemented"
+        //TODO implement
     }
     void Core::cmpor(Core::SourceRegister src1, Core::SourceRegister src2) noexcept {
-#warning "unimplemented"
+        //TODO implement
     }
     void Core::cmporl(Core::LongSourceRegister src1, Core::LongSourceRegister src2) noexcept {
-#warning "unimplemented"
+        //TODO implement
     }
     void Core::daddc(__DEFAULT_THREE_ARGS__) noexcept {
         //TODO implement

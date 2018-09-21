@@ -15,10 +15,15 @@ namespace i960 {
        return _localRegisters[StackPointerIndex].get<Ordinal>();
    }
    void Core::saveLocalRegisters() noexcept {
-#warning "saveLocalRegisters unimplemented"
+       auto base = getFramePointerAddress();
+       auto end = base + (sizeof(Ordinal) * LocalRegisterCount);
+
+       for (Ordinal addr = base, i = 0; addr < end; addr += sizeof(Ordinal), ++i) {
+            store(addr, _localRegisters[i].get<Ordinal>());
+       }
    }
    void Core::allocateNewLocalRegisterSet() noexcept {
-#warning "allocateNewLocalRegisterSet unimplemented"
+       // this function does nothing at this point as we are always saving locals to ram
    }
    void Core::setFramePointer(Ordinal value) noexcept {
        _globalRegisters[FramePointerIndex].set(value);
@@ -407,10 +412,10 @@ namespace i960 {
         dest.set<Integer>(src2.get<Integer>() - src1.get<Integer>());
     }
     void Core::modtc(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::modpc(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::modac(__DEFAULT_THREE_ARGS__) noexcept {
         auto tmp = _ac._value;
@@ -421,7 +426,7 @@ namespace i960 {
         dest.set<Ordinal>(tmp);
     }
     void Core::addc(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::testno(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Unordered>(dest); }
     void Core::testg(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Greater>( dest); }
@@ -469,76 +474,76 @@ namespace i960 {
     void Core::bo(Integer addr) noexcept { branchIfGeneric<ConditionCode::Ordered>(addr); }
     void Core::bno(Integer addr) noexcept { branchIfGeneric<ConditionCode::Unordered>(addr); }
     void Core::faulte(Integer addr) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::faultne(Integer addr) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::faultl(Integer addr) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::faultle(Integer addr) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::faultg(Integer addr) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::faultge(Integer addr) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::faulto(Integer addr) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::faultno(Integer addr) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::bbc(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::bbs(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::cmpobg(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::cmpobe(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::cmpobge(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::cmpobl(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::cmpobne(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::cmpoble(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::cmpibg(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::cmpibe(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::cmpibge(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::cmpibl(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::cmpibne(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::cmpible(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::cmpibo(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::cmpibno(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::balx(__DEFAULT_TWO_ARGS__) noexcept {
        // TODO support 4 or 8 byte versions
@@ -623,13 +628,13 @@ namespace i960 {
         srcDest.set<Ordinal>((s & m) | (srcDest.get<Ordinal>() & (~m)));
     }
     void Core::scanbyte(__TWO_SOURCE_REGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::atmod(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::atadd(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "unimplemented"
+		//TODO implement
     }
     void Core::concmpo(__TWO_SOURCE_REGS__) noexcept {
         if ((_ac._conditionCode & 0b100) == 0) {
