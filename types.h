@@ -133,6 +133,8 @@ namespace i960 {
                         return _real._floating;
                     } else if constexpr(std::is_same_v<K, PreviousFramePointer>) {
                         return _pfp;
+                    } else if constexpr(std::is_same_v<K, LongOrdinal>) {
+                        return static_cast<LongOrdinal>(_ordinal);
                     } else {
                         static_assert(LegalConversion<K>, "Illegal type requested");
                     }

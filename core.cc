@@ -708,6 +708,9 @@ namespace i960 {
     void Core::setbit(__DEFAULT_THREE_ARGS__) noexcept {
         dest.set<Ordinal>(i960::setBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
     }
+    void Core::emul(SourceRegister src1, SourceRegister src2, LongDestinationRegister dest) noexcept {
+        dest.set<LongOrdinal>(src2.get<LongOrdinal>() * src1.get<LongOrdinal>());
+    }
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__
