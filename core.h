@@ -24,8 +24,8 @@ namespace i960 {
              * perform a call
              */
             void call(Integer displacement) noexcept;
-            Ordinal load(Ordinal address) noexcept;
-            void store(Ordinal address, Ordinal value) noexcept;
+            Ordinal load(Ordinal address, bool atomic = false) noexcept;
+            void store(Ordinal address, Ordinal value, bool atomic = false) noexcept;
 
             void saveLocalRegisters() noexcept;
             void allocateNewLocalRegisterSet() noexcept;

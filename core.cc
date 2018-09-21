@@ -42,7 +42,6 @@ namespace i960 {
        auto newAddress = conv._value;
        auto tmp = (getStackPointerAddress() + 63) && (~63); // round to the next boundary
        setRegister(ReturnInstructionPointerIndex, _instructionPointer);
-#warning "Code for handling multiple internal local register sets not implemented!"
        saveLocalRegisters();
        allocateNewLocalRegisterSet();
        _instructionPointer += newAddress;
@@ -56,15 +55,15 @@ namespace i960 {
 #warning "Raise protection length fault here"
            return;
        }
-#warning "implement the rest of calls (call supervisor)"
+       // TODO implement rest of calls
    }
 
-   Ordinal Core::load(Ordinal address) noexcept {
-#warning "Core::load unimplemented!"
+   Ordinal Core::load(Ordinal address, bool atomic) noexcept {
+       // TODO implement
         return -1;
    }
-   void Core::store(Ordinal address, Ordinal value) noexcept {
-#warning "Core::store unimplemented!"
+   void Core::store(Ordinal address, Ordinal value, bool atomic) noexcept {
+       // TODO implement
    }
    NormalRegister& Core::getRegister(ByteOrdinal index) noexcept {
        if (auto offset = (index & 0b01111) ; (index & 0b10000) == 0) {
@@ -627,14 +626,36 @@ namespace i960 {
         auto m = mask.get<Ordinal>();
         srcDest.set<Ordinal>((s & m) | (srcDest.get<Ordinal>() & (~m)));
     }
+    template<Ordinal mask>
+    constexpr bool maskedEquals(Ordinal src1, Ordinal src2) noexcept {
+        return (src1 & mask) == (src2 & mask);
+    }
     void Core::scanbyte(__TWO_SOURCE_REGS__) noexcept {
-		//TODO implement
+        auto s1 = src1.get<Ordinal>();
+        auto s2 = src2.get<Ordinal>();
+        if (maskedEquals<0x000000FF>(s1, s2) ||
+            maskedEquals<0x0000FF00>(s1, s2) ||
+            maskedEquals<0x00FF0000>(s1, s2) ||
+            maskedEquals<0xFF000000>(s1, s2)) {
+            _ac._conditionCode = 0b010;
+        } else {
+            _ac._conditionCode = 0b000;
+        }
     }
     void Core::atmod(__DEFAULT_THREE_ARGS__) noexcept {
-		//TODO implement
+        auto srcDest = dest.get<Ordinal>();
+        auto mask = src2.get<Ordinal>();
+        auto fixedAddr = src1.get<Ordinal>() & (~0x3); // force alignment to word boundary
+        auto tmp = load(fixedAddr, true);
+        store(fixedAddr, (srcDest & mask) | (tmp & (~mask)), true);
+        dest.set<Ordinal>(tmp);
     }
     void Core::atadd(__DEFAULT_THREE_ARGS__) noexcept {
-		//TODO implement
+        auto fixedAddr = src1.get<Ordinal>() & (~0x3); // force alignment to word boundary
+        auto src = src2.get<Ordinal>();
+        auto tmp = load(fixedAddr, true);
+        store(fixedAddr, tmp + src, true);
+        dest.set<Ordinal>(tmp);
     }
     void Core::concmpo(__TWO_SOURCE_REGS__) noexcept {
         if ((_ac._conditionCode & 0b100) == 0) {
