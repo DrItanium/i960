@@ -9,7 +9,6 @@ namespace i960 {
     using ShortOrdinal = std::uint16_t;
     using Ordinal = std::uint32_t;
     using LongOrdinal = std::uint64_t;
-    using Ordinal4 = ByteOrdinal;
 #define MustBeSizeOfOrdinal(type, message) \
     static_assert(sizeof(type) == sizeof(Ordinal), message)
 
@@ -20,9 +19,19 @@ namespace i960 {
     constexpr bool isIntegerOverflow(Ordinal value) noexcept {
         return value > 0x7FFF'FFFF;
     }
-    constexpr bool setCarryBitFromOrdinal(LongOrdinal a) noexcept {
+    constexpr bool shouldSetCarryBit(LongOrdinal a) noexcept {
         return (a & 0xFFFF'FFFF'0000'0000) != 0;
     }
+    constexpr bool shouldSetCarryBit(ShortOrdinal a) noexcept {
+        return (a & 0xFF00) != 0;
+    }
+    constexpr bool shouldSetCarryBit(Ordinal a) noexcept {
+        return (a & 0xFFFF'0000) != 0;
+    }
+    constexpr bool shouldSetCarryBit(ByteOrdinal a) noexcept {
+        return (a & 0xF0) != 0;
+    }
+
     union Displacement {
         Displacement(Integer value) : _value(value) { }
         ~Displacement() = default;

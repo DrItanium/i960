@@ -427,7 +427,7 @@ namespace i960 {
     void Core::addc(__DEFAULT_THREE_ARGS__) noexcept {
         LongOrdinal combination = ((LongOrdinal)src2.get<Ordinal>()) + ((LongOrdinal)src1.get<Ordinal>()) + _ac.getCarryValue();
         auto lower = static_cast<Ordinal>(combination);
-        auto setCarry = setCarryBitFromOrdinal(combination) ? 0b010 : 0;
+        auto setCarry = shouldSetCarryBit(combination) ? 0b010 : 0;
         auto intOverflowHappened = isIntegerOverflow(lower) ? 0b001 : 0;
         _ac._conditionCode = setCarry | intOverflowHappened;
         dest.set<Ordinal>(lower);
