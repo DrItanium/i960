@@ -27,28 +27,22 @@ typedef union Instruction {
 	raw_instruction value;
 	struct {
 		raw_instruction op : 8;
+		raw_instruction dest : 8;
 		union {
 			struct {
-				raw_instruction dest : 8;
 				raw_instruction src1 : 8;
 				raw_instruction src2 : 8;
 			} reg3;
 			struct {
-				raw_instruction dest : 8;
 				raw_instruction src1 : 8;
 				raw_instruction imm8 : 8;
 			} reg2WithImm;
 			struct {
-				raw_instruction dest : 8;
 				raw_instruction src : 8;
 			} reg2;
 			struct {
-				raw_instruction dest : 8;
 				raw_instruction addr : 16;
 			} regWithImm16;
-			struct {
-				raw_instruction dest : 8;
-			} reg1;
 		};
 	};
 } Instruction_t;
@@ -80,14 +74,14 @@ void shutdownCore(Core_t* c) {
 		return src1->u op src2->u ; \
 	} \
 	void name ( OP_ARGS ) { \
-	byte destInd = target->reg3.dest; \
+	byte destInd = target->dest; \
 	byte src1Ind = target->reg3.src1;  \
 	byte src2Ind = target->reg3.src2; \
 	(c->registers[destInd]).u = name ## raw ( &(c->registers[src1Ind]), &(c->registers[src2Ind])); \
 	} \
 	void name ## i (OP_ARGS) { \
 	Register_t tmp; \
-	byte destInd = target->reg2WithImm.dest; \
+	byte destInd = target->dest; \
 	byte src1Ind = target->reg2WithImm.src1; \
 	word src2Ind = target->reg2WithImm.imm8; \
 	tmp.u = src2Ind; \
@@ -98,14 +92,14 @@ void shutdownCore(Core_t* c) {
 		return src1->i op src2->i ; \
 	} \
 	void name ( Core_t* c, Instruction_t* target) { \
-	byte destInd = target->reg3.dest; \
+	byte destInd = target->dest; \
 	byte src1Ind = target->reg3.src1;  \
 	byte src2Ind = target->reg3.src2; \
 	(c->registers[destInd]).i = name ## raw ( &(c->registers[src1Ind]), &(c->registers[src2Ind])); \
 	} \
 	void name ## i (Core_t* c , Instruction_t* target) { \
 	Register_t tmp; \
-	byte destInd = target->reg2WithImm.dest; \
+	byte destInd = target->dest; \
 	byte src1Ind = target->reg2WithImm.src1; \
 	word src2Ind = target->reg2WithImm.imm8; \
 	tmp.u = src2Ind; \
@@ -135,13 +129,13 @@ void notraw(Register_t* dest, const Register_t* src) {
 	dest->u = ~(src->u);
 }
 void not(OP_ARGS) {
-	byte destInd = target->reg2.dest;
+	byte destInd = target->dest;
 	byte srcInd = target->reg2.src;
 	notraw(&c->registers[destInd], &c->registers[srcInd]);
 }
 void nand(OP_ARGS) {
 	Register_t tmp0, tmp1;
-	byte destInd = target->reg3.dest;
+	byte destInd = target->dest;
 	byte src1Ind = target->reg3.src1;
 	byte src2Ind = target->reg3.src2;
 	notraw(&tmp0, &c->registers[src1Ind]);
@@ -150,37 +144,37 @@ void nand(OP_ARGS) {
 }
 
 void move(Core_t* c, Instruction_t* target) {
-	byte destInd = target->reg2.dest;
+	byte destInd = target->dest;
 	byte srcInd = target->reg2.src;
 	if (destInd != srcInd) {
 		c->registers[destInd].u = c->registers[srcInd].u;
 	}
 }
 void set(Core_t* c, Instruction_t* target) {
-	byte destInd = target->regWithImm16.dest;
+	byte destInd = target->dest;
 	word immediate = target->regWithImm16.addr;
 	c->registers[destInd].u = immediate;
 }
 
 void loadData(OP_ARGS) {
-	c->registers[target->reg2.dest].u = c->data[c->registers[target->reg2.src].u];
+	c->registers[target->dest].u = c->data[c->registers[target->reg2.src].u];
 }
 void storeData(OP_ARGS) {
-	c->data[c->registers[target->reg2.dest].u] = c->registers[target->reg2.src].u;
+	c->data[c->registers[target->dest].u] = c->registers[target->reg2.src].u;
 }
 void loadStack(OP_ARGS) {
-	c->registers[target->reg2.dest].u = c->stack[c->registers[target->reg2.src].u];
+	c->registers[target->dest].u = c->stack[c->registers[target->reg2.src].u];
 }
 void storeStack(OP_ARGS) {
-	c->stack[c->registers[target->reg2.dest].u] = c->registers[target->reg2.src].u;
+	c->stack[c->registers[target->dest].u] = c->registers[target->reg2.src].u;
 }
 void push(OP_ARGS) {
 	storeStack(c, target);
 	// then increment the stack pointer
 	Instruction_t uop;
 	// don't set the operation as we're directly calling the function
-	uop.reg2WithImm.dest = target->reg2.dest;
-	uop.reg2WithImm.src1 = target->reg2.dest;
+	uop.dest = target->dest;
+	uop.reg2WithImm.src1 = target->dest;
 	uop.reg2WithImm.imm8 = 1;
 	addoi(c, &uop);
 }
@@ -189,7 +183,7 @@ void pop(OP_ARGS) {
 	// then decrement the stack pointer in src1
 	Instruction_t uop;
 	// suboi is being called directly, don't worry about setting the op
-	uop.reg2WithImm.dest = target->reg2.src;
+	uop.dest = target->reg2.src;
 	uop.reg2WithImm.src1 = target->reg2.src;
 	uop.reg2WithImm.imm8 = 1;
 	suboi(c, &uop);
@@ -197,18 +191,18 @@ void pop(OP_ARGS) {
 void bial(OP_ARGS) {
 	c->incrementNext = 0;
 	word returnAddress = c->ip + 1;
-	c->registers[target->regWithImm16.dest].u = returnAddress;
+	c->registers[target->dest].u = returnAddress;
 	c->ip = target->regWithImm16.addr;
 }
 void bral(OP_ARGS) {
 	c->incrementNext = 0;
 	word returnAddress = c->ip + 1;
-	c->registers[target->reg2.dest].u = returnAddress;
+	c->registers[target->dest].u = returnAddress;
 	c->ip = c->registers[target->reg2.src].u;
 }
 void br(OP_ARGS) {
 	c->incrementNext = 0;
-	c->ip = c->registers[target->regWithImm16.dest].u;
+	c->ip = c->registers[target->dest].u;
 }
 void bm(OP_ARGS) {
 	c->incrementNext = 0;
@@ -218,10 +212,10 @@ void ret(OP_ARGS) {
 	// dest - sp 
 	// src1 - temporary storage
 	Instruction_t uop0, uop1;
-	uop0.reg2.dest = target->reg2.src;
-	uop0.reg2.src = target->reg2.dest;
+	uop0.dest = target->reg2.src;
+	uop0.reg2.src = target->dest;
 	pop(c, &uop0);
-	uop1.regWithImm16.dest = target->reg2.src;
+	uop1.dest = target->reg2.src;
 	br(c, &uop1);
 }
 
@@ -234,15 +228,37 @@ void call(OP_ARGS) {
 	// bral dest src2
 	// push src1 dest # at destination
 	// # restore dest happens as well
-	word destOriginal = c->registers[target->reg3.dest].u;
+	word destOriginal = c->registers[target->dest].u;
 	Instruction_t uop0, uop1;
-	uop0.reg2.dest = target->reg3.dest;
+	uop0.dest = target->dest;
 	uop0.reg2.src = target->reg3.src2;
 	bral(c, &uop0);
-	uop1.reg2.dest = target->reg3.src1;
-	uop1.reg2.src = target->reg3.dest;
+	uop1.dest = target->reg3.src1;
+	uop1.reg2.src = target->dest;
 	push(c, &uop1);
-	c->registers[target->reg3.dest].u = destOriginal; // restore dest
+	c->registers[target->dest].u = destOriginal; // restore dest
+}
+
+void swap(OP_ARGS) {
+	// dest - sp
+	// src1 - reg
+	// src2 - reg
+	// push sp, src1
+	// move src1, src2
+	// pop src2, sp
+	word sp = target->dest;
+	word src1 = target->reg3.src1;
+	word src2 = target->reg3.src2;
+	Instruction_t uop0, uop1, uop2;
+	uop0.dest = sp;
+	uop0.reg2.src = src1;
+	push(c, &uop0);
+	uop1.dest = src1;
+	uop1.reg2.src = src2;
+	move(c, &uop1);
+	uop2.dest = src2;
+	uop2.reg2.src = sp;
+	pop(c, &uop2);
 }
 
 void cycle(Core_t* c) {
@@ -285,6 +301,7 @@ void cycle(Core_t* c) {
 		Y(45, ret)
 		Y(46, bral)
 		Y(47, call)
+		Y(48, swap)
 		default: break;
 #undef Y
 #undef X
