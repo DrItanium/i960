@@ -7,6 +7,7 @@
 #define __GEN_DEFAULT_THREE_ARG_SIGS__(name) void name (__DEFAULT_THREE_ARGS__) noexcept
 #define __TWO_SOURCE_REGS__ SourceRegister src, SourceRegister dest
 #include "types.h"
+#include "memiface.h"
 namespace i960 {
     class Core {
         public:
@@ -15,8 +16,7 @@ namespace i960 {
             using LongSourceRegister = const DoubleRegister&;
             using LongDestinationRegister = DoubleRegister&;
             using RegisterWindow = NormalRegister[LocalRegisterCount];
-            Core() = default;
-            ~Core() = default;
+			Core(MemoryInterface& mem);
             // TODO finish this once we have all the other sub components implemented behind the
             // scenes
         private:
@@ -312,6 +312,7 @@ namespace i960 {
             ProcessControls _pc;
             TraceControls _tc;
             ExtendedReal _floatingPointRegisters[NumFloatingPointRegs];
+			MemoryInterface& _mem;
     };
 
 }
