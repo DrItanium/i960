@@ -512,19 +512,24 @@ namespace i960 {
         bg(targ);
 	}
 	void Core::cmpobe(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+        cmpo(src1, src2);
+        be(targ);
 	}
 	void Core::cmpobge(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+        cmpo(src1, src2);
+        bge(targ);
 	}
 	void Core::cmpobl(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+        cmpo(src1, src2);
+        bl(targ);
 	}
 	void Core::cmpobne(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+        cmpo(src1, src2);
+        bne(targ);
 	}
 	void Core::cmpoble(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+        cmpo(src1, src2);
+        ble(targ);
 	}
 	void Core::cmpibg(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
 		//TODO implement
