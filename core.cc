@@ -508,7 +508,8 @@ namespace i960 {
 		//TODO implement
 	}
 	void Core::cmpobg(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+        cmpo(src1, src2);
+        bg(targ);
 	}
 	void Core::cmpobe(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
 		//TODO implement
