@@ -79,7 +79,7 @@ namespace i960 {
 		auto newAddress = value._ordinal;
 		Ordinal tmp = (getStackPointerAddress() + 63u) && (~63u); // round to the next boundary
 		setRegister(ReturnInstructionPointerIndex, _instructionPointer);
-#warning "Code for handling multiple internal local register sets not implemented!"
+		// Code for handling multiple internal local register sets not implemented!
 		saveLocalRegisters();
 		allocateNewLocalRegisterSet();
 		_instructionPointer = newAddress;
@@ -113,13 +113,18 @@ namespace i960 {
 		dest.set(src2.get<Ordinal>() * src1.get<Ordinal>());
 	}
 	void Core::divo(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "divo does not check for divison by zero"
-		dest.set(src2.get<Ordinal>() / src1.get<Ordinal>());
+		if (auto denominator = src1.get<Ordinal>(); denominator == 0) {
+#warning "Divide by zero not handled but detected"
+		} else {
+			dest.set(src2.get<Ordinal>() / denominator);
+		}
 	}
 	void Core::remo(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "remo does not check for divison by zero"
-		dest.set(src2.get<Ordinal>() % src1.get<Ordinal>());
-
+		if (auto denom = src1.get<Ordinal>(); denom == 0) {
+#warning "Divde by zero not handled but detected"
+		} else {
+			dest.set(src2.get<Ordinal>() % denom);
+		}
 	}
 	void Core::chkbit(Core::SourceRegister pos, Core::SourceRegister src) noexcept {
 		_ac._conditionCode = ((src.get<Ordinal>() & (1 << (pos.get<Ordinal>() & 0b11111))) == 0) ? 0b000 : 0b010;
@@ -545,28 +550,36 @@ namespace i960 {
         ble(targ);
 	}
 	void Core::cmpibg(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+		cmpi(src1, src2);
+		bg(targ);
 	}
 	void Core::cmpibe(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+		cmpi(src1, src2);
+		be(targ);
 	}
 	void Core::cmpibge(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+		cmpi(src1, src2);
+		bge(targ);
 	}
 	void Core::cmpibl(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+		cmpi(src1, src2);
+		bl(targ);
 	}
 	void Core::cmpibne(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+		cmpi(src1, src2);
+		bne(targ);
 	}
 	void Core::cmpible(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+		cmpi(src1, src2);
+		ble(targ);
 	}
 	void Core::cmpibo(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+		cmpi(src1, src2);
+		bo(targ);
 	}
 	void Core::cmpibno(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+		cmpi(src1, src2);
+		bno(targ);
 	}
 	void Core::balx(__DEFAULT_TWO_ARGS__) noexcept {
 		// TODO support 4 or 8 byte versions
