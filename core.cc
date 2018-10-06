@@ -90,9 +90,21 @@ namespace i960 {
 	void Core::addo(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set<Ordinal>(src2.get<Ordinal>() + src1.get<Ordinal>());
 	}
+	constexpr Integer getSignBit(Integer a) noexcept {
+		return (a & 0x8000'0000) >> 31;
+	}
+	bool overflowed(Integer a, Integer b, Integer result) {
+		// taken from http://www.c-jump.com/CIS77/CPU/Overflow/lecture.html
+		return (getSignBit(a) == getSignBit(b)) && (getSignBit(result) != getSignBit(a));
+	}
 	void Core::addi(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "addi does not check for integer overflow"
-		dest.set<Integer>(src2.get<Integer>() + src1.get<Integer>());
+		auto v0 = src2.get<Integer>();
+		auto v1 = src1.get<Integer>();
+		auto result = v0 + v1;
+		dest.set<Integer>(result);
+		if (overflowed(v0, v1, result)) {
+#warning "fault is not raised but overflow detected"
+		}
 	}
 	void Core::subo(__DEFAULT_THREE_ARGS__) noexcept {
 		dest._ordinal = src2.get<Ordinal>() - src1.get<Ordinal>(); 
@@ -320,7 +332,6 @@ namespace i960 {
 	void Core::ld(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
 		// this is the base operation for load, src contains the fully computed value
 		// so this will probably be an internal register in most cases.
-#warning "ld not implemented!"
 		dest.set<Ordinal>(load(src.get<Ordinal>()));
 	}
 	void Core::ldob(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
@@ -330,11 +341,9 @@ namespace i960 {
 		dest.set<ShortOrdinal>(load(src.get<Ordinal>()));
 	}
 	void Core::ldib(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
-#warning "A special loadbyte instruction is probably necessary"
 		dest.set<Integer>((ByteInteger)load(src.get<Ordinal>()));
 	}
 	void Core::ldis(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
-#warning "A special loadshort instruction is probably necessary"
 		dest.set<Integer>((ShortInteger)load(src.get<Ordinal>()));
 	}
 
@@ -408,7 +417,11 @@ namespace i960 {
 		// stack when a call happens
 	}
 	void Core::subi(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Integer>(src2.get<Integer>() - src1.get<Integer>());
+		// just add a negative inverted value by copying to an internal
+		// register
+		NormalRegister newSrc1;
+		newSrc1.set<Integer>(-(src1.get<Integer>()));
+		addi(src2, newSrc1, dest);
 	}
 	void Core::modtc(__DEFAULT_THREE_ARGS__) noexcept {
 		//TODO implement
