@@ -742,6 +742,61 @@ namespace i960 {
 	void Core::lda(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
 		dest.move(src);
 	}
+	void Core::reset() {
+		/* Taken from the 80960MC manual on how initialization works:
+		 *
+		 * 1. Assert the FAILURE output pin and perform the internal self-test.
+		 * If the test passes, deassert FAILURE and continue with the step
+		 * below; otherwise enter the stopped state.
+		 */
+
+		/*
+		 * 2. Clear the trace controls, disable the breakpoint registers, clear
+		 * the process controls, and then set the em flag in the process
+		 * controls (supervisor mode). If the processor is an initialization
+		 * processor, continue with the step below; otherwise enter the stopped
+		 * state.
+		 */
+		_tc._value = 0;
+		// disable the breakpoint registers
+		_pc._value = 0;
+		_pc._executionMode = 1; // supervisor mode
+		// assume that we are the initialization processor for now
+		/*
+		 * 3. Read eight words from memory, beginning at location 0. Clear the
+		 * condition code, sum these eight words with the ADDC (add-with-carry)
+		 * operation, and then add 0xFFFF'FFFF to the sum (again with addc). If
+		 * the sum is 0, continue with the step below; otherwise assert the
+		 * FAILURE pin and enter the stopped state.
+		 */
+		_ac._conditionCode = 0;
+		auto& dest = _globalRegisters[10];
+		dest._ordinal = 0;
+		auto& src = _globalRegisters[11];
+		for (int i = 0; i < 8; ++i) {
+			_initialWords[i] = load(i); // load the eight words
+			src._ordinal = _initialWords[i];
+			addc(src, dest, dest);
+		}
+		src._ordinal = 0xFFFF'FFFF;
+		addc(src, dest, dest);
+		if (dest._ordinal != 0) {
+			// TODO assert the FAILURE pin
+			// TODO enter stop state
+			return;
+		}
+	    /*
+		 * 4. Use words 0 and 1 as the pointers to the initial data structures,
+		 * and set the IP to the value of word 3. In the process controls, set
+		 * the priority to 31 and the state to interrupted. Store the interrupt
+		 * stack pointer in FP (g15), and begin execution.
+		 */
+		_systemProcedureTableAddress = _initialWords[0];
+		_prcbAddress = _initialWords[1];
+		_instructionPointer = _initialWords[3];
+		_pc._priority = 31;
+		_globalRegisters[15]._ordinal = load(_prcbAddress + 24);
+	}
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__
