@@ -41,7 +41,7 @@ namespace i960 {
 		} conv;
 		conv._value = addr;
 		auto newAddress = conv._value;
-		auto tmp = (getStackPointerAddress() + 63) && (~63); // round to the next boundary
+		auto tmp = (getStackPointerAddress() + 63) & (~63); // round to the next boundary
 		setRegister(ReturnInstructionPointerIndex, _instructionPointer);
 		saveLocalRegisters();
 		allocateNewLocalRegisterSet();
@@ -56,6 +56,9 @@ namespace i960 {
 #warning "Raise protection length fault here"
 			return;
 		}
+        // wait for any uncompleted instructions to finish
+        // tempPE <- memory(SPTSS, 48 + (4 * targ))
+        // SPTSS <-> SS to system procedure table from PRCB
 		// TODO implement rest of calls
 	}
 
@@ -532,28 +535,36 @@ namespace i960 {
         ble(targ);
 	}
 	void Core::cmpibg(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+        cmpi(src1, src2);
+        bg(targ);
 	}
 	void Core::cmpibe(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+        cmpi(src1, src2);
+        be(targ);
 	}
 	void Core::cmpibge(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+        cmpi(src1, src2);
+        bge(targ);
 	}
 	void Core::cmpibl(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+        cmpi(src1, src2);
+        bl(targ);
 	}
 	void Core::cmpibne(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+        cmpi(src1, src2);
+        bne(targ);
 	}
 	void Core::cmpible(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+        cmpi(src1, src2);
+        ble(targ);
 	}
 	void Core::cmpibo(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+        cmpi(src1, src2);
+        bo(targ);
 	}
 	void Core::cmpibno(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+        cmpi(src1, src2);
+        bno(targ);
 	}
 	void Core::balx(__DEFAULT_TWO_ARGS__) noexcept {
 		// TODO support 4 or 8 byte versions
