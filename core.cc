@@ -498,29 +498,45 @@ namespace i960 {
 	void Core::bge(Integer addr) noexcept { branchIfGeneric<ConditionCode::GreaterThanOrEqual>(addr); }
 	void Core::bo(Integer addr) noexcept { branchIfGeneric<ConditionCode::Ordered>(addr); }
 	void Core::bno(Integer addr) noexcept { branchIfGeneric<ConditionCode::Unordered>(addr); }
-	void Core::faulte(Integer addr) noexcept {
-		//TODO implement
+	void Core::faulte() noexcept {
+        if (conditionCodeIs<ConditionCode::Equal>()) {
+		    //TODO implement
+        }
 	}
-	void Core::faultne(Integer addr) noexcept {
-		//TODO implement
+	void Core::faultne() noexcept {
+        if (conditionCodeIs<ConditionCode::NotEqual>()) {
+		    //TODO implement
+        }
 	}
-	void Core::faultl(Integer addr) noexcept {
-		//TODO implement
+	void Core::faultl() noexcept {
+        if (conditionCodeIs<ConditionCode::LessThan>()) {
+		    //TODO implement
+        }
 	}
-	void Core::faultle(Integer addr) noexcept {
-		//TODO implement
+	void Core::faultle() noexcept {
+        if (conditionCodeIs<ConditionCode::LessThanOrEqual>()) {
+		    //TODO implement
+        }
 	}
-	void Core::faultg(Integer addr) noexcept {
-		//TODO implement
+	void Core::faultg() noexcept {
+        if (conditionCodeIs<ConditionCode::GreaterThan>()) {
+		    //TODO implement
+        }
 	}
-	void Core::faultge(Integer addr) noexcept {
-		//TODO implement
+	void Core::faultge() noexcept {
+        if (conditionCodeIs<ConditionCode::GreaterThanOrEqual>()) {
+		    //TODO implement
+        }
 	}
-	void Core::faulto(Integer addr) noexcept {
-		//TODO implement
+	void Core::faulto() noexcept {
+        if (conditionCodeIs<ConditionCode::Ordered>()) {
+		    //TODO implement
+        }
 	}
-	void Core::faultno(Integer addr) noexcept {
-		//TODO implement
+	void Core::faultno() noexcept {
+        if (_ac._conditionCode == 0) {
+		    //TODO implement
+        }
 	}
 	void Core::bbc(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
 		//TODO implement

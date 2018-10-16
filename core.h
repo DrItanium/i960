@@ -66,7 +66,7 @@ namespace i960 {
 #define X(kind) \
             void b ## kind (Integer) noexcept; \
             void cmpib ## kind ( SourceRegister, SourceRegister, Integer) noexcept; \
-            void fault ## kind ( Integer ) noexcept; \
+            void fault ## kind () noexcept; \
             void test ## kind ( DestinationRegister) noexcept;
 #define Y(kind) void cmp ## kind ( SourceRegister, SourceRegister, Integer) noexcept;
 #include "conditional_kinds.def"
@@ -281,6 +281,10 @@ namespace i960 {
             template<TestTypes t>
             void testGeneric(Core::DestinationRegister dest) noexcept {
                 dest.set<Ordinal>((_ac._conditionCode & (Ordinal(t))) != 0 ? 1 : 0);
+            }
+            template<ConditionCode cc>
+            bool conditionCodeIs() const noexcept {
+                return (_ac._conditionCode & static_cast<Ordinal>(cc)) != 0;
             }
             template<ConditionCode cc>
             void branchIfGeneric(Integer addr) noexcept {

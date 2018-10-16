@@ -37,7 +37,7 @@ namespace i960 {
 				break;
 #define X(kind) \
 			case Opcodes:: B ## kind : b ## kind (displacement) ; break; \
-			case Opcodes:: Fault ## kind : fault ## kind (displacement) ; break;
+			case Opcodes:: Fault ## kind : fault ## kind () ; break;
 #include "conditional_kinds.def"
 #undef X
 			default:
