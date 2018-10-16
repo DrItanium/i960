@@ -556,28 +556,28 @@ namespace i960 {
 
     constexpr Ordinal LargestAddress = 0xFFFF'FFFF;
     constexpr Ordinal LowestAddress = 0;
-	enum class ConditionCode : Ordinal {
-		False = 0b000,
-		Unordered = False,
-		GreaterThan = 0b001,
-		Equal = 0b010,
-		True = Equal,
-		LessThan = 0b100,
-		Ordered = 0b111,
-		NotEqual = 0b101,
-		LessThanOrEqual = 0b110,
-		GreaterThanOrEqual = 0b011,
-	};
-	enum class TestTypes : Ordinal {
-		Unordered = 0b000,
-		Greater = 0b001,
-		Equal = 0b010,
-		GreaterOrEqual = 0b011,
-		Less = 0b100,
-		NotEqual = 0b101, 
-		LessOrEqual = 0b110,
-		Ordered = 0b111,
-	};
+    enum class ConditionCode : Ordinal {
+        False = 0b000,
+        Unordered = False,
+        GreaterThan = 0b001,
+        Equal = 0b010,
+        True = Equal,
+        LessThan = 0b100,
+        Ordered = 0b111,
+        NotEqual = 0b101,
+        LessThanOrEqual = 0b110,
+        GreaterThanOrEqual = 0b011,
+    };
+    enum class TestTypes : Ordinal {
+        Unordered = 0b000,
+        Greater = 0b001,
+        Equal = 0b010,
+        GreaterOrEqual = 0b011,
+        Less = 0b100,
+        NotEqual = 0b101, 
+        LessOrEqual = 0b110,
+        Ordered = 0b111,
+    };
 
     /**
      * Aritmetic status bits, four bits wide with a sign bit as the upper most 
@@ -714,8 +714,8 @@ namespace i960 {
             bool isMemAFormat() const noexcept {
                 return _mema._unused == 0;
             }
-			MEMAFormat _mema;
-			MEMBFormat _memb;
+            MEMAFormat _mema;
+            MEMBFormat _memb;
         };
 
         MustBeSizeOfOrdinal(MemFormat, "MemFormat must be the size of an ordinal!");
@@ -806,6 +806,34 @@ namespace i960 {
     constexpr Ordinal computeStackFrameStart(Ordinal framePointerAddress) noexcept {
         return framePointerAddress + 64;
     }
+
+    struct FaultRecord {
+        Ordinal _reserved = 0;
+        Ordinal _overrideFaultData[3];
+        Ordinal _faultData[3];
+        union {
+            Ordinal value;
+            struct {
+                ByteOrdinal subtype;
+                ByteOrdinal reserved;
+                ByteOrdinal type;
+                ByteOrdinal flags;
+            };
+        } _override;
+        ProcessControls _pc;
+        ArithmeticControls _ac;
+        union {
+            Ordinal value;
+            struct {
+                ByteOrdinal subtype;
+                ByteOrdinal reserved;
+                ByteOrdinal type;
+                ByteOrdinal flags;
+            };
+        } _fault;
+        Ordinal _faultingInstructionAddr;
+    } __attribute__((packed));
+    static_assert(sizeof(FaultRecord) >= 48, "FaultRecord is too small!");
 
 } // end namespace i960
 #endif // end I960_TYPES_H__
