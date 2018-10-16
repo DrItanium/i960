@@ -82,7 +82,7 @@ namespace i960 {
 		auto newAddress = value._ordinal;
 		Ordinal tmp = (getStackPointerAddress() + 63u) && (~63u); // round to the next boundary
 		setRegister(ReturnInstructionPointerIndex, _instructionPointer);
-#warning "Code for handling multiple internal local register sets not implemented!"
+		// Code for handling multiple internal local register sets not implemented!
 		saveLocalRegisters();
 		allocateNewLocalRegisterSet();
 		_instructionPointer = newAddress;
@@ -93,9 +93,21 @@ namespace i960 {
 	void Core::addo(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set<Ordinal>(src2.get<Ordinal>() + src1.get<Ordinal>());
 	}
+	constexpr Integer getSignBit(Integer a) noexcept {
+		return (a & 0x8000'0000) >> 31;
+	}
+	bool overflowed(Integer a, Integer b, Integer result) {
+		// taken from http://www.c-jump.com/CIS77/CPU/Overflow/lecture.html
+		return (getSignBit(a) == getSignBit(b)) && (getSignBit(result) != getSignBit(a));
+	}
 	void Core::addi(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "addi does not check for integer overflow"
-		dest.set<Integer>(src2.get<Integer>() + src1.get<Integer>());
+		auto v0 = src2.get<Integer>();
+		auto v1 = src1.get<Integer>();
+		auto result = v0 + v1;
+		dest.set<Integer>(result);
+		if (overflowed(v0, v1, result)) {
+#warning "fault is not raised but overflow detected"
+		}
 	}
 	void Core::subo(__DEFAULT_THREE_ARGS__) noexcept {
 		dest._ordinal = src2.get<Ordinal>() - src1.get<Ordinal>(); 
@@ -104,13 +116,18 @@ namespace i960 {
 		dest.set(src2.get<Ordinal>() * src1.get<Ordinal>());
 	}
 	void Core::divo(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "divo does not check for divison by zero"
-		dest.set(src2.get<Ordinal>() / src1.get<Ordinal>());
+		if (auto denominator = src1.get<Ordinal>(); denominator == 0) {
+#warning "Divide by zero not handled but detected"
+		} else {
+			dest.set(src2.get<Ordinal>() / denominator);
+		}
 	}
 	void Core::remo(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "remo does not check for divison by zero"
-		dest.set(src2.get<Ordinal>() % src1.get<Ordinal>());
-
+		if (auto denom = src1.get<Ordinal>(); denom == 0) {
+#warning "Divde by zero not handled but detected"
+		} else {
+			dest.set(src2.get<Ordinal>() % denom);
+		}
 	}
 	void Core::chkbit(Core::SourceRegister pos, Core::SourceRegister src) noexcept {
 		_ac._conditionCode = ((src.get<Ordinal>() & (1 << (pos.get<Ordinal>() & 0b11111))) == 0) ? 0b000 : 0b010;
@@ -323,7 +340,6 @@ namespace i960 {
 	void Core::ld(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
 		// this is the base operation for load, src contains the fully computed value
 		// so this will probably be an internal register in most cases.
-#warning "ld not implemented!"
 		dest.set<Ordinal>(load(src.get<Ordinal>()));
 	}
 	void Core::ldob(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
@@ -333,11 +349,9 @@ namespace i960 {
 		dest.set<ShortOrdinal>(load(src.get<Ordinal>()));
 	}
 	void Core::ldib(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
-#warning "A special loadbyte instruction is probably necessary"
 		dest.set<Integer>((ByteInteger)load(src.get<Ordinal>()));
 	}
 	void Core::ldis(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
-#warning "A special loadshort instruction is probably necessary"
 		dest.set<Integer>((ShortInteger)load(src.get<Ordinal>()));
 	}
 
@@ -411,7 +425,11 @@ namespace i960 {
 		// stack when a call happens
 	}
 	void Core::subi(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Integer>(src2.get<Integer>() - src1.get<Integer>());
+		// just add a negative inverted value by copying to an internal
+		// register
+		NormalRegister newSrc1;
+		newSrc1.set<Integer>(-(src1.get<Integer>()));
+		addi(src2, newSrc1, dest);
 	}
 	void Core::modtc(__DEFAULT_THREE_ARGS__) noexcept {
 		//TODO implement
@@ -726,6 +744,61 @@ namespace i960 {
 	}
 	void Core::lda(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
 		dest.move(src);
+	}
+	void Core::reset() {
+		/* Taken from the 80960MC manual on how initialization works:
+		 *
+		 * 1. Assert the FAILURE output pin and perform the internal self-test.
+		 * If the test passes, deassert FAILURE and continue with the step
+		 * below; otherwise enter the stopped state.
+		 */
+
+		/*
+		 * 2. Clear the trace controls, disable the breakpoint registers, clear
+		 * the process controls, and then set the em flag in the process
+		 * controls (supervisor mode). If the processor is an initialization
+		 * processor, continue with the step below; otherwise enter the stopped
+		 * state.
+		 */
+		_tc._value = 0;
+		// disable the breakpoint registers
+		_pc._value = 0;
+		_pc._executionMode = 1; // supervisor mode
+		// assume that we are the initialization processor for now
+		/*
+		 * 3. Read eight words from memory, beginning at location 0. Clear the
+		 * condition code, sum these eight words with the ADDC (add-with-carry)
+		 * operation, and then add 0xFFFF'FFFF to the sum (again with addc). If
+		 * the sum is 0, continue with the step below; otherwise assert the
+		 * FAILURE pin and enter the stopped state.
+		 */
+		_ac._conditionCode = 0;
+		auto& dest = _globalRegisters[10];
+		dest._ordinal = 0;
+		auto& src = _globalRegisters[11];
+		for (int i = 0; i < 8; ++i) {
+			_initialWords[i] = load(i); // load the eight words
+			src._ordinal = _initialWords[i];
+			addc(src, dest, dest);
+		}
+		src._ordinal = 0xFFFF'FFFF;
+		addc(src, dest, dest);
+		if (dest._ordinal != 0) {
+			// TODO assert the FAILURE pin
+			// TODO enter stop state
+			return;
+		}
+	    /*
+		 * 4. Use words 0 and 1 as the pointers to the initial data structures,
+		 * and set the IP to the value of word 3. In the process controls, set
+		 * the priority to 31 and the state to interrupted. Store the interrupt
+		 * stack pointer in FP (g15), and begin execution.
+		 */
+		_systemProcedureTableAddress = _initialWords[0];
+		_prcbAddress = _initialWords[1];
+		_instructionPointer = _initialWords[3];
+		_pc._priority = 31;
+		_globalRegisters[15]._ordinal = load(_prcbAddress + 24);
 	}
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__

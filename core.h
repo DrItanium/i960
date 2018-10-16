@@ -17,6 +17,10 @@ namespace i960 {
             using LongDestinationRegister = DoubleRegister&;
             using RegisterWindow = NormalRegister[LocalRegisterCount];
 			Core(MemoryInterface& mem);
+			/**
+			 * Invoked by the external RESET pin, initializes the core.
+			 */
+			void reset();
             // TODO finish this once we have all the other sub components implemented behind the
             // scenes
         private:
@@ -313,6 +317,9 @@ namespace i960 {
             TraceControls _tc;
             ExtendedReal _floatingPointRegisters[NumFloatingPointRegs];
 			MemoryInterface& _mem;
+			Ordinal _initialWords[8];
+			Ordinal _prcbAddress;
+			Ordinal _systemProcedureTableAddress;
     };
 
 }
