@@ -806,7 +806,11 @@ namespace i960 {
     constexpr Ordinal computeStackFrameStart(Ordinal framePointerAddress) noexcept {
         return framePointerAddress + 64;
     }
-
+    /**
+     * Describes the intermediate processor state from a fault or interrupt 
+     * occurring during processor execution
+     */
+    using ResumptionRecord = ByteOrdinal[16];
     struct FaultRecord {
         Ordinal _reserved = 0;
         Ordinal _overrideFaultData[3];
@@ -833,7 +837,42 @@ namespace i960 {
         } _fault;
         Ordinal _faultingInstructionAddr;
     } __attribute__((packed));
-    static_assert(sizeof(FaultRecord) >= 48, "FaultRecord is too small!");
+    struct InterruptRecord {
+        ResumptionRecord _record; // optional
+        ProcessControls _pc;
+        ArithmeticControls _ac;
+        union {
+            Ordinal value;
+            ByteOrdinal number;
+        } _vector;
+        // I see 
+    } __attribute__((packed));
+
+    /**
+     * Also known as the PRCB, it is a data structure in memory which the cpu uses to track
+     * various states
+     */
+    struct ProcessorControlBlock {
+        Ordinal _reserved0 = 0;
+        Ordinal _processorControls;
+        Ordinal _reserved1 = 0;
+        Ordinal _currentProcessSS;
+        Ordinal _dispatchPortSS;
+        Ordinal _interruptTablePhysicalAddress;
+        Ordinal _interruptStackPointer;
+        Ordinal _reserved2 = 0;
+        Ordinal _region3SS;
+        Ordinal _systemProcedureTableSS;
+        Ordinal _faultTablePhysicalAddress;
+        Ordinal _reserved3 = 0;
+        Ordinal _multiprocessorPreemption[3];
+        Ordinal _reserved4 = 0;
+        Ordinal _idleTime[2];
+        Ordinal _systemErrorFault;
+        Ordinal _reserved5;
+        Ordinal _resumptionRecord[12];
+        Ordinal _systemErrorFaultRecord[11];
+    } __attribute__((packed));
 
 } // end namespace i960
 #endif // end I960_TYPES_H__
