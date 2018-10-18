@@ -83,7 +83,13 @@ namespace i960 {
         }
     }
     void Core::cmporl(Core::LongSourceRegister src1, Core::LongSourceRegister src2) noexcept {
-        //TODO implement
+        auto r0 = src1.get<RawLongReal>();
+        auto r1 = src2.get<RawLongReal>();
+        if (isnan(r0) || isnan(r1)) {
+            _ac._conditionCode = 0b000;
+        } else {
+            compare(r0, r1);
+        }
     }
     void Core::daddc(__DEFAULT_THREE_ARGS__) noexcept {
         auto s1 = src1.get<ByteOrdinal>() & 0b1111;
