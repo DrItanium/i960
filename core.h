@@ -101,17 +101,17 @@ namespace i960 {
             void ldib(__DEFAULT_TWO_ARGS__) noexcept;
             void ldis(__DEFAULT_TWO_ARGS__) noexcept;
             void ldl(SourceRegister src, LongDestinationRegister dest) noexcept;
-			void ldl(SourceRegister src, Ordinal srcDestIndex) noexcept {
+			inline void ldl(SourceRegister src, Ordinal srcDestIndex) noexcept {
 				DoubleRegister reg(getRegister(srcDestIndex), getRegister(srcDestIndex + 1));
 				ldl(src, reg);
 			}
             void ldt(SourceRegister src, TripleRegister& dest) noexcept;
-			void ldt(SourceRegister src, Ordinal srcDestIndex) noexcept {
+			inline void ldt(SourceRegister src, Ordinal srcDestIndex) noexcept {
 				TripleRegister reg(getRegister(srcDestIndex), getRegister(srcDestIndex + 1), getRegister(srcDestIndex + 2));
 				ldt(src, reg);
 			}
             void ldq(SourceRegister src, QuadRegister& dest) noexcept;
-			void ldq(SourceRegister src, Ordinal index) noexcept {
+			inline void ldq(SourceRegister src, Ordinal index) noexcept {
 				QuadRegister reg(getRegister(index), getRegister(index + 1), getRegister(index + 2), getRegister(index + 3));
 				ldq(src, reg);
 			}
@@ -126,17 +126,17 @@ namespace i960 {
             void movl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             void movt(const TripleRegister& src, TripleRegister& dest) noexcept;
             void movq(const QuadRegister& src, QuadRegister& dest) noexcept;
-            void movl(ByteOrdinal src, ByteOrdinal dest) noexcept {
+            inline void movl(ByteOrdinal src, ByteOrdinal dest) noexcept {
                 DoubleRegister s(getRegister(src), getRegister(src + 1));
                 DoubleRegister d(getRegister(dest), getRegister(dest + 1));
                 movl(s, d);
             }
-            void movt(ByteOrdinal src, ByteOrdinal dest) noexcept {
+            inline void movt(ByteOrdinal src, ByteOrdinal dest) noexcept {
                 TripleRegister s(getRegister(src), getRegister(src + 1), getRegister(src + 2));
                 TripleRegister d(getRegister(dest), getRegister(dest + 1), getRegister(dest + 2));
                 movt(s, d);
             }
-            void movq(ByteOrdinal src, ByteOrdinal dest) noexcept {
+            inline void movq(ByteOrdinal src, ByteOrdinal dest) noexcept {
                 QuadRegister s(getRegister(src), getRegister(src + 1), getRegister(src + 2), getRegister(src + 3));
                 QuadRegister d(getRegister(dest), getRegister(dest + 1), getRegister(dest + 2), getRegister(dest + 3));
                 movq(s, d);
@@ -171,18 +171,18 @@ namespace i960 {
             void stib(__TWO_SOURCE_REGS__) noexcept;
             void stis(__TWO_SOURCE_REGS__) noexcept;
             void stl(LongSourceRegister src, SourceRegister dest) noexcept;
-			void stl(Ordinal ind, SourceRegister dest) noexcept {
+			inline void stl(Ordinal ind, SourceRegister dest) noexcept {
 				DoubleRegister reg(getRegister(ind), getRegister(ind + 1));
 				stl(reg, dest);
 			}
             void stt(const TripleRegister& src, SourceRegister dest) noexcept;
-            void stt(Ordinal ind, SourceRegister dest) noexcept {
+            inline void stt(Ordinal ind, SourceRegister dest) noexcept {
 				TripleRegister reg(getRegister(ind), getRegister(ind + 1), getRegister(ind + 2));
 				stt(reg, dest);
 			}
 
             void stq(const QuadRegister& src, SourceRegister dest) noexcept;
-            void stq(Ordinal ind, SourceRegister dest) noexcept {
+            inline void stq(Ordinal ind, SourceRegister dest) noexcept {
 				QuadRegister reg(getRegister(ind), getRegister(ind + 1), getRegister(ind + 2), getRegister(ind + 3));
 				stq(reg, dest);
 			}

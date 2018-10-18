@@ -4,6 +4,7 @@
 #include "opcodes.h"
 #include <limits>
 #include <cmath>
+#include <math.h>
 #define __DEFAULT_THREE_ARGS__ Core::SourceRegister src1, Core::SourceRegister src2, Core::DestinationRegister dest
 #define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ const DoubleRegister& src1, const DoubleRegister& src2, DoubleRegister& dest
 #define __DEFAULT_TWO_ARGS__ Core::SourceRegister src, Core::DestinationRegister dest
@@ -73,7 +74,13 @@ namespace i960 {
         //TODO implement
     }
     void Core::cmpor(Core::SourceRegister src1, Core::SourceRegister src2) noexcept {
-        //TODO implement
+        auto r0 = src1.get<RawReal>();
+        auto r1 = src2.get<RawReal>();
+        if (isnan(r0) || isnan(r1)) {
+            _ac._conditionCode = 0b000;
+        } else {
+            compare(r0, r1);
+        }
     }
     void Core::cmporl(Core::LongSourceRegister src1, Core::LongSourceRegister src2) noexcept {
         //TODO implement

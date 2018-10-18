@@ -16,12 +16,4 @@ namespace i960 {
         // TODO lookup the rounding mode  and do something if truncate is false
         return LongInteger(a._floating);
     }
-    /*
-	void compare(ArithmeticControls& ac, Real src1, Real src2) noexcept {
-		compare<decltype(src1._floating)>(ac, src1._floating, src2._floating);
-	}
-	void compare(ArithmeticControls& ac, LongReal src1, LongReal src2) noexcept {
-		compare<decltype(src1._floating)>(ac, src1._floating, src2._floating);
-	}
-    */
 } // end namespace i960
