@@ -124,11 +124,49 @@ namespace i960 {
 		} else if (val.isReservedEncoding()) {
 			_ac.arithmeticStatusField = s | 0b110;
 		}
-
+    }
+    void Core::classr(Core::ExtendedSourceRegister src) noexcept {
+		auto val = src.get<ExtendedReal>();
+		auto s = (val.sign << 3) & 0b1000;
+		if (val.isZero()) {
+			_ac.arithmeticStatusField = s | 0b000;
+		} else if (val.isDenormal()) {
+			_ac.arithmeticStatusField = s | 0b001;
+		} else if (val.isNormal()) {
+			_ac.arithmeticStatusField = s | 0b010;
+		} else if (val.isInfinity()) {
+			_ac.arithmeticStatusField = s | 0b011;
+		} else if (val.isQuietNaN()) {
+			_ac.arithmeticStatusField = s | 0b100;
+		} else if (val.isSignalingNaN()) {
+			_ac.arithmeticStatusField = s | 0b101;
+		} else if (val.isReservedEncoding()) {
+			_ac.arithmeticStatusField = s | 0b110;
+		}
     }
     void Core::classrl(Core::LongSourceRegister src) noexcept {
         //TODO implement
 		auto val = src.get<LongReal>();
+		auto s = (val.sign << 3) & 0b1000;
+		if (val.isZero()) {
+			_ac.arithmeticStatusField = s | 0b000;
+		} else if (val.isDenormal()) {
+			_ac.arithmeticStatusField = s | 0b001;
+		} else if (val.isNormal()) {
+			_ac.arithmeticStatusField = s | 0b010;
+		} else if (val.isInfinity()) {
+			_ac.arithmeticStatusField = s | 0b011;
+		} else if (val.isQuietNaN()) {
+			_ac.arithmeticStatusField = s | 0b100;
+		} else if (val.isSignalingNaN()) {
+			_ac.arithmeticStatusField = s | 0b101;
+		} else if (val.isReservedEncoding()) {
+			_ac.arithmeticStatusField = s | 0b110;
+		}
+    }
+    void Core::classrl(Core::ExtendedSourceRegister src) noexcept {
+        //TODO implement
+		auto val = src.get<ExtendedReal>();
 		auto s = (val.sign << 3) & 0b1000;
 		if (val.isZero()) {
 			_ac.arithmeticStatusField = s | 0b000;

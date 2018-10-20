@@ -15,6 +15,8 @@ namespace i960 {
             using DestinationRegister = NormalRegister&;
             using LongSourceRegister = const DoubleRegister&;
             using LongDestinationRegister = DoubleRegister&;
+			using ExtendedSourceRegister = const TripleRegister&;
+			using ExtendedDestinationRegister = TripleRegister&;
             using RegisterWindow = NormalRegister[LocalRegisterCount];
 			Core(MemoryInterface& mem);
 			/**
@@ -201,7 +203,9 @@ namespace i960 {
             void tanr(__DEFAULT_TWO_ARGS__) noexcept;
             void tanrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             void classr(SourceRegister src) noexcept;
+			void classr(ExtendedSourceRegister src) noexcept;
             void classrl(LongSourceRegister src) noexcept;
+			void classrl(ExtendedSourceRegister src) noexcept;
             void cmpor(SourceRegister src1, SourceRegister src2) noexcept;
             void cmporl(LongSourceRegister src1, LongSourceRegister src2) noexcept;
             void cmpr(SourceRegister src1, SourceRegister src2) noexcept;
