@@ -141,7 +141,12 @@ namespace i960 {
 		 * Combine the j field with the fraction field to get a complete value
 		 * j is what is normally the implied 1 in the mantissa
 		 */
-		LongOrdinal getCompleteFraction() const noexcept { return (j << 63) | fraction; }
+
+		LongOrdinal getCompleteFraction() const noexcept { 
+			LongOrdinal tmp = j; // get rid of the width cast problem
+			return (tmp << 63) | fraction; 
+		}
+
 
         struct {
             LongOrdinal fraction: 63;
