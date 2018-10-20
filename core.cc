@@ -431,10 +431,14 @@ namespace i960 {
 		newSrc1.set<Integer>(-(src1.get<Integer>()));
 		addi(src2, newSrc1, dest);
 	}
-	void Core::modtc(__DEFAULT_THREE_ARGS__) noexcept {
-		//TODO implement
+	void Core::modtc(Core::SourceRegister src, Core::SourceRegister mask, Core::DestinationRegister dest) noexcept {
+		TraceControls tmp;
+		tmp.value = _tc.value;
+		auto temp1 = 0x00FF00FF & mask.get<Ordinal>(); // masked to prevent reserved bits from being used
+		_tc.value = (temp1 & src.get<Ordinal>()) | (_tc.value & (~temp1));
+		dest.set(tmp.value);
 	}
-	void Core::modpc(Core::SourceRegister src, Core::SourceRegister mask, Core::DestinationRegister srcDest) noexcept {
+	void Core::modpc(Core::SourceRegister, Core::SourceRegister mask, Core::DestinationRegister srcDest) noexcept {
 		// modify process controls
 		auto maskVal = mask.get<Ordinal>();
 		if (maskVal != 0) {
