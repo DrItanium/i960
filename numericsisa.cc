@@ -77,7 +77,7 @@ namespace i960 {
         auto r0 = src1.get<RawReal>();
         auto r1 = src2.get<RawReal>();
         if (isnan(r0) || isnan(r1)) {
-            _ac._conditionCode = 0b000;
+            _ac.conditionCode = 0b000;
         } else {
             compare(r0, r1);
         }
@@ -86,7 +86,7 @@ namespace i960 {
         auto r0 = src1.get<RawLongReal>();
         auto r1 = src2.get<RawLongReal>();
         if (isnan(r0) || isnan(r1)) {
-            _ac._conditionCode = 0b000;
+            _ac.conditionCode = 0b000;
         } else {
             compare(r0, r1);
         }
@@ -95,7 +95,7 @@ namespace i960 {
         auto s1 = src1.get<ByteOrdinal>() & 0b1111;
         auto s2 = src2.get<ByteOrdinal>() & 0b1111;
         ByteOrdinal comb = s2 + s1 + ByteOrdinal(_ac.getCarryValue());
-        _ac._conditionCode = shouldSetCarryBit(comb) ? 0b010 : 0b000;
+        _ac.conditionCode = shouldSetCarryBit(comb) ? 0b010 : 0b000;
         auto upperBits = src2.get<Ordinal>() & (~0b1111);
         dest.set<Ordinal>(upperBits | static_cast<Ordinal>((comb & 0b1111)));
     }
@@ -103,14 +103,14 @@ namespace i960 {
         auto s1 = src1.get<ByteOrdinal>() & 0b1111;
         auto s2 = src2.get<ByteOrdinal>() & 0b1111;
         ByteOrdinal comb = s2 - s1 - 1 + ByteOrdinal(_ac.getCarryValue());
-        _ac._conditionCode = shouldSetCarryBit(comb) ? 0b010 : 0b000;
+        _ac.conditionCode = shouldSetCarryBit(comb) ? 0b010 : 0b000;
         auto upperBits = src2.get<Ordinal>() & (~0b1111);
         dest.set<Ordinal>(upperBits | static_cast<Ordinal>((comb & 0b1111)));
     }
     void Core::dmovt(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
         dest.move(src);
         auto sval = src.get<ByteOrdinal>();
-        _ac._conditionCode = ((sval >= 0b0011000) && (sval <= 0b00111001)) ? 0b000 : 0b010;
+        _ac.conditionCode = ((sval >= 0b0011000) && (sval <= 0b00111001)) ? 0b000 : 0b010;
     }
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__

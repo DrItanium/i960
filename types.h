@@ -158,19 +158,19 @@ namespace i960 {
             void set(T value) noexcept {
                 using K = std::decay_t<T>;
                 if constexpr(std::is_same_v<K, Ordinal>) {
-                    _ordinal = value;
+                    ordinal = value;
                 } else if constexpr(std::is_same_v<K, Integer>) {
-                    _integer = value;
+                    integer = value;
                 } else if constexpr(std::is_same_v<K, ByteOrdinal>) {
-                    _byteOrd = value;
+                    byteOrd = value;
                 } else if constexpr(std::is_same_v<K, ShortOrdinal>) {
-                    _shortOrd = value;
+                    shortOrd = value;
                 } else if constexpr(std::is_same_v<K, Real>) {
-                    _real._floating = value._floating;
+                    real.floating = value.floating;
                 } else if constexpr(std::is_same_v<K, RawReal>) {
-                    _real._floating = value;
+                    real.floating = value;
                 } else if constexpr(std::is_same_v<K, PreviousFramePointer>) {
-                    _ordinal = value._value;
+                    ordinal = value.value;
                 } else {
                     static_assert(LegalConversion<K>, "Illegal type requested");
                 }

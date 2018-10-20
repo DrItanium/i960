@@ -8,31 +8,31 @@
 bool testResult(i960::RawExtendedReal value) {
     union donuts {
         donuts() { };
-        i960::RawExtendedReal _v;
-        i960::ExtendedReal _k;
-        __int128 _z;
+        i960::RawExtendedReal v;
+        i960::ExtendedReal k;
+        __int128 z;
     };
     union donuts2 {
-        i960::RawExtendedReal _v;
-        __int128 _k;
+        i960::RawExtendedReal v;
+        __int128 k;
     } test2;
     donuts test, test3;
-    test._v = value;
-    test2._v = value;
-    test3._z = 0;
-    test3._z = __int128(test._k._upper) << 64;
-    test3._z &= ~(__int128(0xFFFF) << 96);
-    test3._z = test3._z | __int128(test._k._lower);
-    test3._z &= ~(__int128(0xFFFF) << 96);
-    std::cout << std::hex << test._k._upper << test._k._lower << std::endl;
-    std::cout << std::hex << uint64_t(test2._k >> 64) << uint64_t(test2._k) << std::endl;
-    std::cout << std::hex << test3._v << std::endl;
-    if (test3._k._sign == 1) {
+    test.v = value;
+    test2.v = value;
+    test3.z = 0;
+    test3.z = __int128(test.k.upper) << 64;
+    test3.z &= ~(__int128(0xFFFF) << 96);
+    test3.z = test3.z | __int128(test.k.lower);
+    test3.z &= ~(__int128(0xFFFF) << 96);
+    std::cout << std::hex << test.k.upper << test.k.lower << std::endl;
+    std::cout << std::hex << uint64_t(test2.k >> 64) << uint64_t(test2.k) << std::endl;
+    std::cout << std::hex << test3.v << std::endl;
+    if (test3.k.sign == 1) {
         std::cout << "negative" << std::endl;
     } else {
         std::cout << "positive" << std::endl;
     }
-    return value == test3._v;
+    return value == test3.v;
 }
 constexpr auto mem1G = 0x3FFF'FFFF + 1;
 void bootupMessage(std::ostream& os) {

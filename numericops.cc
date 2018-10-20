@@ -10,10 +10,10 @@ namespace i960 {
     }
     Integer convertToInteger(Real a, bool truncate ) noexcept {
         // TODO lookup the rounding mode  and do something if truncate is false
-        return Integer(a._floating);
+        return Integer(a.floating);
     }
     LongInteger convertToLongInteger(Real a, bool truncate ) noexcept {
         // TODO lookup the rounding mode  and do something if truncate is false
-        return LongInteger(a._floating);
+        return LongInteger(a.floating);
     }
 } // end namespace i960

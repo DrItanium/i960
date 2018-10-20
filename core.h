@@ -271,29 +271,29 @@ namespace i960 {
             template<typename T>
             void compare(T src1, T src2) noexcept {
                 if (src1 < src2) {
-                    _ac._conditionCode = 0b100;
+                    _ac.conditionCode = 0b100;
                 } else if (src1 == src2) {
-                    _ac._conditionCode = 0b010;
+                    _ac.conditionCode = 0b010;
                 } else {
-                    _ac._conditionCode = 0b001;
+                    _ac.conditionCode = 0b001;
                 }
             }
             template<TestTypes t>
             void testGeneric(Core::DestinationRegister dest) noexcept {
-                dest.set<Ordinal>((_ac._conditionCode & (Ordinal(t))) != 0 ? 1 : 0);
+                dest.set<Ordinal>((_ac.conditionCode & (Ordinal(t))) != 0 ? 1 : 0);
             }
             template<ConditionCode cc>
             bool conditionCodeIs() const noexcept {
-                return (_ac._conditionCode & static_cast<Ordinal>(cc)) != 0;
+                return (_ac.conditionCode & static_cast<Ordinal>(cc)) != 0;
             }
             template<ConditionCode cc>
             void branchIfGeneric(Integer addr) noexcept {
                 if constexpr (cc == ConditionCode::Unordered) {
-                    if (_ac._conditionCode == 0) {
+                    if (_ac.conditionCode == 0) {
                         b(addr);
                     }
                 } else {
-                    if (((Ordinal(cc)) & _ac._conditionCode) != 0) {
+                    if (((Ordinal(cc)) & _ac.conditionCode) != 0) {
                         b(addr);
                     }
                 }

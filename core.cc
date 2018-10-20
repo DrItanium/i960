@@ -33,7 +33,7 @@ namespace i960 {
 		return _globalRegisters[FramePointerIndex].get<Ordinal>() & (~0b111111);
 	}
 	auto Core::getPFP() noexcept -> PreviousFramePointer& {
-		return _localRegisters[PreviousFramePointerIndex]._pfp;
+		return _localRegisters[PreviousFramePointerIndex].pfp;
 	}
 	void Core::call(Integer addr) noexcept {
 		union {
@@ -76,10 +76,10 @@ namespace i960 {
 		}
 	}
 	void Core::setRegister(ByteOrdinal index, const NormalRegister& other) noexcept {
-		setRegister(index, other._ordinal);
+		setRegister(index, other.ordinal);
 	}
 	void Core::callx(const NormalRegister& value) noexcept {
-		auto newAddress = value._ordinal;
+		auto newAddress = value.ordinal;
 		Ordinal tmp = (getStackPointerAddress() + 63u) && (~63u); // round to the next boundary
 		setRegister(ReturnInstructionPointerIndex, _instructionPointer);
 		// Code for handling multiple internal local register sets not implemented!
@@ -110,7 +110,7 @@ namespace i960 {
 		}
 	}
 	void Core::subo(__DEFAULT_THREE_ARGS__) noexcept {
-		dest._ordinal = src2.get<Ordinal>() - src1.get<Ordinal>(); 
+		dest.ordinal = src2.get<Ordinal>() - src1.get<Ordinal>(); 
 	}
 	void Core::mulo(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set(src2.get<Ordinal>() * src1.get<Ordinal>());
@@ -130,12 +130,12 @@ namespace i960 {
 		}
 	}
 	void Core::chkbit(Core::SourceRegister pos, Core::SourceRegister src) noexcept {
-		_ac._conditionCode = ((src.get<Ordinal>() & (1 << (pos.get<Ordinal>() & 0b11111))) == 0) ? 0b000 : 0b010;
+		_ac.conditionCode = ((src.get<Ordinal>() & (1 << (pos.get<Ordinal>() & 0b11111))) == 0) ? 0b000 : 0b010;
 	}
 	void Core::alterbit(Core::SourceRegister pos, Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
 		auto s = src.get<Ordinal>();
 		auto p = pos.get<Ordinal>() & 0b11111;
-		dest.set<Ordinal>(_ac._conditionCode & 0b010 == 0 ? s & (~(1 << p)) : s | (1 << p));
+		dest.set<Ordinal>(_ac.conditionCode & 0b010 == 0 ? s & (~(1 << p)) : s | (1 << p));
 	}
 	void Core::andOp(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set<Ordinal>(i960::andOp<Ordinal>(src2.get<Ordinal>(), src1.get<Ordinal>()));
@@ -190,7 +190,7 @@ namespace i960 {
 		_instructionPointer = src.get<Ordinal>();
 	}
 	void Core::bal(Integer displacement) noexcept {
-		_globalRegisters[14]._ordinal = _instructionPointer + 4;
+		_globalRegisters[14].ordinal = _instructionPointer + 4;
 		b(displacement);
 	}
 
@@ -260,7 +260,7 @@ namespace i960 {
 	}
 
 	void Core::extract(Core::SourceRegister bitpos, Core::SourceRegister len, Core::DestinationRegister srcDest) noexcept {
-		srcDest._ordinal = decode(bitpos._ordinal, len._ordinal, srcDest._ordinal);
+		srcDest.ordinal = decode(bitpos.ordinal, len.ordinal, srcDest.ordinal);
 	}
 
 	constexpr bool mostSignificantBitSet(Ordinal value) noexcept {
@@ -274,10 +274,10 @@ namespace i960 {
 	 */
 	void Core::scanbit(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
 		auto k = src.get<Ordinal>();
-		_ac._conditionCode = 0b000;
+		_ac.conditionCode = 0b000;
 		for (int i = 31; i >= 0; --i) {
 			if (mostSignificantBitSet(k)) {
-				_ac._conditionCode = 0b010;
+				_ac.conditionCode = 0b010;
 				dest.set<Ordinal>(i);
 				return;
 			}
@@ -290,10 +290,10 @@ namespace i960 {
 	 */
 	void Core::spanbit(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
 		auto k = src.get<Ordinal>();
-		_ac._conditionCode = 0b000;
+		_ac.conditionCode = 0b000;
 		for (int i = 31; i >= 0; --i) {
 			if (mostSignificantBitClear(k)) {
-				_ac._conditionCode = 0b010;
+				_ac.conditionCode = 0b010;
 				dest.set<Ordinal>(i);
 				return;
 			}
@@ -315,13 +315,13 @@ namespace i960 {
 	void Core::subc(__DEFAULT_THREE_ARGS__) noexcept {
 		auto s1 = src1.get<Ordinal>() - 1u;
 		auto s2 = src2.get<Ordinal>();
-		auto carryBit = _ac._conditionCode & 0b010 != 0 ? 1u : 0u;
+		auto carryBit = _ac.conditionCode & 0b010 != 0 ? 1u : 0u;
 		// need to identify if overflow will occur
 		auto result = s2 - s1;
 		result += carryBit;
 #warning "subc does not implement integer overflow detection, needs to be implemented"
 		auto v = 0; // TODO fix this by identifying if integer subtraction would've produced an overflow and set v
-		_ac._conditionCode = (carryBit << 1) | v;
+		_ac.conditionCode = (carryBit << 1) | v;
 		dest.set<Ordinal>(result);
 	}
 	void Core::ediv(Core::SourceRegister src1, Core::LongSourceRegister src2, Core::DestinationRegister remainder, Core::DestinationRegister quotient) noexcept {
@@ -438,11 +438,11 @@ namespace i960 {
 		//TODO implement
 	}
 	void Core::modac(__DEFAULT_THREE_ARGS__) noexcept {
-		auto tmp = _ac._value;
+		auto tmp = _ac.value;
 		auto src = src2.get<Ordinal>();
 		auto mask = src1.get<Ordinal>();
-		auto ac = _ac._value;
-		_ac._value = (src & mask) | (ac & (~mask));
+		auto ac = _ac.value;
+		_ac.value = (src & mask) | (ac & (~mask));
 		dest.set<Ordinal>(tmp);
 	}
 	void Core::addc(__DEFAULT_THREE_ARGS__) noexcept {
@@ -450,7 +450,7 @@ namespace i960 {
 		auto lower = static_cast<Ordinal>(combination);
 		auto setCarry = shouldSetCarryBit(combination) ? 0b010 : 0;
 		auto intOverflowHappened = isIntegerOverflow(lower) ? 0b001 : 0;
-		_ac._conditionCode = setCarry | intOverflowHappened;
+		_ac.conditionCode = setCarry | intOverflowHappened;
 		dest.set<Ordinal>(lower);
 	}
 	void Core::testno(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Unordered>(dest); }
@@ -464,7 +464,7 @@ namespace i960 {
 	void Core::ret() noexcept {
 		auto pfp = getPFP();
 
-		switch(pfp._returnCode) {
+		switch(pfp.returnCode) {
 			case 0b000:
 				// TODO
 				break;
@@ -534,7 +534,7 @@ namespace i960 {
         }
 	}
 	void Core::faultno() noexcept {
-        if (_ac._conditionCode == 0) {
+        if (_ac.conditionCode == 0) {
 		    //TODO implement
         }
 	}
@@ -693,9 +693,9 @@ namespace i960 {
 				maskedEquals<0x0000FF00>(s1, s2) ||
 				maskedEquals<0x00FF0000>(s1, s2) ||
 				maskedEquals<0xFF000000>(s1, s2)) {
-			_ac._conditionCode = 0b010;
+			_ac.conditionCode = 0b010;
 		} else {
-			_ac._conditionCode = 0b000;
+			_ac.conditionCode = 0b000;
 		}
 	}
 	void Core::atmod(__DEFAULT_THREE_ARGS__) noexcept {
@@ -714,20 +714,20 @@ namespace i960 {
 		dest.set<Ordinal>(tmp);
 	}
 	void Core::concmpo(__TWO_SOURCE_REGS__) noexcept {
-		if ((_ac._conditionCode & 0b100) == 0) {
+		if ((_ac.conditionCode & 0b100) == 0) {
 			if (auto s1 = src1.get<Ordinal>(), s2 = src2.get<Ordinal>(); s1 <= s2) {
-				_ac._conditionCode = 0b010;
+				_ac.conditionCode = 0b010;
 			} else {
-				_ac._conditionCode = 0b001;
+				_ac.conditionCode = 0b001;
 			}
 		}
 	}
 	void Core::concmpi(__TWO_SOURCE_REGS__) noexcept {
-		if ((_ac._conditionCode & 0b100) == 0) {
+		if ((_ac.conditionCode & 0b100) == 0) {
 			if (auto s1 = src1.get<Integer>(), s2 = src2.get<Integer>(); s1 <= s2) {
-				_ac._conditionCode = 0b010;
+				_ac.conditionCode = 0b010;
 			} else {
-				_ac._conditionCode = 0b001;
+				_ac.conditionCode = 0b001;
 			}
 		}
 	}
@@ -776,10 +776,10 @@ namespace i960 {
 		 * processor, continue with the step below; otherwise enter the stopped
 		 * state.
 		 */
-		_tc._value = 0;
+		_tc.value = 0;
 		// disable the breakpoint registers
-		_pc._value = 0;
-		_pc._executionMode = 1; // supervisor mode
+		_pc.value = 0;
+		_pc.executionMode = 1; // supervisor mode
 		// assume that we are the initialization processor for now
 		/*
 		 * 3. Read eight words from memory, beginning at location 0. Clear the
@@ -788,18 +788,18 @@ namespace i960 {
 		 * the sum is 0, continue with the step below; otherwise assert the
 		 * FAILURE pin and enter the stopped state.
 		 */
-		_ac._conditionCode = 0;
+		_ac.conditionCode = 0;
 		auto& dest = _globalRegisters[10];
-		dest._ordinal = 0;
+		dest.ordinal = 0;
 		auto& src = _globalRegisters[11];
 		for (int i = 0; i < 8; ++i) {
 			_initialWords[i] = load(i); // load the eight words
-			src._ordinal = _initialWords[i];
+			src.ordinal = _initialWords[i];
 			addc(src, dest, dest);
 		}
-		src._ordinal = 0xFFFF'FFFF;
+		src.ordinal = 0xFFFF'FFFF;
 		addc(src, dest, dest);
-		if (dest._ordinal != 0) {
+		if (dest.ordinal != 0) {
 			// TODO assert the FAILURE pin
 			// TODO enter stop state
 			return;
@@ -813,8 +813,8 @@ namespace i960 {
 		_systemProcedureTableAddress = _initialWords[0];
 		_prcbAddress = _initialWords[1];
 		_instructionPointer = _initialWords[3];
-		_pc._priority = 31;
-		_globalRegisters[15]._ordinal = load(_prcbAddress + 24);
+		_pc.priority = 31;
+		_globalRegisters[15].ordinal = load(_prcbAddress + 24);
 	}
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__

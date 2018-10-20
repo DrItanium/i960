@@ -110,7 +110,7 @@ namespace i960 {
     inline Real subtract(Real a, Real b) noexcept { return Real(a.floating - b.floating); }
     inline LongReal subtract(LongReal a, LongReal b) noexcept { return LongReal(a.floating - b.floating); }
     inline Real multiply(Real a, Real b) noexcept { return Real(a.floating * b.floating); }
-    inline LongReal multiply(LongReal a, LongReal b) noexcept { return LongReal(a._floating * b._floating); }
+    inline LongReal multiply(LongReal a, LongReal b) noexcept { return LongReal(a.floating * b.floating); }
     template<typename T>
     inline T divide(T a, T b) noexcept {
         return T(a.floating / b.floating);
@@ -203,9 +203,9 @@ namespace i960 {
 	Ordinal test(const ArithmeticControls& ac) noexcept {
 		constexpr auto mask = Ordinal(t) & 0b111;
 		if constexpr (mask == Ordinal(TestTypes::Unordered)) {
-			return ac._conditionCode == 0 ? 1 : 0;
+			return ac.conditionCode == 0 ? 1 : 0;
 		} else {
-			return (mask & ac._conditionCode) != 0 ? 1 : 0;
+			return (mask & ac.conditionCode) != 0 ? 1 : 0;
 		}
 	}
 } // end namespace i960 
