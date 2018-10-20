@@ -183,15 +183,15 @@ namespace i960 {
             template<typename T>
             static constexpr bool LegalConversion = false;
         public:
-            DoubleRegister(NormalRegister& lower, NormalRegister& upper) : lower(lower), upper(upper) { }
+            DoubleRegister(NormalRegister& lower, NormalRegister& upper) : _lower(lower), _upper(upper) { }
             ~DoubleRegister() = default;
             template<typename T>
                 T get() const noexcept {
                     using K = std::decay_t<T>;
                     if constexpr(std::is_same_v<K, LongOrdinal>) {
-                        return LongOrdinal(lower.ordinal) | (LongOrdinal(upper.ordinal) << 32);
+                        return LongOrdinal(_lower.ordinal) | (LongOrdinal(_upper.ordinal) << 32);
                     } else if constexpr(std::is_same_v<K, LongReal>) {
-                        return LongReal(lower.ordinal, upper.ordinal);
+                        return LongReal(_lower.ordinal, _upper.ordinal);
                     } else if constexpr (std::is_same_v<K, RawLongReal>) {
                         return get<LongReal>().floating;
                     } else {
@@ -202,11 +202,11 @@ namespace i960 {
                 void set(T value) noexcept {
                     using K = std::decay_t<T>;
                     if constexpr(std::is_same_v<K, LongOrdinal>) {
-                        lower.ordinal = static_cast<Ordinal>(value);
-                        upper.ordinal = static_cast<Ordinal>(value >> 32);
+                        _lower.ordinal = static_cast<Ordinal>(value);
+                        _upper.ordinal = static_cast<Ordinal>(value >> 32);
                     } else if constexpr (std::is_same_v<K, LongReal>) {
-                        lower.ordinal = value.lowerHalf();
-                        upper.ordinal = value.upperHalf();
+                        _lower.ordinal = value.lowerHalf();
+                        _upper.ordinal = value.upperHalf();
                     } else if constexpr (std::is_same_v<K, RawLongReal>) {
                         set<LongReal>(LongReal(value));
                     } else {
@@ -215,25 +215,25 @@ namespace i960 {
                 }
             void set(Ordinal lower, Ordinal upper) noexcept;
             void move(const DoubleRegister& other) noexcept;
-            Ordinal getLowerHalf() const noexcept { return lower.get<Ordinal>(); }
-            Ordinal getUpperHalf() const noexcept { return upper.get<Ordinal>(); }
+            Ordinal getLowerHalf() const noexcept { return _lower.get<Ordinal>(); }
+            Ordinal getUpperHalf() const noexcept { return _upper.get<Ordinal>(); }
 
         private:
-            NormalRegister& lower;
-            NormalRegister& upper;
+            NormalRegister& _lower;
+            NormalRegister& _upper;
     };
     class TripleRegister {
         private:
             template<typename T>
             static constexpr bool LegalConversion = false;
         public:
-            TripleRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& upper) : lower(lower), mid(mid), upper(upper) { }
+            TripleRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& upper) : _lower(lower), _mid(mid), _upper(upper) { }
             ~TripleRegister() = default;
             template<typename T>
                 T get() const noexcept {
                     using K = std::decay_t<T>;
                     if constexpr(std::is_same_v<K, ExtendedReal>) {
-                        return ExtendedReal(lower.ordinal, mid.ordinal, upper.ordinal);
+                        return ExtendedReal(_lower.ordinal, _mid.ordinal, _upper.ordinal);
                     } else if constexpr (std::is_same_v<K, RawExtendedReal>) {
                         return get<ExtendedReal>().floating;
                     } else {
@@ -244,9 +244,9 @@ namespace i960 {
                 void set(T value) noexcept {
                     using K = std::decay_t<T>;
                     if constexpr (std::is_same_v<K, ExtendedReal>) {
-                        lower.ordinal = value.lowerThird();
-                        mid.ordinal = value.middleThird();
-                        upper.ordinal = value.upperThird();
+                        _lower.ordinal = value.lowerThird();
+                        _mid.ordinal = value.middleThird();
+                        _upper.ordinal = value.upperThird();
                     } else if constexpr (std::is_same_v<K, RawExtendedReal>) {
                         set<ExtendedReal>(ExtendedReal(value));
                     } else {
@@ -255,29 +255,29 @@ namespace i960 {
                 }
             void set(Ordinal lower, Ordinal mid, Ordinal upper) noexcept;
             void move(const TripleRegister& other) noexcept;
-            Ordinal getLowerPart() const noexcept { return lower.get<Ordinal>(); }
-            Ordinal getMiddlePart() const noexcept { return mid.get<Ordinal>(); }
-            Ordinal getUpperPart() const noexcept { return upper.get<Ordinal>(); }
+            Ordinal getLowerPart() const noexcept { return _lower.get<Ordinal>(); }
+            Ordinal getMiddlePart() const noexcept { return _mid.get<Ordinal>(); }
+            Ordinal getUpperPart() const noexcept { return _upper.get<Ordinal>(); }
         private:
-            NormalRegister& lower;
-            NormalRegister& mid;
-            NormalRegister& upper;
+            NormalRegister& _lower;
+            NormalRegister& _mid;
+            NormalRegister& _upper;
     };
     class QuadRegister {
         public:
-            QuadRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& high, NormalRegister& highest) : lower(lower), mid(mid), upper(high), highest(highest) { }
+            QuadRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& high, NormalRegister& highest) : _lower(lower), _mid(mid), _upper(high), _highest(highest) { }
             ~QuadRegister() = default;
             void set(Ordinal lower, Ordinal mid, Ordinal upper, Ordinal highest) noexcept;
             void move(const QuadRegister& other) noexcept;
-            Ordinal getLowestPart() const noexcept { return lower.get<Ordinal>(); }
-            Ordinal getLowerPart() const noexcept { return mid.get<Ordinal>(); }
-            Ordinal getHigherPart() const noexcept { return upper.get<Ordinal>(); }
-            Ordinal getHighestPart() const noexcept { return highest.get<Ordinal>(); }
+            Ordinal getLowestPart() const noexcept { return _lower.get<Ordinal>(); }
+            Ordinal getLowerPart() const noexcept { return _mid.get<Ordinal>(); }
+            Ordinal getHigherPart() const noexcept { return _upper.get<Ordinal>(); }
+            Ordinal getHighestPart() const noexcept { return _highest.get<Ordinal>(); }
         private:
-            NormalRegister& lower;
-            NormalRegister& mid;
-            NormalRegister& upper;
-            NormalRegister& highest;
+            NormalRegister& _lower;
+            NormalRegister& _mid;
+            NormalRegister& _upper;
+            NormalRegister& _highest;
     };
     union ArithmeticControls {
         struct {
