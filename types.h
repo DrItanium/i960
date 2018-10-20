@@ -70,6 +70,7 @@ namespace i960 {
 		bool isQuietNaN() const noexcept { return isNaN() && ((fraction & MostSignificantFractionBit) != 0); }
 		bool isIndefiniteQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) == 0); }
 		bool isNormalQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) != 0); }
+		bool isReservedEncoding() const noexcept { return false; }
     } __attribute__((packed));
     /**
      * Part of the numerics architecture and above
@@ -101,6 +102,7 @@ namespace i960 {
 		bool isQuietNaN() const noexcept { return isNaN() && ((fraction & MostSignificantFractionBit) != 0); }
 		bool isIndefiniteQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) == 0); }
 		bool isNormalQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) != 0); }
+		bool isReservedEncoding() const noexcept { return false; }
     } __attribute__((packed));
     constexpr LongOrdinal makeLongOrdinal(Ordinal lower, Ordinal upper) noexcept {
         return LongOrdinal(lower) | (LongOrdinal(upper) << 32);
@@ -118,6 +120,11 @@ namespace i960 {
         Ordinal lowerThird() const noexcept { return static_cast<Ordinal>(lower); }
         Ordinal middleThird() const noexcept { return static_cast<Ordinal>(lower >> 32); }
         Ordinal upperThird() const noexcept { return static_cast<Ordinal>(upper); }
+		/**
+		 * Combine the j field with the fraction field to get a complete value
+		 * j is what is normally the implied 1 in the mantissa
+		 */
+		LongOrdinal getCompleteFraction() const noexcept { return (j << 63) | fraction; }
 
         struct {
             LongOrdinal fraction: 63;
@@ -138,6 +145,7 @@ namespace i960 {
 		bool isQuietNaN() const noexcept { return isNaN() && ((fraction & MostSignificantFractionBit) != 0); }
 		bool isIndefiniteQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) == 0); }
 		bool isNormalQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) != 0); }
+		bool isReservedEncoding() const noexcept { return (exponent != 0) && (j == 0); }
     } __attribute__((packed));
 
     union PreviousFramePointer {
