@@ -538,11 +538,38 @@ namespace i960 {
 		    //TODO implement
         }
 	}
-	void Core::bbc(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+	void Core::bbc(Core::SourceRegister bitpos, Core::SourceRegister src, Integer targ) noexcept {
+		// check bit and branch if clear
+		auto shiftAmount = bitpos.get<Ordinal>() & 0b11111;
+		auto mask = 1 << shiftAmount;
+		if (auto s = src.get<Ordinal>(); (s & mask) == 0) {
+			_ac.conditionCode = 0b010;
+
+			union {
+				Integer value : 11;
+			} displacement;
+			displacement.value = targ;
+			_instructionPointer = _instructionPointer + 4 + (displacement.value * 4);
+		} else {
+			_ac.conditionCode = 0;
+			_instructionPointer += 4;
+		}
 	}
-	void Core::bbs(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-		//TODO implement
+	void Core::bbs(Core::SourceRegister bitpos, Core::SourceRegister src, Integer targ) noexcept {
+		// check bit and branch if set
+		auto shiftAmount = bitpos.get<Ordinal>() & 0b11111;
+		auto mask = 1 << shiftAmount;
+		if (auto s = src.get<Ordinal>(); (s & mask) != 0) {
+			_ac.conditionCode = 0b010;
+			union {
+				Integer value : 11;
+			} displacement;
+			displacement.value = targ;
+			_instructionPointer = _instructionPointer + 4 + (displacement.value * 4);
+		} else {
+			_ac.conditionCode = 0;
+			_instructionPointer += 4;
+		}
 	}
 	void Core::cmpobg(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
         cmpo(src1, src2);
