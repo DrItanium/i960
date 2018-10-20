@@ -105,48 +105,48 @@ namespace i960 {
 		return Ordinal((src << length) | (src >> ((-length) & 31u)));
 	}
 	
-    inline Real add(Real a, Real b) noexcept { return Real(a._floating + b._floating); }
-    inline LongReal add(LongReal a, LongReal b) noexcept { return LongReal(a._floating + b._floating); }
-    inline Real subtract(Real a, Real b) noexcept { return Real(a._floating - b._floating); }
-    inline LongReal subtract(LongReal a, LongReal b) noexcept { return LongReal(a._floating - b._floating); }
-    inline Real multiply(Real a, Real b) noexcept { return Real(a._floating * b._floating); }
+    inline Real add(Real a, Real b) noexcept { return Real(a.floating + b.floating); }
+    inline LongReal add(LongReal a, LongReal b) noexcept { return LongReal(a.floating + b.floating); }
+    inline Real subtract(Real a, Real b) noexcept { return Real(a.floating - b.floating); }
+    inline LongReal subtract(LongReal a, LongReal b) noexcept { return LongReal(a.floating - b.floating); }
+    inline Real multiply(Real a, Real b) noexcept { return Real(a.floating * b.floating); }
     inline LongReal multiply(LongReal a, LongReal b) noexcept { return LongReal(a._floating * b._floating); }
     template<typename T>
     inline T divide(T a, T b) noexcept {
-        return T(a._floating / b._floating);
+        return T(a.floating / b.floating);
     }
     template Real divide<Real>(Real, Real);
     template LongReal divide<LongReal>(LongReal, LongReal);
 
     template<typename T>
     inline T sine(T value) noexcept {
-        return T(::sin(value._floating));
+        return T(::sin(value.floating));
     }
     template Real sine<Real>(Real a);
     template LongReal sine<LongReal>(LongReal a);
     template<typename T>
     inline T cosine(T value) noexcept {
-        return T(::cos(value._floating));
+        return T(::cos(value.floating));
     }
     template Real cosine<Real>(Real a);
     template LongReal cosine<LongReal>(LongReal a);
     template<typename T>
     inline T tangent(T value) noexcept {
-        return T(::tan(value._floating));
+        return T(::tan(value.floating));
     }
     template Real tangent<Real>(Real a);
     template LongReal tangent<LongReal>(LongReal a);
 
     template<typename T>
     inline T squareRoot(T value) noexcept {
-        return T(::sqrt(value._floating));
+        return T(::sqrt(value.floating));
     }
     template Real squareRoot<Real>(Real a);
     template LongReal squareRoot<LongReal>(LongReal a);
 
     template<typename T>
     inline T arctangent(T a, T b) noexcept {
-        return T(::atan(divide(b, a)._floating));
+        return T(::atan(divide(b, a).floating));
     }
 
     template Real arctangent<Real>(Real a, Real b); 
@@ -155,7 +155,7 @@ namespace i960 {
 
     template<typename T>
     inline T logarithmBinary(T a) noexcept {
-        return T(::log2(a._floating));
+        return T(::log2(a.floating));
     }
     template Real logarithmBinary<Real>(Real a); 
     template LongReal logarithmBinary<LongReal>(LongReal a); 
@@ -208,36 +208,6 @@ namespace i960 {
 			return (mask & ac._conditionCode) != 0 ? 1 : 0;
 		}
 	}
-    // TODO provide signatures for the fault instructions
-    // TODO provide signatures for the load instructions
-    // TODO provide signatures for the store instructions
-    // TODO provide signature for the flushreg instruction
-    // TODO provide signature for the fmark instruction
-    // TODO provide signature for the mark instruction
-    // TODO provide signature for the load address instruction
-    // TODO provide signature for the modac instruction
-    // TODO provide signature for the modpc instruction
-    // TODO provide signature for the modtc instruction
-    // TODO provide signatures for the move instructions
-    // TODO provide signature for atadd or atomic add
-    // TODO provide signature for branch and link (bal)
-    // TODO provide signature for branch and link extended (balx)
-    // TODO provide signature for branch (b)
-    // TODO provide signature for branch extended (bx)
-    // TODO provide signature for check bit and branch if clear (bbc)
-    // TODO provide signature for check bit and branch if set (bbs)
-    // TODO provide signature for branch if operations (be, bne, bl, ble, bg bge, bo, bno)
-    // TODO provide signature for the call instruction (call)
-    // TODO provide signature for the call supervisor instruction (calls)
-    // TODO provide signature for the call extended instruction (callx)
-    // TODO provide signature for the compare and branch operations
-    // TODO provide a signature for the ret instruction
-    // TODO provide a signature for the shift right dividing integer instruction
-    // TODO syncf signature
-    // TODO signatures for the fp move instructions
-    // TODO synld signature
-    // TODO synmov, synmovl, synmovq signatures
-    // TODO support cpysre and cpyrsre
 } // end namespace i960 
 
 #endif // end I960_OPS_H__
