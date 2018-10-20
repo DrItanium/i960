@@ -76,6 +76,7 @@ namespace i960 {
 		bool isZero() const noexcept { return (bits & ZeroCheckBits) == 0; }
 		bool isPositiveZero() const noexcept { return isZero() && (sign == 0); }
 		bool isNegativeZero() const noexcept { return isZero() && (sign == 1); }
+		bool isDenormal() const noexcept { return (exponent == 0) && (fraction != 0); }
     } __attribute__((packed));
     /**
      * Part of the numerics architecture and above
@@ -113,6 +114,7 @@ namespace i960 {
 		bool isZero() const noexcept { return (bits & ZeroCheckBits) == 0; }
 		bool isPositiveZero() const noexcept { return isZero() && (sign == 0); }
 		bool isNegativeZero() const noexcept { return isZero() && (sign == 1); }
+		bool isDenormal() const noexcept { return (exponent == 0) && (fraction != 0); }
     } __attribute__((packed));
     constexpr LongOrdinal makeLongOrdinal(Ordinal lower, Ordinal upper) noexcept {
         return LongOrdinal(lower) | (LongOrdinal(upper) << 32);
@@ -161,6 +163,7 @@ namespace i960 {
 		bool isZero() const noexcept { return (lower == 0) && ((upper & ZeroCheckBits_Upper) == 0); }
 		bool isPositiveZero() const noexcept { return isZero() && (sign == 0); }
 		bool isNegativeZero() const noexcept { return isZero() && (sign == 1); }
+		bool isDenormal() const noexcept { return (exponent == 0) && (fraction != 0); }
     } __attribute__((packed));
 
     union PreviousFramePointer {
