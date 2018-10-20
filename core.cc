@@ -50,16 +50,56 @@ namespace i960 {
 		setFramePointer(tmp);
 		setRegister(StackPointerIndex, tmp + 64);
 	}
+	constexpr Ordinal getProcedureAddress(Ordinal value) noexcept {
+		return value & (~0b11);
+	}
+	constexpr Ordinal getProcedureKind(Ordinal value) noexcept {
+		return value & 0b11;
+	}
+	constexpr bool isLocalProcedure(Ordinal value) noexcept {
+		return getProcedureKind(value) == 0;
+	}
+	constexpr bool isSupervisorProcedure(Ordinal value) noexcept {
+		return getProcedureKind(value) == 0b10;
+	}
 	void Core::calls(const NormalRegister& value) {
-		auto callNum = value.get<ByteOrdinal>();
-		if (callNum > 259) {
+		auto targ = value.get<ShortOrdinal>();
+		if (targ > 259) {
 			// raise protection length fault here
 			return;
 		}
-        // wait for any uncompleted instructions to finish
-        // tempPE <- memory(SPTSS, 48 + (4 * targ))
-        // SPTSS <-> SS to system procedure table from PRCB
-		// TODO implement rest of calls
+		Ordinal temp = 0;
+		Ordinal newRRR = 0;
+		// This code is 80960KB specific, I keep getting different answers :(
+		auto tempPE = load(_systemProcedureTableAddress + 48 + (4 * targ));
+		setRegister(ReturnInstructionPointerIndex, _instructionPointer);
+		_instructionPointer = getProcedureAddress(tempPE);
+		if (isLocalProcedure(tempPE) || (_pc.executionMode != 0)) {
+			temp = (getStackPointerAddress() + 63) & (~63);
+			newRRR = 0;
+		} else {
+			// I think the calls documentation for 80960kb is bugged because it references
+			// structures from 80960MC...
+			//
+			// In 80960KB the SSP is in the Procedure Table Structure but the
+			// documentation says to load from the PRCB to get the supervisor stack
+			// address. That makes no sense since 12 bytes off of the PRCB
+			// base is currentProcessSS (segment selector) not the supervisor
+			// stack address
+			//
+			// The 80960 calls loads the supervisor stack from a different
+			// location 
+			temp = load(_systemProcedureTableAddress + 12);
+			newRRR = 0b010 | _pc.traceEnable;
+			_pc.executionMode = 1;
+			_pc.traceEnable = temp & 0b1;
+		}
+		saveLocalRegisters();
+		allocateNewLocalRegisterSet();
+		setRegister(PreviousFramePointerIndex, getFramePointerAddress());
+		getRegister(PreviousFramePointerIndex).pfp.returnCode = newRRR;
+		setFramePointer(temp);
+		setRegister(StackPointerIndex, temp + 64);
 	}
 
 	Ordinal Core::load(Ordinal address, bool atomic) noexcept {
@@ -135,7 +175,7 @@ namespace i960 {
 	void Core::alterbit(Core::SourceRegister pos, Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
 		auto s = src.get<Ordinal>();
 		auto p = pos.get<Ordinal>() & 0b11111;
-		dest.set<Ordinal>(_ac.conditionCode & 0b010 == 0 ? s & (~(1 << p)) : s | (1 << p));
+		dest.set<Ordinal>((_ac.conditionCode & 0b010) == 0 ? s & (~(1 << p)) : s | (1 << p));
 	}
 	void Core::andOp(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set<Ordinal>(i960::andOp<Ordinal>(src2.get<Ordinal>(), src1.get<Ordinal>()));
@@ -315,7 +355,7 @@ namespace i960 {
 	void Core::subc(__DEFAULT_THREE_ARGS__) noexcept {
 		auto s1 = src1.get<Ordinal>() - 1u;
 		auto s2 = src2.get<Ordinal>();
-		auto carryBit = _ac.conditionCode & 0b010 != 0 ? 1u : 0u;
+		auto carryBit = (_ac.conditionCode & 0b010) != 0 ? 1u : 0u;
 		// need to identify if overflow will occur
 		auto result = s2 - s1;
 		result += carryBit;
@@ -483,6 +523,7 @@ namespace i960 {
 	void Core::testle(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::LessOrEqual>( dest); }
 	void Core::testo(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Ordered>( dest); }
 	void Core::ret() noexcept {
+		// TODO implement
 		auto pfp = getPFP();
 
 		switch(pfp.returnCode) {
@@ -507,8 +548,8 @@ namespace i960 {
 			case 0b100:
 			case 0b101:
 			default:
-				throw "Undefined code!";
-
+				//throw "Undefined code!";
+				break;
 		}
 	}
 	void Core::be(Integer addr) noexcept { branchIfGeneric<ConditionCode::Equal>(addr); }
