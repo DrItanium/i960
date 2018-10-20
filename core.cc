@@ -434,8 +434,25 @@ namespace i960 {
 	void Core::modtc(__DEFAULT_THREE_ARGS__) noexcept {
 		//TODO implement
 	}
-	void Core::modpc(__DEFAULT_THREE_ARGS__) noexcept {
-		//TODO implement
+	void Core::modpc(Core::SourceRegister src, Core::SourceRegister mask, Core::DestinationRegister srcDest) noexcept {
+		// modify process controls
+		auto maskVal = mask.get<Ordinal>();
+		if (maskVal != 0) {
+			if (_pc.executionMode == 0) {
+				// TODO raise a type-mismatch fault
+				return;
+			}
+			ProcessControls temp;
+			temp.value = _pc.value;
+			_pc.value = (maskVal & srcDest.get<Ordinal>()) | (_pc.value & (~maskVal));
+			srcDest.set(temp.value);
+			if (temp.priority > _pc.priority) {
+				// TODO check pending interrupts
+			}
+			// if continue here, no interrupt to do
+		} else {
+			srcDest.set(_pc.value);
+		}
 	}
 	void Core::modac(__DEFAULT_THREE_ARGS__) noexcept {
 		auto tmp = _ac.value;
