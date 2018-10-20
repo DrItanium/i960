@@ -67,12 +67,6 @@ namespace i960 {
 	void Core::divrl(Core::LongSourceRegister src1, Core::LongSourceRegister src2, Core::LongDestinationRegister dest) noexcept {
 		dest.set<RawLongReal>(src2.get<RawLongReal>() / src1.get<RawLongReal>());
 	}
-    void Core::classr(Core::SourceRegister src) noexcept {
-        //TODO implement
-    }
-    void Core::classrl(Core::LongSourceRegister src) noexcept {
-        //TODO implement
-    }
     void Core::cmpor(Core::SourceRegister src1, Core::SourceRegister src2) noexcept {
         auto r0 = src1.get<RawReal>();
         auto r1 = src2.get<RawReal>();
@@ -111,6 +105,16 @@ namespace i960 {
         dest.move(src);
         auto sval = src.get<ByteOrdinal>();
         _ac.conditionCode = ((sval >= 0b0011000) && (sval <= 0b00111001)) ? 0b000 : 0b010;
+    }
+    void Core::classr(Core::SourceRegister src) noexcept {
+		auto val = src.get<Real>();
+		auto s = val.sign;
+		//if (val.bits == 0) {
+		//	// arithmetic_status <- s000;
+		//} else if (
+    }
+    void Core::classrl(Core::LongSourceRegister src) noexcept {
+        //TODO implement
     }
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__

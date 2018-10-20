@@ -454,12 +454,6 @@ namespace i960 {
 		// this does nothing for the time being because this implementation does not execute instructions 
 		// in parallel. When we get there this will become an important instruction
 	}
-	void Core::mark() noexcept {
-		// TODO implement
-	}
-	void Core::fmark() noexcept {
-		// TODO implement
-	}
 	void Core::flushreg() noexcept {
 		// this will nop currently as I'm saving all local registers to the 
 		// stack when a call happens
@@ -964,6 +958,17 @@ namespace i960 {
 		_instructionPointer = _initialWords[3];
 		_pc.priority = 31;
 		_globalRegisters[15].set<Ordinal>(load(_prcbAddress + 24));
+	}
+	void Core::mark() noexcept {
+		if ((_pc.traceEnable != 0) && (_tc.breakpointTraceEvent != 0)) {
+			// TODO raise trace breakpoint fault
+		}
+	}
+	void Core::fmark() noexcept {
+		// force mark aka generate a breakpoint trace-event
+		if (_pc.traceEnable != 0) {
+			// TODO raise trace breakpoint fault
+		}
 	}
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__

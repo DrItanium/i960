@@ -46,23 +46,38 @@ namespace i960 {
      * Part of the numerics architecture and above
      */
     struct Real {
+		static constexpr Ordinal MaxExponent = 0xFF;
+		static constexpr Ordinal MostSignificantFractionBit = 1 << 22;
+		static constexpr Ordinal RestFractionBits = MostSignificantFractionBit - 1;
+		static_assert(RestFractionBits == 0b011'1111'1111'1111'1111'1111, "Got it wrong!");
         Real() : Real(0,0,0) { }
-        Real(Ordinal frac, Ordinal exponent, Ordinal flag) : fraction(frac), exponent(exponent), flag(flag) { };
+        Real(Ordinal frac, Ordinal exponent, Ordinal flag) : fraction(frac), exponent(exponent), sign(flag) { };
         explicit Real(RawReal value) : floating(value) { }
         union {
             struct {
                 Ordinal fraction : 23;
                 Ordinal exponent : 8;
-                Ordinal flag : 1;
+                Ordinal sign : 1;
             };
             Ordinal bits;
             RawReal floating;
         };
+		bool isInfinity() const noexcept { return (exponent == MaxExponent) && (fraction == 0); }
+		bool isPositiveInfinity() const noexcept { return isInfinity() && (sign == 0); }
+		bool isNegativeInfinity() const noexcept { return isInfinity() && (sign == 1); }
+		bool isNaN() const noexcept { return (fraction != 0) && (exponent == MaxExponent); }
+		bool isSignalingNaN() const noexcept { return isNaN() && ((fraction & MostSignificantFractionBit) == 0); }
+		bool isQuietNaN() const noexcept { return isNaN() && ((fraction & MostSignificantFractionBit) != 0); }
+		bool isIndefiniteQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) == 0); }
+		bool isNormalQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) != 0); }
     } __attribute__((packed));
     /**
      * Part of the numerics architecture and above
      */
     struct LongReal {
+		static constexpr LongOrdinal MaxExponent = 0x7FF;
+		static constexpr LongOrdinal MostSignificantFractionBit = 1ul << 51;
+		static constexpr LongOrdinal RestFractionBits = MostSignificantFractionBit - 1; 
         LongReal() : LongReal(0,0) { }
         LongReal(Ordinal lower, Ordinal upper) : bits(LongOrdinal(lower) | (LongOrdinal(upper) << 32)) { }
         LongReal(LongOrdinal frac, LongOrdinal exponent, LongOrdinal sign) : fraction(frac), exponent(exponent), sign(sign) { }
@@ -78,6 +93,14 @@ namespace i960 {
             LongOrdinal bits;
             RawLongReal floating;
         };
+		bool isInfinity() const noexcept { return (exponent == MaxExponent) && (fraction == 0); }
+		bool isPositiveInfinity() const noexcept { return isInfinity() && (sign == 0); }
+		bool isNegativeInfinity() const noexcept { return isInfinity() && (sign == 1); }
+		bool isNaN() const noexcept { return (fraction != 0) && (exponent == MaxExponent); }
+		bool isSignalingNaN() const noexcept { return isNaN() && ((fraction & MostSignificantFractionBit) == 0); }
+		bool isQuietNaN() const noexcept { return isNaN() && ((fraction & MostSignificantFractionBit) != 0); }
+		bool isIndefiniteQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) == 0); }
+		bool isNormalQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) != 0); }
     } __attribute__((packed));
     constexpr LongOrdinal makeLongOrdinal(Ordinal lower, Ordinal upper) noexcept {
         return LongOrdinal(lower) | (LongOrdinal(upper) << 32);
@@ -86,6 +109,9 @@ namespace i960 {
      * Part of the numerics architecture and above
      */
     union ExtendedReal {
+		static constexpr LongOrdinal MaxExponent = 0x7FFF;
+		static constexpr LongOrdinal MostSignificantFractionBit = 1ul << 62;
+		static constexpr LongOrdinal RestFractionBits = MostSignificantFractionBit - 1; 
         ExtendedReal() { }
         ExtendedReal(Ordinal low, Ordinal mid, Ordinal high) : lower(makeLongOrdinal(low, mid)), upper(high) { }
         explicit ExtendedReal(RawExtendedReal value) : floating(value) { }
@@ -104,6 +130,14 @@ namespace i960 {
             ShortOrdinal upper;
         };
         RawExtendedReal floating;
+		bool isInfinity() const noexcept { return (j == 1) && (exponent == MaxExponent) && (fraction == 0); }
+		bool isPositiveInfinity() const noexcept { return isInfinity() && (sign == 0); }
+		bool isNegativeInfinity() const noexcept { return isInfinity() && (sign == 1); }
+		bool isNaN() const noexcept { return (j == 1) && (fraction != 0) && (exponent == MaxExponent); }
+		bool isSignalingNaN() const noexcept { return isNaN() && ((fraction & MostSignificantFractionBit) == 0); }
+		bool isQuietNaN() const noexcept { return isNaN() && ((fraction & MostSignificantFractionBit) != 0); }
+		bool isIndefiniteQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) == 0); }
+		bool isNormalQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) != 0); }
     } __attribute__((packed));
 
     union PreviousFramePointer {
