@@ -525,31 +525,88 @@ namespace i960 {
 	void Core::ret() noexcept {
 		// TODO implement
 		auto pfp = getPFP();
-
+		auto standardRestore = [this, &pfp]() {
+			setRegister(FramePointerIndex, pfp);
+			// TODO implement this logic
+			// free current register set
+			// if register_set (FP) not allocated
+			//    then retrieve from memory(FP);
+			// endif
+			_instructionPointer = getRegister(ReturnInstructionPointerIndex).get<Ordinal>();
+		};
+		auto case1 = [this, standardRestore]() {
+			auto fp = getFramePointerAddress();
+			auto x = load(fp - 16);
+			auto y = load(fp - 12);
+			standardRestore();
+			_ac.value = y;
+			if (_pc.executionMode != 0) {
+				_pc.value = x;
+			}
+		};
+		auto case2 = [this, standardRestore]() {
+			if (_pc.executionMode == 0) {
+				standardRestore();
+			} else {
+				_pc.traceEnable = 0;
+				_pc.executionMode = 0;
+				standardRestore();
+			}
+		};
+		auto case3 = [this, standardRestore]() {
+			if (_pc.executionMode == 0) {
+				standardRestore();
+			} else {
+				_pc.traceEnable = 1;
+				_pc.executionMode = 0;
+				standardRestore();
+			}
+		};
+		auto case4 = [this, standardRestore]() {
+			if (_pc.executionMode != 0) {
+				// free current register set
+				// check pending interrupts
+				// if continue here, no interrupt to do
+				// enter idle state
+				throw "Unimplemented!";
+			} else {
+				standardRestore();
+			}
+		};
+		auto case5 = [this, standardRestore]() {
+			auto fp = getFramePointerAddress();
+			auto x = load(fp - 16);
+			auto y = load(fp - 12);
+			standardRestore();
+			_ac.value = y;
+			if (_pc.executionMode != 0) {
+				_pc.value = x;
+				// TODO check pending interrupts
+			}
+		};
 		switch(pfp.returnCode) {
 			case 0b000:
-				// TODO
+				standardRestore();
 				break;
 			case 0b001:
-				// TODO
+				case1();
 				break;
 			case 0b010:
-				// TODO
+				case2();
 				break;
 			case 0b011:
-				// TODO
+				case3();
 				break;
 			case 0b110:
-				// TODO
+				case4();
 				break;
 			case 0b111:
-				// TODO
+				case5();
 				break;
 			case 0b100:
 			case 0b101:
 			default:
-				//throw "Undefined code!";
-				break;
+				throw "Undefined operation";
 		}
 	}
 	void Core::be(Integer addr) noexcept { branchIfGeneric<ConditionCode::Equal>(addr); }
