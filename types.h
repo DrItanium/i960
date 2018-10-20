@@ -77,6 +77,8 @@ namespace i960 {
 		bool isPositiveZero() const noexcept { return isZero() && (sign == 0); }
 		bool isNegativeZero() const noexcept { return isZero() && (sign == 1); }
 		bool isDenormal() const noexcept { return (exponent == 0) && (fraction != 0); }
+		bool isNormal() const noexcept { return ((exponent > 0) && (exponent < MaxExponent)); }
+				   
     } __attribute__((packed));
     /**
      * Part of the numerics architecture and above
@@ -115,6 +117,7 @@ namespace i960 {
 		bool isPositiveZero() const noexcept { return isZero() && (sign == 0); }
 		bool isNegativeZero() const noexcept { return isZero() && (sign == 1); }
 		bool isDenormal() const noexcept { return (exponent == 0) && (fraction != 0); }
+		bool isNormal() const noexcept { return ((exponent > 0) && (exponent < MaxExponent)); }
     } __attribute__((packed));
     constexpr LongOrdinal makeLongOrdinal(Ordinal lower, Ordinal upper) noexcept {
         return LongOrdinal(lower) | (LongOrdinal(upper) << 32);
@@ -164,6 +167,12 @@ namespace i960 {
 		bool isPositiveZero() const noexcept { return isZero() && (sign == 0); }
 		bool isNegativeZero() const noexcept { return isZero() && (sign == 1); }
 		bool isDenormal() const noexcept { return (exponent == 0) && (fraction != 0); }
+		bool isNormal() const noexcept { 
+			// this is a little strange since the 80960 book states that there
+			// is a hole in the design. However, from what I can tell it is
+			// probably safe to operate the same way as the other Real types
+			return ((exponent > 0) && (exponent < MaxExponent)); 
+		}
     } __attribute__((packed));
 
     union PreviousFramePointer {
