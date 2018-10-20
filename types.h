@@ -9,13 +9,12 @@ namespace i960 {
     using ShortOrdinal = std::uint16_t;
     using Ordinal = std::uint32_t;
     using LongOrdinal = std::uint64_t;
-#define MustBeSizeOfOrdinal(type, message) \
-    static_assert(sizeof(type) == sizeof(Ordinal), message)
-
+    using InstructionPointer = Ordinal;
     using ByteInteger = std::int8_t;
     using ShortInteger = std::int16_t;
     using Integer = std::int32_t;
     using LongInteger = std::int64_t;
+
     constexpr bool isIntegerOverflow(Ordinal value) noexcept {
         return value > 0x7FFF'FFFF;
     }
@@ -48,16 +47,16 @@ namespace i960 {
      */
     struct Real {
         Real() : Real(0,0,0) { }
-        Real(Ordinal frac, Ordinal exponent, Ordinal flag) : _fraction(frac), _exponent(exponent), _flag(flag) { };
-        explicit Real(RawReal value) : _floating(value) { }
+        Real(Ordinal frac, Ordinal exponent, Ordinal flag) : fraction(frac), exponent(exponent), flag(flag) { };
+        explicit Real(RawReal value) : floating(value) { }
         union {
             struct {
-                Ordinal _fraction : 23;
-                Ordinal _exponent : 8;
-                Ordinal _flag : 1;
+                Ordinal fraction : 23;
+                Ordinal exponent : 8;
+                Ordinal flag : 1;
             };
-            Ordinal _bits;
-            RawReal _floating;
+            Ordinal bits;
+            RawReal floating;
         };
     } __attribute__((packed));
     /**
@@ -65,19 +64,19 @@ namespace i960 {
      */
     struct LongReal {
         LongReal() : LongReal(0,0) { }
-        LongReal(Ordinal lower, Ordinal upper) : _bits(LongOrdinal(lower) | (LongOrdinal(upper) << 32)) { }
-        LongReal(LongOrdinal frac, LongOrdinal exponent, LongOrdinal sign) : _fraction(frac), _exponent(exponent), _sign(sign) { }
-        explicit LongReal(RawLongReal value) : _floating(value) { }
-        Ordinal lowerHalf() const noexcept { return static_cast<Ordinal>(_bits & 0xFFFF'FFFF); }
-        Ordinal upperHalf() const noexcept { return static_cast<Ordinal>((_bits & 0xFFFF'FFFF'0000'0000) >> 32); }
+        LongReal(Ordinal lower, Ordinal upper) : bits(LongOrdinal(lower) | (LongOrdinal(upper) << 32)) { }
+        LongReal(LongOrdinal frac, LongOrdinal exponent, LongOrdinal sign) : fraction(frac), exponent(exponent), sign(sign) { }
+        explicit LongReal(RawLongReal value) : floating(value) { }
+        Ordinal lowerHalf() const noexcept { return static_cast<Ordinal>(bits & 0xFFFF'FFFF); }
+        Ordinal upperHalf() const noexcept { return static_cast<Ordinal>((bits & 0xFFFF'FFFF'0000'0000) >> 32); }
         union {
             struct {
-                LongOrdinal _fraction : 52;
-                LongOrdinal _exponent : 11;
-                LongOrdinal _sign : 1;
+                LongOrdinal fraction : 52;
+                LongOrdinal exponent : 11;
+                LongOrdinal sign : 1;
             };
-            LongOrdinal _bits;
-            RawLongReal _floating;
+            LongOrdinal bits;
+            RawLongReal floating;
         };
     } __attribute__((packed));
     constexpr LongOrdinal makeLongOrdinal(Ordinal lower, Ordinal upper) noexcept {
@@ -88,112 +87,113 @@ namespace i960 {
      */
     union ExtendedReal {
         ExtendedReal() { }
-        ExtendedReal(Ordinal low, Ordinal mid, Ordinal high) : _lower(makeLongOrdinal(low, mid)), _upper(high) { }
-        explicit ExtendedReal(RawExtendedReal value) : _floating(value) { }
-        Ordinal lowerThird() const noexcept { return static_cast<Ordinal>(_lower); }
-        Ordinal middleThird() const noexcept { return static_cast<Ordinal>(_lower >> 32); }
-        Ordinal upperThird() const noexcept { return static_cast<Ordinal>(_upper); }
+        ExtendedReal(Ordinal low, Ordinal mid, Ordinal high) : lower(makeLongOrdinal(low, mid)), upper(high) { }
+        explicit ExtendedReal(RawExtendedReal value) : floating(value) { }
+        Ordinal lowerThird() const noexcept { return static_cast<Ordinal>(lower); }
+        Ordinal middleThird() const noexcept { return static_cast<Ordinal>(lower >> 32); }
+        Ordinal upperThird() const noexcept { return static_cast<Ordinal>(upper); }
 
         struct {
-            LongOrdinal _fraction: 63;
-            LongOrdinal _j : 1;
-            ShortOrdinal _exponent : 15;
-            ShortOrdinal _sign : 1;
+            LongOrdinal fraction: 63;
+            LongOrdinal j : 1;
+            ShortOrdinal exponent : 15;
+            ShortOrdinal sign : 1;
         }; 
         struct {
-            LongOrdinal _lower;
-            ShortOrdinal _upper;
+            LongOrdinal lower;
+            ShortOrdinal upper;
         };
-        RawExtendedReal _floating;
+        RawExtendedReal floating;
     } __attribute__((packed));
 
     union PreviousFramePointer {
         struct {
-            Ordinal _returnCode : 3;
-            Ordinal _prereturnTrace : 1;
-            Ordinal _unused : 2; // 80960 ignores the lower six bits of this register
-            Ordinal _address : 26;
+            Ordinal returnCode : 3;
+            Ordinal prereturnTrace : 1;
+            Ordinal unused : 2; // 80960 ignores the lower six bits of this register
+            Ordinal address : 26;
         };
-        Ordinal _value;
+        Ordinal value;
     } __attribute__((packed));
     union NormalRegister {
         private:
             template<typename T>
-                static constexpr bool LegalConversion = false;
+			static constexpr bool LegalConversion = false;
         public:
-            NormalRegister(Ordinal value) : _ordinal(value) { }
+            NormalRegister(Ordinal value) : ordinal(value) { }
             NormalRegister() : NormalRegister(0u) { }
-            ~NormalRegister() { _ordinal = 0; }
+            ~NormalRegister() { ordinal = 0; }
 
-            PreviousFramePointer _pfp;
-            Ordinal _ordinal;
-            Integer _integer;
-            Real _real;
-            ByteOrdinal _byteOrd;
-            ShortOrdinal _shortOrd;
+            PreviousFramePointer pfp;
+            Ordinal ordinal;
+            Integer integer;
+            Real real;
+            ByteOrdinal byteOrd;
+            ShortOrdinal shortOrd;
 
             template<typename T>
-                T get() const noexcept {
-                    using K = std::decay_t<T>;
-                    if constexpr(std::is_same_v<K, Ordinal>) {
-                        return _ordinal;
-                    } else if constexpr(std::is_same_v<K, Integer>) {
-                        return _integer;
-                    } else if constexpr(std::is_same_v<K, ByteOrdinal>) {
-                        return _byteOrd;
-                    } else if constexpr(std::is_same_v<K, ShortOrdinal>) {
-                        return _shortOrd;
-                    } else if constexpr(std::is_same_v<K, Real>) {
-                        return _real;
-                    } else if constexpr(std::is_same_v<K, RawReal>) {
-                        return _real._floating;
-                    } else if constexpr(std::is_same_v<K, PreviousFramePointer>) {
-                        return _pfp;
-                    } else if constexpr(std::is_same_v<K, LongOrdinal>) {
-                        return static_cast<LongOrdinal>(_ordinal);
-                    } else {
-                        static_assert(LegalConversion<K>, "Illegal type requested");
-                    }
+            T get() const noexcept {
+                using K = std::decay_t<T>;
+                if constexpr(std::is_same_v<K, Ordinal>) {
+                    return ordinal;
+                } else if constexpr(std::is_same_v<K, Integer>) {
+                    return integer;
+                } else if constexpr(std::is_same_v<K, ByteOrdinal>) {
+                    return byteOrd;
+                } else if constexpr(std::is_same_v<K, ShortOrdinal>) {
+                    return shortOrd;
+                } else if constexpr(std::is_same_v<K, Real>) {
+                    return real;
+                } else if constexpr(std::is_same_v<K, RawReal>) {
+                    return real.floating;
+                } else if constexpr(std::is_same_v<K, PreviousFramePointer>) {
+                    return pfp;
+                } else if constexpr(std::is_same_v<K, LongOrdinal>) {
+                    return static_cast<LongOrdinal>(ordinal);
+                } else {
+                    static_assert(LegalConversion<K>, "Illegal type requested");
                 }
+            }
             template<typename T>
-                void set(T value) noexcept {
-                    using K = std::decay_t<T>;
-                    if constexpr(std::is_same_v<K, Ordinal>) {
-                        _ordinal = value;
-                    } else if constexpr(std::is_same_v<K, Integer>) {
-                        _integer = value;
-                    } else if constexpr(std::is_same_v<K, ByteOrdinal>) {
-                        _byteOrd = value;
-                    } else if constexpr(std::is_same_v<K, ShortOrdinal>) {
-                        _shortOrd = value;
-                    } else if constexpr(std::is_same_v<K, Real>) {
-                        _real._floating = value._floating;
-                    } else if constexpr(std::is_same_v<K, RawReal>) {
-                        _real._floating = value;
-                    } else if constexpr(std::is_same_v<K, PreviousFramePointer>) {
-                        _ordinal = value._value;
-                    } else {
-                        static_assert(LegalConversion<K>, "Illegal type requested");
-                    }
+            void set(T value) noexcept {
+                using K = std::decay_t<T>;
+                if constexpr(std::is_same_v<K, Ordinal>) {
+                    _ordinal = value;
+                } else if constexpr(std::is_same_v<K, Integer>) {
+                    _integer = value;
+                } else if constexpr(std::is_same_v<K, ByteOrdinal>) {
+                    _byteOrd = value;
+                } else if constexpr(std::is_same_v<K, ShortOrdinal>) {
+                    _shortOrd = value;
+                } else if constexpr(std::is_same_v<K, Real>) {
+                    _real._floating = value._floating;
+                } else if constexpr(std::is_same_v<K, RawReal>) {
+                    _real._floating = value;
+                } else if constexpr(std::is_same_v<K, PreviousFramePointer>) {
+                    _ordinal = value._value;
+                } else {
+                    static_assert(LegalConversion<K>, "Illegal type requested");
                 }
+            }
             void move(const NormalRegister& other) noexcept { set<Ordinal>(other.get<Ordinal>()); }
     };
+	static_assert(sizeof(NormalRegister) == sizeof(Ordinal), "NormalRegister must be 32-bits wide!");
     class DoubleRegister {
         private:
             template<typename T>
-                static constexpr bool LegalConversion = false;
+            static constexpr bool LegalConversion = false;
         public:
-            DoubleRegister(NormalRegister& lower, NormalRegister& upper) : _lower(lower), _upper(upper) { }
+            DoubleRegister(NormalRegister& lower, NormalRegister& upper) : lower(lower), upper(upper) { }
             ~DoubleRegister() = default;
             template<typename T>
                 T get() const noexcept {
                     using K = std::decay_t<T>;
                     if constexpr(std::is_same_v<K, LongOrdinal>) {
-                        return LongOrdinal(_lower._ordinal) | (LongOrdinal(_upper._ordinal) << 32);
+                        return LongOrdinal(lower.ordinal) | (LongOrdinal(upper.ordinal) << 32);
                     } else if constexpr(std::is_same_v<K, LongReal>) {
-                        return LongReal(_lower._ordinal, _upper._ordinal);
+                        return LongReal(lower.ordinal, upper.ordinal);
                     } else if constexpr (std::is_same_v<K, RawLongReal>) {
-                        return get<LongReal>()._floating;
+                        return get<LongReal>().floating;
                     } else {
                         static_assert(LegalConversion<K>, "Illegal type requested");
                     }
@@ -202,11 +202,11 @@ namespace i960 {
                 void set(T value) noexcept {
                     using K = std::decay_t<T>;
                     if constexpr(std::is_same_v<K, LongOrdinal>) {
-                        _lower._ordinal = static_cast<Ordinal>(value);
-                        _upper._ordinal = static_cast<Ordinal>(value >> 32);
+                        lower.ordinal = static_cast<Ordinal>(value);
+                        upper.ordinal = static_cast<Ordinal>(value >> 32);
                     } else if constexpr (std::is_same_v<K, LongReal>) {
-                        _lower._ordinal = value.lowerHalf();
-                        _upper._ordinal = value.upperHalf();
+                        lower.ordinal = value.lowerHalf();
+                        upper.ordinal = value.upperHalf();
                     } else if constexpr (std::is_same_v<K, RawLongReal>) {
                         set<LongReal>(LongReal(value));
                     } else {
@@ -215,27 +215,27 @@ namespace i960 {
                 }
             void set(Ordinal lower, Ordinal upper) noexcept;
             void move(const DoubleRegister& other) noexcept;
-            Ordinal getLowerHalf() const noexcept { return _lower.get<Ordinal>(); }
-            Ordinal getUpperHalf() const noexcept { return _upper.get<Ordinal>(); }
+            Ordinal getLowerHalf() const noexcept { return lower.get<Ordinal>(); }
+            Ordinal getUpperHalf() const noexcept { return upper.get<Ordinal>(); }
 
         private:
-            NormalRegister& _lower;
-            NormalRegister& _upper;
+            NormalRegister& lower;
+            NormalRegister& upper;
     };
     class TripleRegister {
         private:
             template<typename T>
-                static constexpr bool LegalConversion = false;
+            static constexpr bool LegalConversion = false;
         public:
-            TripleRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& upper) : _lower(lower), _mid(mid), _upper(upper) { }
+            TripleRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& upper) : lower(lower), mid(mid), upper(upper) { }
             ~TripleRegister() = default;
             template<typename T>
                 T get() const noexcept {
                     using K = std::decay_t<T>;
                     if constexpr(std::is_same_v<K, ExtendedReal>) {
-                        return ExtendedReal(_lower._ordinal, _mid._ordinal, _upper._ordinal);
+                        return ExtendedReal(lower.ordinal, mid.ordinal, upper.ordinal);
                     } else if constexpr (std::is_same_v<K, RawExtendedReal>) {
-                        return get<ExtendedReal>()._floating;
+                        return get<ExtendedReal>().floating;
                     } else {
                         static_assert(LegalConversion<K>, "Illegal type requested");
                     }
@@ -244,9 +244,9 @@ namespace i960 {
                 void set(T value) noexcept {
                     using K = std::decay_t<T>;
                     if constexpr (std::is_same_v<K, ExtendedReal>) {
-                        _lower._ordinal = value.lowerThird();
-                        _mid._ordinal = value.middleThird();
-                        _upper._ordinal = value.upperThird();
+                        lower.ordinal = value.lowerThird();
+                        mid.ordinal = value.middleThird();
+                        upper.ordinal = value.upperThird();
                     } else if constexpr (std::is_same_v<K, RawExtendedReal>) {
                         set<ExtendedReal>(ExtendedReal(value));
                     } else {
@@ -255,113 +255,112 @@ namespace i960 {
                 }
             void set(Ordinal lower, Ordinal mid, Ordinal upper) noexcept;
             void move(const TripleRegister& other) noexcept;
-            Ordinal getLowerPart() const noexcept { return _lower.get<Ordinal>(); }
-            Ordinal getMiddlePart() const noexcept { return _mid.get<Ordinal>(); }
-            Ordinal getUpperPart() const noexcept { return _upper.get<Ordinal>(); }
+            Ordinal getLowerPart() const noexcept { return lower.get<Ordinal>(); }
+            Ordinal getMiddlePart() const noexcept { return mid.get<Ordinal>(); }
+            Ordinal getUpperPart() const noexcept { return upper.get<Ordinal>(); }
         private:
-            NormalRegister& _lower;
-            NormalRegister& _mid;
-            NormalRegister& _upper;
+            NormalRegister& lower;
+            NormalRegister& mid;
+            NormalRegister& upper;
     };
     class QuadRegister {
         public:
-            QuadRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& high, NormalRegister& highest) : _lower(lower), _mid(mid), _upper(high), _highest(highest) { }
+            QuadRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& high, NormalRegister& highest) : lower(lower), mid(mid), upper(high), highest(highest) { }
             ~QuadRegister() = default;
             void set(Ordinal lower, Ordinal mid, Ordinal upper, Ordinal highest) noexcept;
             void move(const QuadRegister& other) noexcept;
-            Ordinal getLowestPart() const noexcept { return _lower.get<Ordinal>(); }
-            Ordinal getLowerPart() const noexcept { return _mid.get<Ordinal>(); }
-            Ordinal getHigherPart() const noexcept { return _upper.get<Ordinal>(); }
-            Ordinal getHighestPart() const noexcept { return _highest.get<Ordinal>(); }
+            Ordinal getLowestPart() const noexcept { return lower.get<Ordinal>(); }
+            Ordinal getLowerPart() const noexcept { return mid.get<Ordinal>(); }
+            Ordinal getHigherPart() const noexcept { return upper.get<Ordinal>(); }
+            Ordinal getHighestPart() const noexcept { return highest.get<Ordinal>(); }
         private:
-            NormalRegister& _lower;
-            NormalRegister& _mid;
-            NormalRegister& _upper;
-            NormalRegister& _highest;
+            NormalRegister& lower;
+            NormalRegister& mid;
+            NormalRegister& upper;
+            NormalRegister& highest;
     };
-    MustBeSizeOfOrdinal(NormalRegister, "NormalRegister must be 32-bits wide!");
     union ArithmeticControls {
         struct {
-            Ordinal _conditionCode : 3;
+            Ordinal conditionCode : 3;
             /**
              * Used to record results from the classify real (classr and classrl)
              * and remainder real (remr and remrl) instructions. 
              */
-            Ordinal _arithmeticStatusField : 4;
+            Ordinal arithmeticStatusField : 4;
             /**
              * Reserved, bind to zero always
              */
-            Ordinal _reserved0 : 1; 
+            Ordinal reserved0 : 1; 
             /**
              * Denotes an integer overflow happened
              */
-            Ordinal _integerOverflowFlag : 1;
+            Ordinal integerOverflowFlag : 1;
             /**
              * Reserved, bind to zero always
              */
-            Ordinal _reserved1 : 3;
+            Ordinal reserved1 : 3;
             /**
              * Inhibit the processor from invoking a fault handler
              * when integer overflow is detected.
              */
-            Ordinal _integerOverflowMask : 1;
+            Ordinal integerOverflowMask : 1;
             /**
              * Reserved, always bind to zero
              */
-            Ordinal _reserved2 : 2;
+            Ordinal reserved2 : 2;
             /**
              * Disable faults generated by imprecise results being generated
              */
-            Ordinal _noImpreciseResults : 1;
+            Ordinal noImpreciseResults : 1;
             /**
              * Floating point overflow happened?
              */
-            Ordinal _floatingOverflowFlag : 1;
+            Ordinal floatingOverflowFlag : 1;
             /**
              * Floating point underflow happened?
              */
-            Ordinal _floatingUnderflowFlag : 1;
+            Ordinal floatingUnderflowFlag : 1;
             /**
              * Floating point invalid operation happened?
              */
-            Ordinal _floatingInvalidOperationFlag : 1;
+            Ordinal floatingInvalidOperationFlag : 1;
             /**
              * Floating point divide by zero happened?
              */
-            Ordinal _floatingZeroDivideFlag : 1;
+            Ordinal floatingZeroDivideFlag : 1;
             /**
              * Floating point rounding result was inexact?
              */
-            Ordinal _floatingInexactFlag : 1;
+            Ordinal floatingInexactFlag : 1;
             /**
              * Reserved, always bind to zero
              */
-            Ordinal _reserved3 : 3;
+            Ordinal reserved3 : 3;
             /**
              * Don't fault on fp overflow?
              */
-            Ordinal _floatingOverflowMask : 1;
+            Ordinal floatingOverflowMask : 1;
             /**
              * Don't fault on fp underflow?
              */
-            Ordinal _floatingUnderflowMask : 1;
+            Ordinal floatingUnderflowMask : 1;
             /**
              * Don't fault on fp invalid operation?
              */
-            Ordinal _floatingInvalidOperationMask : 1;
+            Ordinal floatingInvalidOperationMask : 1;
             /**
              * Don't fault on fp div by zero?
              */
-            Ordinal _floatingZeroDivideMask : 1;
+            Ordinal floatingZeroDivideMask : 1;
             /**
              * Don't fault on fp round producing an inexact representation?
              */
-            Ordinal _floatingInexactMask : 1;
+            Ordinal floatingInexactMask : 1;
             /**
              * Enable to produce normalized values, disable to produce unnormalized values (useful for software simulation).
              * Note that the processor will fault if it encounters denormalized fp values!
              */
-            Ordinal _normalizingModeFlag : 1;
+            Ordinal normalizingModeFlag : 1;
             /**
              * What kind of fp rounding should be performed?
              * Modes:
@@ -370,15 +369,15 @@ namespace i960 {
              *  2: Round toward zero (truncate)
              *  3: Round to nearest (even)
              */
-            Ordinal _roundingControl : 2;
+            Ordinal roundingControl : 2;
         };
-        Ordinal _value;
+        Ordinal value;
         Ordinal modify(Ordinal mask, Ordinal value) noexcept {
             if (mask == 0) {
-                return _value;
+                return value;
             } else {
-                auto tmp = _value;
-                _value = (value & mask) | (_value & ~(mask));
+                auto tmp = value;
+                value = (value & mask) | (value & ~(mask));
                 return tmp;
             }
         }
@@ -388,76 +387,76 @@ namespace i960 {
         // are true or both are false.
 
         bool conditionIsTrue() const noexcept {
-            return _conditionCode == 0b010;
+            return conditionCode == 0b010;
         }
         bool conditionIsFalse() const noexcept {
-            return _conditionCode == 0b000;
+            return conditionCode == 0b000;
         }
         bool conditionIsUnordered() const noexcept {
-            return _conditionCode == 0b000;
+            return conditionCode == 0b000;
         }
         bool conditionIsGreaterThan() const noexcept {
-            return _conditionCode == 0b001;
+            return conditionCode == 0b001;
         }
         bool conditionIsEqual() const noexcept {
-            return _conditionCode == 0b010;
+            return conditionCode == 0b010;
         }
         bool conditionIsGreaterThanOrEqual() const noexcept {
-            return _conditionCode == 0b011;
+            return conditionCode == 0b011;
         }
         bool conditionIsLessThan() const noexcept {
-            return _conditionCode == 0b100;
+            return conditionCode == 0b100;
         }
         bool conditionIsNotEqual() const noexcept {
-            return _conditionCode == 0b101;
+            return conditionCode == 0b101;
         }
         bool conditionIsLessThanOrEqual() const noexcept {
-            return _conditionCode == 0b110;
+            return conditionCode == 0b110;
         }
         bool conditionIsOrdered() const noexcept {
-            return _conditionCode == 0b111;
+            return conditionCode == 0b111;
         }
         Ordinal getConditionCode() const noexcept {
-            return _conditionCode;
+            return conditionCode;
         }
         bool roundToNearest() const noexcept {
-            return _roundingControl == 0b00;
+            return roundingControl == 0b00;
         }
         bool roundDown() const noexcept {
-            return _roundingControl == 0b01;
+            return roundingControl == 0b01;
         }
         bool roundUp() const noexcept {
-            return _roundingControl == 0b10;
+            return roundingControl == 0b10;
         }
         bool roundTowardsZero() const noexcept {
-            return _roundingControl == 0b11;
+            return roundingControl == 0b11;
         }
         bool arithmeticStatusIsZero() const noexcept {
-            return (_arithmeticStatusField & 0b0111) == 0;
+            return (arithmeticStatusField & 0b0111) == 0;
         }
         bool arithmeticStatusIsDenormalizedNumber() const noexcept {
-            return (_arithmeticStatusField & 0b0111) == 1;
+            return (arithmeticStatusField & 0b0111) == 1;
         }
         bool arithmeticStatusIsNormalFiniteNumber() const noexcept {
-            return (_arithmeticStatusField & 0b0111) == 2;
+            return (arithmeticStatusField & 0b0111) == 2;
         }
         bool arithmeticStatusIsInfinity() const noexcept {
-            return (_arithmeticStatusField & 0b0111) == 3;
+            return (arithmeticStatusField & 0b0111) == 3;
         }
         bool arithmeticStatusIsQuietNaN() const noexcept {
-            return (_arithmeticStatusField & 0b0111) == 4;
+            return (arithmeticStatusField & 0b0111) == 4;
         }
         bool arithmeticStatusIsSignalingNaN() const noexcept {
-            return (_arithmeticStatusField & 0b0111) == 5;
+            return (arithmeticStatusField & 0b0111) == 5;
         }
         bool arithmeticStatusIsReservedOperand() const noexcept {
-            return (_arithmeticStatusField & 0b0111) == 6;
+            return (arithmeticStatusField & 0b0111) == 6;
         }
         bool getArithmeticStatusSign() const noexcept {
-            return ((_arithmeticStatusField & 0b1000) >> 3) == 1;
+            return ((arithmeticStatusField & 0b1000) >> 3) == 1;
         }
         bool carrySet() const noexcept {
-            return (_conditionCode & 0b010) != 0;
+            return (conditionCode & 0b010) != 0;
         }
         Ordinal getCarryValue() const noexcept {
             return carrySet() ? 1 : 0;
@@ -465,80 +464,78 @@ namespace i960 {
 
 
     };
-    using InstructionPointer = Ordinal;
     union ProcessControls {
 #ifdef PROTECTED_ARCHITECTURE
         struct {
-            Ordinal _unused0 : 1;
-            Ordinal _multiprocessorPreempt : 1;
-            Ordinal _state : 2;
-            Ordinal _unused1 : 1;
-            Ordinal _nonpreemptLimit : 5;
-            Ordinal _addressingMode : 1;
-            Ordinal _checkDispatchPort : 1;
-            Ordinal _unused2 : 4;
-            Ordinal _interimPriority : 5;
-            Ordinal _unused3 : 10;
-            Ordinal _writeExternalPriority : 1;
+            Ordinal unused0 : 1;
+            Ordinal multiprocessorPreempt : 1;
+            Ordinal state : 2;
+            Ordinal unused1 : 1;
+            Ordinal nonpreemptLimit : 5;
+            Ordinal addressingMode : 1;
+            Ordinal checkDispatchPort : 1;
+            Ordinal unused2 : 4;
+            Ordinal interimPriority : 5;
+            Ordinal unused3 : 10;
+            Ordinal writeExternalPriority : 1;
         } _manual;
         struct {
-            Ordinal _traceEnable : 1;
-            Ordinal _executionMode : 1;
-            Ordinal _unused0 : 4;
-            Ordinal _timeSliceReschedule : 1;
-            Ordinal _timeSlice : 1;
-            Ordinal _resume : 1;
-            Ordinal _traceFaultPending : 1;
-            Ordinal _preempt : 1;
-            Ordinal _refault : 1;
-            Ordinal _state : 2;
-            Ordinal _unused1 : 1;
-            Ordinal _priority : 5;
-            Ordinal _internalState : 11;
+            Ordinal traceEnable : 1;
+            Ordinal executionMode : 1;
+            Ordinal unused0 : 4;
+            Ordinal timeSliceReschedule : 1;
+            Ordinal timeSlice : 1;
+            Ordinal resume : 1;
+            Ordinal traceFaultPending : 1;
+            Ordinal preempt : 1;
+            Ordinal refault : 1;
+            Ordinal state : 2;
+            Ordinal unused1 : 1;
+            Ordinal priority : 5;
+            Ordinal internalState : 11;
         }  _automatic;
 #else // !defined(PROTECTED_ARCHITECTURE)
         struct {
-            Ordinal _traceEnable : 1;
-            Ordinal _executionMode : 1;
-            Ordinal _unused0 : 7;
-            Ordinal _resume : 1;
-            Ordinal _traceFaultPending : 1;
-            Ordinal _unused1 : 2;
-            Ordinal _state : 1;
-            Ordinal _unused2 : 2;
-            Ordinal _priority : 5;
-            Ordinal _internalState : 11;
+            Ordinal traceEnable : 1;
+            Ordinal executionMode : 1;
+            Ordinal unused0 : 7;
+            Ordinal resume : 1;
+            Ordinal traceFaultPending : 1;
+            Ordinal unused1 : 2;
+            Ordinal state : 1;
+            Ordinal unused2 : 2;
+            Ordinal priority : 5;
+            Ordinal internalState : 11;
         };
 #endif // end PROTECTED_ARCHITECTURE
 
-        Ordinal _value;
+        Ordinal value;
     } __attribute__((packed));
 
 
-    MustBeSizeOfOrdinal(ProcessControls, "ProcessControls is not the size of an ordinal!");
+	static_assert(sizeof(ProcessControls) == sizeof(Ordinal), "ProcessControls is not the size of an ordinal!");
     union TraceControls {
         struct {
-            Ordinal _unused0 : 1;
-            Ordinal _instructionTraceMode : 1;
-            Ordinal _branchTraceMode : 1;
-            Ordinal _returnTraceMode : 1;
-            Ordinal _prereturnTraceMode : 1;
-            Ordinal _supervisorTraceMode : 1;
-            Ordinal _breakPointTraceMode : 1;
-            Ordinal _unused1 : 9;
-            Ordinal _instructionTraceEvent : 1;
-            Ordinal _branchTraceEvent : 1;
-            Ordinal _callTraceEvent : 1;
-            Ordinal _returnTraceEvent : 1;
-            Ordinal _prereturnTraceEvent: 1;
-            Ordinal _supervisorTraceEvent : 1;
-            Ordinal _breakpointTraceEvent : 1;
-            Ordinal _unused2 : 8;
+            Ordinal unused0 : 1;
+            Ordinal instructionTraceMode : 1;
+            Ordinal branchTraceMode : 1;
+            Ordinal returnTraceMode : 1;
+            Ordinal prereturnTraceMode : 1;
+            Ordinal supervisorTraceMode : 1;
+            Ordinal breakPointTraceMode : 1;
+            Ordinal unused1 : 9;
+            Ordinal instructionTraceEvent : 1;
+            Ordinal branchTraceEvent : 1;
+            Ordinal callTraceEvent : 1;
+            Ordinal returnTraceEvent : 1;
+            Ordinal prereturnTraceEvent: 1;
+            Ordinal supervisorTraceEvent : 1;
+            Ordinal breakpointTraceEvent : 1;
+            Ordinal unused2 : 8;
         };
-        Ordinal _value;
+        Ordinal value;
     } __attribute__((packed));
-
-    MustBeSizeOfOrdinal(TraceControls, "TraceControls must be the size of an ordinal!");
+	static_assert(sizeof(TraceControls) == sizeof(Ordinal), "TraceControls must be the size of an ordinal!");
 
     constexpr auto GlobalRegisterCount = 16;
     constexpr auto NumFloatingPointRegs = 4;
@@ -718,7 +715,7 @@ namespace i960 {
             MEMBFormat _memb;
         };
 
-        MustBeSizeOfOrdinal(MemFormat, "MemFormat must be the size of an ordinal!");
+        static_assert(sizeof(MemFormat) == sizeof(Ordinal), "MemFormat must be the size of an ordinal!");
 
         Instruction(Ordinal raw) : _raw(raw) { }
         Instruction() : Instruction(0) { }
@@ -755,7 +752,7 @@ namespace i960 {
         Ordinal _raw;
 
     } __attribute__((packed));
-    MustBeSizeOfOrdinal(Instruction, "Instruction must be the size of an ordinal!");
+    static_assert(sizeof(Instruction) == sizeof(Ordinal), "Instruction must be the size of an ordinal!");
 #ifdef PROTECTED_ARCHITECTURE
     // Virtual addressing 
     // 32-bit address is converted to 
@@ -806,15 +803,16 @@ namespace i960 {
     constexpr Ordinal computeStackFrameStart(Ordinal framePointerAddress) noexcept {
         return framePointerAddress + 64;
     }
+
     /**
      * Describes the intermediate processor state from a fault or interrupt 
      * occurring during processor execution
      */
     using ResumptionRecord = ByteOrdinal[16];
     struct FaultRecord {
-        Ordinal _reserved = 0;
-        Ordinal _overrideFaultData[3];
-        Ordinal _faultData[3];
+        Ordinal reserved = 0;
+        Ordinal overrideFaultData[3];
+        Ordinal faultData[3];
         union {
             Ordinal value;
             struct {
@@ -823,9 +821,9 @@ namespace i960 {
                 ByteOrdinal type;
                 ByteOrdinal flags;
             };
-        } _override;
-        ProcessControls _pc;
-        ArithmeticControls _ac;
+        } override;
+        ProcessControls pc;
+        ArithmeticControls ac;
         union {
             Ordinal value;
             struct {
@@ -834,17 +832,18 @@ namespace i960 {
                 ByteOrdinal type;
                 ByteOrdinal flags;
             };
-        } _fault;
-        Ordinal _faultingInstructionAddr;
+        } fault;
+        Ordinal faultingInstructionAddr;
     } __attribute__((packed));
+
     struct InterruptRecord {
-        ResumptionRecord _record; // optional
-        ProcessControls _pc;
-        ArithmeticControls _ac;
+        ResumptionRecord record; // optional
+        ProcessControls pc;
+        ArithmeticControls ac;
         union {
             Ordinal value;
             ByteOrdinal number;
-        } _vector;
+        } vector;
         // I see 
     } __attribute__((packed));
 
@@ -853,25 +852,25 @@ namespace i960 {
      * various states
      */
     struct ProcessorControlBlock {
-        Ordinal _reserved0 = 0;
-        Ordinal _processorControls;
-        Ordinal _reserved1 = 0;
-        Ordinal _currentProcessSS;
-        Ordinal _dispatchPortSS;
-        Ordinal _interruptTablePhysicalAddress;
-        Ordinal _interruptStackPointer;
-        Ordinal _reserved2 = 0;
-        Ordinal _region3SS;
-        Ordinal _systemProcedureTableSS;
-        Ordinal _faultTablePhysicalAddress;
-        Ordinal _reserved3 = 0;
-        Ordinal _multiprocessorPreemption[3];
-        Ordinal _reserved4 = 0;
-        Ordinal _idleTime[2];
-        Ordinal _systemErrorFault;
-        Ordinal _reserved5;
-        Ordinal _resumptionRecord[12];
-        Ordinal _systemErrorFaultRecord[11];
+        Ordinal reserved0 = 0;
+        Ordinal processorControls;
+        Ordinal reserved1 = 0;
+        Ordinal currentProcessSS;
+        Ordinal dispatchPortSS;
+        Ordinal interruptTablePhysicalAddress;
+        Ordinal interruptStackPointer;
+        Ordinal reserved2 = 0;
+        Ordinal region3SS;
+        Ordinal systemProcedureTableSS;
+        Ordinal faultTablePhysicalAddress;
+        Ordinal reserved3 = 0;
+        Ordinal multiprocessorPreemption[3];
+        Ordinal reserved4 = 0;
+        Ordinal idleTime[2];
+        Ordinal systemErrorFault;
+        Ordinal reserved5;
+        Ordinal resumptionRecord[12];
+        Ordinal systemErrorFaultRecord[11];
     } __attribute__((packed));
 
 } // end namespace i960
