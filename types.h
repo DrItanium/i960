@@ -49,6 +49,8 @@ namespace i960 {
 		static constexpr Ordinal MaxExponent = 0xFF;
 		static constexpr Ordinal MostSignificantFractionBit = 1 << 22;
 		static constexpr Ordinal RestFractionBits = MostSignificantFractionBit - 1;
+		static constexpr Ordinal SignCheckBit = 1 << 31;
+		static constexpr Ordinal ZeroCheckBits = SignCheckBit - 1;
 		static_assert(RestFractionBits == 0b011'1111'1111'1111'1111'1111, "Got it wrong!");
         Real() : Real(0,0,0) { }
         Real(Ordinal frac, Ordinal exponent, Ordinal flag) : fraction(frac), exponent(exponent), sign(flag) { };
@@ -71,6 +73,9 @@ namespace i960 {
 		bool isIndefiniteQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) == 0); }
 		bool isNormalQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) != 0); }
 		bool isReservedEncoding() const noexcept { return false; }
+		bool isZero() const noexcept { return (bits & ZeroCheckBits) == 0; }
+		bool isPositiveZero() const noexcept { return isZero() && (sign == 0); }
+		bool isNegativeZero() const noexcept { return isZero() && (sign == 1); }
     } __attribute__((packed));
     /**
      * Part of the numerics architecture and above
@@ -79,6 +84,8 @@ namespace i960 {
 		static constexpr LongOrdinal MaxExponent = 0x7FF;
 		static constexpr LongOrdinal MostSignificantFractionBit = 1ul << 51;
 		static constexpr LongOrdinal RestFractionBits = MostSignificantFractionBit - 1; 
+		static constexpr LongOrdinal SignCheckBit = 1ul << 63;
+		static constexpr LongOrdinal ZeroCheckBits = SignCheckBit - 1;
         LongReal() : LongReal(0,0) { }
         LongReal(Ordinal lower, Ordinal upper) : bits(LongOrdinal(lower) | (LongOrdinal(upper) << 32)) { }
         LongReal(LongOrdinal frac, LongOrdinal exponent, LongOrdinal sign) : fraction(frac), exponent(exponent), sign(sign) { }
@@ -103,6 +110,9 @@ namespace i960 {
 		bool isIndefiniteQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) == 0); }
 		bool isNormalQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) != 0); }
 		bool isReservedEncoding() const noexcept { return false; }
+		bool isZero() const noexcept { return (bits & ZeroCheckBits) == 0; }
+		bool isPositiveZero() const noexcept { return isZero() && (sign == 0); }
+		bool isNegativeZero() const noexcept { return isZero() && (sign == 1); }
     } __attribute__((packed));
     constexpr LongOrdinal makeLongOrdinal(Ordinal lower, Ordinal upper) noexcept {
         return LongOrdinal(lower) | (LongOrdinal(upper) << 32);
@@ -114,6 +124,8 @@ namespace i960 {
 		static constexpr LongOrdinal MaxExponent = 0x7FFF;
 		static constexpr LongOrdinal MostSignificantFractionBit = 1ul << 62;
 		static constexpr LongOrdinal RestFractionBits = MostSignificantFractionBit - 1; 
+		static constexpr ShortOrdinal SignCheckBit = 1 << 15;
+		static constexpr ShortOrdinal ZeroCheckBits_Upper = SignCheckBit - 1;
         ExtendedReal() { }
         ExtendedReal(Ordinal low, Ordinal mid, Ordinal high) : lower(makeLongOrdinal(low, mid)), upper(high) { }
         explicit ExtendedReal(RawExtendedReal value) : floating(value) { }
@@ -146,6 +158,9 @@ namespace i960 {
 		bool isIndefiniteQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) == 0); }
 		bool isNormalQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) != 0); }
 		bool isReservedEncoding() const noexcept { return (exponent != 0) && (j == 0); }
+		bool isZero() const noexcept { return (lower == 0) && ((upper & ZeroCheckBits_Upper) == 0); }
+		bool isPositiveZero() const noexcept { return isZero() && (sign == 0); }
+		bool isNegativeZero() const noexcept { return isZero() && (sign == 1); }
     } __attribute__((packed));
 
     union PreviousFramePointer {
