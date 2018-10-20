@@ -53,7 +53,7 @@ namespace i960 {
 	void Core::calls(const NormalRegister& value) {
 		auto callNum = value.get<ByteOrdinal>();
 		if (callNum > 259) {
-#warning "Raise protection length fault here"
+			// raise protection length fault here
 			return;
 		}
         // wait for any uncompleted instructions to finish
@@ -76,10 +76,10 @@ namespace i960 {
 		}
 	}
 	void Core::setRegister(ByteOrdinal index, const NormalRegister& other) noexcept {
-		setRegister(index, other.ordinal);
+		setRegister(index, other.get<Ordinal>());
 	}
 	void Core::callx(const NormalRegister& value) noexcept {
-		auto newAddress = value.ordinal;
+		auto newAddress = value.get<Ordinal>();
 		Ordinal tmp = (getStackPointerAddress() + 63u) && (~63u); // round to the next boundary
 		setRegister(ReturnInstructionPointerIndex, _instructionPointer);
 		// Code for handling multiple internal local register sets not implemented!
@@ -106,25 +106,25 @@ namespace i960 {
 		auto result = v0 + v1;
 		dest.set<Integer>(result);
 		if (overflowed(v0, v1, result)) {
-#warning "fault is not raised but overflow detected"
+			// TODO implement logic for raising an overflow fault
 		}
 	}
 	void Core::subo(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.ordinal = src2.get<Ordinal>() - src1.get<Ordinal>(); 
+		dest.set(src2.get<Ordinal>() - src1.get<Ordinal>());
 	}
 	void Core::mulo(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set(src2.get<Ordinal>() * src1.get<Ordinal>());
 	}
 	void Core::divo(__DEFAULT_THREE_ARGS__) noexcept {
 		if (auto denominator = src1.get<Ordinal>(); denominator == 0) {
-#warning "Divide by zero not handled but detected"
+			// TODO implement logic for divide by zero fault
 		} else {
 			dest.set(src2.get<Ordinal>() / denominator);
 		}
 	}
 	void Core::remo(__DEFAULT_THREE_ARGS__) noexcept {
 		if (auto denom = src1.get<Ordinal>(); denom == 0) {
-#warning "Divde by zero not handled but detected"
+			// TODO implement logic for divide by zero fault
 		} else {
 			dest.set(src2.get<Ordinal>() % denom);
 		}
@@ -190,7 +190,7 @@ namespace i960 {
 		_instructionPointer = src.get<Ordinal>();
 	}
 	void Core::bal(Integer displacement) noexcept {
-		_globalRegisters[14].ordinal = _instructionPointer + 4;
+		_globalRegisters[14].set<Ordinal>(_instructionPointer + 4);
 		b(displacement);
 	}
 
@@ -260,7 +260,7 @@ namespace i960 {
 	}
 
 	void Core::extract(Core::SourceRegister bitpos, Core::SourceRegister len, Core::DestinationRegister srcDest) noexcept {
-		srcDest.ordinal = decode(bitpos.ordinal, len.ordinal, srcDest.ordinal);
+		srcDest.set<Ordinal>(decode(bitpos.get<Ordinal>(), len.get<Ordinal>(), srcDest.get<Ordinal>()));
 	}
 
 	constexpr bool mostSignificantBitSet(Ordinal value) noexcept {
@@ -319,7 +319,7 @@ namespace i960 {
 		// need to identify if overflow will occur
 		auto result = s2 - s1;
 		result += carryBit;
-#warning "subc does not implement integer overflow detection, needs to be implemented"
+		// TODO implement integer overflow detection
 		auto v = 0; // TODO fix this by identifying if integer subtraction would've produced an overflow and set v
 		_ac.conditionCode = (carryBit << 1) | v;
 		dest.set<Ordinal>(result);
@@ -328,12 +328,12 @@ namespace i960 {
 		auto s2 = src2.get<LongOrdinal>();
 		auto s1 = src1.get<Ordinal>();
 		auto divOp = s2 / s1;
-#warning "ediv does not check for divison by zero!"
+		// TODO perform divide by zero check
 		remainder.set<Ordinal>(s2 - divOp * s1);
 		quotient.set<Ordinal>(divOp);
 	}
 	void Core::divi(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "divi does not check for division by zero!"
+		// TODO perform divide by zero check
 		dest.set<Integer>(src2.get<Integer>() / src1.get<Integer>());
 	}
 
@@ -386,11 +386,11 @@ namespace i960 {
 	void Core::cmpi(Core::SourceRegister src1, Core::SourceRegister src2) noexcept { compare(src1.get<Integer>(), src2.get<Integer>()); }
 	void Core::cmpo(Core::SourceRegister src1, Core::SourceRegister src2) noexcept { compare(src1.get<Ordinal>(), src2.get<Ordinal>()); }
 	void Core::muli(Core::SourceRegister src1, Core::SourceRegister src2, Core::DestinationRegister dest) noexcept {
-#warning "No faults raised!"
+		// TODO raise important faults
 		dest.set(src2.get<Integer>() * src1.get<Integer>());
 	}
 	void Core::remi(Core::SourceRegister src1, Core::SourceRegister src2, Core::DestinationRegister dest) noexcept {
-#warning "No divide by zero check"
+		// TODO add divide by zero check
 		dest.set(src2.get<Integer>() % src1.get<Integer>());
 	}
 	void Core::stl(Core::LongSourceRegister src, Core::SourceRegister dest) noexcept {
@@ -415,10 +415,10 @@ namespace i960 {
 		// in parallel. When we get there this will become an important instruction
 	}
 	void Core::mark() noexcept {
-#warning "mark unimplemented"
+		// TODO implement
 	}
 	void Core::fmark() noexcept {
-#warning "fmark unimplemented"
+		// TODO implement
 	}
 	void Core::flushreg() noexcept {
 		// this will nop currently as I'm saving all local registers to the 
@@ -698,16 +698,19 @@ namespace i960 {
 			_ac.conditionCode = 0b000;
 		}
 	}
+	constexpr Ordinal alignToWordBoundary(Ordinal value) noexcept {
+		return value & (~0x3);
+	}
 	void Core::atmod(__DEFAULT_THREE_ARGS__) noexcept {
 		auto srcDest = dest.get<Ordinal>();
 		auto mask = src2.get<Ordinal>();
-		auto fixedAddr = src1.get<Ordinal>() & (~0x3); // force alignment to word boundary
+		auto fixedAddr = alignToWordBoundary(src1.get<Ordinal>());
 		auto tmp = load(fixedAddr, true);
 		store(fixedAddr, (srcDest & mask) | (tmp & (~mask)), true);
 		dest.set<Ordinal>(tmp);
 	}
 	void Core::atadd(__DEFAULT_THREE_ARGS__) noexcept {
-		auto fixedAddr = src1.get<Ordinal>() & (~0x3); // force alignment to word boundary
+		auto fixedAddr = alignToWordBoundary(src1.get<Ordinal>());
 		auto src = src2.get<Ordinal>();
 		auto tmp = load(fixedAddr, true);
 		store(fixedAddr, tmp + src, true);
@@ -732,18 +735,18 @@ namespace i960 {
 		}
 	}
 	void Core::cmpinco(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "no overflow detection"
+		// TODO add support for overflow detection
 		cmpo(src1, src2);
 		dest.set<Ordinal>(src2.get<Ordinal>() + 1);
+	}
+	void Core::cmpdeco(__DEFAULT_THREE_ARGS__) noexcept {
+		// TODO add support for overflow detection
+		cmpo(src1, src2);
+		dest.set<Ordinal>(src2.get<Ordinal>() - 1);
 	}
 	void Core::cmpinci(__DEFAULT_THREE_ARGS__) noexcept {
 		cmpi(src1, src2);
 		dest.set<Integer>(src2.get<Integer>() + 1); // overflow suppressed
-	}
-	void Core::cmpdeco(__DEFAULT_THREE_ARGS__) noexcept {
-#warning "no overflow detection"
-		cmpo(src1, src2);
-		dest.set<Ordinal>(src2.get<Ordinal>() - 1);
 	}
 	void Core::cmpdeci(__DEFAULT_THREE_ARGS__) noexcept {
 		cmpi(src1, src2);
@@ -790,16 +793,16 @@ namespace i960 {
 		 */
 		_ac.conditionCode = 0;
 		auto& dest = _globalRegisters[10];
-		dest.ordinal = 0;
+		dest.set<Ordinal>(0);
 		auto& src = _globalRegisters[11];
 		for (int i = 0; i < 8; ++i) {
 			_initialWords[i] = load(i); // load the eight words
-			src.ordinal = _initialWords[i];
+			src.set<Ordinal>(_initialWords[i]);
 			addc(src, dest, dest);
 		}
-		src.ordinal = 0xFFFF'FFFF;
+		src.set<Ordinal>(0xFFFF'FFFF);
 		addc(src, dest, dest);
-		if (dest.ordinal != 0) {
+		if (dest.get<Ordinal>() != 0) {
 			// TODO assert the FAILURE pin
 			// TODO enter stop state
 			return;
@@ -814,7 +817,7 @@ namespace i960 {
 		_prcbAddress = _initialWords[1];
 		_instructionPointer = _initialWords[3];
 		_pc.priority = 31;
-		_globalRegisters[15].ordinal = load(_prcbAddress + 24);
+		_globalRegisters[15].set<Ordinal>(load(_prcbAddress + 24));
 	}
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
