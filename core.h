@@ -197,19 +197,37 @@ namespace i960 {
             // end core architecture
             // begin numerics architecture 
             // TODO add all of the different various combinations
-            void addr(SourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept;
-#if 0
-            void addr(SourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept;
-            void addr(SourceRegister src1, ExtendedSourceRegister src2, DestinationRegister dest) noexcept;
-            void addr(SourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept;
-            void addr(ExtendedSourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept;
-            void addr(ExtendedSourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept;
-            void addr(ExtendedSourceRegister src1, ExtendedSourceRegister src2, DestinationRegister dest) noexcept;
-            void addr(ExtendedSourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept;
-#endif
-            void addrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
-            void atanr(__DEFAULT_THREE_ARGS__) noexcept;
-            void atanrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
+#define X3(name) \
+            void name (SourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept; \
+            void name (SourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept; \
+            void name (SourceRegister src1, ExtendedSourceRegister src2, DestinationRegister dest) noexcept; \
+            void name (SourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept; \
+            void name (ExtendedSourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept; \
+            void name (ExtendedSourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept; \
+            void name (ExtendedSourceRegister src1, ExtendedSourceRegister src2, DestinationRegister dest) noexcept; \
+            void name (ExtendedSourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept; 
+#define X3W(name) \
+            void name (LongSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest) noexcept; \
+            void name (LongSourceRegister src1, LongSourceRegister src2, ExtendedDestinationRegister dest) noexcept; \
+            void name (LongSourceRegister src1, ExtendedSourceRegister src2, LongDestinationRegister dest) noexcept; \
+            void name (LongSourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept; \
+            void name (ExtendedSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest) noexcept; \
+            void name (ExtendedSourceRegister src1, LongSourceRegister src2, ExtendedDestinationRegister dest) noexcept; \
+            void name (ExtendedSourceRegister src1, ExtendedSourceRegister src2, LongDestinationRegister dest) noexcept; \
+            void name (ExtendedSourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept; 
+            X3(addr);
+            X3W(addrl);
+            X3(atanr);
+            X3W(atanrl);
+            X3(mulr);
+            X3W(mulrl);
+            X3(divr);
+            X3W(divrl);
+            X3(subr);
+            X3W(subrl);
+#undef X3
+#undef X3W
+
             void tanr(__DEFAULT_TWO_ARGS__) noexcept;
             void tanrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             void classr(SourceRegister src) noexcept;
@@ -222,14 +240,10 @@ namespace i960 {
             void cmporl(ExtendedSourceRegister src1, ExtendedSourceRegister src2) noexcept;
             void cmpr(SourceRegister src1, SourceRegister src2) noexcept;
             void cmprl(LongSourceRegister src1, LongSourceRegister src2) noexcept;
-            void subr(__DEFAULT_THREE_ARGS__) noexcept;
-            void subrl(LongSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest) noexcept;
             void cosr(__DEFAULT_TWO_ARGS__) noexcept;
             void cosrl(__DEFAULT_DOUBLE_WIDE_TWO_ARGS__) noexcept;
             void cpysre(__DEFAULT_THREE_ARGS__) noexcept; // TODO fix the signature of this function
             void cpyrsre(__DEFAULT_THREE_ARGS__) noexcept; // TODO fix the signature of this function
-            void divr(__DEFAULT_THREE_ARGS__) noexcept; // TODO divr and divrl do not support extended registers yet
-            void divrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
             void expr(__DEFAULT_TWO_ARGS__) noexcept;
             void exprl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             void logbnr(__DEFAULT_TWO_ARGS__) noexcept;
@@ -238,8 +252,6 @@ namespace i960 {
             void logeprl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
             void logr(__DEFAULT_THREE_ARGS__) noexcept;
             void logrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
-            void mulr(__DEFAULT_THREE_ARGS__) noexcept;
-            void mulrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
             void roundr(__DEFAULT_TWO_ARGS__) noexcept;
             void roundrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             void cvtilr(LongSourceRegister src, ExtendedReal& dest) noexcept;
