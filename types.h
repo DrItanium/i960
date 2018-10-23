@@ -224,6 +224,10 @@ namespace i960 {
                     return pfp;
                 } else if constexpr(std::is_same_v<K, LongOrdinal>) {
                     return static_cast<LongOrdinal>(ordinal);
+                } else if constexpr(std::is_same_v<K, RawExtendedReal>) {
+                    return static_cast<RawExtendedReal>(real.floating);
+                } else if constexpr(std::is_same_v<K, ExtendedReal>) {
+                    return ExtendedReal(real.floating);
                 } else {
                     static_assert(LegalConversion<K>, "Illegal type requested");
                 }
