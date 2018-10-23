@@ -14,26 +14,11 @@ namespace i960 {
     void Core::addr(__DEFAULT_THREE_ARGS__) noexcept {
         dest.set(src2.get<RawReal>() + src1.get<RawReal>());
     }
-    void Core::addr(SourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept {
-        dest.set(src2.get<RawReal>() + src1.get<RawReal>());
-    }
-    void Core::addr(SourceRegister src1, ExtendedSourceRegister src2, DestinationRegister dest) noexcept {
-        dest.set(src2.get<RawExtendedReal>() + src1.get<RawExtendedReal>());
-    }
-    void Core::addr(SourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept {
-        dest.set(src2.get<RawExtendedReal>() + src1.get<RawExtendedReal>());
-    }
-    void Core::addr(ExtendedSourceRegister src1, ExtendedSourceRegister src2, DestinationRegister dest) noexcept {
-        dest.set(src2.get<RawExtendedReal>() + src1.get<RawExtendedReal>());
-    }
     void Core::addr(ExtendedSourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept {
         dest.set(src2.get<RawExtendedReal>() + src1.get<RawExtendedReal>());
     }
-    void Core::addr(ExtendedSourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept {
-        dest.set(src2.get<RawExtendedReal>() + src1.get<RawExtendedReal>());
-    }
-    void Core::addr(ExtendedSourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept {
-        dest.set(src2.get<RawExtendedReal>() + src1.get<RawExtendedReal>());
+    void Core::addr(SourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept {
+        dest.set(src2.get<RawReal>() + src1.get<RawReal>());
     }
     void Core::addrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept {
         dest.set(src2.get<RawLongReal>() + src1.get<RawLongReal>());
