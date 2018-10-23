@@ -245,6 +245,14 @@ namespace i960 {
                     real.floating = value;
                 } else if constexpr(std::is_same_v<K, PreviousFramePointer>) {
                     ordinal = value.value;
+                } else if constexpr(std::is_same_v<K, LongReal>) {
+                    real.floating = value.floating;
+                } else if constexpr(std::is_same_v<K, RawLongReal>) {
+                    real.floating = value;
+                } else if constexpr(std::is_same_v<K, ExtendedReal>) {
+                    real.floating = value.floating;
+                } else if constexpr(std::is_same_v<K, RawExtendedReal>) {
+                    real.floating = value;
                 } else {
                     static_assert(LegalConversion<K>, "Illegal type requested");
                 }
@@ -283,6 +291,14 @@ namespace i960 {
                         _upper.ordinal = value.upperHalf();
                     } else if constexpr (std::is_same_v<K, RawLongReal>) {
                         set<LongReal>(LongReal(value));
+                    } else if constexpr(std::is_same_v<K, ExtendedReal>) {
+                        set<RawLongReal>(RawLongReal(value.floating));
+                    } else if constexpr(std::is_same_v<K, RawExtendedReal>) {
+                        set(ExtendedReal(value));
+                    } else if constexpr(std::is_same_v<K, Real>) {
+                        set(value.floating);
+                    } else if constexpr(std::is_same_v<K, RawReal>) {
+                        set(RawLongReal(value));
                     } else {
                         static_assert(LegalConversion<K>, "Illegal type requested");
                     }

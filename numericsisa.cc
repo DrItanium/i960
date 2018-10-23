@@ -59,8 +59,24 @@ namespace i960 {
     void Core::atanrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept {
         dest.set<RawLongReal>(::atan(src2.get<RawLongReal>() / src1.get<RawLongReal>()));
     }
-    void Core::cmpr(Core::SourceRegister src1, Core::SourceRegister src2) noexcept { compare( src1.get<RawReal>(), src2.get<RawReal>()); }
-    void Core::cmprl(Core::LongSourceRegister src1, Core::LongSourceRegister src2) noexcept { compare( src1.get<RawLongReal>(), src2.get<RawLongReal>()); }
+    void Core::cmpr(Core::SourceRegister src1, Core::SourceRegister src2) noexcept { 
+        auto r0 = src1.get<Real>();
+        auto r1 = src2.get<Real>();
+        if (r0.isNaN() || r1.isNaN()) {
+            _ac.conditionCode = 0b000;
+        } else {
+            compare(r0.floating, r1.floating);
+        }
+    }
+    void Core::cmprl(Core::LongSourceRegister src1, Core::LongSourceRegister src2) noexcept { 
+        auto r0 = src1.get<LongReal>();
+        auto r1 = src2.get<LongReal>();
+        if (r0.isNaN() || r1.isNaN()) {
+            _ac.conditionCode = 0b000;
+        } else {
+            compare(r0.floating, r1.floating);
+        }
+    }
 	void Core::divr(Core::SourceRegister src1, Core::SourceRegister src2, Core::DestinationRegister dest) noexcept {
 		dest.set<RawReal>(src2.get<RawReal>() / src1.get<RawReal>());
 	}
@@ -68,21 +84,23 @@ namespace i960 {
 		dest.set<RawLongReal>(src2.get<RawLongReal>() / src1.get<RawLongReal>());
 	}
     void Core::cmpor(Core::SourceRegister src1, Core::SourceRegister src2) noexcept {
-        auto r0 = src1.get<RawReal>();
-        auto r1 = src2.get<RawReal>();
-        if (isnan(r0) || isnan(r1)) {
+        auto r0 = src1.get<Real>();
+        auto r1 = src2.get<Real>();
+        if (r0.isNaN() || r1.isNaN()) {
+            // TODO raise floating invalid operation exception
             _ac.conditionCode = 0b000;
         } else {
-            compare(r0, r1);
+            compare(r0.floating, r1.floating);
         }
     }
     void Core::cmporl(Core::LongSourceRegister src1, Core::LongSourceRegister src2) noexcept {
-        auto r0 = src1.get<RawLongReal>();
-        auto r1 = src2.get<RawLongReal>();
-        if (isnan(r0) || isnan(r1)) {
+        auto r0 = src1.get<LongReal>();
+        auto r1 = src2.get<LongReal>();
+        if (r0.isNaN() || r1.isNaN()) {
+            // TODO raise floating invalid operation exception
             _ac.conditionCode = 0b000;
         } else {
-            compare(r0, r1);
+            compare(r0.floating, r1.floating);
         }
     }
     void Core::daddc(__DEFAULT_THREE_ARGS__) noexcept {

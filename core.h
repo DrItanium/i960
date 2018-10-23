@@ -207,7 +207,9 @@ namespace i960 {
             void classrl(LongSourceRegister src) noexcept;
 			void classrl(ExtendedSourceRegister src) noexcept;
             void cmpor(SourceRegister src1, SourceRegister src2) noexcept;
+            void cmpor(ExtendedSourceRegister src1, ExtendedSourceRegister src2) noexcept;
             void cmporl(LongSourceRegister src1, LongSourceRegister src2) noexcept;
+            void cmporl(ExtendedSourceRegister src1, ExtendedSourceRegister src2) noexcept;
             void cmpr(SourceRegister src1, SourceRegister src2) noexcept;
             void cmprl(LongSourceRegister src1, LongSourceRegister src2) noexcept;
             void subr(__DEFAULT_THREE_ARGS__) noexcept;
