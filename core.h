@@ -196,7 +196,17 @@ namespace i960 {
             __GEN_DEFAULT_THREE_ARG_SIGS__(xorOp);
             // end core architecture
             // begin numerics architecture 
-            void addr(__DEFAULT_THREE_ARGS__) noexcept;
+            // TODO add all of the different various combinations
+            void addr(SourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept;
+#if 0
+            void addr(SourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept;
+            void addr(SourceRegister src1, ExtendedSourceRegister src2, DestinationRegister dest) noexcept;
+            void addr(SourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept;
+            void addr(ExtendedSourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept;
+            void addr(ExtendedSourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept;
+            void addr(ExtendedSourceRegister src1, ExtendedSourceRegister src2, DestinationRegister dest) noexcept;
+            void addr(ExtendedSourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept;
+#endif
             void addrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
             void atanr(__DEFAULT_THREE_ARGS__) noexcept;
             void atanrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;

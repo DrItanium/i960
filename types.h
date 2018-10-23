@@ -339,6 +339,14 @@ namespace i960 {
                         _upper.ordinal = value.upperThird();
                     } else if constexpr (std::is_same_v<K, RawExtendedReal>) {
                         set<ExtendedReal>(ExtendedReal(value));
+                    } else if constexpr (std::is_same_v<K, RawLongReal>) {
+                        set<RawExtendedReal>(value);
+                    } else if constexpr (std::is_same_v<K, LongReal>) {
+                        set<RawLongReal>(value.floating);
+                    } else if constexpr (std::is_same_v<K, RawReal>) {
+                        set<RawExtendedReal>(value);
+                    } else if constexpr (std::is_same_v<K, Real>) {
+                        set<RawReal>(value.floating);
                     } else {
                         static_assert(LegalConversion<K>, "Illegal type requested");
                     }
