@@ -10,16 +10,18 @@
 #define __DEFAULT_TWO_ARGS__ Core::SourceRegister src, Core::DestinationRegister dest
 #define __DEFAULT_DOUBLE_WIDE_TWO_ARGS__ const DoubleRegister& src, DoubleRegister& dest
 namespace i960 {
-
-    void Core::addr(__DEFAULT_THREE_ARGS__) noexcept {
-        dest.set(src2.get<RawReal>() + src1.get<RawReal>());
+    template<typename Src1, typename Src2, typename Dest, typename T>
+    void add(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
+        dest.template set<T>(src2.template get<T>() + src1.template get<T>());
     }
-    void Core::addr(ExtendedSourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept {
-        dest.set(src2.get<RawExtendedReal>() + src1.get<RawExtendedReal>());
-    }
-    void Core::addr(SourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept {
-        dest.set(src2.get<RawReal>() + src1.get<RawReal>());
-    }
+    void Core::addr(__DEFAULT_THREE_ARGS__) noexcept { add<decltype(src1), decltype(src2), decltype(dest), RawReal>(src1, src2, dest); }
+    void Core::addr(SourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept { add<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::addr(SourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept { add<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::addr(SourceRegister src1, ExtendedSourceRegister src2, DestinationRegister dest) noexcept { add<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::addr(ExtendedSourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept { add<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::addr(ExtendedSourceRegister src1, ExtendedSourceRegister src2, DestinationRegister dest) noexcept { add<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::addr(ExtendedSourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept { add<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::addr(ExtendedSourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept { add<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
     void Core::addrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept {
         dest.set(src2.get<RawLongReal>() + src1.get<RawLongReal>());
     }
