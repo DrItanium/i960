@@ -18,6 +18,22 @@ namespace i960 {
     void sub(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
         dest.template set<T>(src2.template get<T>() - src1.template get<T>());
     }
+    template<typename Src1, typename Src2, typename Dest, typename T>
+    void mul(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
+        dest.template set<T>(src2.template get<T>() * src1.template get<T>());
+    }
+    template<typename Src, typename Dest, typename T>
+    void tan(const Src& src, Dest& dest) noexcept {
+        dest.template set<T>(::tan(src.template get<T>()));
+    }
+    template<typename Src, typename Dest, typename T>
+    void cos(const Src& src, Dest& dest) noexcept {
+        dest.template set<T>(::cos(src.template get<T>()));
+    }
+    template<typename Src, typename Dest, typename T>
+    void sin(const Src& src, Dest& dest) noexcept {
+        dest.template set<T>(::sin(src.template get<T>()));
+    }
     void Core::addr(__DEFAULT_THREE_ARGS__) noexcept { add<decltype(src1), decltype(src2), decltype(dest), RawReal>(src1, src2, dest); }
     void Core::addr(SourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept { add<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
     void Core::addr(SourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept { add<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
@@ -34,42 +50,62 @@ namespace i960 {
     void Core::addrl(ExtendedSourceRegister src1, ExtendedSourceRegister src2, LongDestinationRegister dest) noexcept { add<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
     void Core::addrl(ExtendedSourceRegister src1, LongSourceRegister src2, ExtendedDestinationRegister dest) noexcept { add<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
     void Core::addrl(ExtendedSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest) noexcept { add<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
-    void Core::subr(__DEFAULT_THREE_ARGS__) noexcept {
-        dest.set(src2.get<RawReal>() - src1.get<RawReal>());
-    }
-    void Core::subrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept {
-        dest.set(src2.get<RawLongReal>() - src1.get<RawLongReal>());
-    }
-    void Core::mulr(__DEFAULT_THREE_ARGS__) noexcept {
-        dest.set(src2.get<RawReal>() * src1.get<RawReal>());
-    }
-    void Core::mulrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept {
-        dest.set(src2.get<RawLongReal>() * src1.get<RawLongReal>());
-    }
-    void Core::xnor(__DEFAULT_THREE_ARGS__) noexcept {
-        dest.set<Ordinal>(i960::xnor<Ordinal>(src1.get<Ordinal>(), src2.get<Ordinal>()));
-    }
-    void Core::xorOp(__DEFAULT_THREE_ARGS__) noexcept {
-        dest.set<Ordinal>(i960::xorOp<Ordinal>(src1.get<Ordinal>(), src2.get<Ordinal>()));
-    }
-    void Core::tanr(__DEFAULT_TWO_ARGS__) noexcept {
-        dest.set<RawReal>(::tan(src.get<RawReal>()));
-    }
-    void Core::tanrl(__DEFAULT_DOUBLE_WIDE_TWO_ARGS__) noexcept {
-        dest.set<RawLongReal>(::tan(src.get<RawLongReal>()));
-    }
-    void Core::cosr(__DEFAULT_TWO_ARGS__) noexcept {
-        dest.set<RawReal>(::cos(src.get<RawReal>()));
-    }
-    void Core::cosrl(__DEFAULT_DOUBLE_WIDE_TWO_ARGS__) noexcept {
-        dest.set<RawLongReal>(::cos(src.get<RawLongReal>()));
-    }
-    void Core::sinr(__DEFAULT_TWO_ARGS__) noexcept {
-        dest.set<RawReal>(::sin(src.get<RawReal>()));
-    }
-    void Core::sinrl(__DEFAULT_DOUBLE_WIDE_TWO_ARGS__) noexcept {
-        dest.set<RawLongReal>(::sin(src.get<RawLongReal>()));
-    }
+    void Core::subr(__DEFAULT_THREE_ARGS__) noexcept { sub<decltype(src1), decltype(src2), decltype(dest), RawReal>(src1, src2, dest); }
+    void Core::subr(SourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept { sub<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::subr(SourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept { sub<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::subr(SourceRegister src1, ExtendedSourceRegister src2, DestinationRegister dest) noexcept { sub<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::subr(ExtendedSourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept { sub<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::subr(ExtendedSourceRegister src1, ExtendedSourceRegister src2, DestinationRegister dest) noexcept { sub<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::subr(ExtendedSourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept { sub<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::subr(ExtendedSourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept { sub<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::subrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept { sub<decltype(src1), decltype(src2), decltype(dest), RawLongReal>(src1, src2, dest); }
+    void Core::subrl(LongSourceRegister src1, LongSourceRegister src2, ExtendedDestinationRegister dest) noexcept { sub<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::subrl(LongSourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept { sub<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::subrl(LongSourceRegister src1, ExtendedSourceRegister src2, LongDestinationRegister dest) noexcept { sub<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::subrl(ExtendedSourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept { sub<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::subrl(ExtendedSourceRegister src1, ExtendedSourceRegister src2, LongDestinationRegister dest) noexcept { sub<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::subrl(ExtendedSourceRegister src1, LongSourceRegister src2, ExtendedDestinationRegister dest) noexcept { sub<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::subrl(ExtendedSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest) noexcept { sub<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::mulr(__DEFAULT_THREE_ARGS__) noexcept { mul<decltype(src1), decltype(src2), decltype(dest), RawReal>(src1, src2, dest); }
+    void Core::mulr(SourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept { mul<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::mulr(SourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept { mul<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::mulr(SourceRegister src1, ExtendedSourceRegister src2, DestinationRegister dest) noexcept { mul<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::mulr(ExtendedSourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept { mul<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::mulr(ExtendedSourceRegister src1, ExtendedSourceRegister src2, DestinationRegister dest) noexcept { mul<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::mulr(ExtendedSourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept { mul<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::mulr(ExtendedSourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept { mul<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::mulrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept { mul<decltype(src1), decltype(src2), decltype(dest), RawLongReal>(src1, src2, dest); }
+    void Core::mulrl(LongSourceRegister src1, LongSourceRegister src2, ExtendedDestinationRegister dest) noexcept { mul<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::mulrl(LongSourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept { mul<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::mulrl(LongSourceRegister src1, ExtendedSourceRegister src2, LongDestinationRegister dest) noexcept { mul<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::mulrl(ExtendedSourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept { mul<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::mulrl(ExtendedSourceRegister src1, ExtendedSourceRegister src2, LongDestinationRegister dest) noexcept { mul<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::mulrl(ExtendedSourceRegister src1, LongSourceRegister src2, ExtendedDestinationRegister dest) noexcept { mul<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::mulrl(ExtendedSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest) noexcept { mul<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::tanr(SourceRegister src, DestinationRegister dest) noexcept { tan<decltype(src), decltype(dest), RawReal>(src, dest); }
+    void Core::tanr(SourceRegister src, ExtendedDestinationRegister dest) noexcept { tan<decltype(src), decltype(dest), RawReal>(src, dest); }
+    void Core::tanr(ExtendedSourceRegister src, DestinationRegister dest) noexcept { tan<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
+    void Core::tanr(ExtendedSourceRegister src, ExtendedDestinationRegister dest) noexcept { tan<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
+    void Core::tanrl(LongSourceRegister src, LongDestinationRegister dest) noexcept { tan<decltype(src), decltype(dest), RawLongReal>(src, dest); }
+    void Core::tanrl(LongSourceRegister src, ExtendedDestinationRegister dest) noexcept { tan<decltype(src), decltype(dest), RawLongReal>(src, dest); }
+    void Core::tanrl(ExtendedSourceRegister src, LongDestinationRegister dest) noexcept { tan<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
+    void Core::tanrl(ExtendedSourceRegister src, ExtendedDestinationRegister dest) noexcept { tan<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
+    void Core::cosr(SourceRegister src, DestinationRegister dest) noexcept { cos<decltype(src), decltype(dest), RawReal>(src, dest); }
+    void Core::cosr(SourceRegister src, ExtendedDestinationRegister dest) noexcept { cos<decltype(src), decltype(dest), RawReal>(src, dest); }
+    void Core::cosr(ExtendedSourceRegister src, DestinationRegister dest) noexcept { cos<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
+    void Core::cosr(ExtendedSourceRegister src, ExtendedDestinationRegister dest) noexcept { cos<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
+    void Core::cosrl(LongSourceRegister src, LongDestinationRegister dest) noexcept { cos<decltype(src), decltype(dest), RawLongReal>(src, dest); }
+    void Core::cosrl(LongSourceRegister src, ExtendedDestinationRegister dest) noexcept { cos<decltype(src), decltype(dest), RawLongReal>(src, dest); }
+    void Core::cosrl(ExtendedSourceRegister src, LongDestinationRegister dest) noexcept { cos<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
+    void Core::cosrl(ExtendedSourceRegister src, ExtendedDestinationRegister dest) noexcept { cos<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
+    void Core::sinr(SourceRegister src, DestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawReal>(src, dest); }
+    void Core::sinr(SourceRegister src, ExtendedDestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawReal>(src, dest); }
+    void Core::sinr(ExtendedSourceRegister src, DestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
+    void Core::sinr(ExtendedSourceRegister src, ExtendedDestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
+    void Core::sinrl(LongSourceRegister src, LongDestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawLongReal>(src, dest); }
+    void Core::sinrl(LongSourceRegister src, ExtendedDestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawLongReal>(src, dest); }
+    void Core::sinrl(ExtendedSourceRegister src, LongDestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
+    void Core::sinrl(ExtendedSourceRegister src, ExtendedDestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
     void Core::atanr(__DEFAULT_THREE_ARGS__) noexcept {
         dest.set<RawReal>(::atan(src2.get<RawReal>() / src1.get<RawReal>()));
     }

@@ -970,6 +970,12 @@ namespace i960 {
 			// TODO raise trace breakpoint fault
 		}
 	}
+    void Core::xnor(__DEFAULT_THREE_ARGS__) noexcept {
+        dest.set<Ordinal>(i960::xnor<Ordinal>(src1.get<Ordinal>(), src2.get<Ordinal>()));
+    }
+    void Core::xorOp(__DEFAULT_THREE_ARGS__) noexcept {
+        dest.set<Ordinal>(i960::xorOp<Ordinal>(src1.get<Ordinal>(), src2.get<Ordinal>()));
+    }
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__

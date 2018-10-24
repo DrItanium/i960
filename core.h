@@ -197,6 +197,16 @@ namespace i960 {
             // end core architecture
             // begin numerics architecture 
             // TODO add all of the different various combinations
+#define X2(name) \
+            void name (SourceRegister src1, DestinationRegister dest) noexcept; \
+            void name (SourceRegister src1, ExtendedDestinationRegister dest) noexcept; \
+            void name (ExtendedSourceRegister src1, DestinationRegister dest) noexcept; \
+            void name (ExtendedSourceRegister src1, ExtendedDestinationRegister dest) noexcept;
+#define X2W(name) \
+            void name (LongSourceRegister src1, LongDestinationRegister dest) noexcept; \
+            void name (LongSourceRegister src1, ExtendedDestinationRegister dest) noexcept; \
+            void name (ExtendedSourceRegister src1, LongDestinationRegister dest) noexcept; \
+            void name (ExtendedSourceRegister src1, ExtendedDestinationRegister dest) noexcept;
 #define X3(name) \
             void name (SourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept; \
             void name (SourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept; \
@@ -215,21 +225,19 @@ namespace i960 {
             void name (ExtendedSourceRegister src1, LongSourceRegister src2, ExtendedDestinationRegister dest) noexcept; \
             void name (ExtendedSourceRegister src1, ExtendedSourceRegister src2, LongDestinationRegister dest) noexcept; \
             void name (ExtendedSourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept; 
-            X3(addr);
-            X3W(addrl);
-            X3(atanr);
-            X3W(atanrl);
-            X3(mulr);
-            X3W(mulrl);
-            X3(divr);
-            X3W(divrl);
-            X3(subr);
-            X3W(subrl);
+            X3(addr); X3W(addrl);
+            X3(atanr); X3W(atanrl);
+            X3(mulr); X3W(mulrl);
+            X3(divr); X3W(divrl);
+            X3(subr); X3W(subrl);
+            X2(tanr); X2W(tanrl);
+            X2(cosr); X2W(cosrl);
+            X2(sinr); X2W(sinrl);
 #undef X3
 #undef X3W
+#undef X2
+#undef X2W
 
-            void tanr(__DEFAULT_TWO_ARGS__) noexcept;
-            void tanrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             void classr(SourceRegister src) noexcept;
 			void classr(ExtendedSourceRegister src) noexcept;
             void classrl(LongSourceRegister src) noexcept;
@@ -240,8 +248,6 @@ namespace i960 {
             void cmporl(ExtendedSourceRegister src1, ExtendedSourceRegister src2) noexcept;
             void cmpr(SourceRegister src1, SourceRegister src2) noexcept;
             void cmprl(LongSourceRegister src1, LongSourceRegister src2) noexcept;
-            void cosr(__DEFAULT_TWO_ARGS__) noexcept;
-            void cosrl(__DEFAULT_DOUBLE_WIDE_TWO_ARGS__) noexcept;
             void cpysre(__DEFAULT_THREE_ARGS__) noexcept; // TODO fix the signature of this function
             void cpyrsre(__DEFAULT_THREE_ARGS__) noexcept; // TODO fix the signature of this function
             void expr(__DEFAULT_TWO_ARGS__) noexcept;
@@ -270,8 +276,6 @@ namespace i960 {
             void remrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
             void scaler(__DEFAULT_THREE_ARGS__) noexcept;
             void scalerl(LongSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest) noexcept;
-            void sinr(__DEFAULT_TWO_ARGS__) noexcept; 
-            void sinrl(__DEFAULT_DOUBLE_WIDE_TWO_ARGS__) noexcept; 
             void sqrtr(__DEFAULT_TWO_ARGS__) noexcept;
             void sqrtrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             void synld(__DEFAULT_TWO_ARGS__) noexcept;
