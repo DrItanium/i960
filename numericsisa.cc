@@ -10,42 +10,6 @@
 #define __DEFAULT_TWO_ARGS__ Core::SourceRegister src, Core::DestinationRegister dest
 #define __DEFAULT_DOUBLE_WIDE_TWO_ARGS__ const DoubleRegister& src, DoubleRegister& dest
 namespace i960 {
-    template<typename Src, typename Dest, typename T>
-    void tan(const Src& src, Dest& dest) noexcept {
-        dest.template set<T>(::tan(src.template get<T>()));
-    }
-    template<typename Src, typename Dest, typename T>
-    void cos(const Src& src, Dest& dest) noexcept {
-        dest.template set<T>(::cos(src.template get<T>()));
-    }
-    template<typename Src, typename Dest, typename T>
-    void sin(const Src& src, Dest& dest) noexcept {
-        dest.template set<T>(::sin(src.template get<T>()));
-    }
-    void Core::tanr(SourceRegister src, DestinationRegister dest) noexcept { tan<decltype(src), decltype(dest), RawReal>(src, dest); }
-    void Core::tanr(SourceRegister src, ExtendedDestinationRegister dest) noexcept { tan<decltype(src), decltype(dest), RawReal>(src, dest); }
-    void Core::tanr(ExtendedSourceRegister src, DestinationRegister dest) noexcept { tan<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
-    void Core::tanr(ExtendedSourceRegister src, ExtendedDestinationRegister dest) noexcept { tan<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
-    void Core::tanrl(LongSourceRegister src, LongDestinationRegister dest) noexcept { tan<decltype(src), decltype(dest), RawLongReal>(src, dest); }
-    void Core::tanrl(LongSourceRegister src, ExtendedDestinationRegister dest) noexcept { tan<decltype(src), decltype(dest), RawLongReal>(src, dest); }
-    void Core::tanrl(ExtendedSourceRegister src, LongDestinationRegister dest) noexcept { tan<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
-    void Core::tanrl(ExtendedSourceRegister src, ExtendedDestinationRegister dest) noexcept { tan<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
-    void Core::cosr(SourceRegister src, DestinationRegister dest) noexcept { cos<decltype(src), decltype(dest), RawReal>(src, dest); }
-    void Core::cosr(SourceRegister src, ExtendedDestinationRegister dest) noexcept { cos<decltype(src), decltype(dest), RawReal>(src, dest); }
-    void Core::cosr(ExtendedSourceRegister src, DestinationRegister dest) noexcept { cos<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
-    void Core::cosr(ExtendedSourceRegister src, ExtendedDestinationRegister dest) noexcept { cos<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
-    void Core::cosrl(LongSourceRegister src, LongDestinationRegister dest) noexcept { cos<decltype(src), decltype(dest), RawLongReal>(src, dest); }
-    void Core::cosrl(LongSourceRegister src, ExtendedDestinationRegister dest) noexcept { cos<decltype(src), decltype(dest), RawLongReal>(src, dest); }
-    void Core::cosrl(ExtendedSourceRegister src, LongDestinationRegister dest) noexcept { cos<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
-    void Core::cosrl(ExtendedSourceRegister src, ExtendedDestinationRegister dest) noexcept { cos<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
-    void Core::sinr(SourceRegister src, DestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawReal>(src, dest); }
-    void Core::sinr(SourceRegister src, ExtendedDestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawReal>(src, dest); }
-    void Core::sinr(ExtendedSourceRegister src, DestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
-    void Core::sinr(ExtendedSourceRegister src, ExtendedDestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
-    void Core::sinrl(LongSourceRegister src, LongDestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawLongReal>(src, dest); }
-    void Core::sinrl(LongSourceRegister src, ExtendedDestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawLongReal>(src, dest); }
-    void Core::sinrl(ExtendedSourceRegister src, LongDestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
-    void Core::sinrl(ExtendedSourceRegister src, ExtendedDestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
     void Core::cmpr(const Real& src1, const Real& src2, bool ordered) noexcept {
         if (src1.isNaN() || src2.isNaN()) {
             _ac.conditionCode = 0b000;
@@ -76,12 +40,6 @@ namespace i960 {
             compare(src1.floating, src2.floating);
         }
     }
-	void Core::divr(Core::SourceRegister src1, Core::SourceRegister src2, Core::DestinationRegister dest) noexcept {
-		dest.set<RawReal>(src2.get<RawReal>() / src1.get<RawReal>());
-	}
-	void Core::divrl(Core::LongSourceRegister src1, Core::LongSourceRegister src2, Core::LongDestinationRegister dest) noexcept {
-		dest.set<RawLongReal>(src2.get<RawLongReal>() / src1.get<RawLongReal>());
-	}
     void Core::daddc(__DEFAULT_THREE_ARGS__) noexcept {
         auto s1 = src1.get<ByteOrdinal>() & 0b1111;
         auto s2 = src2.get<ByteOrdinal>() & 0b1111;

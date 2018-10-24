@@ -199,54 +199,6 @@ namespace i960 {
             // end core architecture
             // begin numerics architecture 
             // TODO add all of the different various combinations
-#define X2S(name) \
-            void name (SourceRegister src1, SourceRegister src2) noexcept; \
-            void name (SourceRegister src1, ExtendedSourceRegister src2) noexcept; \
-            void name (ExtendedSourceRegister src1, SourceRegister src2) noexcept; \
-            void name (ExtendedSourceRegister src1, ExtendedSourceRegister src2) noexcept;
-#define X2SW(name) \
-            void name (LongSourceRegister src1, LongSourceRegister src2) noexcept; \
-            void name (LongSourceRegister src1, ExtendedSourceRegister src2) noexcept; \
-            void name (ExtendedSourceRegister src1, LongSourceRegister src2) noexcept; \
-            void name (ExtendedSourceRegister src1, ExtendedSourceRegister src2) noexcept;
-#define X2(name) \
-            void name (SourceRegister src1, DestinationRegister dest) noexcept; \
-            void name (SourceRegister src1, ExtendedDestinationRegister dest) noexcept; \
-            void name (ExtendedSourceRegister src1, DestinationRegister dest) noexcept; \
-            void name (ExtendedSourceRegister src1, ExtendedDestinationRegister dest) noexcept;
-#define X2W(name) \
-            void name (LongSourceRegister src1, LongDestinationRegister dest) noexcept; \
-            void name (LongSourceRegister src1, ExtendedDestinationRegister dest) noexcept; \
-            void name (ExtendedSourceRegister src1, LongDestinationRegister dest) noexcept; \
-            void name (ExtendedSourceRegister src1, ExtendedDestinationRegister dest) noexcept;
-#define X3(name) \
-            void name (SourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept; \
-            void name (SourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept; \
-            void name (SourceRegister src1, ExtendedSourceRegister src2, DestinationRegister dest) noexcept; \
-            void name (SourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept; \
-            void name (ExtendedSourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept; \
-            void name (ExtendedSourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept; \
-            void name (ExtendedSourceRegister src1, ExtendedSourceRegister src2, DestinationRegister dest) noexcept; \
-            void name (ExtendedSourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept; 
-#define X3W(name) \
-            void name (LongSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest) noexcept; \
-            void name (LongSourceRegister src1, LongSourceRegister src2, ExtendedDestinationRegister dest) noexcept; \
-            void name (LongSourceRegister src1, ExtendedSourceRegister src2, LongDestinationRegister dest) noexcept; \
-            void name (LongSourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept; \
-            void name (ExtendedSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest) noexcept; \
-            void name (ExtendedSourceRegister src1, LongSourceRegister src2, ExtendedDestinationRegister dest) noexcept; \
-            void name (ExtendedSourceRegister src1, ExtendedSourceRegister src2, LongDestinationRegister dest) noexcept; \
-            void name (ExtendedSourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept; 
-            X3(divr); X3W(divrl);
-            X2(tanr); X2W(tanrl);
-            X2(cosr); X2W(cosrl);
-            X2(sinr); X2W(sinrl);
-#undef X2S
-#undef X2SW
-#undef X3
-#undef X3W
-#undef X2
-#undef X2W
 #define CheckThreeRegisterReal(src1, src2, dest) \
                 static_assert(std::is_same_v<decltype(src1), SourceRegister> || std::is_same_v<decltype(src1), ExtendedSourceRegister>, "Illegal source register kind!"); \
                 static_assert(std::is_same_v<decltype(src2), SourceRegister> || std::is_same_v<decltype(src2), ExtendedSourceRegister>, "Illegal source register kind!"); \
@@ -255,7 +207,78 @@ namespace i960 {
                 static_assert(std::is_same_v<decltype(src1), LongSourceRegister> || std::is_same_v<decltype(src1), ExtendedSourceRegister>, "Illegal source register kind!"); \
                 static_assert(std::is_same_v<decltype(src2), LongSourceRegister> || std::is_same_v<decltype(src2), ExtendedSourceRegister>, "Illegal source register kind!"); \
                 static_assert(std::is_same_v<decltype(dest), LongDestinationRegister> || std::is_same_v<decltype(dest), ExtendedDestinationRegister>, "Illegal destination register kind!")
-
+#define CheckTwoSourceRegisterReal(src1, src2) \
+                static_assert(std::is_same_v<decltype(src1), SourceRegister> || std::is_same_v<decltype(src1), ExtendedSourceRegister>, "Illegal source register kind"); \
+                static_assert(std::is_same_v<decltype(src2), SourceRegister> || std::is_same_v<decltype(src2), ExtendedSourceRegister>, "Illegal source register kind")
+#define CheckTwoSourceRegisterLongReal(src1, src2) \
+                static_assert(std::is_same_v<decltype(src1), LongSourceRegister> || std::is_same_v<decltype(src1), ExtendedSourceRegister>, "Illegal source register kind"); \
+                static_assert(std::is_same_v<decltype(src2), LongSourceRegister> || std::is_same_v<decltype(src2), ExtendedSourceRegister>, "Illegal source register kind")
+#define CheckTwoRegisterReal(src1, src2) \
+                static_assert(std::is_same_v<decltype(src1), SourceRegister> || std::is_same_v<decltype(src1), ExtendedSourceRegister>, "Illegal source register kind"); \
+                static_assert(std::is_same_v<decltype(src2), DestinationRegister> || std::is_same_v<decltype(src2), ExtendedDestinationRegister>, "Illegal source register kind")
+#define CheckTwoRegisterLongReal(src1, src2) \
+                static_assert(std::is_same_v<decltype(src1), LongSourceRegister> || std::is_same_v<decltype(src1), ExtendedSourceRegister>, "Illegal source register kind"); \
+                static_assert(std::is_same_v<decltype(src2), LongDestinationRegister> || std::is_same_v<decltype(src2), ExtendedDestinationRegister>, "Illegal source register kind")
+            template<typename Src, typename Dest>
+            void tanr(const Src& src, Dest& dest) noexcept {
+                CheckTwoRegisterReal(src, dest);
+                if constexpr (std::is_same_v<decltype(src), SourceRegister> &&
+                              std::is_same_v<decltype(dest), DestinationRegister>) {
+                    dest.template set<RawReal>(::tan(src.template get<RawReal>()));
+                } else {
+                    dest.template set<RawExtendedReal>(::tan(src.template get<RawExtendedReal>()));
+                }
+            }
+            template<typename Src, typename Dest>
+            void tanrl(const Src& src, Dest& dest) noexcept {
+                CheckTwoRegisterLongReal(src, dest);
+                if constexpr (std::is_same_v<decltype(src), LongSourceRegister> &&
+                              std::is_same_v<decltype(dest), LongDestinationRegister>) {
+                    dest.template set<RawLongReal>(::tan(src.template get<RawLongReal>()));
+                } else {
+                    dest.template set<RawExtendedReal>(::tan(src.template get<RawExtendedReal>()));
+                }
+            }
+            template<typename Src, typename Dest>
+            void sinr(const Src& src, Dest& dest) noexcept {
+                CheckTwoRegisterReal(src, dest);
+                if constexpr (std::is_same_v<decltype(src), SourceRegister> &&
+                              std::is_same_v<decltype(dest), DestinationRegister>) {
+                    dest.template set<RawReal>(::sin(src.template get<RawReal>()));
+                } else {
+                    dest.template set<RawExtendedReal>(::sin(src.template get<RawExtendedReal>()));
+                }
+            }
+            template<typename Src, typename Dest>
+            void sinrl(const Src& src, Dest& dest) noexcept {
+                CheckTwoRegisterLongReal(src, dest);
+                if constexpr (std::is_same_v<decltype(src), LongSourceRegister> &&
+                              std::is_same_v<decltype(dest), LongDestinationRegister>) {
+                    dest.template set<RawLongReal>(::sin(src.template get<RawLongReal>()));
+                } else {
+                    dest.template set<RawExtendedReal>(::sin(src.template get<RawExtendedReal>()));
+                }
+            }
+            template<typename Src, typename Dest>
+            void cosr(const Src& src, Dest& dest) noexcept {
+                CheckTwoRegisterReal(src, dest);
+                if constexpr (std::is_same_v<decltype(src), SourceRegister> &&
+                              std::is_same_v<decltype(dest), DestinationRegister>) {
+                    dest.template set<RawReal>(::cos(src.template get<RawReal>()));
+                } else {
+                    dest.template set<RawExtendedReal>(::cos(src.template get<RawExtendedReal>()));
+                }
+            }
+            template<typename Src, typename Dest>
+            void cosrl(const Src& src, Dest& dest) noexcept {
+                CheckTwoRegisterLongReal(src, dest);
+                if constexpr (std::is_same_v<decltype(src), LongSourceRegister> &&
+                              std::is_same_v<decltype(dest), LongDestinationRegister>) {
+                    dest.template set<RawLongReal>(::cos(src.template get<RawLongReal>()));
+                } else {
+                    dest.template set<RawExtendedReal>(::cos(src.template get<RawExtendedReal>()));
+                }
+            }
             template<typename Src1, typename Src2, typename Dest>
             void atanr(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
                 CheckThreeRegisterReal(src1, src2, dest);
@@ -298,6 +321,28 @@ namespace i960 {
                     dest.template set<RawLongReal>(src2.template get<RawLongReal>() + src1.template get<RawLongReal>());
                 } else {
                     dest.template set<RawExtendedReal>(src2.template get<RawExtendedReal>() + src1.template get<RawExtendedReal>());
+                }
+            }
+            template<typename Src1, typename Src2, typename Dest>
+            void divr(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
+                CheckThreeRegisterReal(src1, src2, dest);
+                if constexpr (std::is_same_v<decltype(src1), SourceRegister> &&
+                              std::is_same_v<decltype(src2), SourceRegister> &&
+                              std::is_same_v<decltype(dest), DestinationRegister>) {
+                    dest.template set<RawReal>(src2.template get<RawReal>() / src1.template get<RawReal>());
+                } else {
+                    dest.template set<RawExtendedReal>(src2.template get<RawExtendedReal>() / src1.template get<RawExtendedReal>());
+                }
+            }
+            template<typename Src1, typename Src2, typename Dest>
+            void divrl(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
+                CheckThreeRegisterLongReal(src1, src2, dest);
+                if constexpr (std::is_same_v<decltype(src1), SourceRegister> &&
+                              std::is_same_v<decltype(src2), SourceRegister> &&
+                              std::is_same_v<decltype(dest), DestinationRegister>) {
+                    dest.template set<RawLongReal>(src2.template get<RawLongReal>() / src1.template get<RawLongReal>());
+                } else {
+                    dest.template set<RawExtendedReal>(src2.template get<RawExtendedReal>() / src1.template get<RawExtendedReal>());
                 }
             }
             template<typename Src1, typename Src2, typename Dest>
@@ -344,16 +389,10 @@ namespace i960 {
                     dest.template set<RawExtendedReal>(src2.template get<RawExtendedReal>() * src1.template get<RawExtendedReal>());
                 }
             }
-#define CheckTwoRegisterReal(src1, src2) \
-                static_assert(std::is_same_v<decltype(src1), SourceRegister> || std::is_same_v<decltype(src1), ExtendedSourceRegister>, "Illegal source register kind"); \
-                static_assert(std::is_same_v<decltype(src2), SourceRegister> || std::is_same_v<decltype(src2), ExtendedSourceRegister>, "Illegal source register kind")
-#define CheckTwoRegisterLongReal(src1, src2) \
-                static_assert(std::is_same_v<decltype(src1), LongSourceRegister> || std::is_same_v<decltype(src1), ExtendedSourceRegister>, "Illegal source register kind"); \
-                static_assert(std::is_same_v<decltype(src2), LongSourceRegister> || std::is_same_v<decltype(src2), ExtendedSourceRegister>, "Illegal source register kind")
 
             template<typename Src1, typename Src2>
             void cmpr(const Src1& src1, const Src2& src2) noexcept {
-                CheckTwoRegisterReal(src1, src2);
+                CheckTwoSourceRegisterReal(src1, src2);
                 if constexpr (std::is_same_v<decltype(src1), SourceRegister> &&
                               std::is_same_v<decltype(src2), SourceRegister>) {
                     cmpr(src1.template get<Real>(), src2.template get<Real>());
@@ -363,7 +402,7 @@ namespace i960 {
             }
             template<typename Src1, typename Src2>
             void cmprl(const Src1& src1, const Src2& src2) noexcept {
-                CheckTwoRegisterLongReal(src1, src2);
+                CheckTwoSourceRegisterLongReal(src1, src2);
                 if constexpr (std::is_same_v<decltype(src1), LongSourceRegister> &&
                               std::is_same_v<decltype(src2), LongSourceRegister>) {
                     cmprl(src1.template get<LongReal>(), src2.template get<LongReal>());
@@ -373,7 +412,7 @@ namespace i960 {
             }
             template<typename Src1, typename Src2>
             void cmpor(const Src1& src1, const Src2& src2) noexcept {
-                CheckTwoRegisterReal(src1, src2);
+                CheckTwoSourceRegisterReal(src1, src2);
                 if constexpr (std::is_same_v<decltype(src1), SourceRegister> &&
                               std::is_same_v<decltype(src2), SourceRegister>) {
                     cmpr(src1.template get<Real>(), src2.template get<Real>(), true);
@@ -383,7 +422,7 @@ namespace i960 {
             }
             template<typename Src1, typename Src2>
             void cmporl(const Src1& src1, const Src2& src2) noexcept {
-                CheckTwoRegisterLongReal(src1, src2);
+                CheckTwoSourceRegisterLongReal(src1, src2);
                 if constexpr (std::is_same_v<decltype(src1), LongSourceRegister> &&
                               std::is_same_v<decltype(src2), LongSourceRegister>) {
                     cmprl(src1.template get<LongReal>(), src2.template get<LongReal>(), true);
@@ -393,6 +432,8 @@ namespace i960 {
             }
 #undef CheckTwoRegisterReal
 #undef CheckTwoRegisterLongReal
+#undef CheckTwoSourceRegisterReal
+#undef CheckTwoSourceRegisterLongReal
 #undef CheckThreeRegisterReal
 #undef CheckThreeRegisterLongReal
             void cmpr(const Real& src1, const Real& src2, bool ordered = false) noexcept;
