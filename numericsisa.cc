@@ -34,6 +34,10 @@ namespace i960 {
     void sin(const Src& src, Dest& dest) noexcept {
         dest.template set<T>(::sin(src.template get<T>()));
     }
+    template<typename Src1, typename Src2, typename Dest, typename T>
+    void atan(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
+        dest.template set<T>(::atan(src2.template get<T>() / src1.template get<T>()));
+    }
     void Core::addr(__DEFAULT_THREE_ARGS__) noexcept { add<decltype(src1), decltype(src2), decltype(dest), RawReal>(src1, src2, dest); }
     void Core::addr(SourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept { add<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
     void Core::addr(SourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept { add<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
@@ -106,10 +110,6 @@ namespace i960 {
     void Core::sinrl(LongSourceRegister src, ExtendedDestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawLongReal>(src, dest); }
     void Core::sinrl(ExtendedSourceRegister src, LongDestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
     void Core::sinrl(ExtendedSourceRegister src, ExtendedDestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
-    template<typename Src1, typename Src2, typename Dest, typename T>
-    void atan(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-        dest.template set<T>(::atan(src2.template get<T>() / src1.template get<T>()));
-    }
     void Core::atanr(__DEFAULT_THREE_ARGS__) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawReal>(src1, src2, dest); }
     void Core::atanr(SourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
     void Core::atanr(SourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
@@ -126,13 +126,25 @@ namespace i960 {
     void Core::atanrl(ExtendedSourceRegister src1, ExtendedSourceRegister src2, LongDestinationRegister dest) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
     void Core::atanrl(ExtendedSourceRegister src1, LongSourceRegister src2, ExtendedDestinationRegister dest) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
     void Core::atanrl(ExtendedSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
-    void Core::cmpr(Core::SourceRegister src1, Core::SourceRegister src2) noexcept { 
-        auto r0 = src1.get<Real>();
-        auto r1 = src2.get<Real>();
-        if (r0.isNaN() || r1.isNaN()) {
+    void Core::cmpr(const Real& src1, const Real& src2) noexcept {
+        if (src1.isNaN() || src2.isNaN()) {
             _ac.conditionCode = 0b000;
         } else {
-            compare(r0.floating, r1.floating);
+            compare(src1.floating, src2.floating);
+        }
+    }
+    void Core::cmprl(const LongReal& src1, const LongReal& src2) noexcept {
+        if (src1.isNaN() || src2.isNaN()) {
+            _ac.conditionCode = 0b000;
+        } else {
+            compare(src1.floating, src2.floating);
+        }
+    }
+    void Core::cmpre(const ExtendedReal& src1, const ExtendedReal& src2) noexcept {
+        if (src1.isNaN() || src2.isNaN()) {
+            _ac.conditionCode = 0b000;
+        } else {
+            compare(src1.floating, src2.floating);
         }
     }
     void Core::cmprl(Core::LongSourceRegister src1, Core::LongSourceRegister src2) noexcept { 

@@ -197,6 +197,16 @@ namespace i960 {
             // end core architecture
             // begin numerics architecture 
             // TODO add all of the different various combinations
+#define X2S(name) \
+            void name (SourceRegister src1, SourceRegister src2) noexcept; \
+            void name (SourceRegister src1, ExtendedSourceRegister src2) noexcept; \
+            void name (ExtendedSourceRegister src1, SourceRegister src2) noexcept; \
+            void name (ExtendedSourceRegister src1, ExtendedSourceRegister src2) noexcept;
+#define X2SW(name) \
+            void name (LongSourceRegister src1, LongSourceRegister src2) noexcept; \
+            void name (LongSourceRegister src1, ExtendedSourceRegister src2) noexcept; \
+            void name (ExtendedSourceRegister src1, LongSourceRegister src2) noexcept; \
+            void name (ExtendedSourceRegister src1, ExtendedSourceRegister src2) noexcept;
 #define X2(name) \
             void name (SourceRegister src1, DestinationRegister dest) noexcept; \
             void name (SourceRegister src1, ExtendedDestinationRegister dest) noexcept; \
@@ -233,11 +243,33 @@ namespace i960 {
             X2(tanr); X2W(tanrl);
             X2(cosr); X2W(cosrl);
             X2(sinr); X2W(sinrl);
+#undef X2S
+#undef X2SW
 #undef X3
 #undef X3W
 #undef X2
 #undef X2W
-
+            template<typename Src1, typename Src2>
+            void cmpr(const Src1& src1, const Src2& src2) noexcept {
+                if constexpr (std::is_same_v<decltype(src1), SourceRegister> &&
+                              std::is_same_v<decltype(src2), SourceRegister>) {
+                    cmpr(src1.template get<Real>(), src2.template get<Real>());
+                } else {
+                    cmpre(src1.template get<ExtendedReal>(), src2.template get<ExtendedReal>());
+                }
+            }
+            template<typename Src1, typename Src2>
+            void cmprl(const Src1& src1, const Src2& src2) noexcept {
+                if constexpr (std::is_same_v<decltype(src1), LongSourceRegister> &&
+                              std::is_same_v<decltype(src2), LongSourceRegister>) {
+                    cmprl(src1.template get<LongReal>(), src2.template get<LongReal>());
+                } else {
+                    cmpre(src1.template get<ExtendedReal>(), src2.template get<ExtendedReal>());
+                }
+            }
+            void cmpr(const Real& src1, const Real& src2) noexcept;
+            void cmprl(const LongReal& src1, const LongReal& src2) noexcept;
+            void cmpre(const ExtendedReal& src1, const ExtendedReal& src2) noexcept;
             void classr(SourceRegister src) noexcept;
 			void classr(ExtendedSourceRegister src) noexcept;
             void classrl(LongSourceRegister src) noexcept;
