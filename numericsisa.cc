@@ -106,12 +106,26 @@ namespace i960 {
     void Core::sinrl(LongSourceRegister src, ExtendedDestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawLongReal>(src, dest); }
     void Core::sinrl(ExtendedSourceRegister src, LongDestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
     void Core::sinrl(ExtendedSourceRegister src, ExtendedDestinationRegister dest) noexcept { sin<decltype(src), decltype(dest), RawExtendedReal>(src, dest); }
-    void Core::atanr(__DEFAULT_THREE_ARGS__) noexcept {
-        dest.set<RawReal>(::atan(src2.get<RawReal>() / src1.get<RawReal>()));
+    template<typename Src1, typename Src2, typename Dest, typename T>
+    void atan(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
+        dest.template set<T>(::atan(src2.template get<T>() / src1.template get<T>()));
     }
-    void Core::atanrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept {
-        dest.set<RawLongReal>(::atan(src2.get<RawLongReal>() / src1.get<RawLongReal>()));
-    }
+    void Core::atanr(__DEFAULT_THREE_ARGS__) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawReal>(src1, src2, dest); }
+    void Core::atanr(SourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::atanr(SourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::atanr(SourceRegister src1, ExtendedSourceRegister src2, DestinationRegister dest) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::atanr(ExtendedSourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::atanr(ExtendedSourceRegister src1, ExtendedSourceRegister src2, DestinationRegister dest) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::atanr(ExtendedSourceRegister src1, SourceRegister src2, ExtendedDestinationRegister dest) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::atanr(ExtendedSourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::atanrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawLongReal>(src1, src2, dest); }
+    void Core::atanrl(LongSourceRegister src1, LongSourceRegister src2, ExtendedDestinationRegister dest) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::atanrl(LongSourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::atanrl(LongSourceRegister src1, ExtendedSourceRegister src2, LongDestinationRegister dest) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::atanrl(ExtendedSourceRegister src1, ExtendedSourceRegister src2, ExtendedDestinationRegister dest) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::atanrl(ExtendedSourceRegister src1, ExtendedSourceRegister src2, LongDestinationRegister dest) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::atanrl(ExtendedSourceRegister src1, LongSourceRegister src2, ExtendedDestinationRegister dest) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
+    void Core::atanrl(ExtendedSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest) noexcept { atan<decltype(src1), decltype(src2), decltype(dest), RawExtendedReal>(src1, src2, dest); }
     void Core::cmpr(Core::SourceRegister src1, Core::SourceRegister src2) noexcept { 
         auto r0 = src1.get<Real>();
         auto r1 = src2.get<Real>();
