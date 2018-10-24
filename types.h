@@ -334,6 +334,10 @@ namespace i960 {
                         return ExtendedReal(_lower.ordinal, _mid.ordinal, _upper.ordinal);
                     } else if constexpr (std::is_same_v<K, RawExtendedReal>) {
                         return get<ExtendedReal>().floating;
+                    } else if constexpr(std::is_same_v<K, LongReal>) {
+                        return LongReal(get<RawExtendedReal>());
+                    } else if constexpr (std::is_same_v<K, RawLongReal>) {
+                        return RawLongReal(get<RawExtendedReal>());
                     } else {
                         static_assert(LegalConversion<K>, "Illegal type requested");
                     }
