@@ -4,12 +4,12 @@
 #include "opcodes.h"
 #include <limits>
 #include <cmath>
-#define __DEFAULT_THREE_ARGS__ Core::SourceRegister src1, Core::SourceRegister src2, Core::DestinationRegister dest
+#define __DEFAULT_THREE_ARGS__ SourceRegister src1, SourceRegister src2, DestinationRegister dest
 #define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ const DoubleRegister& src1, const DoubleRegister& src2, DoubleRegister& dest
-#define __DEFAULT_TWO_ARGS__ Core::SourceRegister src, Core::DestinationRegister dest
+#define __DEFAULT_TWO_ARGS__ SourceRegister src, DestinationRegister dest
 #define __DEFAULT_DOUBLE_WIDE_TWO_ARGS__ const DoubleRegister& src, DoubleRegister& dest
-#define __TWO_SOURCE_AND_INT_ARGS__ Core::SourceRegister src1, Core::SourceRegister src2, Integer targ
-#define __TWO_SOURCE_REGS__ Core::SourceRegister src1, Core::SourceRegister src2
+#define __TWO_SOURCE_AND_INT_ARGS__ SourceRegister src1, SourceRegister src2, Integer targ
+#define __TWO_SOURCE_REGS__ SourceRegister src1, SourceRegister src2
 namespace i960 {
 	Core::Core(MemoryInterface& mem) : _mem(mem) { }
 	Ordinal Core::getStackPointerAddress() const noexcept {
@@ -169,10 +169,10 @@ namespace i960 {
 			dest.set(src2.get<Ordinal>() % denom);
 		}
 	}
-	void Core::chkbit(Core::SourceRegister pos, Core::SourceRegister src) noexcept {
+	void Core::chkbit(SourceRegister pos, SourceRegister src) noexcept {
 		_ac.conditionCode = ((src.get<Ordinal>() & (1 << (pos.get<Ordinal>() & 0b11111))) == 0) ? 0b000 : 0b010;
 	}
-	void Core::alterbit(Core::SourceRegister pos, Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
+	void Core::alterbit(SourceRegister pos, SourceRegister src, DestinationRegister dest) noexcept {
 		auto s = src.get<Ordinal>();
 		auto p = pos.get<Ordinal>() & 0b11111;
 		dest.set<Ordinal>((_ac.conditionCode & 0b010) == 0 ? s & (~(1 << p)) : s | (1 << p));
@@ -205,10 +205,10 @@ namespace i960 {
 			dest.move(src);
 		}
 
-	void Core::mov(Core::SourceRegister src, Core::DestinationRegister dest) noexcept { 
+	void Core::mov(SourceRegister src, DestinationRegister dest) noexcept { 
 		move(src, dest);
 	}
-	void Core::movl(Core::LongSourceRegister src, Core::LongDestinationRegister dest) noexcept { 
+	void Core::movl(LongSourceRegister src, LongDestinationRegister dest) noexcept { 
 		move(src, dest);
 	}
 	void Core::movt(const TripleRegister& src, TripleRegister& dest) noexcept { 
@@ -226,7 +226,7 @@ namespace i960 {
 		conv._value = conv._value > 8388604 ? 8388604 : conv._value;
 		_instructionPointer += conv._value;
 	}
-	void Core::bx(Core::SourceRegister src) noexcept {
+	void Core::bx(SourceRegister src) noexcept {
 		_instructionPointer = src.get<Ordinal>();
 	}
 	void Core::bal(Integer displacement) noexcept {
@@ -299,7 +299,7 @@ namespace i960 {
 		return shifted & mask;
 	}
 
-	void Core::extract(Core::SourceRegister bitpos, Core::SourceRegister len, Core::DestinationRegister srcDest) noexcept {
+	void Core::extract(SourceRegister bitpos, SourceRegister len, DestinationRegister srcDest) noexcept {
 		srcDest.set<Ordinal>(decode(bitpos.get<Ordinal>(), len.get<Ordinal>(), srcDest.get<Ordinal>()));
 	}
 
@@ -312,7 +312,7 @@ namespace i960 {
 	/**
 	 * Find the most significant set bit
 	 */
-	void Core::scanbit(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
+	void Core::scanbit(SourceRegister src, DestinationRegister dest) noexcept {
 		auto k = src.get<Ordinal>();
 		_ac.conditionCode = 0b000;
 		for (int i = 31; i >= 0; --i) {
@@ -328,7 +328,7 @@ namespace i960 {
 	/**
 	 * Find the most significant clear bit
 	 */
-	void Core::spanbit(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
+	void Core::spanbit(SourceRegister src, DestinationRegister dest) noexcept {
 		auto k = src.get<Ordinal>();
 		_ac.conditionCode = 0b000;
 		for (int i = 31; i >= 0; --i) {
@@ -364,7 +364,7 @@ namespace i960 {
 		_ac.conditionCode = (carryBit << 1) | v;
 		dest.set<Ordinal>(result);
 	}
-	void Core::ediv(Core::SourceRegister src1, Core::LongSourceRegister src2, Core::DestinationRegister remainder, Core::DestinationRegister quotient) noexcept {
+	void Core::ediv(SourceRegister src1, LongSourceRegister src2, DestinationRegister remainder, DestinationRegister quotient) noexcept {
 		auto s2 = src2.get<LongOrdinal>();
 		auto s1 = src1.get<Ordinal>();
 		auto divOp = s2 / s1;
@@ -377,25 +377,25 @@ namespace i960 {
 		dest.set<Integer>(src2.get<Integer>() / src1.get<Integer>());
 	}
 
-	void Core::ld(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
+	void Core::ld(SourceRegister src, DestinationRegister dest) noexcept {
 		// this is the base operation for load, src contains the fully computed value
 		// so this will probably be an internal register in most cases.
 		dest.set<Ordinal>(load(src.get<Ordinal>()));
 	}
-	void Core::ldob(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
+	void Core::ldob(SourceRegister src, DestinationRegister dest) noexcept {
 		dest.set<ByteOrdinal>(load(src.get<Ordinal>()));
 	}
-	void Core::ldos(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
+	void Core::ldos(SourceRegister src, DestinationRegister dest) noexcept {
 		dest.set<ShortOrdinal>(load(src.get<Ordinal>()));
 	}
-	void Core::ldib(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
+	void Core::ldib(SourceRegister src, DestinationRegister dest) noexcept {
 		dest.set<Integer>((ByteInteger)load(src.get<Ordinal>()));
 	}
-	void Core::ldis(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
+	void Core::ldis(SourceRegister src, DestinationRegister dest) noexcept {
 		dest.set<Integer>((ShortInteger)load(src.get<Ordinal>()));
 	}
 
-	void Core::ldl(Core::SourceRegister src, Core::LongDestinationRegister dest) noexcept {
+	void Core::ldl(SourceRegister src, LongDestinationRegister dest) noexcept {
 		auto addr = src.get<Ordinal>();
 		dest.set(load(addr), load(addr + 1));
 	}
@@ -403,7 +403,7 @@ namespace i960 {
 		_lower.set<Ordinal>(lower);
 		_upper.set<Ordinal>(upper);
 	}
-	void Core::ldt(Core::SourceRegister src, TripleRegister& dest) noexcept {
+	void Core::ldt(SourceRegister src, TripleRegister& dest) noexcept {
 		auto addr = src.get<Ordinal>();
 		dest.set(load(addr), load(addr + 1), load(addr + 2));
 	}
@@ -412,7 +412,7 @@ namespace i960 {
 		_mid.set<Ordinal>(m);
 		_upper.set<Ordinal>(u);
 	}
-	void Core::ldq(Core::SourceRegister src, QuadRegister& dest) noexcept {
+	void Core::ldq(SourceRegister src, QuadRegister& dest) noexcept {
 		auto addr = src.get<Ordinal>();
 		dest.set(load(addr), load(addr + 1), load(addr + 2), load(addr + 3));
 	}
@@ -423,27 +423,27 @@ namespace i960 {
 		_highest.set(h);
 	}
 
-	void Core::cmpi(Core::SourceRegister src1, Core::SourceRegister src2) noexcept { compare(src1.get<Integer>(), src2.get<Integer>()); }
-	void Core::cmpo(Core::SourceRegister src1, Core::SourceRegister src2) noexcept { compare(src1.get<Ordinal>(), src2.get<Ordinal>()); }
-	void Core::muli(Core::SourceRegister src1, Core::SourceRegister src2, Core::DestinationRegister dest) noexcept {
+	void Core::cmpi(SourceRegister src1, SourceRegister src2) noexcept { compare(src1.get<Integer>(), src2.get<Integer>()); }
+	void Core::cmpo(SourceRegister src1, SourceRegister src2) noexcept { compare(src1.get<Ordinal>(), src2.get<Ordinal>()); }
+	void Core::muli(SourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept {
 		// TODO raise important faults
 		dest.set(src2.get<Integer>() * src1.get<Integer>());
 	}
-	void Core::remi(Core::SourceRegister src1, Core::SourceRegister src2, Core::DestinationRegister dest) noexcept {
+	void Core::remi(SourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept {
 		// TODO add divide by zero check
 		dest.set(src2.get<Integer>() % src1.get<Integer>());
 	}
-	void Core::stl(Core::LongSourceRegister src, Core::SourceRegister dest) noexcept {
+	void Core::stl(LongSourceRegister src, SourceRegister dest) noexcept {
 		store(dest.get<Ordinal>(), src.getLowerHalf());
 		store(dest.get<Ordinal>() + sizeof(Ordinal), src.getUpperHalf());
 	}
-	void Core::stt(const TripleRegister& src, Core::SourceRegister dest) noexcept {
+	void Core::stt(const TripleRegister& src, SourceRegister dest) noexcept {
 		auto addr = dest.get<Ordinal>();
 		store(addr, src.getLowerPart());
 		store(addr + sizeof(Ordinal), src.getMiddlePart());
 		store(addr + (2 * sizeof(Ordinal)), src.getUpperPart());
 	}
-	void Core::stq(const QuadRegister& src, Core::SourceRegister dest) noexcept {
+	void Core::stq(const QuadRegister& src, SourceRegister dest) noexcept {
 		auto addr = dest.get<Ordinal>();
 		store(addr, src.getLowestPart());
 		store(addr + sizeof(Ordinal), src.getLowerPart());
@@ -465,14 +465,14 @@ namespace i960 {
 		newSrc1.set<Integer>(-(src1.get<Integer>()));
 		addi(src2, newSrc1, dest);
 	}
-	void Core::modtc(Core::SourceRegister src, Core::SourceRegister mask, Core::DestinationRegister dest) noexcept {
+	void Core::modtc(SourceRegister src, SourceRegister mask, DestinationRegister dest) noexcept {
 		TraceControls tmp;
 		tmp.value = _tc.value;
 		auto temp1 = 0x00FF00FF & mask.get<Ordinal>(); // masked to prevent reserved bits from being used
 		_tc.value = (temp1 & src.get<Ordinal>()) | (_tc.value & (~temp1));
 		dest.set(tmp.value);
 	}
-	void Core::modpc(Core::SourceRegister, Core::SourceRegister mask, Core::DestinationRegister srcDest) noexcept {
+	void Core::modpc(SourceRegister, SourceRegister mask, DestinationRegister srcDest) noexcept {
 		// modify process controls
 		auto maskVal = mask.get<Ordinal>();
 		if (maskVal != 0) {
@@ -508,14 +508,14 @@ namespace i960 {
 		_ac.conditionCode = setCarry | intOverflowHappened;
 		dest.set<Ordinal>(lower);
 	}
-	void Core::testno(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Unordered>(dest); }
-	void Core::testg(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Greater>( dest); }
-	void Core::teste(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Equal>( dest); }
-	void Core::testge(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::GreaterOrEqual>( dest); }
-	void Core::testl(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Less>( dest); }
-	void Core::testne(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::NotEqual>( dest); }
-	void Core::testle(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::LessOrEqual>( dest); }
-	void Core::testo(Core::DestinationRegister dest) noexcept { testGeneric<TestTypes::Ordered>( dest); }
+	void Core::testno(DestinationRegister dest) noexcept { testGeneric<TestTypes::Unordered>(dest); }
+	void Core::testg(DestinationRegister dest) noexcept { testGeneric<TestTypes::Greater>( dest); }
+	void Core::teste(DestinationRegister dest) noexcept { testGeneric<TestTypes::Equal>( dest); }
+	void Core::testge(DestinationRegister dest) noexcept { testGeneric<TestTypes::GreaterOrEqual>( dest); }
+	void Core::testl(DestinationRegister dest) noexcept { testGeneric<TestTypes::Less>( dest); }
+	void Core::testne(DestinationRegister dest) noexcept { testGeneric<TestTypes::NotEqual>( dest); }
+	void Core::testle(DestinationRegister dest) noexcept { testGeneric<TestTypes::LessOrEqual>( dest); }
+	void Core::testo(DestinationRegister dest) noexcept { testGeneric<TestTypes::Ordered>( dest); }
 	void Core::ret() noexcept {
 		// TODO implement
 		auto pfp = getPFP();
@@ -651,7 +651,7 @@ namespace i960 {
 		    //TODO implement
         }
 	}
-	void Core::bbc(Core::SourceRegister bitpos, Core::SourceRegister src, Integer targ) noexcept {
+	void Core::bbc(SourceRegister bitpos, SourceRegister src, Integer targ) noexcept {
 		// check bit and branch if clear
 		auto shiftAmount = bitpos.get<Ordinal>() & 0b11111;
 		auto mask = 1 << shiftAmount;
@@ -668,7 +668,7 @@ namespace i960 {
 			_instructionPointer += 4;
 		}
 	}
-	void Core::bbs(Core::SourceRegister bitpos, Core::SourceRegister src, Integer targ) noexcept {
+	void Core::bbs(SourceRegister bitpos, SourceRegister src, Integer targ) noexcept {
 		// check bit and branch if set
 		auto shiftAmount = bitpos.get<Ordinal>() & 0b11111;
 		auto mask = 1 << shiftAmount;
@@ -807,7 +807,7 @@ namespace i960 {
 	void Core::shli(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set(src2.get<Integer>() << src1.get<Integer>());
 	}
-	void Core::shrdi(Core::SourceRegister len, Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
+	void Core::shrdi(SourceRegister len, SourceRegister src, DestinationRegister dest) noexcept {
 		auto result = src.get<Integer>() >> len.get<Integer>();
 		if (result < 0) {
 			result += 1;
@@ -817,7 +817,7 @@ namespace i960 {
 	void Core::rotate(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set<Ordinal>(i960::rotate(src2.get<Ordinal>(), src1.get<Ordinal>()));
 	}
-	void Core::modify(Core::SourceRegister mask, Core::SourceRegister src, Core::DestinationRegister srcDest) noexcept {
+	void Core::modify(SourceRegister mask, SourceRegister src, DestinationRegister srcDest) noexcept {
 		auto s = src.get<Ordinal>();
 		auto m = mask.get<Ordinal>();
 		srcDest.set<Ordinal>((s & m) | (srcDest.get<Ordinal>() & (~m)));
@@ -901,7 +901,7 @@ namespace i960 {
 	void Core::emul(SourceRegister src1, SourceRegister src2, LongDestinationRegister dest) noexcept {
 		dest.set<LongOrdinal>(src2.get<LongOrdinal>() * src1.get<LongOrdinal>());
 	}
-	void Core::lda(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
+	void Core::lda(SourceRegister src, DestinationRegister dest) noexcept {
 		dest.move(src);
 	}
 	void Core::reset() {

@@ -5,9 +5,9 @@
 #include <limits>
 #include <cmath>
 #include <math.h>
-#define __DEFAULT_THREE_ARGS__ Core::SourceRegister src1, Core::SourceRegister src2, Core::DestinationRegister dest
+#define __DEFAULT_THREE_ARGS__ SourceRegister src1, SourceRegister src2, DestinationRegister dest
 #define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ const DoubleRegister& src1, const DoubleRegister& src2, DoubleRegister& dest
-#define __DEFAULT_TWO_ARGS__ Core::SourceRegister src, Core::DestinationRegister dest
+#define __DEFAULT_TWO_ARGS__ SourceRegister src, DestinationRegister dest
 #define __DEFAULT_DOUBLE_WIDE_TWO_ARGS__ const DoubleRegister& src, DoubleRegister& dest
 namespace i960 {
     void Core::cmpr(const Real& src1, const Real& src2, bool ordered) noexcept {
@@ -56,7 +56,7 @@ namespace i960 {
         auto upperBits = src2.get<Ordinal>() & (~0b1111);
         dest.set<Ordinal>(upperBits | static_cast<Ordinal>((comb & 0b1111)));
     }
-    void Core::dmovt(Core::SourceRegister src, Core::DestinationRegister dest) noexcept {
+    void Core::dmovt(SourceRegister src, DestinationRegister dest) noexcept {
         dest.move(src);
         auto sval = src.get<ByteOrdinal>();
         _ac.conditionCode = ((sval >= 0b0011000) && (sval <= 0b00111001)) ? 0b000 : 0b010;
@@ -81,16 +81,16 @@ namespace i960 {
 			ac.arithmeticStatusField = s | 0b110;
 		}
 	}
-    void Core::classr(Core::SourceRegister src) noexcept {
+    void Core::classr(SourceRegister src) noexcept {
 		performClassification<decltype(src), Real>(src, _ac);
     }
-    void Core::classr(Core::ExtendedSourceRegister src) noexcept {
+    void Core::classr(ExtendedSourceRegister src) noexcept {
 		performClassification<decltype(src), ExtendedReal>(src, _ac);
     }
-    void Core::classrl(Core::LongSourceRegister src) noexcept {
+    void Core::classrl(LongSourceRegister src) noexcept {
 		performClassification<decltype(src), LongReal>(src, _ac);
     }
-    void Core::classrl(Core::ExtendedSourceRegister src) noexcept {
+    void Core::classrl(ExtendedSourceRegister src) noexcept {
 		performClassification<decltype(src), ExtendedReal>(src, _ac);
     }
 #undef __DEFAULT_TWO_ARGS__
