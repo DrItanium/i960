@@ -12,17 +12,20 @@
 #include <math.h>
 #include <variant>
 namespace i960 {
-    using SourceRegister = const NormalRegister&;
-    using DestinationRegister = NormalRegister&;
-    using LongSourceRegister = const DoubleRegister&;
-    using LongDestinationRegister = DoubleRegister&;
-    using ExtendedSourceRegister = const TripleRegister&;
-    using ExtendedDestinationRegister = TripleRegister&;
+    using Register = NormalRegister;
+    using LongRegister = DoubleRegister;
+    using ExtendedRegister = TripleRegister;
+    using SourceRegister = const Register&;
+    using DestinationRegister = Register&;
+    using LongSourceRegister = const LongRegister&;
+    using LongDestinationRegister = LongRegister&;
+    using ExtendedSourceRegister = const ExtendedRegister&;
+    using ExtendedDestinationRegister = ExtendedRegister&;
     using RegisterWindow = NormalRegister[LocalRegisterCount];
-    using SourceRegisterSelector = std::variant<const NormalRegister* const, const TripleRegister* const>;
-    using LongSourceRegisterSelector = std::variant<const DoubleRegister* const, const TripleRegister* const>;
-    using DestinationRegisterSelector = std::variant<NormalRegister* const, TripleRegister* const>;
-    using LongDestinationRegisterSelector = std::variant<DoubleRegister* const, TripleRegister* const>;
+    using SourceRegisterSelector = std::variant<const Register* const, const ExtendedRegister* const>;
+    using LongSourceRegisterSelector = std::variant<const LongRegister* const, const ExtendedRegister* const>;
+    using DestinationRegisterSelector = std::variant<Register* const, ExtendedRegister* const>;
+    using LongDestinationRegisterSelector = std::variant<LongRegister* const, ExtendedRegister* const>;
     template<typename Src1, typename Src2, typename Dest>
     struct ThreeArgumentExtraction final {
         static_assert(std::is_same_v<Src1, SourceRegister> || std::is_same_v<Src1, ExtendedSourceRegister>, "Illegal source register kind!"); 
