@@ -382,6 +382,22 @@ namespace i960 {
                 dest.template set<K>(src2.template get<K>() / src1.template get<K>());
             }
             template<typename Src1, typename Src2, typename Dest>
+            void remr(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
+                using K = typename ThreeArgumentExtraction<Src1, Src2, Dest>::Type;
+                auto s1 = src1.template get<K>();
+                auto s2 = src2.template get<K>();
+                // TODO truncate s1 / s2 towards zero
+                dest.template set<K>(s2 - ((s1 / s2) * s1));
+            }
+            template<typename Src1, typename Src2, typename Dest>
+            void remrl(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
+                using K = typename ThreeLongArgumentExtraction<Src1, Src2, Dest>::Type;
+                auto s1 = src1.template get<K>();
+                auto s2 = src2.template get<K>();
+                // TODO truncate s1 / s2 towards zero
+                dest.template set<K>(s2 - ((s1 / s2) * s1));
+            }
+            template<typename Src1, typename Src2, typename Dest>
             void subr(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
                 using K = typename ThreeArgumentExtraction<Src1, Src2, Dest>::Type;
                 dest.template set<K>(src2.template get<K>() - src1.template get<K>());
@@ -421,6 +437,50 @@ namespace i960 {
                 using K = typename TwoLongSourceArgumentExtraction<Src1, Src2>::Type;
                 cmpr(src1.template get<K>(), src2.template get<K>(), true);
             }
+            template<typename Src1, typename Src2, typename Dest>
+            void logr(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
+                using K = typename ThreeArgumentExtraction<Src1, Src2, Dest>::Type;
+                // TODO implement body for logr
+                //dest.template set<K>(src2.template get<K>() * src1.template get<K>());
+            }
+            template<typename Src1, typename Src2, typename Dest>
+            void logrl(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
+                using K = typename ThreeLongArgumentExtraction<Src1, Src2, Dest>::Type;
+                // TODO implement body for logrl
+                //dest.template set<K>(src2.template get<K>() * src1.template get<K>());
+            }
+            template<typename Src1, typename Src2, typename Dest>
+            void logepr(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
+                using K = typename ThreeArgumentExtraction<Src1, Src2, Dest>::Type;
+                // TODO implement body for logepr
+                //dest.template set<K>(src2.template get<K>() * src1.template get<K>());
+            }
+            template<typename Src1, typename Src2, typename Dest>
+            void logeprl(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
+                using K = typename ThreeLongArgumentExtraction<Src1, Src2, Dest>::Type;
+                // TODO implement body for logeprl
+                //dest.template set<K>(src2.template get<K>() * src1.template get<K>());
+            }
+            template<typename Src, typename Dest>
+            void expr(const Src& src, Dest& dest) noexcept {
+                using K = typename TwoArgumentExtraction<Src, Dest>::Type;
+                // TODO implement the expr operation
+            }
+            template<typename Src, typename Dest>
+            void exprl(const Src& src, Dest& dest) noexcept {
+                using K = typename TwoLongArgumentExtraction<Src, Dest>::Type;
+                // TODO implement the exprl operation
+            }
+            template<typename Src, typename Dest>
+            void logbnr(const Src& src, Dest& dest) noexcept {
+                using K = typename TwoArgumentExtraction<Src, Dest>::Type;
+                // TODO implement the logbnr operation
+            }
+            template<typename Src, typename Dest>
+            void logbnrl(const Src& src, Dest& dest) noexcept {
+                using K = typename TwoLongArgumentExtraction<Src, Dest>::Type;
+                // TODO implement the logbnrl operation
+            }
             void cmpr(const Real& src1, const Real& src2, bool ordered = false) noexcept;
             void cmpr(const LongReal& src1, const LongReal& src2, bool ordered = false) noexcept;
             void cmpr(const ExtendedReal& src1, const ExtendedReal& src2, bool ordered = false) noexcept;
@@ -430,14 +490,6 @@ namespace i960 {
 			void classrl(ExtendedSourceRegister src) noexcept;
             void cpysre(__DEFAULT_THREE_ARGS__) noexcept; // TODO fix the signature of this function
             void cpyrsre(__DEFAULT_THREE_ARGS__) noexcept; // TODO fix the signature of this function
-            void expr(__DEFAULT_TWO_ARGS__) noexcept;
-            void exprl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
-            void logbnr(__DEFAULT_TWO_ARGS__) noexcept;
-            void logbnrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
-            void logepr(__DEFAULT_THREE_ARGS__) noexcept;
-            void logeprl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
-            void logr(__DEFAULT_THREE_ARGS__) noexcept;
-            void logrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
             void roundr(__DEFAULT_TWO_ARGS__) noexcept;
             void roundrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             void cvtilr(LongSourceRegister src, ExtendedReal& dest) noexcept;
@@ -452,8 +504,6 @@ namespace i960 {
             void movr(__DEFAULT_TWO_ARGS__) noexcept;
             void movrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             void movre(const TripleRegister& src, TripleRegister& dest) noexcept;
-            __GEN_DEFAULT_THREE_ARG_SIGS__(remr);
-            void remrl(__DEFAULT_DOUBLE_WIDE_THREE_ARGS__) noexcept;
             void scaler(__DEFAULT_THREE_ARGS__) noexcept;
             void scalerl(LongSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest) noexcept;
             void sqrtr(__DEFAULT_TWO_ARGS__) noexcept;
