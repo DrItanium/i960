@@ -381,17 +381,65 @@ namespace i960 {
 		}
 	} 
 	void Core::dispatchFP(const Instruction::REGFormat& i) noexcept {
+        NormalRegister imm1;
+        NormalRegister imm2;
+        std::optional<SourceRegisterSelector> src1;
+        std::optional<SourceRegisterSelector> src2;
+        std::optional<DestinationRegisterSelector> dest;
 		// TODO implement
         if (i.m1Set()) {
             // if m1 is set then src1 is an extended register or float literal
+            auto value = i._source1;
+            switch (value) {
+                case 0b00000:
+                case 0b00001:
+                case 0b00010:
+                case 0b00011:
+                    // TODO make TripleRegister capabile of taking in a floating point value
+                    //src1 = _floatingPointRegisters[value];
+                    break;
+                case 0b10000:
+                    imm1.set<RawReal>(+0.0f);
+                    src1 = imm1;
+                    break;
+                case 0b10110:
+                    imm1.set<RawReal>(+1.0f);
+                    src1 = imm1;
+                    break;
+                default:
+                    // TODO raise exception instead
+                    throw "Illegal operand!";
+            }
         } else {
             // src1 is a normal register
+            src1 = getRegister(i._source1);
         }
         if (i.m2Set()) {
             // if m2 is set then src2 is an extended register or float literal
+            auto value = i._source2;
+            switch (value) {
+                case 0b00000:
+                case 0b00001:
+                case 0b00010:
+                case 0b00011:
+                    // TODO make TripleRegister capabile of taking in a floating point value
+                    //src2 = _floatingPointRegisters[value];
+                    break;
+                case 0b10000:
+                    imm2.set<RawReal>(+0.0f);
+                    src2 = imm2;
+                    break;
+                case 0b10110:
+                    imm2.set<RawReal>(+1.0f);
+                    src2 = imm2;
+                    break;
+                default:
+                    // TODO raise exception instead
+                    throw "Illegal operand!";
+            }
         } else {
             // src2 is a normal register
-
+            src2 = getRegister(i._source2);
         }
         if (i.m3Set()) {
             // if m3 is set then 

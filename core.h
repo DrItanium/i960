@@ -11,6 +11,7 @@
 #include <cmath>
 #include <math.h>
 #include <variant>
+#include <functional>
 namespace i960 {
     using Register = NormalRegister;
     using LongRegister = DoubleRegister;
@@ -22,10 +23,10 @@ namespace i960 {
     using ExtendedSourceRegister = const ExtendedRegister&;
     using ExtendedDestinationRegister = ExtendedRegister&;
     using RegisterWindow = NormalRegister[LocalRegisterCount];
-    using SourceRegisterSelector = std::variant<const Register* const, const ExtendedRegister* const>;
-    using LongSourceRegisterSelector = std::variant<const LongRegister* const, const ExtendedRegister* const>;
-    using DestinationRegisterSelector = std::variant<Register* const, ExtendedRegister* const>;
-    using LongDestinationRegisterSelector = std::variant<LongRegister* const, ExtendedRegister* const>;
+    using SourceRegisterSelector = std::variant<std::reference_wrapper<const Register>, std::reference_wrapper<const ExtendedRegister>>;
+    using LongSourceRegisterSelector = std::variant<std::reference_wrapper<const LongRegister>, std::reference_wrapper<const ExtendedRegister>>;
+    using DestinationRegisterSelector = std::variant<std::reference_wrapper<Register>, std::reference_wrapper<ExtendedRegister>>;
+    using LongDestinationRegisterSelector = std::variant<std::reference_wrapper<LongRegister>, std::reference_wrapper<ExtendedRegister>>;
     template<typename Src1, typename Src2, typename Dest>
     struct ThreeArgumentExtraction final {
         static_assert(std::is_same_v<Src1, SourceRegister> || std::is_same_v<Src1, ExtendedSourceRegister>, "Illegal source register kind!"); 
