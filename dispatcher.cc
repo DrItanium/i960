@@ -384,15 +384,22 @@ namespace i960 {
 		// TODO implement
         if (i.m1Set()) {
             // if m1 is set then src1 is an extended register or float literal
+        } else {
+            // src1 is a normal register
         }
         if (i.m2Set()) {
             // if m2 is set then src2 is an extended register or float literal
+        } else {
+            // src2 is a normal register
+
         }
         if (i.m3Set()) {
             // if m3 is set then 
             //   src/dest is undefined
             //   src only is undefined
             //   dst only is an extended register
+        } else {
+            // dest is a normal register
         }
 		switch(static_cast<Opcodes>(i.getOpcode())) {
             default:
