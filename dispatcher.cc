@@ -274,9 +274,9 @@ namespace i960 {
 		}
 	}
 	void Core::dispatch(const Instruction::REGFormat& i) noexcept {
-		static NormalRegister imm1;
-		static NormalRegister imm2;
-		static NormalRegister imm3;
+		NormalRegister imm1;
+		NormalRegister imm2;
+		NormalRegister imm3;
 		if (i.isFloatingPoint()) {
 			dispatchFP(i);
 			return;
@@ -382,6 +382,22 @@ namespace i960 {
 	} 
 	void Core::dispatchFP(const Instruction::REGFormat& i) noexcept {
 		// TODO implement
+        if (i.m1Set()) {
+            // if m1 is set then src1 is an extended register or float literal
+        }
+        if (i.m2Set()) {
+            // if m2 is set then src2 is an extended register or float literal
+        }
+        if (i.m3Set()) {
+            // if m3 is set then 
+            //   src/dest is undefined
+            //   src only is undefined
+            //   dst only is an extended register
+        }
+		switch(static_cast<Opcodes>(i.getOpcode())) {
+            default:
+                throw "illegal instruction";
+        }
 	}
 
     Integer Core::getFullDisplacement() noexcept {

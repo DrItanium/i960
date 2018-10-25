@@ -721,6 +721,9 @@ namespace i960 {
             Ordinal getOpcode() const noexcept {
                 return (_opcode << 4) | _opcode2;
             }
+            bool m1Set() const noexcept { return _m1 != 0; }
+            bool m2Set() const noexcept { return _m2 != 0; }
+            bool m3Set() const noexcept { return _m3 != 0; }
             bool src1IsLiteral() const noexcept { return _m1 != 0; }
             bool src2IsLiteral() const noexcept { return _m2 != 0; }
             bool srcDestIsLiteral() const noexcept { return _m3 != 0; }
