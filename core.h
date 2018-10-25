@@ -100,6 +100,46 @@ namespace i960 {
             TwoLongArgumentExtraction(const TwoLongArgumentExtraction&) = delete;
             TwoLongArgumentExtraction(TwoLongArgumentExtraction&&) = delete;
     };
+    template<typename Src1, typename Src2>
+    struct TwoSourceArgumentExtraction final {
+        static_assert(std::is_same_v<Src1, SourceRegister> || std::is_same_v<Src1, ExtendedSourceRegister>, "Illegal source register kind!"); 
+        static_assert(std::is_same_v<Src2, SourceRegister> || std::is_same_v<Src2, ExtendedSourceRegister>, "Illegal source register kind!");
+        using Type = ExtendedReal;
+        private:
+            TwoSourceArgumentExtraction() = delete;
+            ~TwoSourceArgumentExtraction() = delete;
+            TwoSourceArgumentExtraction(const TwoSourceArgumentExtraction&) = delete;
+            TwoSourceArgumentExtraction(TwoSourceArgumentExtraction&&) = delete;
+    };
+    template<>
+    struct TwoSourceArgumentExtraction <SourceRegister, SourceRegister> final {
+        using Type = Real;
+        private:
+            TwoSourceArgumentExtraction() = delete;
+            ~TwoSourceArgumentExtraction() = delete;
+            TwoSourceArgumentExtraction(const TwoSourceArgumentExtraction&) = delete;
+            TwoSourceArgumentExtraction(TwoSourceArgumentExtraction&&) = delete;
+    };
+    template<typename Src1, typename Src2>
+    struct TwoLongSourceArgumentExtraction final {
+        static_assert(std::is_same_v<Src1, LongSourceRegister> || std::is_same_v<Src1, ExtendedSourceRegister>, "Illegal source register kind!"); 
+        static_assert(std::is_same_v<Src2, LongSourceRegister> || std::is_same_v<Src2, ExtendedSourceRegister>, "Illegal source register kind!");
+        using Type = ExtendedReal;
+        private:
+            TwoLongSourceArgumentExtraction() = delete;
+            ~TwoLongSourceArgumentExtraction() = delete;
+            TwoLongSourceArgumentExtraction(const TwoLongSourceArgumentExtraction&) = delete;
+            TwoLongSourceArgumentExtraction(TwoLongSourceArgumentExtraction&&) = delete;
+    };
+    template<>
+    struct TwoLongSourceArgumentExtraction <LongSourceRegister, LongSourceRegister> final {
+        using Type = LongReal;
+        private:
+            TwoLongSourceArgumentExtraction() = delete;
+            ~TwoLongSourceArgumentExtraction() = delete;
+            TwoLongSourceArgumentExtraction(const TwoLongSourceArgumentExtraction&) = delete;
+            TwoLongSourceArgumentExtraction(TwoLongSourceArgumentExtraction&&) = delete;
+    };
     class Core {
         public:
 			Core(MemoryInterface& mem);
@@ -281,46 +321,6 @@ namespace i960 {
             // end core architecture
             // begin numerics architecture 
             // TODO add all of the different various combinations
-#define CheckThreeRegisterReal(src1, src2, dest) \
-                static_assert(std::is_same_v<decltype(src1), SourceRegister> || std::is_same_v<decltype(src1), ExtendedSourceRegister>, "Illegal source register kind!"); \
-                static_assert(std::is_same_v<decltype(src2), SourceRegister> || std::is_same_v<decltype(src2), ExtendedSourceRegister>, "Illegal source register kind!"); \
-                static_assert(std::is_same_v<decltype(dest), DestinationRegister> || std::is_same_v<decltype(dest), ExtendedDestinationRegister>, "Illegal destination register kind!")
-#define CheckThreeRegisterLongReal(src1, src2, dest) \
-                static_assert(std::is_same_v<decltype(src1), LongSourceRegister> || std::is_same_v<decltype(src1), ExtendedSourceRegister>, "Illegal source register kind!"); \
-                static_assert(std::is_same_v<decltype(src2), LongSourceRegister> || std::is_same_v<decltype(src2), ExtendedSourceRegister>, "Illegal source register kind!"); \
-                static_assert(std::is_same_v<decltype(dest), LongDestinationRegister> || std::is_same_v<decltype(dest), ExtendedDestinationRegister>, "Illegal destination register kind!")
-#define CheckTwoSourceRegisterReal(src1, src2) \
-                static_assert(std::is_same_v<decltype(src1), SourceRegister> || std::is_same_v<decltype(src1), ExtendedSourceRegister>, "Illegal source register kind"); \
-                static_assert(std::is_same_v<decltype(src2), SourceRegister> || std::is_same_v<decltype(src2), ExtendedSourceRegister>, "Illegal source register kind")
-#define CheckTwoSourceRegisterLongReal(src1, src2) \
-                static_assert(std::is_same_v<decltype(src1), LongSourceRegister> || std::is_same_v<decltype(src1), ExtendedSourceRegister>, "Illegal source register kind"); \
-                static_assert(std::is_same_v<decltype(src2), LongSourceRegister> || std::is_same_v<decltype(src2), ExtendedSourceRegister>, "Illegal source register kind")
-#define CheckTwoRegisterReal(src1, src2) \
-                static_assert(std::is_same_v<decltype(src1), SourceRegister> || std::is_same_v<decltype(src1), ExtendedSourceRegister>, "Illegal source register kind"); \
-                static_assert(std::is_same_v<decltype(src2), DestinationRegister> || std::is_same_v<decltype(src2), ExtendedDestinationRegister>, "Illegal source register kind")
-#define CheckTwoRegisterLongReal(src1, src2) \
-                static_assert(std::is_same_v<decltype(src1), LongSourceRegister> || std::is_same_v<decltype(src1), ExtendedSourceRegister>, "Illegal source register kind"); \
-                static_assert(std::is_same_v<decltype(src2), LongDestinationRegister> || std::is_same_v<decltype(src2), ExtendedDestinationRegister>, "Illegal source register kind")
-#define IsThreeArgumentKind(src1, src2, dest) \
-            (std::is_same_v<decltype(src1), SourceRegister> && \
-             std::is_same_v<decltype(src2), SourceRegister> && \
-             std::is_same_v<decltype(dest), DestinationRegister>)
-#define IsThreeArgumentKindLong(src1, src2, dest) \
-            (std::is_same_v<decltype(src1), LongSourceRegister> && \
-             std::is_same_v<decltype(src2), LongSourceRegister> && \
-             std::is_same_v<decltype(dest), LongDestinationRegister>)
-#define IsTwoArgumentKind(src, dest) \
-            (std::is_same_v<decltype(src), SourceRegister> && \
-             std::is_same_v<decltype(dest), DestinationRegister>)
-#define IsTwoArgumentKindLong(src, dest) \
-            (std::is_same_v<decltype(src), LongSourceRegister> && \
-             std::is_same_v<decltype(dest), LongDestinationRegister>)
-#define IsTwoSourceArgumentKind(src, dest) \
-            (std::is_same_v<decltype(src), SourceRegister> && \
-             std::is_same_v<decltype(dest), SourceRegister>)
-#define IsTwoSourceArgumentKindLong(src, dest) \
-            (std::is_same_v<decltype(src), LongSourceRegister> && \
-             std::is_same_v<decltype(dest), LongSourceRegister>)
             template<typename Src, typename Dest>
             void tanr(const Src& src, Dest& dest) noexcept {
                 using K = typename TwoArgumentExtraction<Src, Dest>::Type;
@@ -353,164 +353,77 @@ namespace i960 {
             }
             template<typename Src1, typename Src2, typename Dest>
             void atanr(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                CheckThreeRegisterReal(src1, src2, dest);
-                if constexpr (std::is_same_v<decltype(src1), SourceRegister> &&
-                              std::is_same_v<decltype(src2), SourceRegister> &&
-                              std::is_same_v<decltype(dest), DestinationRegister>) {
-                    dest.template set<RawReal>(::atan(src2.template get<RawReal>() / src1.template get<RawReal>()));
-                } else {
-                    dest.template set<RawExtendedReal>(::atan(src2.template get<RawExtendedReal>() / src1.template get<RawExtendedReal>()));
-                }
+                using K = typename ThreeArgumentExtraction<Src1, Src2, Dest>::Type;
+                dest.template set<K>(::atan(src2.template get<K>() / src1.template get<K>()));
             }
             template<typename Src1, typename Src2, typename Dest>
             void atanrl(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                CheckThreeRegisterLongReal(src1, src2, dest);
-                if constexpr (std::is_same_v<decltype(src1), SourceRegister> &&
-                              std::is_same_v<decltype(src2), SourceRegister> &&
-                              std::is_same_v<decltype(dest), DestinationRegister>) {
-                    dest.template set<RawLongReal>(::atan(src2.template get<RawLongReal>() / src1.template get<RawLongReal>()));
-                } else {
-                    dest.template set<RawExtendedReal>(::atan(src2.template get<RawExtendedReal>() / src1.template get<RawExtendedReal>()));
-                }
+                using K = typename ThreeLongArgumentExtraction<Src1, Src2, Dest>::Type;
+                dest.template set<K>(::atan(src2.template get<K>() / src1.template get<K>()));
             }
             template<typename Src1, typename Src2, typename Dest>
             void addr(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                CheckThreeRegisterReal(src1, src2, dest);
-                if constexpr (std::is_same_v<decltype(src1), SourceRegister> &&
-                              std::is_same_v<decltype(src2), SourceRegister> &&
-                              std::is_same_v<decltype(dest), DestinationRegister>) {
-                    dest.template set<RawReal>(src2.template get<RawReal>() + src1.template get<RawReal>());
-                } else {
-                    dest.template set<RawExtendedReal>(src2.template get<RawExtendedReal>() + src1.template get<RawExtendedReal>());
-                }
+                using K = typename ThreeArgumentExtraction<Src1, Src2, Dest>::Type;
+                dest.template set<K>(src2.template get<K>() + src1.template get<K>());
             }
             template<typename Src1, typename Src2, typename Dest>
             void addrl(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                CheckThreeRegisterLongReal(src1, src2, dest);
-                if constexpr (std::is_same_v<decltype(src1), SourceRegister> &&
-                              std::is_same_v<decltype(src2), SourceRegister> &&
-                              std::is_same_v<decltype(dest), DestinationRegister>) {
-                    dest.template set<RawLongReal>(src2.template get<RawLongReal>() + src1.template get<RawLongReal>());
-                } else {
-                    dest.template set<RawExtendedReal>(src2.template get<RawExtendedReal>() + src1.template get<RawExtendedReal>());
-                }
+                using K = typename ThreeLongArgumentExtraction<Src1, Src2, Dest>::Type;
+                dest.template set<K>(src2.template get<K>() + src1.template get<K>());
             }
             template<typename Src1, typename Src2, typename Dest>
             void divr(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                CheckThreeRegisterReal(src1, src2, dest);
-                if constexpr (std::is_same_v<decltype(src1), SourceRegister> &&
-                              std::is_same_v<decltype(src2), SourceRegister> &&
-                              std::is_same_v<decltype(dest), DestinationRegister>) {
-                    dest.template set<RawReal>(src2.template get<RawReal>() / src1.template get<RawReal>());
-                } else {
-                    dest.template set<RawExtendedReal>(src2.template get<RawExtendedReal>() / src1.template get<RawExtendedReal>());
-                }
+                using K = typename ThreeArgumentExtraction<Src1, Src2, Dest>::Type;
+                dest.template set<K>(src2.template get<K>() / src1.template get<K>());
             }
             template<typename Src1, typename Src2, typename Dest>
             void divrl(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                CheckThreeRegisterLongReal(src1, src2, dest);
-                if constexpr (std::is_same_v<decltype(src1), SourceRegister> &&
-                              std::is_same_v<decltype(src2), SourceRegister> &&
-                              std::is_same_v<decltype(dest), DestinationRegister>) {
-                    dest.template set<RawLongReal>(src2.template get<RawLongReal>() / src1.template get<RawLongReal>());
-                } else {
-                    dest.template set<RawExtendedReal>(src2.template get<RawExtendedReal>() / src1.template get<RawExtendedReal>());
-                }
+                using K = typename ThreeLongArgumentExtraction<Src1, Src2, Dest>::Type;
+                dest.template set<K>(src2.template get<K>() / src1.template get<K>());
             }
             template<typename Src1, typename Src2, typename Dest>
             void subr(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                CheckThreeRegisterReal(src1, src2, dest);
-                if constexpr (std::is_same_v<decltype(src1), SourceRegister> &&
-                              std::is_same_v<decltype(src2), SourceRegister> &&
-                              std::is_same_v<decltype(dest), DestinationRegister>) {
-                    dest.template set<RawReal>(src2.template get<RawReal>() - src1.template get<RawReal>());
-                } else {
-                    dest.template set<RawExtendedReal>(src2.template get<RawExtendedReal>() - src1.template get<RawExtendedReal>());
-                }
+                using K = typename ThreeArgumentExtraction<Src1, Src2, Dest>::Type;
+                dest.template set<K>(src2.template get<K>() - src1.template get<K>());
             }
             template<typename Src1, typename Src2, typename Dest>
             void subrl(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                CheckThreeRegisterLongReal(src1, src2, dest);
-                if constexpr (std::is_same_v<decltype(src1), SourceRegister> &&
-                              std::is_same_v<decltype(src2), SourceRegister> &&
-                              std::is_same_v<decltype(dest), DestinationRegister>) {
-                    dest.template set<RawLongReal>(src2.template get<RawLongReal>() - src1.template get<RawLongReal>());
-                } else {
-                    dest.template set<RawExtendedReal>(src2.template get<RawExtendedReal>() - src1.template get<RawExtendedReal>());
-                }
+                using K = typename ThreeLongArgumentExtraction<Src1, Src2, Dest>::Type;
+                dest.template set<K>(src2.template get<K>() - src1.template get<K>());
             }
             template<typename Src1, typename Src2, typename Dest>
             void mulr(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                CheckThreeRegisterReal(src1, src2, dest);
-                if constexpr (std::is_same_v<decltype(src1), SourceRegister> &&
-                              std::is_same_v<decltype(src2), SourceRegister> &&
-                              std::is_same_v<decltype(dest), DestinationRegister>) {
-                    dest.template set<RawReal>(src2.template get<RawReal>() * src1.template get<RawReal>());
-                } else {
-                    dest.template set<RawExtendedReal>(src2.template get<RawExtendedReal>() * src1.template get<RawExtendedReal>());
-                }
+                using K = typename ThreeArgumentExtraction<Src1, Src2, Dest>::Type;
+                dest.template set<K>(src2.template get<K>() * src1.template get<K>());
             }
             template<typename Src1, typename Src2, typename Dest>
             void mulrl(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                CheckThreeRegisterLongReal(src1, src2, dest);
-                if constexpr (std::is_same_v<decltype(src1), SourceRegister> &&
-                              std::is_same_v<decltype(src2), SourceRegister> &&
-                              std::is_same_v<decltype(dest), DestinationRegister>) {
-                    dest.template set<RawLongReal>(src2.template get<RawLongReal>() * src1.template get<RawLongReal>());
-                } else {
-                    dest.template set<RawExtendedReal>(src2.template get<RawExtendedReal>() * src1.template get<RawExtendedReal>());
-                }
+                using K = typename ThreeLongArgumentExtraction<Src1, Src2, Dest>::Type;
+                dest.template set<K>(src2.template get<K>() * src1.template get<K>());
             }
-
             template<typename Src1, typename Src2>
             void cmpr(const Src1& src1, const Src2& src2) noexcept {
-                CheckTwoSourceRegisterReal(src1, src2);
-                if constexpr (std::is_same_v<decltype(src1), SourceRegister> &&
-                              std::is_same_v<decltype(src2), SourceRegister>) {
-                    cmpr(src1.template get<Real>(), src2.template get<Real>());
-                } else {
-                    cmpre(src1.template get<ExtendedReal>(), src2.template get<ExtendedReal>());
-                }
+                using K = typename TwoSourceArgumentExtraction<Src1, Src2>::Type;
+                cmpr(src1.template get<K>(), src2.template get<K>());
             }
             template<typename Src1, typename Src2>
             void cmprl(const Src1& src1, const Src2& src2) noexcept {
-                CheckTwoSourceRegisterLongReal(src1, src2);
-                if constexpr (std::is_same_v<decltype(src1), LongSourceRegister> &&
-                              std::is_same_v<decltype(src2), LongSourceRegister>) {
-                    cmprl(src1.template get<LongReal>(), src2.template get<LongReal>());
-                } else {
-                    cmpre(src1.template get<ExtendedReal>(), src2.template get<ExtendedReal>());
-                }
+                using K = typename TwoLongSourceArgumentExtraction<Src1, Src2>::Type;
+                cmpr(src1.template get<K>(), src2.template get<K>());
             }
             template<typename Src1, typename Src2>
             void cmpor(const Src1& src1, const Src2& src2) noexcept {
-                CheckTwoSourceRegisterReal(src1, src2);
-                if constexpr (std::is_same_v<decltype(src1), SourceRegister> &&
-                              std::is_same_v<decltype(src2), SourceRegister>) {
-                    cmpr(src1.template get<Real>(), src2.template get<Real>(), true);
-                } else {
-                    cmpre(src1.template get<ExtendedReal>(), src2.template get<ExtendedReal>(), true);
-                }
+                using K = typename TwoSourceArgumentExtraction<Src1, Src2>::Type;
+                cmpr(src1.template get<K>(), src2.template get<K>(), true);
             }
             template<typename Src1, typename Src2>
             void cmporl(const Src1& src1, const Src2& src2) noexcept {
-                CheckTwoSourceRegisterLongReal(src1, src2);
-                if constexpr (std::is_same_v<decltype(src1), LongSourceRegister> &&
-                              std::is_same_v<decltype(src2), LongSourceRegister>) {
-                    cmprl(src1.template get<LongReal>(), src2.template get<LongReal>(), true);
-                } else {
-                    cmpre(src1.template get<ExtendedReal>(), src2.template get<ExtendedReal>(), true);
-                }
+                using K = typename TwoLongSourceArgumentExtraction<Src1, Src2>::Type;
+                cmpr(src1.template get<K>(), src2.template get<K>(), true);
             }
-#undef CheckTwoRegisterReal
-#undef CheckTwoRegisterLongReal
-#undef CheckTwoSourceRegisterReal
-#undef CheckTwoSourceRegisterLongReal
-#undef CheckThreeRegisterReal
-#undef CheckThreeRegisterLongReal
             void cmpr(const Real& src1, const Real& src2, bool ordered = false) noexcept;
-            void cmprl(const LongReal& src1, const LongReal& src2, bool ordered = false) noexcept;
-            void cmpre(const ExtendedReal& src1, const ExtendedReal& src2, bool ordered = false) noexcept;
+            void cmpr(const LongReal& src1, const LongReal& src2, bool ordered = false) noexcept;
+            void cmpr(const ExtendedReal& src1, const ExtendedReal& src2, bool ordered = false) noexcept;
             void classr(SourceRegister src) noexcept;
 			void classr(ExtendedSourceRegister src) noexcept;
             void classrl(LongSourceRegister src) noexcept;

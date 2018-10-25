@@ -20,7 +20,7 @@ namespace i960 {
             compare(src1.floating, src2.floating);
         }
     }
-    void Core::cmprl(const LongReal& src1, const LongReal& src2, bool ordered) noexcept {
+    void Core::cmpr(const LongReal& src1, const LongReal& src2, bool ordered) noexcept {
         if (src1.isNaN() || src2.isNaN()) {
             _ac.conditionCode = 0b000;
             if (ordered) {
@@ -30,7 +30,7 @@ namespace i960 {
             compare(src1.floating, src2.floating);
         }
     }
-    void Core::cmpre(const ExtendedReal& src1, const ExtendedReal& src2, bool ordered) noexcept {
+    void Core::cmpr(const ExtendedReal& src1, const ExtendedReal& src2, bool ordered) noexcept {
         if (src1.isNaN() || src2.isNaN()) {
             _ac.conditionCode = 0b000;
             if (ordered) {
