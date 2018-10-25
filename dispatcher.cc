@@ -46,7 +46,7 @@ namespace i960 {
 		}
 	}
 	void Core::dispatch(const Instruction::COBRFormat& i) noexcept {
-		static NormalRegister immediateStorage;
+		NormalRegister immediateStorage;
 		auto displacement = i._displacement;
 		NormalRegister& src1 = i.src1IsLiteral() ? immediateStorage : getRegister(i._source1);
 		if (i.src1IsLiteral()) {
@@ -87,7 +87,7 @@ namespace i960 {
 	}
 	void Core::dispatch(const Instruction::MemFormat::MEMAFormat& i) noexcept {
 		using E = std::decay_t<decltype(i)>;
-		static NormalRegister immediateStorage;
+		NormalRegister immediateStorage;
 		auto offset = i._offset;
 		auto mode = i._md == 0 ? E::AddressingModes::Offset : E::AddressingModes::Abase_Plus_Offset;
 		auto abase = getRegister(i._abase);
@@ -166,7 +166,7 @@ namespace i960 {
 		}
 	}
 	void Core::dispatch(const Instruction::MemFormat::MEMBFormat& i) noexcept {
-		static NormalRegister immediateStorage;
+		NormalRegister immediateStorage;
 		using K = std::decay_t<decltype(i)>;
 		using E = K::AddressingModes;
 		auto index = i._index;
