@@ -10,6 +10,7 @@
 #include "memiface.h"
 #include <cmath>
 #include <math.h>
+#include <variant>
 namespace i960 {
     using SourceRegister = const NormalRegister&;
     using DestinationRegister = NormalRegister&;
@@ -18,6 +19,10 @@ namespace i960 {
     using ExtendedSourceRegister = const TripleRegister&;
     using ExtendedDestinationRegister = TripleRegister&;
     using RegisterWindow = NormalRegister[LocalRegisterCount];
+    using SourceRegisterSelector = std::variant<const NormalRegister* const, const TripleRegister* const>;
+    using LongSourceRegisterSelector = std::variant<const DoubleRegister* const, const TripleRegister* const>;
+    using DestinationRegisterSelector = std::variant<NormalRegister* const, TripleRegister* const>;
+    using LongDestinationRegisterSelector = std::variant<DoubleRegister* const, TripleRegister* const>;
     template<typename Src1, typename Src2, typename Dest>
     struct ThreeArgumentExtraction final {
         static_assert(std::is_same_v<Src1, SourceRegister> || std::is_same_v<Src1, ExtendedSourceRegister>, "Illegal source register kind!"); 
