@@ -481,6 +481,48 @@ namespace i960 {
                 using K = typename TwoLongArgumentExtraction<Src, Dest>::Type;
                 // TODO implement the logbnrl operation
             }
+            template<typename Src1, typename Src2, typename Dest>
+            void scaler(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
+                static_assert(std::is_same_v<decltype(src1), SourceRegister>, "Illegal src1 type");
+                static_assert(std::is_same_v<decltype(src2), SourceRegister> ||
+                              std::is_same_v<decltype(src2), ExtendedSourceRegister> , "Illegal src2 type");
+                static_assert(std::is_same_v<decltype(dest), DestinationRegister> ||
+                              std::is_same_v<decltype(dest), ExtendedDestinationRegister> , "Illegal destination type");
+                if constexpr (std::is_same_v<decltype(src1), SourceRegister> &&
+                              std::is_same_v<decltype(src2), SourceRegister> &&
+                              std::is_same_v<decltype(dest), DestinationRegister>) {
+                    // TODO implement scaler for reals
+                } else {
+                    // TODO implement scaler for extended reals
+                }
+            }
+            template<typename Src1, typename Src2, typename Dest>
+            void scalerl(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
+                static_assert(std::is_same_v<decltype(src1), LongSourceRegister>, "Illegal src1 type");
+                static_assert(std::is_same_v<decltype(src2), LongSourceRegister> ||
+                              std::is_same_v<decltype(src2), ExtendedSourceRegister> , "Illegal src2 type");
+                static_assert(std::is_same_v<decltype(dest), LongDestinationRegister> ||
+                              std::is_same_v<decltype(dest), ExtendedDestinationRegister> , "Illegal destination type");
+                if constexpr (std::is_same_v<decltype(src1), LongSourceRegister> &&
+                              std::is_same_v<decltype(src2), LongSourceRegister> &&
+                              std::is_same_v<decltype(dest), LongDestinationRegister>) {
+                    // TODO implement scalerl for reals
+                } else {
+                    // TODO implement scalerl for extended reals
+                }
+            }
+            template<typename Src, typename Dest>
+            void sqrtr(const Src& src, Dest& dest) noexcept {
+                using K = typename TwoArgumentExtraction<Src, Dest>::Type;
+                dest.template set<K>(::sqrt(src.template get<K>()));
+                // TODO implement the sqrtr operation
+            }
+            template<typename Src, typename Dest>
+            void sqrtrl(const Src& src, Dest& dest) noexcept {
+                using K = typename TwoLongArgumentExtraction<Src, Dest>::Type;
+                // TODO implement the sqrtrl operation
+                dest.template set<K>(::sqrt(src.template get<K>()));
+            }
             void cmpr(const Real& src1, const Real& src2, bool ordered = false) noexcept;
             void cmpr(const LongReal& src1, const LongReal& src2, bool ordered = false) noexcept;
             void cmpr(const ExtendedReal& src1, const ExtendedReal& src2, bool ordered = false) noexcept;
@@ -504,10 +546,6 @@ namespace i960 {
             void movr(__DEFAULT_TWO_ARGS__) noexcept;
             void movrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             void movre(const TripleRegister& src, TripleRegister& dest) noexcept;
-            void scaler(__DEFAULT_THREE_ARGS__) noexcept;
-            void scalerl(LongSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest) noexcept;
-            void sqrtr(__DEFAULT_TWO_ARGS__) noexcept;
-            void sqrtrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
             void synld(__DEFAULT_TWO_ARGS__) noexcept;
             void synmov(__DEFAULT_TWO_ARGS__) noexcept;
             void synmovl(__DEFAULT_TWO_ARGS__) noexcept;
