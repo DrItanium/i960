@@ -29,18 +29,6 @@ namespace i960 {
     using FloatingPointRegister = ExtendedReal;
     using FloatingPointSourceRegister = const FloatingPointRegister&;
     using FloatingPointDestinationRegister = FloatingPointRegister&;
-    using SourceRegisterSelector = std::variant<std::reference_wrapper<const Register>, std::reference_wrapper<const FloatingPointRegister>>;
-    using DestinationRegisterSelector = std::variant<std::reference_wrapper<Register>, std::reference_wrapper<FloatingPointRegister>>;
-    template<typename T>
-    constexpr bool IsSourceSelector = std::is_same_v<std::decay_t<T>, SourceRegisterSelector>;
-    template<typename T>
-    constexpr bool IsDestinationSelector = std::is_same_v<std::decay_t<T>, DestinationRegisterSelector>;
-    using LongSourceRegisterSelector = std::variant<std::reference_wrapper<const LongRegister>, std::reference_wrapper<const FloatingPointRegister>>;
-    using LongDestinationRegisterSelector = std::variant<std::reference_wrapper<LongRegister>, std::reference_wrapper<FloatingPointRegister>>;
-    template<typename T>
-    constexpr bool IsLongSourceSelector = std::is_same_v<std::decay_t<T>, LongSourceRegisterSelector>;
-    template<typename T>
-    constexpr bool IsLongDestinationSelector = std::is_same_v<std::decay_t<T>, LongDestinationRegisterSelector>;
 
     using RegisterWindow = NormalRegister[LocalRegisterCount];
     template<typename Src1, typename Src2, typename Dest>

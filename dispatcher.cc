@@ -380,7 +380,8 @@ namespace i960 {
 				throw "illegal instruction!";
 		}
 	} 
-    void optionalCheck(const std::optional<SourceRegisterSelector>& src1, const std::optional<DestinationRegisterSelector>& dest) {
+    template<typename T, typename K>
+    void optionalCheck(const std::optional<T>& src1, const std::optional<K>& dest) {
             if (!src1.has_value()) {
                 throw "Something really bad happened! No src";
             }
@@ -388,7 +389,8 @@ namespace i960 {
                 throw "Something really bad happened! No dest";
             }
     }
-    void optionalCheck(const std::optional<SourceRegisterSelector>& src1, const std::optional<SourceRegisterSelector>& src2, const std::optional<DestinationRegisterSelector>& dest) {
+    template<typename T, typename K>
+    void optionalCheck(const std::optional<T>& src1, const std::optional<T>& src2, const std::optional<K>& dest) {
             if (!src1.has_value()) {
                 throw "Something really bad happened! No src1";
             }
@@ -399,117 +401,248 @@ namespace i960 {
                 throw "Something really bad happened! No dest";
             }
     }
+    using SourceRegisterSelector = std::variant<std::reference_wrapper<const Register>, std::reference_wrapper<const FloatingPointRegister>>;
+    using DestinationRegisterSelector = std::variant<std::reference_wrapper<Register>, std::reference_wrapper<FloatingPointRegister>>;
+    template<typename T>
+    constexpr bool IsSourceSelector = std::is_same_v<std::decay_t<T>, SourceRegisterSelector>;
+    template<typename T>
+    constexpr bool IsDestinationSelector = std::is_same_v<std::decay_t<T>, DestinationRegisterSelector>;
+    using LongSourceRegisterSelector = std::variant<std::reference_wrapper<const LongRegister>, std::reference_wrapper<const FloatingPointRegister>>;
+    using LongDestinationRegisterSelector = std::variant<std::reference_wrapper<LongRegister>, std::reference_wrapper<FloatingPointRegister>>;
+    template<typename T>
+    constexpr bool IsLongSourceSelector = std::is_same_v<std::decay_t<T>, LongSourceRegisterSelector>;
+    template<typename T>
+    constexpr bool IsLongDestinationSelector = std::is_same_v<std::decay_t<T>, LongDestinationRegisterSelector>;
 	void Core::dispatchFP(const Instruction::REGFormat& i) noexcept {
-        NormalRegister imm1;
-        NormalRegister imm2;
-        std::optional<SourceRegisterSelector> src1;
-        std::optional<SourceRegisterSelector> src2;
-        std::optional<DestinationRegisterSelector> dest;
-		// TODO implement
-        if (i.m1Set()) {
-            // if m1 is set then src1 is an extended register or float literal
-            auto value = i._source1;
-            switch (value) {
-                case 0b00000:
-                case 0b00001:
-                case 0b00010:
-                case 0b00011:
-                    // TODO make TripleRegister capabile of taking in a floating point value
-                    //src1 = _floatingPointRegisters[value];
-                    break;
-                case 0b10000:
-                    imm1.set<RawReal>(+0.0f);
-                    src1 = imm1;
-                    break;
-                case 0b10110:
-                    imm1.set<RawReal>(+1.0f);
-                    src1 = imm1;
-                    break;
-                default:
-                    // TODO raise exception instead
-                    throw "Illegal operand!";
+        if (auto opcode = static_cast<Opcodes>(i.getOpcode()); isLongRealForm(opcode)) {
+            NormalRegister imm1a, imm1b;
+            NormalRegister imm2a, imm2b;
+            LongRegister imm1(imm1a, imm1b);
+            LongRegister imm2(imm2a, imm2b);
+            std::optional<LongSourceRegisterSelector> src1;
+            std::optional<LongSourceRegisterSelector> src2;
+            std::optional<LongDestinationRegisterSelector> dest;
+            if (i.m1Set()) {
+                // if m1 is set then src1 is an extended register or float literal
+                auto value = i._source1;
+                switch (value) {
+                    case 0b00000:
+                    case 0b00001:
+                    case 0b00010:
+                    case 0b00011:
+                        // TODO make TripleRegister capabile of taking in a floating point value
+                        src1 = _floatingPointRegisters[value];
+                        break;
+                    case 0b10000:
+                        imm1.set<RawLongReal>(+0.0);
+                        src1 = imm1;
+                        break;
+                    case 0b10110:
+                        imm1.set<RawLongReal>(+1.0);
+                        src1 = imm1;
+                        break;
+                    default:
+                        // TODO raise exception instead
+                        throw "Illegal operand!";
+                }
+            } else {
+                // src1 is a normal register
+                LongRegister s1(getRegister(i._source1), getRegister(i._source1 + 1));
+                src1 = s1;
             }
-        } else {
-            // src1 is a normal register
-            src1 = getRegister(i._source1);
-        }
-        if (i.m2Set()) {
-            // if m2 is set then src2 is an extended register or float literal
-            auto value = i._source2;
-            switch (value) {
-                case 0b00000:
-                case 0b00001:
-                case 0b00010:
-                case 0b00011:
-                    src2 = _floatingPointRegisters[value];
-                    break;
-                case 0b10000:
-                    imm2.set<RawReal>(+0.0f);
-                    src2 = imm2;
-                    break;
-                case 0b10110:
-                    imm2.set<RawReal>(+1.0f);
-                    src2 = imm2;
-                    break;
-                default:
-                    // TODO raise exception instead
-                    throw "Illegal operand!";
+            if (i.m2Set()) {
+                // if m2 is set then src2 is an extended register or float literal
+                auto value = i._source2;
+                switch (value) {
+                    case 0b00000:
+                    case 0b00001:
+                    case 0b00010:
+                    case 0b00011:
+                        src2 = _floatingPointRegisters[value];
+                        break;
+                    case 0b10000:
+                        imm2.set<RawLongReal>(+0.0);
+                        src2 = imm2;
+                        break;
+                    case 0b10110:
+                        imm2.set<RawLongReal>(+1.0);
+                        src2 = imm2;
+                        break;
+                    default:
+                        // TODO raise exception instead
+                        throw "Illegal operand!";
+                }
+            } else {
+                // src2 is a normal register
+                LongRegister s2(getRegister(i._source2), getRegister(i._source2 + 1));
+                src2 = s2;
             }
-        } else {
-            // src2 is a normal register
-            src2 = getRegister(i._source2);
-        }
-        if (i.m3Set()) {
-            auto pos = i._src_dest;
-            switch (pos) {
-                case 0b00000:
-                case 0b00001:
-                case 0b00010:
-                case 0b00011:
-                    dest = _floatingPointRegisters[pos];
-                    break;
-                default:
-                    throw "Illegal bit pattern";
+            if (i.m3Set()) {
+                auto pos = i._src_dest;
+                switch (pos) {
+                    case 0b00000:
+                    case 0b00001:
+                    case 0b00010:
+                    case 0b00011:
+                        dest = _floatingPointRegisters[pos];
+                        break;
+                    default:
+                        throw "Illegal bit pattern";
+                }
+                // if m3 is set then 
+                //   src/dest is undefined
+                //   src only is undefined
+                //   dst only is an extended register
+            } else {
+                LongRegister dst(getRegister(i._src_dest), getRegister(i._src_dest + 1));
+                dest = dst;
+                // dest is a normal register
             }
-            // if m3 is set then 
-            //   src/dest is undefined
-            //   src only is undefined
-            //   dst only is an extended register
-        } else {
-            dest = getRegister(i._src_dest);
-            // dest is a normal register
-        }
-		switch(static_cast<Opcodes>(i.getOpcode())) {
+            switch(opcode) {
 #define X(title, op) \
-            case Opcodes:: title : \
-                 optionalCheck(src1, src2, dest); \
-                 std::visit([this](auto&& src1, auto&& src2, auto&& dest) { \
-                         op ( src1.get(), src2.get(), dest.get()); \
-                         }, src1.value(), src2.value(), dest.value()); \
-            break
+                case Opcodes:: title : \
+                                       optionalCheck(src1, src2, dest); \
+                std::visit([this](auto&& src1, auto&& src2, auto&& dest) { \
+                        op ( src1.get(), src2.get(), dest.get()); \
+                        }, src1.value(), src2.value(), dest.value()); \
+                break
 #define Y(title, op) \
-            case Opcodes:: title : \
-                 optionalCheck(src1, dest); \
-                 std::visit([this](auto&& src, auto&& dest) { \
-                         op ( src.get(), dest.get()); \
-                         }, src1.value(), dest.value()); \
-            break
-            X(Addr, addr);
-            X(Subr, subr);
-            X(Mulr, mulr);
-            X(Divr, divr);
-            X(Remr, remr);
-            X(Atanr, atanr);
-            Y(Cosr, cosr);
-            Y(Sinr, sinr);
-            Y(Tanr, tanr);
-            X(Logepr, logepr);
-            X(Logr, logr);
-            Y(Movr, movr);
+                case Opcodes:: title : \
+                                       optionalCheck(src1, dest); \
+                std::visit([this](auto&& src, auto&& dest) { \
+                        op ( src.get(), dest.get()); \
+                        }, src1.value(), dest.value()); \
+                break
+                X(Addrl, addrl);
+                X(Subrl, subrl);
+                X(Mulrl, mulrl);
+                X(Divrl, divrl);
+                X(Remrl, remrl);
+                X(Atanrl, atanrl);
+                Y(Cosrl, cosrl);
+                Y(Sinrl, sinrl);
+                Y(Tanrl, tanrl);
+                X(Logeprl, logeprl);
+                X(Logrl, logrl);
+                Y(Movrl, movrl);
 #undef Y
 #undef X 
-            default:
+                default:
                 throw "illegal instruction";
+            }
+        } else {
+            NormalRegister imm1;
+            NormalRegister imm2;
+            std::optional<SourceRegisterSelector> src1;
+            std::optional<SourceRegisterSelector> src2;
+            std::optional<DestinationRegisterSelector> dest;
+
+            // TODO implement
+            if (i.m1Set()) {
+                // if m1 is set then src1 is an extended register or float literal
+                auto value = i._source1;
+                switch (value) {
+                    case 0b00000:
+                    case 0b00001:
+                    case 0b00010:
+                    case 0b00011:
+                        // TODO make TripleRegister capabile of taking in a floating point value
+                        src1 = _floatingPointRegisters[value];
+                        break;
+                    case 0b10000:
+                        imm1.set<RawReal>(+0.0f);
+                        src1 = imm1;
+                        break;
+                    case 0b10110:
+                        imm1.set<RawReal>(+1.0f);
+                        src1 = imm1;
+                        break;
+                    default:
+                        // TODO raise exception instead
+                        throw "Illegal operand!";
+                }
+            } else {
+                // src1 is a normal register
+                src1 = getRegister(i._source1);
+            }
+            if (i.m2Set()) {
+                // if m2 is set then src2 is an extended register or float literal
+                auto value = i._source2;
+                switch (value) {
+                    case 0b00000:
+                    case 0b00001:
+                    case 0b00010:
+                    case 0b00011:
+                        src2 = _floatingPointRegisters[value];
+                        break;
+                    case 0b10000:
+                        imm2.set<RawReal>(+0.0f);
+                        src2 = imm2;
+                        break;
+                    case 0b10110:
+                        imm2.set<RawReal>(+1.0f);
+                        src2 = imm2;
+                        break;
+                    default:
+                        // TODO raise exception instead
+                        throw "Illegal operand!";
+                }
+            } else {
+                // src2 is a normal register
+                src2 = getRegister(i._source2);
+            }
+            if (i.m3Set()) {
+                auto pos = i._src_dest;
+                switch (pos) {
+                    case 0b00000:
+                    case 0b00001:
+                    case 0b00010:
+                    case 0b00011:
+                        dest = _floatingPointRegisters[pos];
+                        break;
+                    default:
+                        throw "Illegal bit pattern";
+                }
+                // if m3 is set then 
+                //   src/dest is undefined
+                //   src only is undefined
+                //   dst only is an extended register
+            } else {
+                dest = getRegister(i._src_dest);
+                // dest is a normal register
+            }
+            switch(opcode) {
+#define X(title, op) \
+                case Opcodes:: title : \
+                                       optionalCheck(src1, src2, dest); \
+                std::visit([this](auto&& src1, auto&& src2, auto&& dest) { \
+                        op ( src1.get(), src2.get(), dest.get()); \
+                        }, src1.value(), src2.value(), dest.value()); \
+                break
+#define Y(title, op) \
+                case Opcodes:: title : \
+                                       optionalCheck(src1, dest); \
+                std::visit([this](auto&& src, auto&& dest) { \
+                        op ( src.get(), dest.get()); \
+                        }, src1.value(), dest.value()); \
+                break
+                X(Addr, addr);
+                X(Subr, subr);
+                X(Mulr, mulr);
+                X(Divr, divr);
+                X(Remr, remr);
+                X(Atanr, atanr);
+                Y(Cosr, cosr);
+                Y(Sinr, sinr);
+                Y(Tanr, tanr);
+                X(Logepr, logepr);
+                X(Logr, logr);
+                Y(Movr, movr);
+#undef Y
+#undef X 
+                default:
+                throw "illegal instruction";
+            }
         }
 	}
 
