@@ -107,26 +107,49 @@ namespace i960 {
 		performClassification<decltype(src), ExtendedReal>(src, _ac);
     }
 #define DefDecompose2N(name) \
-            void Core:: name ( SourceRegisterSelector src, DestinationRegisterSelector dest) noexcept { \
+            void Core:: name ## r ( SourceRegisterSelector src, DestinationRegisterSelector dest) noexcept { \
                 std::visit([this](auto&& src, auto&& dest) { \
-                        name( src.get(), dest.get()); \
+                        name ## r ( src.get(), dest.get()); \
                         }, src, dest); \
             }
 #define DefDecompose2W(name) \
-            void Core:: name ( LongSourceRegisterSelector src, LongDestinationRegisterSelector dest) noexcept { \
+            void Core:: name ## rl ( LongSourceRegisterSelector src, LongDestinationRegisterSelector dest) noexcept { \
                 std::visit([this](auto&& src, auto&& dest) { \
-                        name( src.get(), dest.get()); \
+                        name ## rl ( src.get(), dest.get()); \
                         }, src, dest); \
             }
 #define DefDecompose2(name) \
-            DefDecompose2N(name ## r); \
-            DefDecompose2W(name ## rl)
+            DefDecompose2N(name); \
+            DefDecompose2W(name)
+#define DefDecompose3N(name) \
+    void Core:: name ## r (SourceRegisterSelector src1, SourceRegisterSelector src2, DestinationRegisterSelector dest) noexcept { \
+        std::visit([this](auto&& src1, auto&& src2, auto&& dest) { \
+                name ## r ( src1.get(), src2.get(), dest.get()); \
+                }, src1, src2, dest); \
+    }
+#define DefDecompose3W(name) \
+    void Core:: name ## rl (LongSourceRegisterSelector src1, LongSourceRegisterSelector src2, LongDestinationRegisterSelector dest) noexcept { \
+        std::visit([this](auto&& src1, auto&& src2, auto&& dest) { \
+                name ## rl ( src1.get(), src2.get(), dest.get()); \
+                }, src1, src2, dest); \
+    }
+
+#define DefDecompose3(name) \
+            DefDecompose3N(name); \
+            DefDecompose3W(name)
     DefDecompose2(sin);
     DefDecompose2(tan);
     DefDecompose2(cos);
+    DefDecompose2(sqrt);
+    DefDecompose2(exp);
+    DefDecompose2(logbn);
+    DefDecompose3(add);
 #undef DefDecompose2
 #undef DefDecompose2N
 #undef DefDecompose2W
+#undef DefDecompose3
+#undef DefDecompose3N
+#undef DefDecompose3W
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__

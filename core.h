@@ -347,15 +347,24 @@ namespace i960 {
             // begin numerics architecture 
             // TODO add all of the different various combinations
 #define DefDecompose2N(name) \
-            void name ( SourceRegisterSelector src, DestinationRegisterSelector dest) noexcept;
+            void name ## r ( SourceRegisterSelector src, DestinationRegisterSelector dest) noexcept;
 #define DefDecompose2W(name) \
-            void name ( LongSourceRegisterSelector src, LongDestinationRegisterSelector dest) noexcept;
+            void name ## rl ( LongSourceRegisterSelector src, LongDestinationRegisterSelector dest) noexcept;
 #define DefDecompose2(name) \
-            DefDecompose2N(name ## r); \
-            DefDecompose2W(name ## rl)
+            DefDecompose2N(name); \
+            DefDecompose2W(name)
+#define DefDecompose3N(name) void name ## r (SourceRegisterSelector src1, SourceRegisterSelector src2, DestinationRegisterSelector dest) noexcept
+#define DefDecompose3W(name) void name ## rl (LongSourceRegisterSelector src1, LongSourceRegisterSelector src2, LongDestinationRegisterSelector dest) noexcept
+#define DefDecompose3(name) \
+            DefDecompose3N(name); \
+            DefDecompose3W(name)
             DefDecompose2(tan);
             DefDecompose2(sin);
             DefDecompose2(cos);
+            DefDecompose2(exp);
+            DefDecompose2(sqrt);
+            DefDecompose2(logbn);
+            DefDecompose3(add);
             template<typename Src, typename Dest>
             void tanr(const Src& src, Dest& dest) noexcept {
                 using K = typename TwoArgumentExtraction<decltype(src), decltype(dest)>::Type;
@@ -388,37 +397,37 @@ namespace i960 {
             }
             template<typename Src1, typename Src2, typename Dest>
             void atanr(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                using K = typename ThreeArgumentExtraction<Src1, Src2, Dest>::Type;
+                using K = typename ThreeArgumentExtraction<decltype(src1), decltype(src2), decltype(dest)>::Type;
                 dest.template set<K>(::atan(src2.template get<K>() / src1.template get<K>()));
             }
             template<typename Src1, typename Src2, typename Dest>
             void atanrl(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                using K = typename ThreeLongArgumentExtraction<Src1, Src2, Dest>::Type;
+                using K = typename ThreeLongArgumentExtraction<decltype(src1), decltype(src2), decltype(dest)>::Type;
                 dest.template set<K>(::atan(src2.template get<K>() / src1.template get<K>()));
             }
             template<typename Src1, typename Src2, typename Dest>
             void addr(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                using K = typename ThreeArgumentExtraction<Src1, Src2, Dest>::Type;
+                using K = typename ThreeArgumentExtraction<decltype(src1), decltype(src2), decltype(dest)>::Type;
                 dest.template set<K>(src2.template get<K>() + src1.template get<K>());
             }
             template<typename Src1, typename Src2, typename Dest>
             void addrl(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                using K = typename ThreeLongArgumentExtraction<Src1, Src2, Dest>::Type;
+                using K = typename ThreeLongArgumentExtraction<decltype(src1), decltype(src2), decltype(dest)>::Type;
                 dest.template set<K>(src2.template get<K>() + src1.template get<K>());
             }
             template<typename Src1, typename Src2, typename Dest>
             void divr(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                using K = typename ThreeArgumentExtraction<Src1, Src2, Dest>::Type;
+                using K = typename ThreeArgumentExtraction<decltype(src1), decltype(src2), decltype(dest)>::Type;
                 dest.template set<K>(src2.template get<K>() / src1.template get<K>());
             }
             template<typename Src1, typename Src2, typename Dest>
             void divrl(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                using K = typename ThreeLongArgumentExtraction<Src1, Src2, Dest>::Type;
+                using K = typename ThreeLongArgumentExtraction<decltype(src1), decltype(src2), decltype(dest)>::Type;
                 dest.template set<K>(src2.template get<K>() / src1.template get<K>());
             }
             template<typename Src1, typename Src2, typename Dest>
             void remr(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                using K = typename ThreeArgumentExtraction<Src1, Src2, Dest>::Type;
+                using K = typename ThreeArgumentExtraction<decltype(src1), decltype(src2), decltype(dest)>::Type;
                 auto s1 = src1.template get<K>();
                 auto s2 = src2.template get<K>();
                 // TODO truncate s1 / s2 towards zero
@@ -426,7 +435,7 @@ namespace i960 {
             }
             template<typename Src1, typename Src2, typename Dest>
             void remrl(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                using K = typename ThreeLongArgumentExtraction<Src1, Src2, Dest>::Type;
+                using K = typename ThreeLongArgumentExtraction<decltype(src1), decltype(src2), decltype(dest)>::Type;
                 auto s1 = src1.template get<K>();
                 auto s2 = src2.template get<K>();
                 // TODO truncate s1 / s2 towards zero
@@ -434,22 +443,22 @@ namespace i960 {
             }
             template<typename Src1, typename Src2, typename Dest>
             void subr(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                using K = typename ThreeArgumentExtraction<Src1, Src2, Dest>::Type;
+                using K = typename ThreeArgumentExtraction<decltype(src1), decltype(src2), decltype(dest)>::Type;
                 dest.template set<K>(src2.template get<K>() - src1.template get<K>());
             }
             template<typename Src1, typename Src2, typename Dest>
             void subrl(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                using K = typename ThreeLongArgumentExtraction<Src1, Src2, Dest>::Type;
+                using K = typename ThreeLongArgumentExtraction<decltype(src1), decltype(src2), decltype(dest)>::Type;
                 dest.template set<K>(src2.template get<K>() - src1.template get<K>());
             }
             template<typename Src1, typename Src2, typename Dest>
             void mulr(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                using K = typename ThreeArgumentExtraction<Src1, Src2, Dest>::Type;
+                using K = typename ThreeArgumentExtraction<decltype(src1), decltype(src2), decltype(dest)>::Type;
                 dest.template set<K>(src2.template get<K>() * src1.template get<K>());
             }
             template<typename Src1, typename Src2, typename Dest>
             void mulrl(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                using K = typename ThreeLongArgumentExtraction<Src1, Src2, Dest>::Type;
+                using K = typename ThreeLongArgumentExtraction<decltype(src1), decltype(src2), decltype(dest)>::Type;
                 dest.template set<K>(src2.template get<K>() * src1.template get<K>());
             }
             template<typename Src1, typename Src2>
@@ -474,25 +483,25 @@ namespace i960 {
             }
             template<typename Src1, typename Src2, typename Dest>
             void logr(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                using K = typename ThreeArgumentExtraction<Src1, Src2, Dest>::Type;
+                using K = typename ThreeArgumentExtraction<decltype(src1), decltype(src2), decltype(dest)>::Type;
                 // TODO implement body for logr
                 //dest.template set<K>(src2.template get<K>() * src1.template get<K>());
             }
             template<typename Src1, typename Src2, typename Dest>
             void logrl(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                using K = typename ThreeLongArgumentExtraction<Src1, Src2, Dest>::Type;
+                using K = typename ThreeLongArgumentExtraction<decltype(src1), decltype(src2), decltype(dest)>::Type;
                 // TODO implement body for logrl
                 //dest.template set<K>(src2.template get<K>() * src1.template get<K>());
             }
             template<typename Src1, typename Src2, typename Dest>
             void logepr(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                using K = typename ThreeArgumentExtraction<Src1, Src2, Dest>::Type;
+                using K = typename ThreeArgumentExtraction<decltype(src1), decltype(src2), decltype(dest)>::Type;
                 // TODO implement body for logepr
                 //dest.template set<K>(src2.template get<K>() * src1.template get<K>());
             }
             template<typename Src1, typename Src2, typename Dest>
             void logeprl(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
-                using K = typename ThreeLongArgumentExtraction<Src1, Src2, Dest>::Type;
+                using K = typename ThreeLongArgumentExtraction<decltype(src1), decltype(src2), decltype(dest)>::Type;
                 // TODO implement body for logeprl
                 //dest.template set<K>(src2.template get<K>() * src1.template get<K>());
             }
@@ -671,5 +680,8 @@ namespace i960 {
 #undef DefDecompose2
 #undef DefDecompose2N
 #undef DefDecompose2W
+#undef DefDecompose3
+#undef DefDecompose3N
+#undef DefDecompose3W
 
 #endif // end I960_CORE_H__
