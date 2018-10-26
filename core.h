@@ -568,8 +568,16 @@ namespace i960 {
             __GEN_DEFAULT_THREE_ARG_SIGS__(daddc);
             void dmovt(SourceRegister src, DestinationRegister dest) noexcept;
             __GEN_DEFAULT_THREE_ARG_SIGS__(dsubc);
-            void movr(__DEFAULT_TWO_ARGS__) noexcept;
-            void movrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
+            template<typename Src, typename Dest>
+            void movr(const Src& src, Dest& dest) noexcept {
+                using K = typename TwoArgumentExtraction<decltype(src), decltype(dest)>::Type;
+                dest.template set<K>(src.template get<K>());
+            }
+            template<typename Src, typename Dest>
+            void movrl(const Src& src, Dest& dest) noexcept {
+                using K = typename TwoLongArgumentExtraction<decltype(src), decltype(dest)>::Type;
+                dest.template set<K>(src.template get<K>());
+            }
             void movre(const TripleRegister& src, TripleRegister& dest) noexcept;
             void synld(__DEFAULT_TWO_ARGS__) noexcept;
             void synmov(__DEFAULT_TWO_ARGS__) noexcept;

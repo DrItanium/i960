@@ -503,6 +503,9 @@ namespace i960 {
             Y(Cosr, cosr);
             Y(Sinr, sinr);
             Y(Tanr, tanr);
+            X(Logepr, logepr);
+            X(Logr, logr);
+            Y(Movr, movr);
 #undef Y
 #undef X 
             default:
