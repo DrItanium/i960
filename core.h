@@ -369,6 +369,7 @@ namespace i960 {
             DefDecompose3(div);
             DefDecompose3(rem);
             DefDecompose3(mul);
+            DefDecompose3(atan);
             template<typename Src, typename Dest>
             void tanr(const Src& src, Dest& dest) noexcept {
                 using K = typename TwoArgumentExtraction<decltype(src), decltype(dest)>::Type;

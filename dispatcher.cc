@@ -380,6 +380,25 @@ namespace i960 {
 				throw "illegal instruction!";
 		}
 	} 
+    void optionalCheck(const std::optional<SourceRegisterSelector>& src1, const std::optional<DestinationRegisterSelector>& dest) {
+            if (!src1.has_value()) {
+                throw "Something really bad happened! No src";
+            }
+            if (!dest.has_value()) {
+                throw "Something really bad happened! No dest";
+            }
+    }
+    void optionalCheck(const std::optional<SourceRegisterSelector>& src1, const std::optional<SourceRegisterSelector>& src2, const std::optional<DestinationRegisterSelector>& dest) {
+            if (!src1.has_value()) {
+                throw "Something really bad happened! No src1";
+            }
+            if (!src2.has_value()) {
+                throw "Something really bad happened! No src2";
+            }
+            if (!dest.has_value()) {
+                throw "Something really bad happened! No dest";
+            }
+    }
 	void Core::dispatchFP(const Instruction::REGFormat& i) noexcept {
         NormalRegister imm1;
         NormalRegister imm2;
@@ -441,7 +460,17 @@ namespace i960 {
             src2 = getRegister(i._source2);
         }
         if (i.m3Set()) {
-            dest = _floatingPointRegisters[i._src_dest];
+            auto pos = i._src_dest;
+            switch (pos) {
+                case 0b00000:
+                case 0b00001:
+                case 0b00010:
+                case 0b00011:
+                    dest = _floatingPointRegisters[pos];
+                    break;
+                default:
+                    throw "Illegal bit pattern";
+            }
             // if m3 is set then 
             //   src/dest is undefined
             //   src only is undefined
@@ -450,27 +479,27 @@ namespace i960 {
             dest = getRegister(i._src_dest);
             // dest is a normal register
         }
-        auto needAllThreeArgs = [](auto& src1, auto& src2, auto& dest) {
-            if (!src1.has_value()) {
-                throw "Something really bad happened! No src1";
-            }
-            if (!src2.has_value()) {
-                throw "Something really bad happened! No src2";
-            }
-            if (!dest.has_value()) {
-                throw "Something really bad happened! No dest";
-            }
-        };
 		switch(static_cast<Opcodes>(i.getOpcode())) {
-            case Opcodes::Addr:
-                needAllThreeArgs(src1, src2, dest);
-                addr(src1.value(), src2.value(), dest.value());
-                break;
-            case Opcodes::Addrl:
-                // TODO long versions need to operate off of 
-                //needAllThreeArgs(src1, src2, dest);
-                //addrl(src1.value(), src2.value(), dest.value());
-                break;
+#define X(title, op) \
+            case Opcodes:: title : \
+                 optionalCheck(src1, src2, dest); \
+                 op ( src1.value(), src2.value(), dest.value()); \
+            break
+#define Y(title, op) \
+            case Opcodes:: title : \
+                 optionalCheck(src1, dest); \
+                 op ( src1.value() , dest.value()  ); \
+            break
+            X(Addr, addr);
+            X(Subr, subr);
+            X(Mulr, mulr);
+            X(Divr, divr);
+            X(Remr, remr);
+            Y(Cosr, cosr);
+            Y(Sinr, sinr);
+            Y(Tanr, tanr);
+#undef Y
+#undef X 
             default:
                 throw "illegal instruction";
         }

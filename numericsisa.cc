@@ -149,6 +149,7 @@ namespace i960 {
     DefDecompose3(rem);
     DefDecompose3(mul);
     DefDecompose3(logep);
+    DefDecompose3(atan);
 #undef DefDecompose2
 #undef DefDecompose2N
 #undef DefDecompose2W
