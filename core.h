@@ -340,12 +340,14 @@ namespace i960 {
             // TODO add all of the different various combinations
             template<typename Src, typename Dest>
             void tanr(const Src& src, Dest& dest) noexcept {
-                using K = typename TwoArgumentExtraction<Src, Dest>::Type;
+                using K = typename TwoArgumentExtraction<decltype(src), decltype(dest)>::Type;
                 dest.template set<K>(::tan(src.template get<K>()));
             }
+            void tanr(SourceRegisterSelector src, DestinationRegisterSelector dest) noexcept;
+            void tanrl(LongSourceRegisterSelector src, LongDestinationRegisterSelector dest) noexcept;
             template<typename Src, typename Dest>
             void tanrl(const Src& src, Dest& dest) noexcept {
-                using K = typename TwoLongArgumentExtraction<Src, Dest>::Type;
+                using K = typename TwoLongArgumentExtraction<decltype(src), decltype(dest)>::Type;
                 dest.template set<K>(::tan(src.template get<K>()));
             }
             template<typename Src, typename Dest>
