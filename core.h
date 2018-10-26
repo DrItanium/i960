@@ -432,22 +432,22 @@ namespace i960 {
             }
             template<typename Src1, typename Src2>
             void cmpr(const Src1& src1, const Src2& src2) noexcept {
-                using K = typename TwoSourceArgumentExtraction<Src1, Src2>::Type;
+                using K = typename TwoSourceArgumentExtraction<decltype(src1), decltype(src2)>::Type;
                 cmpr(src1.template get<K>(), src2.template get<K>());
             }
             template<typename Src1, typename Src2>
             void cmprl(const Src1& src1, const Src2& src2) noexcept {
-                using K = typename TwoLongSourceArgumentExtraction<Src1, Src2>::Type;
+                using K = typename TwoLongSourceArgumentExtraction<decltype(src1), decltype(src2)>::Type;
                 cmpr(src1.template get<K>(), src2.template get<K>());
             }
             template<typename Src1, typename Src2>
             void cmpor(const Src1& src1, const Src2& src2) noexcept {
-                using K = typename TwoSourceArgumentExtraction<Src1, Src2>::Type;
+                using K = typename TwoSourceArgumentExtraction<decltype(src1), decltype(src2)>::Type;
                 cmpr(src1.template get<K>(), src2.template get<K>(), true);
             }
             template<typename Src1, typename Src2>
             void cmporl(const Src1& src1, const Src2& src2) noexcept {
-                using K = typename TwoLongSourceArgumentExtraction<Src1, Src2>::Type;
+                using K = typename TwoLongSourceArgumentExtraction<decltype(src1), decltype(src2)>::Type;
                 cmpr(src1.template get<K>(), src2.template get<K>(), true);
             }
             template<typename Src1, typename Src2, typename Dest>

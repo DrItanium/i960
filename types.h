@@ -164,6 +164,9 @@ namespace i960 {
                     return LongReal(floating);
                 } else if constexpr (std::is_same_v<K, Real>) {
                     return Real(floating);
+                } else if constexpr (std::is_same_v<K, ExtendedReal>) {
+                    // a hack for consistency with the rest of the design
+                    return *this;
                 } else {
                     static_assert(LegalConversion<K>, "Illegal type requested");
                 }

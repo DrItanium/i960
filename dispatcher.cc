@@ -513,9 +513,17 @@ namespace i960 {
                         op ## rl ( src.get(), dest.get()); \
                         }, src1.value(), dest.value()); \
                 break;
+#define Z(title, op) \
+                case Opcodes:: title ## rl : \
+                                       optionalCheck(src1, src2); \
+                std::visit([this](auto&& src1, auto&& src2) { \
+                        op ## rl ( src1.get(), src2.get()); \
+                        }, src1.value(), src2.value()); \
+                break;
 #include "numerics_dispatch.def"
 #undef Y
 #undef X 
+#undef Z
                 case Opcodes::Scalerl:
                     optionalCheck(src1, src2, dest);
                     std::visit([this](auto&& src1, auto&& src2, auto&& dest) {
@@ -631,9 +639,17 @@ namespace i960 {
                         op ## r ( src.get(), dest.get()); \
                         }, src1.value(), dest.value()); \
                 break;
+#define Z(title, op) \
+                case Opcodes:: title ## r : \
+                                       optionalCheck(src1, src2); \
+                std::visit([this](auto&& src1, auto&& src2) { \
+                        op ## r ( src1.get(), src2.get()); \
+                        }, src1.value(), src2.value()); \
+                break;
 #include "numerics_dispatch.def"
 #undef Y
 #undef X 
+#undef Z
                 case Opcodes::Scaler:
                     optionalCheck(src1, src2, dest);
                     std::visit([this](auto&& src1, auto&& src2, auto&& dest) {
