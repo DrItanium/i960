@@ -545,8 +545,16 @@ namespace i960 {
 			void classrl(FloatingPointSourceRegister src) noexcept;
             void cpysre(__DEFAULT_THREE_ARGS__) noexcept; // TODO fix the signature of this function
             void cpyrsre(__DEFAULT_THREE_ARGS__) noexcept; // TODO fix the signature of this function
-            void roundr(__DEFAULT_TWO_ARGS__) noexcept;
-            void roundrl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
+            template<typename Src, typename Dest>
+            void roundr(const Src& src, Dest& dest) noexcept {
+                using K = typename TwoArgumentExtraction<decltype(src), decltype(dest)>::Type;
+                // TODO implement the roundr operation
+            }
+            template<typename Src, typename Dest>
+            void roundrl(const Src& src, Dest& dest) noexcept {
+                using K = typename TwoLongArgumentExtraction<decltype(src), decltype(dest)>::Type;
+                // TODO implement the roundrl operation
+            }
             void cvtilr(LongSourceRegister src, ExtendedReal& dest) noexcept;
             void cvtir(SourceRegister src, ExtendedReal& dest) noexcept;
             void cvtri(__DEFAULT_TWO_ARGS__) noexcept; // TODO fix this function as it deals with floating point registers

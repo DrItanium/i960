@@ -525,6 +525,8 @@ namespace i960 {
                 X(Logeprl, logeprl);
                 X(Logrl, logrl);
                 Y(Movrl, movrl);
+                Y(Roundrl, roundrl);
+                Y(Logbnrl, logbnrl);
                 case Opcodes::Scalerl:
                     optionalCheck(src1, src2, dest);
                     std::visit([this](auto&& src1, auto&& src2, auto&& dest) {
@@ -650,6 +652,8 @@ namespace i960 {
                 X(Logepr, logepr);
                 X(Logr, logr);
                 Y(Movr, movr);
+                Y(Roundr, roundr);
+                Y(Logbnr, logbnr);
                 case Opcodes::Scaler:
                     optionalCheck(src1, src2, dest);
                     std::visit([this](auto&& src1, auto&& src2, auto&& dest) {
