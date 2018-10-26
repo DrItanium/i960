@@ -483,18 +483,23 @@ namespace i960 {
 #define X(title, op) \
             case Opcodes:: title : \
                  optionalCheck(src1, src2, dest); \
-                 op ( src1.value(), src2.value(), dest.value()); \
+                 std::visit([this](auto&& src1, auto&& src2, auto&& dest) { \
+                         op ( src1.get(), src2.get(), dest.get()); \
+                         }, src1.value(), src2.value(), dest.value()); \
             break
 #define Y(title, op) \
             case Opcodes:: title : \
                  optionalCheck(src1, dest); \
-                 op ( src1.value() , dest.value()  ); \
+                 std::visit([this](auto&& src, auto&& dest) { \
+                         op ( src.get(), dest.get()); \
+                         }, src1.value(), dest.value()); \
             break
             X(Addr, addr);
             X(Subr, subr);
             X(Mulr, mulr);
             X(Divr, divr);
             X(Remr, remr);
+            X(Atanr, atanr);
             Y(Cosr, cosr);
             Y(Sinr, sinr);
             Y(Tanr, tanr);

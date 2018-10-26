@@ -346,30 +346,6 @@ namespace i960 {
             // end core architecture
             // begin numerics architecture 
             // TODO add all of the different various combinations
-#define DefDecompose2N(name) \
-            void name ## r ( SourceRegisterSelector src, DestinationRegisterSelector dest) noexcept;
-#define DefDecompose2W(name) \
-            void name ## rl ( LongSourceRegisterSelector src, LongDestinationRegisterSelector dest) noexcept;
-#define DefDecompose2(name) \
-            DefDecompose2N(name); \
-            DefDecompose2W(name)
-#define DefDecompose3N(name) void name ## r (SourceRegisterSelector src1, SourceRegisterSelector src2, DestinationRegisterSelector dest) noexcept
-#define DefDecompose3W(name) void name ## rl (LongSourceRegisterSelector src1, LongSourceRegisterSelector src2, LongDestinationRegisterSelector dest) noexcept
-#define DefDecompose3(name) \
-            DefDecompose3N(name); \
-            DefDecompose3W(name)
-            DefDecompose2(tan);
-            DefDecompose2(sin);
-            DefDecompose2(cos);
-            DefDecompose2(exp);
-            DefDecompose2(sqrt);
-            DefDecompose2(logbn);
-            DefDecompose3(add);
-            DefDecompose3(sub);
-            DefDecompose3(div);
-            DefDecompose3(rem);
-            DefDecompose3(mul);
-            DefDecompose3(atan);
             template<typename Src, typename Dest>
             void tanr(const Src& src, Dest& dest) noexcept {
                 using K = typename TwoArgumentExtraction<decltype(src), decltype(dest)>::Type;
@@ -510,7 +486,6 @@ namespace i960 {
                 // TODO implement body for logeprl
                 //dest.template set<K>(src2.template get<K>() * src1.template get<K>());
             }
-            DefDecompose3(logep);
             template<typename Src, typename Dest>
             void expr(const Src& src, Dest& dest) noexcept {
                 using K = typename TwoArgumentExtraction<decltype(src), decltype(dest)>::Type;
@@ -683,11 +658,5 @@ namespace i960 {
 #undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
-#undef DefDecompose2
-#undef DefDecompose2N
-#undef DefDecompose2W
-#undef DefDecompose3
-#undef DefDecompose3N
-#undef DefDecompose3W
 
 #endif // end I960_CORE_H__
