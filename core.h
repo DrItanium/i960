@@ -347,19 +347,23 @@ namespace i960 {
             // begin numerics architecture 
             // TODO add all of the different various combinations
             template<typename Src, typename Dest>
-            void tanr(const Src& src, Dest& dest) noexcept {
+            void dispatch(std::function<void(Core*, const Src& src, Dest& dest)> fn, const Src& src, Dest& dest) noexcept {
                 if constexpr (IsSourceSelector<Src>) {
                     if constexpr (IsDestinationSelector<Dest>) {
-                        std::visit([this](auto&& src, auto&& dest) { tanr(src.get(), dest.get()); }, src, dest);
+                        std::visit([this, fn](auto&& src, auto&& dest) { fn(this, src.get(), dest.get()); }, src, dest);
                     } else {
-                        std::visit([this, &dest](auto&& src) { tanr(src.get(), dest); }, src);
+                        std::visit([this, fn, &dest](auto&& src) { fn(this, src.get(), dest); }, src);
                     }
                 } else if constexpr (IsDestinationSelector<Dest>) {
-                    std::visit([this, &src](auto&& dest) { tanr(src, dest.get()); }, dest);
+                        std::visit([this, fn, &src](auto&& dest) { fn(this, src, dest.get()); }, dest);
                 } else {
-                    using K = typename TwoArgumentExtraction<decltype(src), decltype(dest)>::Type;
-                    dest.template set<K>(::tan(src.template get<K>()));
+                    fn(this, src, dest);
                 }
+            }
+            template<typename Src, typename Dest>
+            void tanr(const Src& src, Dest& dest) noexcept {
+                using K = typename TwoArgumentExtraction<decltype(src), decltype(dest)>::Type;
+                dest.template set<K>(::tan(src.template get<K>()));
             }
             template<typename Src, typename Dest>
             void tanrl(const Src& src, Dest& dest) noexcept {
