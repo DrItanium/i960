@@ -106,6 +106,27 @@ namespace i960 {
     void Core::classrl(FloatingPointSourceRegister src) noexcept {
 		performClassification<decltype(src), ExtendedReal>(src, _ac);
     }
+#define DefDecompose2N(name) \
+            void Core:: name ( SourceRegisterSelector src, DestinationRegisterSelector dest) noexcept { \
+                std::visit([this](auto&& src, auto&& dest) { \
+                        name( src.get(), dest.get()); \
+                        }, src, dest); \
+            }
+#define DefDecompose2W(name) \
+            void Core:: name ( LongSourceRegisterSelector src, LongDestinationRegisterSelector dest) noexcept { \
+                std::visit([this](auto&& src, auto&& dest) { \
+                        name( src.get(), dest.get()); \
+                        }, src, dest); \
+            }
+#define DefDecompose2(name) \
+            DefDecompose2N(name ## r); \
+            DefDecompose2W(name ## rl)
+    DefDecompose2(sin);
+    DefDecompose2(tan);
+    DefDecompose2(cos);
+#undef DefDecompose2
+#undef DefDecompose2N
+#undef DefDecompose2W
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__

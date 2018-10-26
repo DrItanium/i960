@@ -346,20 +346,16 @@ namespace i960 {
             // end core architecture
             // begin numerics architecture 
             // TODO add all of the different various combinations
-            template<typename Src, typename Dest>
-            void dispatch(std::function<void(Core*, const Src& src, Dest& dest)> fn, const Src& src, Dest& dest) noexcept {
-                if constexpr (IsSourceSelector<Src>) {
-                    if constexpr (IsDestinationSelector<Dest>) {
-                        std::visit([this, fn](auto&& src, auto&& dest) { fn(this, src.get(), dest.get()); }, src, dest);
-                    } else {
-                        std::visit([this, fn, &dest](auto&& src) { fn(this, src.get(), dest); }, src);
-                    }
-                } else if constexpr (IsDestinationSelector<Dest>) {
-                        std::visit([this, fn, &src](auto&& dest) { fn(this, src, dest.get()); }, dest);
-                } else {
-                    fn(this, src, dest);
-                }
-            }
+#define DefDecompose2N(name) \
+            void name ( SourceRegisterSelector src, DestinationRegisterSelector dest) noexcept;
+#define DefDecompose2W(name) \
+            void name ( LongSourceRegisterSelector src, LongDestinationRegisterSelector dest) noexcept;
+#define DefDecompose2(name) \
+            DefDecompose2N(name ## r); \
+            DefDecompose2W(name ## rl)
+            DefDecompose2(tan);
+            DefDecompose2(sin);
+            DefDecompose2(cos);
             template<typename Src, typename Dest>
             void tanr(const Src& src, Dest& dest) noexcept {
                 using K = typename TwoArgumentExtraction<decltype(src), decltype(dest)>::Type;
@@ -372,22 +368,22 @@ namespace i960 {
             }
             template<typename Src, typename Dest>
             void sinr(const Src& src, Dest& dest) noexcept {
-                using K = typename TwoArgumentExtraction<Src, Dest>::Type;
+                using K = typename TwoArgumentExtraction<decltype(src), decltype(dest)>::Type;
                 dest.template set<K>(::sin(src.template get<K>()));
             }
             template<typename Src, typename Dest>
             void sinrl(const Src& src, Dest& dest) noexcept {
-                using K = typename TwoLongArgumentExtraction<Src, Dest>::Type;
+                using K = typename TwoLongArgumentExtraction<decltype(src), decltype(dest)>::Type;
                 dest.template set<K>(::sin(src.template get<K>()));
             }
             template<typename Src, typename Dest>
             void cosr(const Src& src, Dest& dest) noexcept {
-                using K = typename TwoArgumentExtraction<Src, Dest>::Type;
+                using K = typename TwoArgumentExtraction<decltype(src), decltype(dest)>::Type;
                 dest.template set<K>(::cos(src.template get<K>()));
             }
             template<typename Src, typename Dest>
             void cosrl(const Src& src, Dest& dest) noexcept {
-                using K = typename TwoLongArgumentExtraction<Src, Dest>::Type;
+                using K = typename TwoLongArgumentExtraction<decltype(src), decltype(dest)>::Type;
                 dest.template set<K>(::cos(src.template get<K>()));
             }
             template<typename Src1, typename Src2, typename Dest>
@@ -502,22 +498,22 @@ namespace i960 {
             }
             template<typename Src, typename Dest>
             void expr(const Src& src, Dest& dest) noexcept {
-                using K = typename TwoArgumentExtraction<Src, Dest>::Type;
+                using K = typename TwoArgumentExtraction<decltype(src), decltype(dest)>::Type;
                 // TODO implement the expr operation
             }
             template<typename Src, typename Dest>
             void exprl(const Src& src, Dest& dest) noexcept {
-                using K = typename TwoLongArgumentExtraction<Src, Dest>::Type;
+                using K = typename TwoLongArgumentExtraction<decltype(src), decltype(dest)>::Type;
                 // TODO implement the exprl operation
             }
             template<typename Src, typename Dest>
             void logbnr(const Src& src, Dest& dest) noexcept {
-                using K = typename TwoArgumentExtraction<Src, Dest>::Type;
+                using K = typename TwoArgumentExtraction<decltype(src), decltype(dest)>::Type;
                 // TODO implement the logbnr operation
             }
             template<typename Src, typename Dest>
             void logbnrl(const Src& src, Dest& dest) noexcept {
-                using K = typename TwoLongArgumentExtraction<Src, Dest>::Type;
+                using K = typename TwoLongArgumentExtraction<decltype(src), decltype(dest)>::Type;
                 // TODO implement the logbnrl operation
             }
             template<typename Src1, typename Src2, typename Dest>
@@ -552,13 +548,13 @@ namespace i960 {
             }
             template<typename Src, typename Dest>
             void sqrtr(const Src& src, Dest& dest) noexcept {
-                using K = typename TwoArgumentExtraction<Src, Dest>::Type;
+                using K = typename TwoArgumentExtraction<decltype(src), decltype(dest)>::Type;
                 dest.template set<K>(::sqrt(src.template get<K>()));
                 // TODO implement the sqrtr operation
             }
             template<typename Src, typename Dest>
             void sqrtrl(const Src& src, Dest& dest) noexcept {
-                using K = typename TwoLongArgumentExtraction<Src, Dest>::Type;
+                using K = typename TwoLongArgumentExtraction<decltype(src), decltype(dest)>::Type;
                 // TODO implement the sqrtrl operation
                 dest.template set<K>(::sqrt(src.template get<K>()));
             }
@@ -672,4 +668,8 @@ namespace i960 {
 #undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
+#undef DefDecompose2
+#undef DefDecompose2N
+#undef DefDecompose2W
+
 #endif // end I960_CORE_H__
