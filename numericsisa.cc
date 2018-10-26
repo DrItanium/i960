@@ -65,9 +65,8 @@ namespace i960 {
     void performClassification(const T& val, ArithmeticControls& ac) noexcept {
 
     }
-	template<typename T, typename I>
-	void performClassification(const T& src, ArithmeticControls& ac) noexcept {
-        I val = src.template get<I>();
+    template<typename T>
+    void classify(const T& val, ArithmeticControls& ac) noexcept {
         auto s = (val.sign << 3) & 0b1000;
         if (val.isZero()) {
             ac.arithmeticStatusField = s | 0b000;
@@ -83,6 +82,16 @@ namespace i960 {
             ac.arithmeticStatusField = s | 0b101;
         } else if (val.isReservedEncoding()) {
             ac.arithmeticStatusField = s | 0b110;
+        }
+    }
+	template<typename T, typename I>
+	void performClassification(const T& src, ArithmeticControls& ac) noexcept {
+        if constexpr (std::is_same_v<std::decay_t<T>, std::decay_t<I>>) {
+            // they are the same type so just use it directly
+            classify<T>(src, ac);
+        } else {
+            I val = src.template get<I>();
+            classify<I>(val, ac);
         }
 	}
     void Core::classr(SourceRegister src) noexcept {
