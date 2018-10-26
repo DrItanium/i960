@@ -413,8 +413,8 @@ namespace i960 {
     constexpr bool IsLongSourceSelector = std::is_same_v<std::decay_t<T>, LongSourceRegisterSelector>;
     template<typename T>
     constexpr bool IsLongDestinationSelector = std::is_same_v<std::decay_t<T>, LongDestinationRegisterSelector>;
-	void Core::dispatchFP(const Instruction::REGFormat& i) noexcept {
-        if (auto opcode = static_cast<Opcodes>(i.getOpcode()); isLongRealForm(opcode)) {
+    void Core::dispatchFPLong(const Instruction::REGFormat& i) noexcept {
+            auto opcode = static_cast<Opcodes>(i.getOpcode());
             NormalRegister imm1a, imm1b;
             NormalRegister imm2a, imm2b;
             LongRegister imm1(imm1a, imm1b);
@@ -527,6 +527,7 @@ namespace i960 {
                 Y(Movrl, movrl);
                 Y(Roundrl, roundrl);
                 Y(Logbnrl, logbnrl);
+                Y(Exprl, exprl);
                 case Opcodes::Scalerl:
                     optionalCheck(src1, src2, dest);
                     std::visit([this](auto&& src1, auto&& src2, auto&& dest) {
@@ -544,6 +545,10 @@ namespace i960 {
                 default:
                 throw "illegal instruction";
             }
+    }
+	void Core::dispatchFP(const Instruction::REGFormat& i) noexcept {
+        if (auto opcode = static_cast<Opcodes>(i.getOpcode()); isLongRealForm(opcode)) {
+            dispatchFPLong(i);
         } else {
             NormalRegister imm1;
             NormalRegister imm2;
@@ -654,6 +659,7 @@ namespace i960 {
                 Y(Movr, movr);
                 Y(Roundr, roundr);
                 Y(Logbnr, logbnr);
+                Y(Expr, expr);
                 case Opcodes::Scaler:
                     optionalCheck(src1, src2, dest);
                     std::visit([this](auto&& src1, auto&& src2, auto&& dest) {

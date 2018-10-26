@@ -637,6 +637,7 @@ namespace i960 {
 			void dispatch(const Instruction::MemFormat::MEMBFormat& inst) noexcept;
 			Integer getFullDisplacement() noexcept;
 			void dispatchFP(const Instruction::REGFormat& inst) noexcept;
+            void dispatchFPLong(const Instruction::REGFormat& inst) noexcept;
         private:
             RegisterWindow _globalRegisters;
             // The hardware implementations use register sets, however
