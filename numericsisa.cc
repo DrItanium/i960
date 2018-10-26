@@ -106,12 +106,6 @@ namespace i960 {
     void Core::classrl(FloatingPointSourceRegister src) noexcept {
 		performClassification<decltype(src), ExtendedReal>(src, _ac);
     }
-    void Core::tanr(SourceRegisterSelector src, DestinationRegisterSelector dest) noexcept {
-        std::visit([this](auto&& src, auto&& dest) { tanr(src.get(), dest.get()); }, src, dest);
-    }
-    void Core::tanrl(LongSourceRegisterSelector src, LongDestinationRegisterSelector dest) noexcept {
-        std::visit([this](auto&& src, auto&& dest) { tanrl(src.get(), dest.get()); }, src, dest);
-    }
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__

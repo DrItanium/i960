@@ -30,9 +30,17 @@ namespace i960 {
     using FloatingPointSourceRegister = const FloatingPointRegister&;
     using FloatingPointDestinationRegister = FloatingPointRegister&;
     using SourceRegisterSelector = std::variant<std::reference_wrapper<const Register>, std::reference_wrapper<const FloatingPointRegister>>;
-    using LongSourceRegisterSelector = std::variant<std::reference_wrapper<const LongRegister>, std::reference_wrapper<const FloatingPointRegister>>;
     using DestinationRegisterSelector = std::variant<std::reference_wrapper<Register>, std::reference_wrapper<FloatingPointRegister>>;
+    template<typename T>
+    constexpr bool IsSourceSelector = std::is_same_v<std::decay_t<T>, SourceRegisterSelector>;
+    template<typename T>
+    constexpr bool IsDestinationSelector = std::is_same_v<std::decay_t<T>, DestinationRegisterSelector>;
+    using LongSourceRegisterSelector = std::variant<std::reference_wrapper<const LongRegister>, std::reference_wrapper<const FloatingPointRegister>>;
     using LongDestinationRegisterSelector = std::variant<std::reference_wrapper<LongRegister>, std::reference_wrapper<FloatingPointRegister>>;
+    template<typename T>
+    constexpr bool IsLongSourceSelector = std::is_same_v<std::decay_t<T>, LongSourceRegisterSelector>;
+    template<typename T>
+    constexpr bool IsLongDestinationSelector = std::is_same_v<std::decay_t<T>, LongDestinationRegisterSelector>;
 
     using RegisterWindow = NormalRegister[LocalRegisterCount];
     template<typename Src1, typename Src2, typename Dest>
@@ -340,11 +348,19 @@ namespace i960 {
             // TODO add all of the different various combinations
             template<typename Src, typename Dest>
             void tanr(const Src& src, Dest& dest) noexcept {
-                using K = typename TwoArgumentExtraction<decltype(src), decltype(dest)>::Type;
-                dest.template set<K>(::tan(src.template get<K>()));
+                if constexpr (IsSourceSelector<Src>) {
+                    if constexpr (IsDestinationSelector<Dest>) {
+                        std::visit([this](auto&& src, auto&& dest) { tanr(src.get(), dest.get()); }, src, dest);
+                    } else {
+                        std::visit([this, &dest](auto&& src) { tanr(src.get(), dest); }, src);
+                    }
+                } else if constexpr (IsDestinationSelector<Dest>) {
+                    std::visit([this, &src](auto&& dest) { tanr(src, dest.get()); }, dest);
+                } else {
+                    using K = typename TwoArgumentExtraction<decltype(src), decltype(dest)>::Type;
+                    dest.template set<K>(::tan(src.template get<K>()));
+                }
             }
-            void tanr(SourceRegisterSelector src, DestinationRegisterSelector dest) noexcept;
-            void tanrl(LongSourceRegisterSelector src, LongDestinationRegisterSelector dest) noexcept;
             template<typename Src, typename Dest>
             void tanrl(const Src& src, Dest& dest) noexcept {
                 using K = typename TwoLongArgumentExtraction<decltype(src), decltype(dest)>::Type;
