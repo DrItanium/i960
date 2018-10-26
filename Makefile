@@ -34,7 +34,7 @@ numericops.o: operations.h types.h archlevel.h conditional_kinds.def numericops.
 sim.o: operations.h types.h opcodes.h archlevel.h conditional_kinds.def sim.cc
 misc.o: archlevel.h types.h conditional_kinds.def misc.cc
 core.o: archlevel.h types.h memiface.h core.h operations.h opcodes.h conditional_kinds.def core.cc
-dispatcher.o: archlevel.h types.h core.h opcodes.h conditional_kinds.def dispatcher.cc
+dispatcher.o: archlevel.h types.h core.h opcodes.h conditional_kinds.def dispatcher.cc numerics_dispatch.def
 numericsisa.o: archlevel.h types.h core.h memiface.h opcodes.h conditional_kinds.def numericsisa.cc
 
 

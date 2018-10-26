@@ -500,34 +500,22 @@ namespace i960 {
             }
             switch(opcode) {
 #define X(title, op) \
-                case Opcodes:: title : \
+                case Opcodes:: title ## rl : \
                                        optionalCheck(src1, src2, dest); \
                 std::visit([this](auto&& src1, auto&& src2, auto&& dest) { \
-                        op ( src1.get(), src2.get(), dest.get()); \
+                        op ## rl ( src1.get(), src2.get(), dest.get()); \
                         }, src1.value(), src2.value(), dest.value()); \
-                break
+                break;
 #define Y(title, op) \
-                case Opcodes:: title : \
+                case Opcodes:: title ## rl : \
                                        optionalCheck(src1, dest); \
                 std::visit([this](auto&& src, auto&& dest) { \
-                        op ( src.get(), dest.get()); \
+                        op ## rl ( src.get(), dest.get()); \
                         }, src1.value(), dest.value()); \
-                break
-                X(Addrl, addrl);
-                X(Subrl, subrl);
-                X(Mulrl, mulrl);
-                X(Divrl, divrl);
-                X(Remrl, remrl);
-                X(Atanrl, atanrl);
-                Y(Cosrl, cosrl);
-                Y(Sinrl, sinrl);
-                Y(Tanrl, tanrl);
-                X(Logeprl, logeprl);
-                X(Logrl, logrl);
-                Y(Movrl, movrl);
-                Y(Roundrl, roundrl);
-                Y(Logbnrl, logbnrl);
-                Y(Exprl, exprl);
+                break;
+#include "numerics_dispatch.def"
+#undef Y
+#undef X 
                 case Opcodes::Scalerl:
                     optionalCheck(src1, src2, dest);
                     std::visit([this](auto&& src1, auto&& src2, auto&& dest) {
@@ -540,8 +528,6 @@ namespace i960 {
                                 }
                             }, src1.value(), src2.value(), dest.value());
                     break;
-#undef Y
-#undef X 
                 default:
                 throw "illegal instruction";
             }
@@ -632,34 +618,22 @@ namespace i960 {
             }
             switch(opcode) {
 #define X(title, op) \
-                case Opcodes:: title : \
+                case Opcodes:: title ## r : \
                                        optionalCheck(src1, src2, dest); \
                 std::visit([this](auto&& src1, auto&& src2, auto&& dest) { \
-                        op ( src1.get(), src2.get(), dest.get()); \
+                        op ## r ( src1.get(), src2.get(), dest.get()); \
                         }, src1.value(), src2.value(), dest.value()); \
-                break
+                break;
 #define Y(title, op) \
-                case Opcodes:: title : \
+                case Opcodes:: title ## r : \
                                        optionalCheck(src1, dest); \
                 std::visit([this](auto&& src, auto&& dest) { \
-                        op ( src.get(), dest.get()); \
+                        op ## r ( src.get(), dest.get()); \
                         }, src1.value(), dest.value()); \
-                break
-                X(Addr, addr);
-                X(Subr, subr);
-                X(Mulr, mulr);
-                X(Divr, divr);
-                X(Remr, remr);
-                X(Atanr, atanr);
-                Y(Cosr, cosr);
-                Y(Sinr, sinr);
-                Y(Tanr, tanr);
-                X(Logepr, logepr);
-                X(Logr, logr);
-                Y(Movr, movr);
-                Y(Roundr, roundr);
-                Y(Logbnr, logbnr);
-                Y(Expr, expr);
+                break;
+#include "numerics_dispatch.def"
+#undef Y
+#undef X 
                 case Opcodes::Scaler:
                     optionalCheck(src1, src2, dest);
                     std::visit([this](auto&& src1, auto&& src2, auto&& dest) {
@@ -672,8 +646,6 @@ namespace i960 {
                                 }
                             }, src1.value(), src2.value(), dest.value());
                     break;
-#undef Y
-#undef X 
                 default:
                 throw "illegal instruction";
             }
