@@ -525,6 +525,18 @@ namespace i960 {
                 X(Logeprl, logeprl);
                 X(Logrl, logrl);
                 Y(Movrl, movrl);
+                case Opcodes::Scalerl:
+                    optionalCheck(src1, src2, dest);
+                    std::visit([this](auto&& src1, auto&& src2, auto&& dest) {
+                                using K = std::decay_t<decltype(src1.get())>;
+                                if constexpr (!std::is_same_v<K, LongRegister>) {
+                                    // cannot have src1 be a floating point register
+                                    throw "Illegal register specified!";
+                                } else {
+                                    scalerl(src1.get(), src2.get(), dest.get());
+                                }
+                            }, src1.value(), src2.value(), dest.value());
+                    break;
 #undef Y
 #undef X 
                 default:
@@ -638,6 +650,18 @@ namespace i960 {
                 X(Logepr, logepr);
                 X(Logr, logr);
                 Y(Movr, movr);
+                case Opcodes::Scaler:
+                    optionalCheck(src1, src2, dest);
+                    std::visit([this](auto&& src1, auto&& src2, auto&& dest) {
+                                using K = std::decay_t<decltype(src1.get())>;
+                                if constexpr (!std::is_same_v<K, Register>) {
+                                    // cannot have src1 be a floating point register
+                                    throw "Illegal register specified!";
+                                } else {
+                                    scaler(src1.get(), src2.get(), dest.get());
+                                }
+                            }, src1.value(), src2.value(), dest.value());
+                    break;
 #undef Y
 #undef X 
                 default:
