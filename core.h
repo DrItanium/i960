@@ -505,6 +505,7 @@ namespace i960 {
                 // TODO implement body for logeprl
                 //dest.template set<K>(src2.template get<K>() * src1.template get<K>());
             }
+            DefDecompose3(logep);
             template<typename Src, typename Dest>
             void expr(const Src& src, Dest& dest) noexcept {
                 using K = typename TwoArgumentExtraction<decltype(src), decltype(dest)>::Type;

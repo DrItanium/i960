@@ -144,6 +144,7 @@ namespace i960 {
     DefDecompose2(exp);
     DefDecompose2(logbn);
     DefDecompose3(add);
+    DefDecompose3(logep);
 #undef DefDecompose2
 #undef DefDecompose2N
 #undef DefDecompose2W
