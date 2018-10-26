@@ -15,23 +15,31 @@
 namespace i960 {
     using Register = NormalRegister;
     using LongRegister = DoubleRegister;
-    using ExtendedRegister = TripleRegister;
     using SourceRegister = const Register&;
     using DestinationRegister = Register&;
     using LongSourceRegister = const LongRegister&;
     using LongDestinationRegister = LongRegister&;
-    using ExtendedSourceRegister = const ExtendedRegister&;
+    
+    // ExtendedRegisters are used for move to and from floating point
+    using ExtendedRegister = TripleRegister;
+    using ExtendedSourceRegister = const ExtendedRegister&; 
     using ExtendedDestinationRegister = ExtendedRegister&;
+
+
+    using FloatingPointRegister = ExtendedReal;
+    using FloatingPointSourceRegister = const FloatingPointRegister&;
+    using FloatingPointDestinationRegister = FloatingPointRegister&;
+    using SourceRegisterSelector = std::variant<std::reference_wrapper<const Register>, std::reference_wrapper<const FloatingPointRegister>>;
+    using LongSourceRegisterSelector = std::variant<std::reference_wrapper<const LongRegister>, std::reference_wrapper<const FloatingPointRegister>>;
+    using DestinationRegisterSelector = std::variant<std::reference_wrapper<Register>, std::reference_wrapper<FloatingPointRegister>>;
+    using LongDestinationRegisterSelector = std::variant<std::reference_wrapper<LongRegister>, std::reference_wrapper<FloatingPointRegister>>;
+
     using RegisterWindow = NormalRegister[LocalRegisterCount];
-    using SourceRegisterSelector = std::variant<std::reference_wrapper<const Register>, std::reference_wrapper<const ExtendedRegister>>;
-    using LongSourceRegisterSelector = std::variant<std::reference_wrapper<const LongRegister>, std::reference_wrapper<const ExtendedRegister>>;
-    using DestinationRegisterSelector = std::variant<std::reference_wrapper<Register>, std::reference_wrapper<ExtendedRegister>>;
-    using LongDestinationRegisterSelector = std::variant<std::reference_wrapper<LongRegister>, std::reference_wrapper<ExtendedRegister>>;
     template<typename Src1, typename Src2, typename Dest>
     struct ThreeArgumentExtraction final {
-        static_assert(std::is_same_v<Src1, SourceRegister> || std::is_same_v<Src1, ExtendedSourceRegister>, "Illegal source register kind!"); 
-        static_assert(std::is_same_v<Src2, SourceRegister> || std::is_same_v<Src2, ExtendedSourceRegister>, "Illegal source register kind!"); 
-        static_assert(std::is_same_v<Dest, DestinationRegister> || std::is_same_v<Dest, ExtendedDestinationRegister>, "Illegal destination register kind!");
+        static_assert(std::is_same_v<Src1, SourceRegister> || std::is_same_v<Src1, FloatingPointSourceRegister>, "Illegal source register kind!"); 
+        static_assert(std::is_same_v<Src2, SourceRegister> || std::is_same_v<Src2, FloatingPointSourceRegister>, "Illegal source register kind!"); 
+        static_assert(std::is_same_v<Dest, DestinationRegister> || std::is_same_v<Dest, FloatingPointDestinationRegister>, "Illegal destination register kind!");
         using Type = RawExtendedReal;
         private:
             ThreeArgumentExtraction() = delete;
@@ -50,9 +58,9 @@ namespace i960 {
     };
     template<typename Src1, typename Src2, typename Dest>
     struct ThreeLongArgumentExtraction final {
-        static_assert(std::is_same_v<Src1, LongSourceRegister> || std::is_same_v<Src1, ExtendedSourceRegister>, "Illegal source register kind!"); 
-        static_assert(std::is_same_v<Src2, LongSourceRegister> || std::is_same_v<Src2, ExtendedSourceRegister>, "Illegal source register kind!"); 
-        static_assert(std::is_same_v<Dest, LongDestinationRegister> || std::is_same_v<Dest, ExtendedDestinationRegister>, "Illegal destination register kind!");
+        static_assert(std::is_same_v<Src1, LongSourceRegister> || std::is_same_v<Src1, FloatingPointSourceRegister>, "Illegal source register kind!"); 
+        static_assert(std::is_same_v<Src2, LongSourceRegister> || std::is_same_v<Src2, FloatingPointSourceRegister>, "Illegal source register kind!"); 
+        static_assert(std::is_same_v<Dest, LongDestinationRegister> || std::is_same_v<Dest, FloatingPointDestinationRegister>, "Illegal destination register kind!");
         using Type = RawExtendedReal;
         private:
             ThreeLongArgumentExtraction() = delete;
@@ -71,8 +79,8 @@ namespace i960 {
     };
     template<typename Src1, typename Dest>
     struct TwoArgumentExtraction final {
-        static_assert(std::is_same_v<Src1, SourceRegister> || std::is_same_v<Src1, ExtendedSourceRegister>, "Illegal source register kind!"); 
-        static_assert(std::is_same_v<Dest, DestinationRegister> || std::is_same_v<Dest, ExtendedDestinationRegister>, "Illegal destination register kind!");
+        static_assert(std::is_same_v<Src1, SourceRegister> || std::is_same_v<Src1, FloatingPointSourceRegister>, "Illegal source register kind!"); 
+        static_assert(std::is_same_v<Dest, DestinationRegister> || std::is_same_v<Dest, FloatingPointDestinationRegister>, "Illegal destination register kind!");
         using Type = RawExtendedReal;
         private:
             TwoArgumentExtraction() = delete;
@@ -91,8 +99,8 @@ namespace i960 {
     };
     template<typename Src1, typename Dest>
     struct TwoLongArgumentExtraction final {
-        static_assert(std::is_same_v<Src1, LongSourceRegister> || std::is_same_v<Src1, ExtendedSourceRegister>, "Illegal source register kind!"); 
-        static_assert(std::is_same_v<Dest, LongDestinationRegister> || std::is_same_v<Dest, ExtendedDestinationRegister>, "Illegal destination register kind!");
+        static_assert(std::is_same_v<Src1, LongSourceRegister> || std::is_same_v<Src1, FloatingPointSourceRegister>, "Illegal source register kind!"); 
+        static_assert(std::is_same_v<Dest, LongDestinationRegister> || std::is_same_v<Dest, FloatingPointDestinationRegister>, "Illegal destination register kind!");
         using Type = RawExtendedReal;
         private:
             TwoLongArgumentExtraction() = delete;
@@ -111,8 +119,8 @@ namespace i960 {
     };
     template<typename Src1, typename Src2>
     struct TwoSourceArgumentExtraction final {
-        static_assert(std::is_same_v<Src1, SourceRegister> || std::is_same_v<Src1, ExtendedSourceRegister>, "Illegal source register kind!"); 
-        static_assert(std::is_same_v<Src2, SourceRegister> || std::is_same_v<Src2, ExtendedSourceRegister>, "Illegal source register kind!");
+        static_assert(std::is_same_v<Src1, SourceRegister> || std::is_same_v<Src1, FloatingPointSourceRegister>, "Illegal source register kind!"); 
+        static_assert(std::is_same_v<Src2, SourceRegister> || std::is_same_v<Src2, FloatingPointSourceRegister>, "Illegal source register kind!");
         using Type = ExtendedReal;
         private:
             TwoSourceArgumentExtraction() = delete;
@@ -131,8 +139,8 @@ namespace i960 {
     };
     template<typename Src1, typename Src2>
     struct TwoLongSourceArgumentExtraction final {
-        static_assert(std::is_same_v<Src1, LongSourceRegister> || std::is_same_v<Src1, ExtendedSourceRegister>, "Illegal source register kind!"); 
-        static_assert(std::is_same_v<Src2, LongSourceRegister> || std::is_same_v<Src2, ExtendedSourceRegister>, "Illegal source register kind!");
+        static_assert(std::is_same_v<Src1, LongSourceRegister> || std::is_same_v<Src1, FloatingPointSourceRegister>, "Illegal source register kind!"); 
+        static_assert(std::is_same_v<Src2, LongSourceRegister> || std::is_same_v<Src2, FloatingPointSourceRegister>, "Illegal source register kind!");
         using Type = ExtendedReal;
         private:
             TwoLongSourceArgumentExtraction() = delete;
@@ -494,9 +502,9 @@ namespace i960 {
             void scaler(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
                 static_assert(std::is_same_v<decltype(src1), SourceRegister>, "Illegal src1 type");
                 static_assert(std::is_same_v<decltype(src2), SourceRegister> ||
-                              std::is_same_v<decltype(src2), ExtendedSourceRegister> , "Illegal src2 type");
+                              std::is_same_v<decltype(src2), FloatingPointSourceRegister> , "Illegal src2 type");
                 static_assert(std::is_same_v<decltype(dest), DestinationRegister> ||
-                              std::is_same_v<decltype(dest), ExtendedDestinationRegister> , "Illegal destination type");
+                              std::is_same_v<decltype(dest), FloatingPointDestinationRegister> , "Illegal destination type");
                 if constexpr (std::is_same_v<decltype(src1), SourceRegister> &&
                               std::is_same_v<decltype(src2), SourceRegister> &&
                               std::is_same_v<decltype(dest), DestinationRegister>) {
@@ -509,9 +517,9 @@ namespace i960 {
             void scalerl(const Src1& src1, const Src2& src2, Dest& dest) noexcept {
                 static_assert(std::is_same_v<decltype(src1), LongSourceRegister>, "Illegal src1 type");
                 static_assert(std::is_same_v<decltype(src2), LongSourceRegister> ||
-                              std::is_same_v<decltype(src2), ExtendedSourceRegister> , "Illegal src2 type");
+                              std::is_same_v<decltype(src2), FloatingPointSourceRegister> , "Illegal src2 type");
                 static_assert(std::is_same_v<decltype(dest), LongDestinationRegister> ||
-                              std::is_same_v<decltype(dest), ExtendedDestinationRegister> , "Illegal destination type");
+                              std::is_same_v<decltype(dest), FloatingPointDestinationRegister> , "Illegal destination type");
                 if constexpr (std::is_same_v<decltype(src1), LongSourceRegister> &&
                               std::is_same_v<decltype(src2), LongSourceRegister> &&
                               std::is_same_v<decltype(dest), LongDestinationRegister>) {
@@ -536,9 +544,9 @@ namespace i960 {
             void cmpr(const LongReal& src1, const LongReal& src2, bool ordered = false) noexcept;
             void cmpr(const ExtendedReal& src1, const ExtendedReal& src2, bool ordered = false) noexcept;
             void classr(SourceRegister src) noexcept;
-			void classr(ExtendedSourceRegister src) noexcept;
+			void classr(FloatingPointSourceRegister src) noexcept;
             void classrl(LongSourceRegister src) noexcept;
-			void classrl(ExtendedSourceRegister src) noexcept;
+			void classrl(FloatingPointSourceRegister src) noexcept;
             void cpysre(__DEFAULT_THREE_ARGS__) noexcept; // TODO fix the signature of this function
             void cpyrsre(__DEFAULT_THREE_ARGS__) noexcept; // TODO fix the signature of this function
             void roundr(__DEFAULT_TWO_ARGS__) noexcept;
@@ -628,7 +636,7 @@ namespace i960 {
             Ordinal _instructionPointer;
             ProcessControls _pc;
             TraceControls _tc;
-            ExtendedReal _floatingPointRegisters[NumFloatingPointRegs];
+            FloatingPointRegister _floatingPointRegisters[NumFloatingPointRegs];
 			MemoryInterface& _mem;
 			Ordinal _initialWords[8];
 			Ordinal _prcbAddress;

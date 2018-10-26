@@ -126,58 +126,100 @@ namespace i960 {
      * Part of the numerics architecture and above
      */
     union ExtendedReal {
-		static constexpr LongOrdinal MaxExponent = 0x7FFF;
-		static constexpr LongOrdinal MostSignificantFractionBit = 1ul << 62;
-		static constexpr LongOrdinal RestFractionBits = MostSignificantFractionBit - 1; 
-		static constexpr ShortOrdinal SignCheckBit = 1 << 15;
-		static constexpr ShortOrdinal ZeroCheckBits_Upper = SignCheckBit - 1;
-        ExtendedReal() { }
-        ExtendedReal(Ordinal low, Ordinal mid, Ordinal high) : lower(makeLongOrdinal(low, mid)), upper(high) { }
-        explicit ExtendedReal(RawExtendedReal value) : floating(value) { }
-        Ordinal lowerThird() const noexcept { return static_cast<Ordinal>(lower); }
-        Ordinal middleThird() const noexcept { return static_cast<Ordinal>(lower >> 32); }
-        Ordinal upperThird() const noexcept { return static_cast<Ordinal>(upper); }
-		/**
-		 * Combine the j field with the fraction field to get a complete value
-		 * j is what is normally the implied 1 in the mantissa
-		 */
+        private:
+            template<typename T>
+			static constexpr bool LegalConversion = false;
+        public:
+		    static constexpr LongOrdinal MaxExponent = 0x7FFF;
+		    static constexpr LongOrdinal MostSignificantFractionBit = 1ul << 62;
+		    static constexpr LongOrdinal RestFractionBits = MostSignificantFractionBit - 1; 
+		    static constexpr ShortOrdinal SignCheckBit = 1 << 15;
+		    static constexpr ShortOrdinal ZeroCheckBits_Upper = SignCheckBit - 1;
+            ExtendedReal() { }
+            ExtendedReal(Ordinal low, Ordinal mid, Ordinal high) : lower(makeLongOrdinal(low, mid)), upper(high) { }
+            explicit ExtendedReal(RawExtendedReal value) : floating(value) { }
+            Ordinal lowerThird() const noexcept { return static_cast<Ordinal>(lower); }
+            Ordinal middleThird() const noexcept { return static_cast<Ordinal>(lower >> 32); }
+            Ordinal upperThird() const noexcept { return static_cast<Ordinal>(upper); }
+		    /**
+		     * Combine the j field with the fraction field to get a complete value
+		     * j is what is normally the implied 1 in the mantissa
+		     */
 
-		LongOrdinal getCompleteFraction() const noexcept { 
-			LongOrdinal tmp = j; // get rid of the width cast problem
-			return (tmp << 63) | fraction; 
-		}
+		    LongOrdinal getCompleteFraction() const noexcept { 
+		    	LongOrdinal tmp = j; // get rid of the width cast problem
+		    	return (tmp << 63) | fraction; 
+		    }
+
+            template<typename T>
+            T get() const noexcept {
+                using K = std::decay_t<T>;
+                if constexpr (std::is_same_v<K, RawExtendedReal>) {
+                    return floating;
+                } else if constexpr (std::is_same_v<K, RawLongReal>) {
+                    return static_cast<RawLongReal>(floating);
+                } else if constexpr (std::is_same_v<K, RawReal>) {
+                    return static_cast<RawReal>(floating);
+                } else if constexpr (std::is_same_v<K, LongReal>) {
+                    return LongReal(floating);
+                } else if constexpr (std::is_same_v<K, Real>) {
+                    return Real(floating);
+                } else if constexpr (std::is_same_v<K, ExtendedReal>) {
+                    // the same thing :/
+                    return *this;
+                } else {
+                    static_assert(LegalConversion<K>, "Illegal type requested");
+                }
+            }
+            template<typename T>
+            void set(T value) noexcept {
+                using K = std::decay_t<T>;
+                if constexpr (std::is_same_v<K, RawExtendedReal>) {
+                    floating = value;
+                } else if constexpr (std::is_same_v<K, RawLongReal>) {
+                    floating = value;
+                } else if constexpr (std::is_same_v<K, RawReal>) {
+                    floating = value;
+                } else if constexpr (std::is_same_v<K, LongReal>) {
+                    set(value.floating);
+                } else if constexpr (std::is_same_v<K, Real>) {
+                    set(value.floating);
+                } else {
+                    static_assert(LegalConversion<K>, "Illegal type requested");
+                }
+            }
 
 
-        struct {
-            LongOrdinal fraction: 63;
-            LongOrdinal j : 1;
-            ShortOrdinal exponent : 15;
-            ShortOrdinal sign : 1;
-        }; 
-        struct {
-            LongOrdinal lower;
-            ShortOrdinal upper;
-        };
-        RawExtendedReal floating;
-		bool isInfinity() const noexcept { return (j == 1) && (exponent == MaxExponent) && (fraction == 0); }
-		bool isPositiveInfinity() const noexcept { return isInfinity() && (sign == 0); }
-		bool isNegativeInfinity() const noexcept { return isInfinity() && (sign == 1); }
-		bool isNaN() const noexcept { return (j == 1) && (fraction != 0) && (exponent == MaxExponent); }
-		bool isSignalingNaN() const noexcept { return isNaN() && ((fraction & MostSignificantFractionBit) == 0); }
-		bool isQuietNaN() const noexcept { return isNaN() && ((fraction & MostSignificantFractionBit) != 0); }
-		bool isIndefiniteQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) == 0); }
-		bool isNormalQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) != 0); }
-		bool isReservedEncoding() const noexcept { return (exponent != 0) && (j == 0); }
-		bool isZero() const noexcept { return (lower == 0) && ((upper & ZeroCheckBits_Upper) == 0); }
-		bool isPositiveZero() const noexcept { return isZero() && (sign == 0); }
-		bool isNegativeZero() const noexcept { return isZero() && (sign == 1); }
-		bool isDenormal() const noexcept { return (exponent == 0) && (fraction != 0); }
-		bool isNormal() const noexcept { 
-			// this is a little strange since the 80960 book states that there
-			// is a hole in the design. However, from what I can tell it is
-			// probably safe to operate the same way as the other Real types
-			return ((exponent > 0) && (exponent < MaxExponent)); 
-		}
+            struct {
+                LongOrdinal fraction: 63;
+                LongOrdinal j : 1;
+                ShortOrdinal exponent : 15;
+                ShortOrdinal sign : 1;
+            }; 
+            struct {
+                LongOrdinal lower;
+                ShortOrdinal upper;
+            };
+            RawExtendedReal floating;
+		    bool isInfinity() const noexcept { return (j == 1) && (exponent == MaxExponent) && (fraction == 0); }
+		    bool isPositiveInfinity() const noexcept { return isInfinity() && (sign == 0); }
+		    bool isNegativeInfinity() const noexcept { return isInfinity() && (sign == 1); }
+		    bool isNaN() const noexcept { return (j == 1) && (fraction != 0) && (exponent == MaxExponent); }
+		    bool isSignalingNaN() const noexcept { return isNaN() && ((fraction & MostSignificantFractionBit) == 0); }
+		    bool isQuietNaN() const noexcept { return isNaN() && ((fraction & MostSignificantFractionBit) != 0); }
+		    bool isIndefiniteQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) == 0); }
+		    bool isNormalQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) != 0); }
+		    bool isReservedEncoding() const noexcept { return (exponent != 0) && (j == 0); }
+		    bool isZero() const noexcept { return (lower == 0) && ((upper & ZeroCheckBits_Upper) == 0); }
+		    bool isPositiveZero() const noexcept { return isZero() && (sign == 0); }
+		    bool isNegativeZero() const noexcept { return isZero() && (sign == 1); }
+		    bool isDenormal() const noexcept { return (exponent == 0) && (fraction != 0); }
+		    bool isNormal() const noexcept { 
+		    	// this is a little strange since the 80960 book states that there
+		    	// is a hole in the design. However, from what I can tell it is
+		    	// probably safe to operate the same way as the other Real types
+		    	return ((exponent > 0) && (exponent < MaxExponent)); 
+		    }
     } __attribute__((packed));
 
     union PreviousFramePointer {
@@ -264,6 +306,7 @@ namespace i960 {
             void move(const NormalRegister& other) noexcept { set<Ordinal>(other.get<Ordinal>()); }
     };
 	static_assert(sizeof(NormalRegister) == sizeof(Ordinal), "NormalRegister must be 32-bits wide!");
+
     class DoubleRegister {
         private:
             template<typename T>

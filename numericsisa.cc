@@ -61,36 +61,40 @@ namespace i960 {
         auto sval = src.get<ByteOrdinal>();
         _ac.conditionCode = ((sval >= 0b0011000) && (sval <= 0b00111001)) ? 0b000 : 0b010;
     }
+    template<typename T>
+    void performClassification(const T& val, ArithmeticControls& ac) noexcept {
+
+    }
 	template<typename T, typename I>
 	void performClassification(const T& src, ArithmeticControls& ac) noexcept {
-		I val = src.template get<I>();
-		auto s = (val.sign << 3) & 0b1000;
-		if (val.isZero()) {
-			ac.arithmeticStatusField = s | 0b000;
-		} else if (val.isDenormal()) {
-			ac.arithmeticStatusField = s | 0b001;
-		} else if (val.isNormal()) {
-			ac.arithmeticStatusField = s | 0b010;
-		} else if (val.isInfinity()) {
-			ac.arithmeticStatusField = s | 0b011;
-		} else if (val.isQuietNaN()) {
-			ac.arithmeticStatusField = s | 0b100;
-		} else if (val.isSignalingNaN()) {
-			ac.arithmeticStatusField = s | 0b101;
-		} else if (val.isReservedEncoding()) {
-			ac.arithmeticStatusField = s | 0b110;
-		}
+        I val = src.template get<I>();
+        auto s = (val.sign << 3) & 0b1000;
+        if (val.isZero()) {
+            ac.arithmeticStatusField = s | 0b000;
+        } else if (val.isDenormal()) {
+            ac.arithmeticStatusField = s | 0b001;
+        } else if (val.isNormal()) {
+            ac.arithmeticStatusField = s | 0b010;
+        } else if (val.isInfinity()) {
+            ac.arithmeticStatusField = s | 0b011;
+        } else if (val.isQuietNaN()) {
+            ac.arithmeticStatusField = s | 0b100;
+        } else if (val.isSignalingNaN()) {
+            ac.arithmeticStatusField = s | 0b101;
+        } else if (val.isReservedEncoding()) {
+            ac.arithmeticStatusField = s | 0b110;
+        }
 	}
     void Core::classr(SourceRegister src) noexcept {
 		performClassification<decltype(src), Real>(src, _ac);
     }
-    void Core::classr(ExtendedSourceRegister src) noexcept {
+    void Core::classr(FloatingPointSourceRegister src) noexcept {
 		performClassification<decltype(src), ExtendedReal>(src, _ac);
     }
     void Core::classrl(LongSourceRegister src) noexcept {
 		performClassification<decltype(src), LongReal>(src, _ac);
     }
-    void Core::classrl(ExtendedSourceRegister src) noexcept {
+    void Core::classrl(FloatingPointSourceRegister src) noexcept {
 		performClassification<decltype(src), ExtendedReal>(src, _ac);
     }
 #undef __DEFAULT_TWO_ARGS__
