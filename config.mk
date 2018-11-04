@@ -1,7 +1,8 @@
-CXX ?= g++
-CC ?= gcc
+CXX := g++
 LD := ${CXX}
 
-CXXFLAGS := -std=c++17 -Wall -Wextra
-CFLAGS := -std=c11 -Wall -Wextra
-LDFLAGS := 
+GENFLAGS := -Wall -Wextra 
+#LIBS :=
+#OPTIMIZATION_FLAGS := -O2
+CXXFLAGS := -std=c++17 ${GENFLAGS} ${OPTIMIZATION_FLAGS}
+LDFLAGS := ${LIBS} ${OPTIMIZATION_FLAGS}
