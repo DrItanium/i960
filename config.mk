@@ -1,8 +1,10 @@
-#ASMTOOL := asminst -a x86_64_gcc -k --
+#ASMTOOL := asminst -a x86_64_gcc -ck --
 CXX := ${ASMTOOL} g++
-CC := ${ASMTOOL} gcc
 LD := ${CXX}
 
-CXXFLAGS := -fPIC -std=c++17 -Wall -Wextra
-CFLAGS := -fPIC -std=c11 -Wall -Wextra
-LDFLAGS := 
+#ASMTOOL_EXTRAS := -fPIC
+GENFLAGS := -Wall -Wextra ${ASMTOOL_EXTRAS}
+#LIBS :=
+#OPTIMIZATION_FLAGS := -O2
+CXXFLAGS := -std=c++17 ${GENFLAGS} ${OPTIMIZATION_FLAGS}
+LDFLAGS := ${LIBS} ${OPTIMIZATION_FLAGS}

@@ -18,10 +18,6 @@ $(PROG): $(OBJS)
 	@echo LD ${PROG}
 	@${LD} ${LDFLAGS} -o ${PROG} ${OBJS}
 
-.c.o :
-	@echo CC $<
-	@${CC} ${CFLAGS} -c $< -o $@
-
 .cc.o :
 	@echo CXX $<
 	@${CXX} ${CXXFLAGS} -c $< -o $@
