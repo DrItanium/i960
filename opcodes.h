@@ -1,27 +1,23 @@
 #ifndef I960_OPCODES_H__
 #define I960_OPCODES_H__
+#include "types.h"
 namespace i960 {
-    enum Opcodes {
+    enum class Opcodes : Ordinal {
 #define o(name, code) name = code
+#define c(baseName, baseAddress) \
+		o(baseName ## e, (baseAddress | 0x0a0)), \
+		o(baseName ## g, (baseAddress | 0x090)), \
+		o(baseName ## ge, (baseAddress | 0x0b0)), \
+		o(baseName ## l, (baseAddress | 0x0c0)), \
+		o(baseName ## le, (baseAddress | 0x0e0)), \
+		o(baseName ## ne, (baseAddress | 0x0d0)), \
+		o(baseName ## no, (baseAddress | 0x080)), \
+		o(baseName ## o, (baseAddress | 0x0f0))
 		o(addc, 0x5b0),
 		o(addi, 0x591),
-		o(addie, 0x7a1),
-		o(addig, 0x791),
-		o(addige, 0x7b1),
-		o(addil, 0x7c1),
-		o(addile, 0x7e1),
-		o(addine, 0x7d1),
-		o(addino, 0x781),
-		o(addio, 0x7f1),
+		c(addi, 0x701),
 		o(addo, 0x590),
-		o(addoe, 0x7a0),
-		o(addog, 0x790),
-		o(addoge, 0x7b0),
-		o(addol, 0x7c0),
-		o(addole, 0x7e0),
-		o(addone, 0x7d0),
-		o(addono, 0x780),
-		o(addoo, 0x7f0),
+		c(addo, 0x700),
 		o(alterbit, 0x58f),
 		o(opand, 0x581),
 		o(andnot, 0x582),
@@ -129,21 +125,44 @@ namespace i960 {
 		o(rotate, 0x59d),
 		o(scanbit, 0x641),
 		o(scanbyte, 0x5ac),
-		o(sele, 0x7a4), // select based on equal
-		o(selg, 0x794), // select based on greater
-		o(selge, 0x7b4), // select based on greater or equal
-		o(sell, 0x7c4), // select based on less
-		o(selle, 0x7e4), // select based on less or equal
-		o(selne, 0x7d4), // select based on not equal
-		o(selno, 0x784), // select based on unordered
-		o(selo, 0x7f4), // select based on ordered
+		c(sel, 0x704), // select based on ...
 		o(setbit, 0x583),
-
-
+		o(shli, 0x59e),
+		o(shlo, 0x59c),
+		o(shrdi, 0x59a),
+		o(shri, 0x59b),
+		o(shro, 0x598),
+		o(spanbit, 0x640),
+		o(st, 0x92),
+		o(stib, 0xc2),
+		o(stis, 0xcA),
+		o(stl, 0x9a),
+		o(stob, 0x82),
+		o(stos, 0x8a),
+		o(stq, 0xb2),
+		o(stt, 0xa2),
+		o(subc, 0x5b2),
+		o(subi, 0x593),
+		c(subi, 0x703),
+		o(subo, 0x592),
+		c(subo, 0x702),
+		o(syncf, 0x66f),
+		o(sysctl, 0x659),
+		o(teste, 0x22),
+		o(testg, 0x21),
+		o(testge, 0x23),
+		o(testl, 0x24),
+		o(testle, 0x26),
+		o(testne, 0x25),
+		o(testno, 0x20),
+		o(testo, 0x27),
+		o(xnor, 0x589),
+		o(opxor, 0x586),
+#undef c
 #undef o
-
-
-
     };
+	constexpr Ordinal decode(Opcode code) noexcept {
+		return static_cast<Ordinal>(code);
+	}
 } // end namespace i960
 #endif // end I960_OPCODES_H__
