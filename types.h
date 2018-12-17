@@ -36,191 +36,6 @@ namespace i960 {
         ~Displacement() = default;
         Integer _value : 22;
     };
-    using RawReal = float;
-    using RawLongReal = double;
-    using RawExtendedReal = long double;
-    static_assert(sizeof(RawReal) == sizeof(Ordinal), "Real must be the same size as Ordinal");
-    static_assert(sizeof(RawLongReal) == sizeof(LongOrdinal), "LongReal must be the same size as LongOrdinal");
-    static_assert(sizeof(RawExtendedReal) >= 10, "ExtendedReal must be at least 10 bytes wide");
-    /**
-     * Part of the numerics architecture and above
-     */
-    struct Real {
-		static constexpr Ordinal MaxExponent = 0xFF;
-		static constexpr Ordinal MostSignificantFractionBit = 1 << 22;
-		static constexpr Ordinal RestFractionBits = MostSignificantFractionBit - 1;
-		static constexpr Ordinal SignCheckBit = 1 << 31;
-		static constexpr Ordinal ZeroCheckBits = SignCheckBit - 1;
-		static_assert(RestFractionBits == 0b011'1111'1111'1111'1111'1111, "Got it wrong!");
-        Real() : Real(0,0,0) { }
-        Real(Ordinal frac, Ordinal exponent, Ordinal flag) : fraction(frac), exponent(exponent), sign(flag) { };
-        explicit Real(RawReal value) : floating(value) { }
-        union {
-            struct {
-                Ordinal fraction : 23;
-                Ordinal exponent : 8;
-                Ordinal sign : 1;
-            };
-            Ordinal bits;
-            RawReal floating;
-        };
-		bool isInfinity() const noexcept { return (exponent == MaxExponent) && (fraction == 0); }
-		bool isPositiveInfinity() const noexcept { return isInfinity() && (sign == 0); }
-		bool isNegativeInfinity() const noexcept { return isInfinity() && (sign == 1); }
-		bool isNaN() const noexcept { return (fraction != 0) && (exponent == MaxExponent); }
-		bool isSignalingNaN() const noexcept { return isNaN() && ((fraction & MostSignificantFractionBit) == 0); }
-		bool isQuietNaN() const noexcept { return isNaN() && ((fraction & MostSignificantFractionBit) != 0); }
-		bool isIndefiniteQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) == 0); }
-		bool isNormalQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) != 0); }
-		bool isReservedEncoding() const noexcept { return false; }
-		bool isZero() const noexcept { return (bits & ZeroCheckBits) == 0; }
-		bool isPositiveZero() const noexcept { return isZero() && (sign == 0); }
-		bool isNegativeZero() const noexcept { return isZero() && (sign == 1); }
-		bool isDenormal() const noexcept { return (exponent == 0) && (fraction != 0); }
-		bool isNormal() const noexcept { return ((exponent > 0) && (exponent < MaxExponent)); }
-				   
-    } __attribute__((packed));
-    /**
-     * Part of the numerics architecture and above
-     */
-    struct LongReal {
-		static constexpr LongOrdinal MaxExponent = 0x7FF;
-		static constexpr LongOrdinal MostSignificantFractionBit = 1ul << 51;
-		static constexpr LongOrdinal RestFractionBits = MostSignificantFractionBit - 1; 
-		static constexpr LongOrdinal SignCheckBit = 1ul << 63;
-		static constexpr LongOrdinal ZeroCheckBits = SignCheckBit - 1;
-        LongReal() : LongReal(0,0) { }
-        LongReal(Ordinal lower, Ordinal upper) : bits(LongOrdinal(lower) | (LongOrdinal(upper) << 32)) { }
-        LongReal(LongOrdinal frac, LongOrdinal exponent, LongOrdinal sign) : fraction(frac), exponent(exponent), sign(sign) { }
-        explicit LongReal(RawLongReal value) : floating(value) { }
-        Ordinal lowerHalf() const noexcept { return static_cast<Ordinal>(bits & 0xFFFF'FFFF); }
-        Ordinal upperHalf() const noexcept { return static_cast<Ordinal>((bits & 0xFFFF'FFFF'0000'0000) >> 32); }
-        union {
-            struct {
-                LongOrdinal fraction : 52;
-                LongOrdinal exponent : 11;
-                LongOrdinal sign : 1;
-            };
-            LongOrdinal bits;
-            RawLongReal floating;
-        };
-		bool isInfinity() const noexcept { return (exponent == MaxExponent) && (fraction == 0); }
-		bool isPositiveInfinity() const noexcept { return isInfinity() && (sign == 0); }
-		bool isNegativeInfinity() const noexcept { return isInfinity() && (sign == 1); }
-		bool isNaN() const noexcept { return (fraction != 0) && (exponent == MaxExponent); }
-		bool isSignalingNaN() const noexcept { return isNaN() && ((fraction & MostSignificantFractionBit) == 0); }
-		bool isQuietNaN() const noexcept { return isNaN() && ((fraction & MostSignificantFractionBit) != 0); }
-		bool isIndefiniteQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) == 0); }
-		bool isNormalQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) != 0); }
-		bool isReservedEncoding() const noexcept { return false; }
-		bool isZero() const noexcept { return (bits & ZeroCheckBits) == 0; }
-		bool isPositiveZero() const noexcept { return isZero() && (sign == 0); }
-		bool isNegativeZero() const noexcept { return isZero() && (sign == 1); }
-		bool isDenormal() const noexcept { return (exponent == 0) && (fraction != 0); }
-		bool isNormal() const noexcept { return ((exponent > 0) && (exponent < MaxExponent)); }
-    } __attribute__((packed));
-    constexpr LongOrdinal makeLongOrdinal(Ordinal lower, Ordinal upper) noexcept {
-        return LongOrdinal(lower) | (LongOrdinal(upper) << 32);
-    }
-    /**
-     * Part of the numerics architecture and above
-     */
-    union ExtendedReal {
-        private:
-            template<typename T>
-			static constexpr bool LegalConversion = false;
-        public:
-		    static constexpr LongOrdinal MaxExponent = 0x7FFF;
-		    static constexpr LongOrdinal MostSignificantFractionBit = 1ul << 62;
-		    static constexpr LongOrdinal RestFractionBits = MostSignificantFractionBit - 1; 
-		    static constexpr ShortOrdinal SignCheckBit = 1 << 15;
-		    static constexpr ShortOrdinal ZeroCheckBits_Upper = SignCheckBit - 1;
-            ExtendedReal() { }
-            ExtendedReal(Ordinal low, Ordinal mid, Ordinal high) : lower(makeLongOrdinal(low, mid)), upper(high) { }
-            explicit ExtendedReal(RawExtendedReal value) : floating(value) { }
-            Ordinal lowerThird() const noexcept { return static_cast<Ordinal>(lower); }
-            Ordinal middleThird() const noexcept { return static_cast<Ordinal>(lower >> 32); }
-            Ordinal upperThird() const noexcept { return static_cast<Ordinal>(upper); }
-		    /**
-		     * Combine the j field with the fraction field to get a complete value
-		     * j is what is normally the implied 1 in the mantissa
-		     */
-
-		    LongOrdinal getCompleteFraction() const noexcept { 
-		    	LongOrdinal tmp = j; // get rid of the width cast problem
-		    	return (tmp << 63) | fraction; 
-		    }
-
-            template<typename T>
-            T get() const noexcept {
-                using K = std::decay_t<T>;
-                if constexpr (std::is_same_v<K, RawExtendedReal>) {
-                    return floating;
-                } else if constexpr (std::is_same_v<K, RawLongReal>) {
-                    return static_cast<RawLongReal>(floating);
-                } else if constexpr (std::is_same_v<K, RawReal>) {
-                    return static_cast<RawReal>(floating);
-                } else if constexpr (std::is_same_v<K, LongReal>) {
-                    return LongReal(floating);
-                } else if constexpr (std::is_same_v<K, Real>) {
-                    return Real(floating);
-                } else if constexpr (std::is_same_v<K, ExtendedReal>) {
-                    // a hack for consistency with the rest of the design
-                    return *this;
-                } else {
-                    static_assert(LegalConversion<K>, "Illegal type requested");
-                }
-            }
-            template<typename T>
-            void set(T value) noexcept {
-                using K = std::decay_t<T>;
-                if constexpr (std::is_same_v<K, RawExtendedReal>) {
-                    floating = value;
-                } else if constexpr (std::is_same_v<K, RawLongReal>) {
-                    floating = value;
-                } else if constexpr (std::is_same_v<K, RawReal>) {
-                    floating = value;
-                } else if constexpr (std::is_same_v<K, LongReal>) {
-                    set(value.floating);
-                } else if constexpr (std::is_same_v<K, Real>) {
-                    set(value.floating);
-                } else {
-                    static_assert(LegalConversion<K>, "Illegal type requested");
-                }
-            }
-
-
-            struct {
-                LongOrdinal fraction: 63;
-                LongOrdinal j : 1;
-                ShortOrdinal exponent : 15;
-                ShortOrdinal sign : 1;
-            }; 
-            struct {
-                LongOrdinal lower;
-                ShortOrdinal upper;
-            };
-            RawExtendedReal floating;
-		    bool isInfinity() const noexcept { return (j == 1) && (exponent == MaxExponent) && (fraction == 0); }
-		    bool isPositiveInfinity() const noexcept { return isInfinity() && (sign == 0); }
-		    bool isNegativeInfinity() const noexcept { return isInfinity() && (sign == 1); }
-		    bool isNaN() const noexcept { return (j == 1) && (fraction != 0) && (exponent == MaxExponent); }
-		    bool isSignalingNaN() const noexcept { return isNaN() && ((fraction & MostSignificantFractionBit) == 0); }
-		    bool isQuietNaN() const noexcept { return isNaN() && ((fraction & MostSignificantFractionBit) != 0); }
-		    bool isIndefiniteQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) == 0); }
-		    bool isNormalQuietNaN() const noexcept { return isQuietNaN() && ((fraction & RestFractionBits) != 0); }
-		    bool isReservedEncoding() const noexcept { return (exponent != 0) && (j == 0); }
-		    bool isZero() const noexcept { return (lower == 0) && ((upper & ZeroCheckBits_Upper) == 0); }
-		    bool isPositiveZero() const noexcept { return isZero() && (sign == 0); }
-		    bool isNegativeZero() const noexcept { return isZero() && (sign == 1); }
-		    bool isDenormal() const noexcept { return (exponent == 0) && (fraction != 0); }
-		    bool isNormal() const noexcept { 
-		    	// this is a little strange since the 80960 book states that there
-		    	// is a hole in the design. However, from what I can tell it is
-		    	// probably safe to operate the same way as the other Real types
-		    	return ((exponent > 0) && (exponent < MaxExponent)); 
-		    }
-    } __attribute__((packed));
 
     union PreviousFramePointer {
         struct {
@@ -618,36 +433,6 @@ namespace i960 {
 
     };
     union ProcessControls {
-#ifdef PROTECTED_ARCHITECTURE
-        struct {
-            Ordinal unused0 : 1;
-            Ordinal multiprocessorPreempt : 1;
-            Ordinal state : 2;
-            Ordinal unused1 : 1;
-            Ordinal nonpreemptLimit : 5;
-            Ordinal addressingMode : 1;
-            Ordinal checkDispatchPort : 1;
-            Ordinal unused2 : 4;
-            Ordinal interimPriority : 5;
-            Ordinal unused3 : 10;
-            Ordinal writeExternalPriority : 1;
-        } _manual;
-        struct {
-            Ordinal traceEnable : 1;
-            Ordinal executionMode : 1;
-            Ordinal unused0 : 4;
-            Ordinal timeSliceReschedule : 1;
-            Ordinal timeSlice : 1;
-            Ordinal resume : 1;
-            Ordinal traceFaultPending : 1;
-            Ordinal preempt : 1;
-            Ordinal refault : 1;
-            Ordinal state : 2;
-            Ordinal unused1 : 1;
-            Ordinal priority : 5;
-            Ordinal internalState : 11;
-        }  _automatic;
-#else // !defined(PROTECTED_ARCHITECTURE)
         struct {
             Ordinal traceEnable : 1;
             Ordinal executionMode : 1;
@@ -660,8 +445,6 @@ namespace i960 {
             Ordinal priority : 5;
             Ordinal internalState : 11;
         };
-#endif // end PROTECTED_ARCHITECTURE
-
         Ordinal value;
     } __attribute__((packed));
 
@@ -691,7 +474,6 @@ namespace i960 {
 	static_assert(sizeof(TraceControls) == sizeof(Ordinal), "TraceControls must be the size of an ordinal!");
 
     constexpr auto GlobalRegisterCount = 16;
-    constexpr auto NumFloatingPointRegs = 4;
     constexpr auto LocalRegisterCount = 16;
     // reserved indicies
     // reserved global registers
@@ -743,13 +525,6 @@ namespace i960 {
         ReservedOperand,
     };
 
-    enum FloatingPointRoundingControl : Ordinal {
-        RoundToNearest = 0,
-        RoundDown,
-        RoundUp,
-        Truncate,
-    };
-
     union Instruction {
         struct REGFormat {
             Ordinal _source1 : 5;
@@ -780,7 +555,6 @@ namespace i960 {
             bool src1IsFloatingPointRegister() const noexcept;
             bool src2IsFloatingPointRegister() const noexcept; 
             bool src3IsFloatingPointRegister() const noexcept { return isFloatingPoint() && _m3 != 0; } 
-
         };
         struct COBRFormat {
             Ordinal _sfr : 1;
@@ -909,42 +683,6 @@ namespace i960 {
 
     } __attribute__((packed));
     static_assert(sizeof(Instruction) == sizeof(Ordinal), "Instruction must be the size of an ordinal!");
-#ifdef PROTECTED_ARCHITECTURE
-    // Virtual addressing 
-    // 32-bit address is converted to 
-    // upper 20 bits are translated to the physical address of a page (4k)
-    //   upper 2 bits of the 20 bits is the region identifier
-    //     Four regions total, region 3 (the upper most is shared amongst all
-    //     processes)
-    //   lower 18 bits denote the page in that region
-    // lower 12 bits represent the address within that 4k page
-    // 
-    // There are a total of four regions with region 3 being shared amongst all
-    // processes
-    /**
-     * Regions zero through two are process specific
-     * Region three is shared by all processes
-     */
-    constexpr Ordinal Region0StartAddress = LowestAddress;
-    constexpr Ordinal Region0LastAddress = 0x3FFF'FFFF;
-    constexpr Ordinal Region1StartAddress = 0x4000'0000;
-    constexpr Ordinal Region1LastAddress = 0x7FFF'FFFF;
-    constexpr Ordinal Region2StartAddress = 0x8000'0000;
-    constexpr Ordinal Region2LastAddress = 0xBFFF'FFFF;
-    constexpr Ordinal Region3StartAddress = 0xC000'0000;
-    constexpr Ordinal Region3LastAddress = LargestAddress;
-
-    constexpr Ordinal getRegionId(Ordinal address) noexcept {
-        return (0xC000'0000 & address) >> 30;
-    }
-    constexpr Ordinal getPageAddress(Ordinal address) noexcept {
-        return (0x3FFF'F000 & address) >> 12;
-    }
-    constexpr Ordinal getByteOffset(Ordinal address) noexcept {
-        return (0x0000'0FFF & address);
-    }
-#endif // end PROTECTED_ARCHITECTURE
-
 
     constexpr Ordinal widen(ByteOrdinal value) noexcept {
         return Ordinal(value);

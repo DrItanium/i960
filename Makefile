@@ -1,15 +1,15 @@
 include config.mk
 
-I960MC_OBJS := misc.o sim.o numericops.o core.o dispatcher.o numericsisa.o
+I960KB_OBJS := misc.o sim.o numericops.o core.o dispatcher.o numericsisa.o
 I960JX_OBJS := misc.o sim.o core.o dispatcher.o 
-OBJS := $(I960MC_OBJS) $(I960JX_OBJS)
+OBJS := $(I960KB_OBJS) $(I960JX_OBJS)
 
-I960MC_PROG := sim960mc
+I960KB_PROG := sim960mc
 I960JX_PROG := sim960jx
-PROGS := $(I960JX_PROG) $(I960MC_PROG)
+PROGS := $(I960JX_PROG) $(I960KB_PROG)
 
 
-all: $(I960MC_PROG) $(I960JX_PROG)
+all: $(I960KB_PROG) $(I960JX_PROG)
 
 options:
 	@echo Build Options
@@ -19,9 +19,9 @@ options:
 	@echo LDFLAGS = ${LDFLAGS}
 	@echo ------------------
 
-$(I960MC_PROG): $(I960MC_OBJS)
-	@echo LD ${I960MC_PROG}
-	@${LD} ${LDFLAGS} -o ${I960MC_PROG} ${I960MC_OBJS}
+$(I960KB_PROG): $(I960KB_OBJS)
+	@echo LD ${I960KB_PROG}
+	@${LD} ${LDFLAGS} -o ${I960KB_PROG} ${I960KB_OBJS}
 
 $(I960JX_PROG): $(I960JX_OBJS)
 	@echo LD ${I960JX_PROG}
