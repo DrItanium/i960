@@ -30,10 +30,10 @@ clean:
 	@echo Cleaning...
 	@rm -f ${OBJS} ${PROGS}
 
-sim.o: operations.h types.h opcodes.h conditional_kinds.def sim.cc
+sim.o: operations.h types.h opcodes.def opcodes.h conditional_kinds.def sim.cc
 misc.o: types.h conditional_kinds.def misc.cc
-core.o: types.h memiface.h core.h operations.h opcodes.h conditional_kinds.def core.cc
-dispatcher.o: types.h core.h opcodes.h conditional_kinds.def dispatcher.cc 
+core.o: types.h memiface.h core.h operations.h opcodes.def opcodes.h conditional_kinds.def core.cc
+dispatcher.o: types.h core.h opcodes.def opcodes.h conditional_kinds.def dispatcher.cc 
 
 
 .PHONY: options
