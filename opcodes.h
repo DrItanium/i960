@@ -2,7 +2,7 @@
 #define I960_OPCODES_H__
 #include "types.h"
 namespace i960 {
-    enum class Opcodes : Ordinal {
+    enum class Opcode : Ordinal {
 #define o(name, code) name = code
 #define c(baseName, baseAddress) \
 		o(baseName ## e, (baseAddress | 0x0a0)), \
