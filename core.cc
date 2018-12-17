@@ -236,55 +236,6 @@ namespace i960 {
 
 
 	// Begin Instruction::REGFormat implementations
-	bool Instruction::REGFormat::isFloatingPoint() const noexcept {
-		return i960::isFloatingPoint(i960::Opcodes(getOpcode()));
-	}
-
-	RawReal Instruction::REGFormat::src1ToRealLiteral() const noexcept {
-		if (auto bits = _source1; bits == 0b10000) {
-			return +0.0f;
-		} else if (bits == 0b10110) {
-			return +1.0f;
-		} else {
-			return std::numeric_limits<RawReal>::quiet_NaN();
-		}
-	}
-	RawReal Instruction::REGFormat::src2ToRealLiteral() const noexcept {
-		if (auto bits = _source2; bits == 0b10000) {
-			return +0.0f;
-		} else if (bits == 0b10110) {
-			return +1.0f;
-		} else {
-			return std::numeric_limits<RawReal>::quiet_NaN();
-		}
-
-	}
-	RawLongReal Instruction::REGFormat::src1ToLongRealLiteral() const noexcept {
-		if (auto bits = _source1; bits == 0b10000) {
-			return +0.0;
-		} else if (bits == 0b10110) {
-			return +1.0;
-		} else {
-			return std::numeric_limits<RawLongReal>::quiet_NaN();
-		}
-
-	}
-	RawLongReal Instruction::REGFormat::src2ToLongRealLiteral() const noexcept {
-		if (auto bits = _source2; bits == 0b10000) {
-			return +0.0;
-		} else if (bits == 0b10110) {
-			return +1.0;
-		} else {
-			return std::numeric_limits<RawLongReal>::quiet_NaN();
-		}
-
-	}
-	bool Instruction::REGFormat::src1IsFloatingPointRegister() const noexcept { 
-		return _m1 != 0 && (_source1 < 0b00100); 
-	}
-	bool Instruction::REGFormat::src2IsFloatingPointRegister() const noexcept { 
-		return _m2 != 0 && (_source2 < 0b00100); 
-	}
 	/**
 	 * Shifts a specified bit field in value right and fills the bits to the left of
 	 * the shifted bit field with zeros. 

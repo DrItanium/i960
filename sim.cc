@@ -5,52 +5,9 @@
 #include "operations.h"
 #include <string>
 
-bool testResult(i960::RawExtendedReal value) {
-    union donuts {
-        donuts() { };
-        i960::RawExtendedReal v;
-        i960::ExtendedReal k;
-        __int128 z;
-    };
-    union donuts2 {
-        i960::RawExtendedReal v;
-        __int128 k;
-    } test2;
-    donuts test, test3;
-    test.v = value;
-    test2.v = value;
-    test3.z = 0;
-    test3.z = __int128(test.k.upper) << 64;
-    test3.z &= ~(__int128(0xFFFF) << 96);
-    test3.z = test3.z | __int128(test.k.lower);
-    test3.z &= ~(__int128(0xFFFF) << 96);
-    std::cout << std::hex << test.k.upper << test.k.lower << std::endl;
-    std::cout << std::hex << uint64_t(test2.k >> 64) << uint64_t(test2.k) << std::endl;
-    std::cout << std::hex << test3.v << std::endl;
-    if (test3.k.sign == 1) {
-        std::cout << "negative" << std::endl;
-    } else {
-        std::cout << "positive" << std::endl;
-    }
-    return value == test3.v;
-}
 constexpr auto mem1G = 0x3FFF'FFFF + 1;
 void bootupMessage(std::ostream& os) {
-	os << "Intel 80960 Simulator" << std::endl;
-	os << "Supported instruction sets:";
-	if (i960::coreArchitectureSupported) {
-		os << " core";
-	}
-	if (i960::numericsArchitectureSupported) {
-		os << " numerics";
-	}
-	if (i960::protectedArchitectureSupported) {
-		os << " protected";
-	}
-	if (i960::extendedArchitectureSupported) {
-		os << " extended";
-	}
-	os << std::endl;
+	os << "Intel 80960JX Simulator" << std::endl;
 	std::cout << std::endl; 
 	std::cout << std::endl; 
 }
@@ -163,10 +120,6 @@ void outputTypeInformation() {
 	std::cout << "sizeof(NormalRegister): " << sizeof(i960::NormalRegister) << std::endl;
 	std::cout << "sizeof(ArithmeticControls): " << sizeof(i960::ArithmeticControls) << std::endl;
 	std::cout << "sizeof(Instruction): " << sizeof(i960::Instruction) << std::endl;
-	std::cout << "sizeof(ExtendedReal): " << sizeof(i960::ExtendedReal) << std::endl;
-	std::cout << "sizeof(LongReal): " << sizeof(i960::LongReal) << std::endl;
-	std::cout << "sizeof(Real): " << sizeof(i960::Real) << std::endl;
-    std::cout << "sizeof(RawExtendedReal): " << sizeof(i960::RawExtendedReal) << std::endl;
 }
 void testMemoryAllocation() {
 	std::cout << "Allocating Test Memory And Randomizing" << std::endl;
@@ -196,23 +149,6 @@ void testMemoryAllocation() {
 	std::cout << "Memory Allocation and randomization complete" << std::endl << std::endl;
 }
 
-int testExtendedFloatingPoint() {
-	int errorCode = 0;
-	std::cout << "Performing Tests Relating to the extended real floating point units" << std::endl;
-    // test to make sure that we are doing the right thing :D
-    // It seems that the 80-bit format is maintained correctly :D
-    if (testResult(1.23456 + 0)) {
-        std::cout << "It is 80-bits wide :D" << std::endl;
-    } else {
-		errorCode = 1;
-	}
-    if (testResult(-0.5)) {
-        std::cout << "It is 80-bits wide :D" << std::endl;
-    } else {
-		errorCode = 1;
-	}
-	return errorCode;
-}
 
 /*
 int performInstructionTests() {
@@ -253,7 +189,6 @@ int main() {
 	bootupMessage(std::cout);
 	testMemoryAllocation();
 	outputTypeInformation();
-	errorCode = testExtendedFloatingPoint();
 	//errorCode = performInstructionTests();
     testOverflowOfDisplacement();
 	testInstructionEncoding();

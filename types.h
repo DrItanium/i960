@@ -2,7 +2,6 @@
 #define I960_TYPES_H__
 #include <cstdint>
 #include <memory>
-#include "archlevel.h"
 namespace i960 {
 
     using ByteOrdinal = std::uint8_t;
@@ -58,7 +57,6 @@ namespace i960 {
             PreviousFramePointer pfp;
             Ordinal ordinal;
             Integer integer;
-            Real real;
             ByteOrdinal byteOrd;
             ShortOrdinal shortOrd;
 
@@ -73,18 +71,10 @@ namespace i960 {
                     return byteOrd;
                 } else if constexpr(std::is_same_v<K, ShortOrdinal>) {
                     return shortOrd;
-                } else if constexpr(std::is_same_v<K, Real>) {
-                    return real;
-                } else if constexpr(std::is_same_v<K, RawReal>) {
-                    return real.floating;
                 } else if constexpr(std::is_same_v<K, PreviousFramePointer>) {
                     return pfp;
                 } else if constexpr(std::is_same_v<K, LongOrdinal>) {
                     return static_cast<LongOrdinal>(ordinal);
-                } else if constexpr(std::is_same_v<K, RawExtendedReal>) {
-                    return static_cast<RawExtendedReal>(real.floating);
-                } else if constexpr(std::is_same_v<K, ExtendedReal>) {
-                    return ExtendedReal(real.floating);
                 } else {
                     static_assert(LegalConversion<K>, "Illegal type requested");
                 }
@@ -100,20 +90,8 @@ namespace i960 {
                     byteOrd = value;
                 } else if constexpr(std::is_same_v<K, ShortOrdinal>) {
                     shortOrd = value;
-                } else if constexpr(std::is_same_v<K, Real>) {
-                    real.floating = value.floating;
-                } else if constexpr(std::is_same_v<K, RawReal>) {
-                    real.floating = value;
                 } else if constexpr(std::is_same_v<K, PreviousFramePointer>) {
                     ordinal = value.value;
-                } else if constexpr(std::is_same_v<K, LongReal>) {
-                    real.floating = value.floating;
-                } else if constexpr(std::is_same_v<K, RawLongReal>) {
-                    real.floating = value;
-                } else if constexpr(std::is_same_v<K, ExtendedReal>) {
-                    real.floating = value.floating;
-                } else if constexpr(std::is_same_v<K, RawExtendedReal>) {
-                    real.floating = value;
                 } else {
                     static_assert(LegalConversion<K>, "Illegal type requested");
                 }
@@ -134,14 +112,6 @@ namespace i960 {
                     using K = std::decay_t<T>;
                     if constexpr(std::is_same_v<K, LongOrdinal>) {
                         return LongOrdinal(_lower.ordinal) | (LongOrdinal(_upper.ordinal) << 32);
-                    } else if constexpr(std::is_same_v<K, LongReal>) {
-                        return LongReal(_lower.ordinal, _upper.ordinal);
-                    } else if constexpr (std::is_same_v<K, RawLongReal>) {
-                        return get<LongReal>().floating;
-                    } else if constexpr (std::is_same_v<K, RawExtendedReal>) {
-                        return RawExtendedReal(get<RawLongReal>());
-                    } else if constexpr (std::is_same_v<K, ExtendedReal>) {
-                        return ExtendedReal(get<RawExtendedReal>());
                     } else {
                         static_assert(LegalConversion<K>, "Illegal type requested");
                     }
@@ -152,19 +122,6 @@ namespace i960 {
                     if constexpr(std::is_same_v<K, LongOrdinal>) {
                         _lower.ordinal = static_cast<Ordinal>(value);
                         _upper.ordinal = static_cast<Ordinal>(value >> 32);
-                    } else if constexpr (std::is_same_v<K, LongReal>) {
-                        _lower.ordinal = value.lowerHalf();
-                        _upper.ordinal = value.upperHalf();
-                    } else if constexpr (std::is_same_v<K, RawLongReal>) {
-                        set<LongReal>(LongReal(value));
-                    } else if constexpr(std::is_same_v<K, ExtendedReal>) {
-                        set<RawLongReal>(RawLongReal(value.floating));
-                    } else if constexpr(std::is_same_v<K, RawExtendedReal>) {
-                        set(ExtendedReal(value));
-                    } else if constexpr(std::is_same_v<K, Real>) {
-                        set(value.floating);
-                    } else if constexpr(std::is_same_v<K, RawReal>) {
-                        set(RawLongReal(value));
                     } else {
                         static_assert(LegalConversion<K>, "Illegal type requested");
                     }
@@ -185,42 +142,6 @@ namespace i960 {
         public:
             TripleRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& upper) : _lower(lower), _mid(mid), _upper(upper) { }
             ~TripleRegister() = default;
-            template<typename T>
-                T get() const noexcept {
-                    using K = std::decay_t<T>;
-                    if constexpr(std::is_same_v<K, ExtendedReal>) {
-                        return ExtendedReal(_lower.ordinal, _mid.ordinal, _upper.ordinal);
-                    } else if constexpr (std::is_same_v<K, RawExtendedReal>) {
-                        return get<ExtendedReal>().floating;
-                    } else if constexpr(std::is_same_v<K, LongReal>) {
-                        return LongReal(get<RawExtendedReal>());
-                    } else if constexpr (std::is_same_v<K, RawLongReal>) {
-                        return RawLongReal(get<RawExtendedReal>());
-                    } else {
-                        static_assert(LegalConversion<K>, "Illegal type requested");
-                    }
-                }
-            template<typename T>
-                void set(T value) noexcept {
-                    using K = std::decay_t<T>;
-                    if constexpr (std::is_same_v<K, ExtendedReal>) {
-                        _lower.ordinal = value.lowerThird();
-                        _mid.ordinal = value.middleThird();
-                        _upper.ordinal = value.upperThird();
-                    } else if constexpr (std::is_same_v<K, RawExtendedReal>) {
-                        set<ExtendedReal>(ExtendedReal(value));
-                    } else if constexpr (std::is_same_v<K, RawLongReal>) {
-                        set<RawExtendedReal>(value);
-                    } else if constexpr (std::is_same_v<K, LongReal>) {
-                        set<RawLongReal>(value.floating);
-                    } else if constexpr (std::is_same_v<K, RawReal>) {
-                        set<RawExtendedReal>(value);
-                    } else if constexpr (std::is_same_v<K, Real>) {
-                        set<RawReal>(value.floating);
-                    } else {
-                        static_assert(LegalConversion<K>, "Illegal type requested");
-                    }
-                }
             void set(Ordinal lower, Ordinal mid, Ordinal upper) noexcept;
             void move(const TripleRegister& other) noexcept;
             Ordinal getLowerPart() const noexcept { return _lower.get<Ordinal>(); }
@@ -250,15 +171,7 @@ namespace i960 {
     union ArithmeticControls {
         struct {
             Ordinal conditionCode : 3;
-            /**
-             * Used to record results from the classify real (classr and classrl)
-             * and remainder real (remr and remrl) instructions. 
-             */
-            Ordinal arithmeticStatusField : 4;
-            /**
-             * Reserved, bind to zero always
-             */
-            Ordinal reserved0 : 1; 
+			Ordinal reserved0 : 5;
             /**
              * Denotes an integer overflow happened
              */
@@ -279,65 +192,8 @@ namespace i960 {
             /**
              * Disable faults generated by imprecise results being generated
              */
-            Ordinal noImpreciseResults : 1;
-            /**
-             * Floating point overflow happened?
-             */
-            Ordinal floatingOverflowFlag : 1;
-            /**
-             * Floating point underflow happened?
-             */
-            Ordinal floatingUnderflowFlag : 1;
-            /**
-             * Floating point invalid operation happened?
-             */
-            Ordinal floatingInvalidOperationFlag : 1;
-            /**
-             * Floating point divide by zero happened?
-             */
-            Ordinal floatingZeroDivideFlag : 1;
-            /**
-             * Floating point rounding result was inexact?
-             */
-            Ordinal floatingInexactFlag : 1;
-            /**
-             * Reserved, always bind to zero
-             */
-            Ordinal reserved3 : 3;
-            /**
-             * Don't fault on fp overflow?
-             */
-            Ordinal floatingOverflowMask : 1;
-            /**
-             * Don't fault on fp underflow?
-             */
-            Ordinal floatingUnderflowMask : 1;
-            /**
-             * Don't fault on fp invalid operation?
-             */
-            Ordinal floatingInvalidOperationMask : 1;
-            /**
-             * Don't fault on fp div by zero?
-             */
-            Ordinal floatingZeroDivideMask : 1;
-            /**
-             * Don't fault on fp round producing an inexact representation?
-             */
-            Ordinal floatingInexactMask : 1;
-            /**
-             * Enable to produce normalized values, disable to produce unnormalized values (useful for software simulation).
-             * Note that the processor will fault if it encounters denormalized fp values!
-             */
-            Ordinal normalizingModeFlag : 1;
-            /**
-             * What kind of fp rounding should be performed?
-             * Modes:
-             *  0: round up (towards positive infinity)
-             *  1: round down (towards negative infinity)
-             *  2: Round toward zero (truncate)
-             *  3: Round to nearest (even)
-             */
-            Ordinal roundingControl : 2;
+            Ordinal noImpreciseFaults : 1;
+			Ordinal reserved3 : 16;
         };
         Ordinal value;
         Ordinal modify(Ordinal mask, Ordinal value) noexcept {
@@ -386,42 +242,6 @@ namespace i960 {
         }
         Ordinal getConditionCode() const noexcept {
             return conditionCode;
-        }
-        bool roundToNearest() const noexcept {
-            return roundingControl == 0b00;
-        }
-        bool roundDown() const noexcept {
-            return roundingControl == 0b01;
-        }
-        bool roundUp() const noexcept {
-            return roundingControl == 0b10;
-        }
-        bool roundTowardsZero() const noexcept {
-            return roundingControl == 0b11;
-        }
-        bool arithmeticStatusIsZero() const noexcept {
-            return (arithmeticStatusField & 0b0111) == 0;
-        }
-        bool arithmeticStatusIsDenormalizedNumber() const noexcept {
-            return (arithmeticStatusField & 0b0111) == 1;
-        }
-        bool arithmeticStatusIsNormalFiniteNumber() const noexcept {
-            return (arithmeticStatusField & 0b0111) == 2;
-        }
-        bool arithmeticStatusIsInfinity() const noexcept {
-            return (arithmeticStatusField & 0b0111) == 3;
-        }
-        bool arithmeticStatusIsQuietNaN() const noexcept {
-            return (arithmeticStatusField & 0b0111) == 4;
-        }
-        bool arithmeticStatusIsSignalingNaN() const noexcept {
-            return (arithmeticStatusField & 0b0111) == 5;
-        }
-        bool arithmeticStatusIsReservedOperand() const noexcept {
-            return (arithmeticStatusField & 0b0111) == 6;
-        }
-        bool getArithmeticStatusSign() const noexcept {
-            return ((arithmeticStatusField & 0b1000) >> 3) == 1;
         }
         bool carrySet() const noexcept {
             return (conditionCode & 0b010) != 0;
@@ -547,14 +367,6 @@ namespace i960 {
             bool srcDestIsLiteral() const noexcept { return _m3 != 0; }
             ByteOrdinal src1ToIntegerLiteral() const noexcept { return _source1; }
             ByteOrdinal src2ToIntegerLiteral() const noexcept { return _source2; }
-            RawReal src1ToRealLiteral() const noexcept;
-            RawReal src2ToRealLiteral() const noexcept;
-            RawLongReal src1ToLongRealLiteral() const noexcept;
-            RawLongReal src2ToLongRealLiteral() const noexcept;
-            bool isFloatingPoint() const noexcept;
-            bool src1IsFloatingPointRegister() const noexcept;
-            bool src2IsFloatingPointRegister() const noexcept; 
-            bool src3IsFloatingPointRegister() const noexcept { return isFloatingPoint() && _m3 != 0; } 
         };
         struct COBRFormat {
             Ordinal _sfr : 1;
