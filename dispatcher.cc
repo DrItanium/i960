@@ -23,7 +23,7 @@ namespace i960 {
 	}
 	void Core::dispatch(const Instruction::CTRLFormat& i) noexcept {
 		Integer displacement = i._displacement;
-		switch (static_cast<Opcode>(i._opcode)) {
+		switch (i._opcode) {
 			case Opcode::b: 
 				b(displacement); 
 				break;
@@ -54,7 +54,7 @@ namespace i960 {
 			immediateStorage.set<ByteOrdinal>(i._source1);
 		}
 		auto& src2 = getRegister(i._source2);
-		switch(static_cast<Opcode>(i._opcode)) {
+		switch(i._opcode) {
 #define X(kind) case Opcode:: test ## kind : test ## kind (src1); break;
 #include "conditional_kinds.def"
 #undef X
@@ -93,7 +93,7 @@ namespace i960 {
 		auto abase = getRegister(i._abase);
 		immediateStorage.set<Ordinal>(mode == E::AddressingModes::Offset ? offset : (abase.get<Ordinal>() + offset));
 		auto srcDest = getRegister(i._src_dest);
-		switch(static_cast<Opcode>(i._opcode)) {
+		switch(i._opcode) {
 			case Opcode::ldob:
 				ldob(immediateStorage, srcDest);
 				break;
@@ -201,7 +201,7 @@ namespace i960 {
 #warning "Fault on illegal mode!"
 				throw "Illegal mode!";
 		}
-		switch(static_cast<Opcode>(i._opcode)) {
+		switch(i._opcode) {
 			case Opcode::ldob:
 				ldob(immediateStorage, srcDest);
 				break;
@@ -287,7 +287,7 @@ namespace i960 {
 		}
 		NormalRegister& srcDest = i.srcDestIsLiteral() ? imm3 : getRegister(i._src_dest);
 #warning "It is impossible for m3 to be set when srcDest is used as a dest, error out before hand"
-		switch(static_cast<Opcode>(i.getOpcode())) {
+		switch(i.getOpcode()) {
 #define Standard3ArgOp(kind, fn) case Opcode:: kind : fn ( src1, src2, srcDest ) ; break
 #define Standard2ArgOp(kind, fn) case Opcode:: kind : fn ( src1, srcDest ) ; break
 #define Standard3ArgOpIO(kind, fn) Standard3ArgOp(kind ## o, fn ## o); Standard3ArgOp(kind ## i, fn ## i)
