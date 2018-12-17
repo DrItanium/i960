@@ -7,23 +7,6 @@
 #define __DEFAULT_TWO_ARGS__ Core::SourceRegister src, Core::DestinationRegister dest
 #define __DEFAULT_DOUBLE_WIDE_TWO_ARGS__ const DoubleRegister& src, DoubleRegister& dest
 namespace i960 {
-	template<Ordinal op>
-	auto OpcodeToName = "Undefined";
-#define o(name, opcode) \
-	template<> \
-	auto OpcodeToName<opcode> = #name ; 
-#define c(baseName, baseAddress) \
-		o(baseName ## e, (baseAddress | 0x0a0)) \
-		o(baseName ## g, (baseAddress | 0x090)) \
-		o(baseName ## ge, (baseAddress | 0x0b0)) \
-		o(baseName ## l, (baseAddress | 0x0c0)) \
-		o(baseName ## le, (baseAddress | 0x0e0)) \
-		o(baseName ## ne, (baseAddress | 0x0d0)) \
-		o(baseName ## no, (baseAddress | 0x080)) \
-		o(baseName ## o, (baseAddress | 0x0f0))
-#include "opcodes.def"
-#undef o
-#undef c
 	void Core::dispatch(const Instruction& inst) noexcept {
 		if (inst.isRegFormat()) {
 			dispatch(inst._reg);
