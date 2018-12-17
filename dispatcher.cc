@@ -22,22 +22,22 @@ namespace i960 {
 	}
 	void Core::dispatch(const Instruction::CTRLFormat& i) noexcept {
 		Integer displacement = i._displacement;
-		switch (static_cast<Opcodes>(i._opcode)) {
-			case Opcodes::B: 
+		switch (static_cast<Opcode>(i._opcode)) {
+			case Opcode::b: 
 				b(displacement); 
 				break;
-			case Opcodes::Call: 
+			case Opcode::call: 
 				call(displacement); 
 				break;
-			case Opcodes::Ret:
+			case Opcode::ret:
 				ret();
 				break;
-			case Opcodes::Bal:
+			case Opcode::bal:
 				bal(displacement);
 				break;
 #define X(kind) \
-			case Opcodes:: B ## kind : b ## kind (displacement) ; break; \
-			case Opcodes:: Fault ## kind : fault ## kind () ; break;
+			case Opcode:: b ## kind : b ## kind (displacement) ; break; \
+			case Opcode:: fault ## kind : fault ## kind () ; break;
 #include "conditional_kinds.def"
 #undef X
 			default:
@@ -53,24 +53,23 @@ namespace i960 {
 			immediateStorage.set<ByteOrdinal>(i._source1);
 		}
 		auto& src2 = getRegister(i._source2);
-		switch(static_cast<Opcodes>(i._opcode)) {
-#define X(kind) case Opcodes:: Test ## kind : test ## kind (src1); break;
+		switch(static_cast<Opcode>(i._opcode)) {
+#define X(kind) case Opcode:: test ## kind : test ## kind (src1); break;
 #include "conditional_kinds.def"
 #undef X
-			case Opcodes::Bbc:
+			case Opcode::bbc:
 				bbc(src1, src2, displacement);
 				break;
-			case Opcodes::Bbs:
+			case Opcode::bbs:
 				bbs(src1, src2, displacement);
-#define X(kind) case Opcodes:: Cmpob ## kind : cmpob ## kind ( src1, src2, displacement ) ; break;
-				X(g)
+#define X(kind) case Opcode:: cmpob ## kind : cmpob ## kind ( src1, src2, displacement ) ; break;
 				X(e)
 				X(ge)
 				X(l)
 				X(ne)
 				X(le)
 #undef X
-#define X(kind) case Opcodes:: Cmpib ## kind : cmpib ## kind ( src1, src2, displacement ) ; break;
+#define X(kind) case Opcode:: cmpib ## kind : cmpib ## kind ( src1, src2, displacement ) ; break;
 #include "conditional_kinds.def"
 #undef X
 			default:
@@ -93,71 +92,71 @@ namespace i960 {
 		auto abase = getRegister(i._abase);
 		immediateStorage.set<Ordinal>(mode == E::AddressingModes::Offset ? offset : (abase.get<Ordinal>() + offset));
 		auto srcDest = getRegister(i._src_dest);
-		switch(static_cast<Opcodes>(i._opcode)) {
-			case Opcodes::Ldob:
+		switch(static_cast<Opcode>(i._opcode)) {
+			case Opcode::ldob:
 				ldob(immediateStorage, srcDest);
 				break;
-			case Opcodes::Stob:
+			case Opcode::stob:
 				stob(srcDest, immediateStorage);
 				break;
-			case Opcodes::Bx:
+			case Opcode::bx:
 				bx(immediateStorage);
 				break;
-			case Opcodes::Balx:
+			case Opcode::balx:
 				balx(immediateStorage, srcDest);
 				break;
-			case Opcodes::Callx:
+			case Opcode::callx:
 				callx(immediateStorage);
 				break;
-			case Opcodes::Ldos:
+			case Opcode::ldos:
 				ldos(immediateStorage, srcDest);
 				break;
-			case Opcodes::Stos:
+			case Opcode::stos:
 				stos(srcDest, immediateStorage);
 				break;
-			case Opcodes::Lda:
+			case Opcode::lda:
 				stos(immediateStorage, srcDest);
 				break;
-			case Opcodes::Ld:
+			case Opcode::ld:
 				ld(immediateStorage, srcDest);
 				break;
-			case Opcodes::St:
+			case Opcode::st:
 				st(srcDest, immediateStorage);
 				break;
-			case Opcodes::Ldl:
+			case Opcode::ldl:
 #warning "Fault should happen if the dest reg is non even!"
 				ldl(immediateStorage, i._src_dest);
 				break;
-			case Opcodes::Stl:
+			case Opcode::stl:
 #warning "Fault should happen if the src reg is non even!"
 				stl(i._src_dest, immediateStorage);
 				break;
-			case Opcodes::Ldt:
+			case Opcode::ldt:
 #warning "Fault should happen if the dest reg is not divisible by four!"
 				ldt(immediateStorage, i._src_dest);
 				break;
-			case Opcodes::Stt:
+			case Opcode::stt:
 #warning "Fault should happen if the src reg is not divisible by four!"
 				stt(i._src_dest, immediateStorage);
 				break;
-			case Opcodes::Ldq:
+			case Opcode::ldq:
 #warning "Fault should happen if the dest reg is not divisible by four!"
 				ldq(immediateStorage, i._src_dest);
 				break;
-			case Opcodes::Stq:
+			case Opcode::stq:
 #warning "Fault should happen if the src reg is not divisible by four!"
 				stq(i._src_dest, immediateStorage);
 				break;
-			case Opcodes::Ldib:
+			case Opcode::ldib:
 				ldib(immediateStorage, srcDest);
 				break;
-			case Opcodes::Stib:
+			case Opcode::stib:
 				stib(srcDest, immediateStorage);
 				break;
-			case Opcodes::Ldis:
+			case Opcode::ldis:
 				ldis(immediateStorage, srcDest);
 				break;
-			case Opcodes::Stis:
+			case Opcode::stis:
 				stis(srcDest, immediateStorage);
 				break;
 			default:
@@ -201,71 +200,71 @@ namespace i960 {
 #warning "Fault on illegal mode!"
 				throw "Illegal mode!";
 		}
-		switch(static_cast<Opcodes>(i._opcode)) {
-			case Opcodes::Ldob:
+		switch(static_cast<Opcode>(i._opcode)) {
+			case Opcode::ldob:
 				ldob(immediateStorage, srcDest);
 				break;
-			case Opcodes::Stob:
+			case Opcode::stob:
 				stob(srcDest, immediateStorage);
 				break;
-			case Opcodes::Bx:
+			case Opcode::bx:
 				bx(immediateStorage);
 				break;
-			case Opcodes::Balx:
+			case Opcode::balx:
 				balx(immediateStorage, srcDest);
 				break;
-			case Opcodes::Callx:
+			case Opcode::callx:
 				callx(immediateStorage);
 				break;
-			case Opcodes::Ldos:
+			case Opcode::ldos:
 				ldos(immediateStorage, srcDest);
 				break;
-			case Opcodes::Stos:
+			case Opcode::stos:
 				stos(srcDest, immediateStorage);
 				break;
-			case Opcodes::Lda:
+			case Opcode::lda:
 				stos(immediateStorage, srcDest);
 				break;
-			case Opcodes::Ld:
+			case Opcode::ld:
 				ld(immediateStorage, srcDest);
 				break;
-			case Opcodes::St:
+			case Opcode::st:
 				st(srcDest, immediateStorage);
 				break;
-			case Opcodes::Ldl:
+			case Opcode::ldl:
 #warning "Fault should happen if the dest reg is non even!"
 				ldl(immediateStorage, i._src_dest);
 				break;
-			case Opcodes::Stl:
+			case Opcode::stl:
 #warning "Fault should happen if the src reg is non even!"
 				stl(i._src_dest, immediateStorage);
 				break;
-			case Opcodes::Ldt:
+			case Opcode::ldt:
 #warning "Fault should happen if the dest reg is not divisible by four!"
 				ldt(immediateStorage, i._src_dest);
 				break;
-			case Opcodes::Stt:
+			case Opcode::stt:
 #warning "Fault should happen if the src reg is not divisible by four!"
 				stt(i._src_dest, immediateStorage);
 				break;
-			case Opcodes::Ldq:
+			case Opcode::ldq:
 #warning "Fault should happen if the dest reg is not divisible by four!"
 				ldq(immediateStorage, i._src_dest);
 				break;
-			case Opcodes::Stq:
+			case Opcode::stq:
 #warning "Fault should happen if the src reg is not divisible by four!"
 				stq(i._src_dest, immediateStorage);
 				break;
-			case Opcodes::Ldib:
+			case Opcode::ldib:
 				ldib(immediateStorage, srcDest);
 				break;
-			case Opcodes::Stib:
+			case Opcode::stib:
 				stib(srcDest, immediateStorage);
 				break;
-			case Opcodes::Ldis:
+			case Opcode::ldis:
 				ldis(immediateStorage, srcDest);
 				break;
-			case Opcodes::Stis:
+			case Opcode::stis:
 				stis(srcDest, immediateStorage);
 				break;
 			default:
@@ -287,83 +286,83 @@ namespace i960 {
 		}
 		NormalRegister& srcDest = i.srcDestIsLiteral() ? imm3 : getRegister(i._src_dest);
 #warning "It is impossible for m3 to be set when srcDest is used as a dest, error out before hand"
-		switch(static_cast<Opcodes>(i.getOpcode())) {
-#define Standard3ArgOp(kind, fn) case Opcodes:: kind : fn ( src1, src2, srcDest ) ; break
-#define Standard2ArgOp(kind, fn) case Opcodes:: kind : fn ( src1, srcDest ) ; break
+		switch(static_cast<Opcode>(i.getOpcode())) {
+#define Standard3ArgOp(kind, fn) case Opcode:: kind : fn ( src1, src2, srcDest ) ; break
+#define Standard2ArgOp(kind, fn) case Opcode:: kind : fn ( src1, srcDest ) ; break
 #define Standard3ArgOpIO(kind, fn) Standard3ArgOp(kind ## o, fn ## o); Standard3ArgOp(kind ## i, fn ## i)
 #define Standard2ArgOpIO(kind, fn) Standard2ArgOp(kind ## o, fn ## o); Standard2ArgOp(kind ## i, fn ## i)
-#define Standard2SourceOp(kind, fn) case Opcodes:: kind : fn ( src1, src2) ; break
-			Standard3ArgOp(Notbit, notbit);
-            Standard3ArgOp(Clrbit, clrbit);
-            Standard3ArgOp(Notor, notor);
-			Standard3ArgOp(And, andOp);
-			Standard3ArgOp(Andnot, andnot);
-			Standard3ArgOp(Setbit, setbit);
-			Standard3ArgOp(Notand, notand);
-			Standard3ArgOp(Xor, xorOp);
-			Standard3ArgOp(Or, orOp);
-			Standard3ArgOp(Nor, nor);
-			Standard3ArgOp(Xnor, xnor);
-			Standard2ArgOp(Not, notOp);
-			Standard3ArgOp(Ornot, ornot);
-			Standard3ArgOp(Nand, nand);
-			Standard3ArgOp(Alterbit, alterbit);
-			Standard3ArgOpIO(Add, add);
-			Standard3ArgOpIO(Sub, sub);
-			Standard3ArgOp(Shro, shro);
-			Standard3ArgOp(Shrdi, shrdi);
-			Standard3ArgOp(Shri, shri);
-			Standard3ArgOp(Shlo, shlo);
-			Standard3ArgOp(Rotate, rotate);
-			Standard3ArgOp(Shli, shli);
-			Standard2ArgOpIO(Cmp, cmp);
-			Standard2ArgOpIO(Concmp, concmp);
-			Standard3ArgOpIO(Cmpinc, cmpinc);
-			Standard3ArgOpIO(Cmpdec, cmpdec);
-			Standard2SourceOp(Scanbyte, scanbyte);
-			Standard2ArgOp(Chkbit, chkbit);
-			Standard3ArgOp(Addc, addc);
-			Standard3ArgOp(Subc, subc);
-			Standard2ArgOp(Mov, mov);
-			Standard3ArgOp(Atmod, atmod);
-			Standard3ArgOp(Atadd, atadd);
-            case Opcodes::Movl: 
+#define Standard2SourceOp(kind, fn) case Opcode:: kind : fn ( src1, src2) ; break
+			Standard3ArgOp(notbit, notbit);
+            Standard3ArgOp(clrbit, clrbit);
+            Standard3ArgOp(notor, notor);
+			Standard3ArgOp(opand, andOp);
+			Standard3ArgOp(andnot, andnot);
+			Standard3ArgOp(setbit, setbit);
+			Standard3ArgOp(notand, notand);
+			Standard3ArgOp(opxor, xorOp);
+			Standard3ArgOp(opor, orOp);
+			Standard3ArgOp(nor, nor);
+			Standard3ArgOp(xnor, xnor);
+			Standard2ArgOp(opnot, notOp);
+			Standard3ArgOp(ornot, ornot);
+			Standard3ArgOp(nand, nand);
+			Standard3ArgOp(alterbit, alterbit);
+			Standard3ArgOpIO(add, add);
+			Standard3ArgOpIO(sub, sub);
+			Standard3ArgOp(shro, shro);
+			Standard3ArgOp(shrdi, shrdi);
+			Standard3ArgOp(shri, shri);
+			Standard3ArgOp(shlo, shlo);
+			Standard3ArgOp(rotate, rotate);
+			Standard3ArgOp(shli, shli);
+			Standard2ArgOpIO(cmp, cmp);
+			Standard2ArgOpIO(concmp, concmp);
+			Standard3ArgOpIO(cmpinc, cmpinc);
+			Standard3ArgOpIO(cmpdec, cmpdec);
+			Standard2SourceOp(scanbyte, scanbyte);
+			Standard2ArgOp(chkbit, chkbit);
+			Standard3ArgOp(addc, addc);
+			Standard3ArgOp(subc, subc);
+			Standard2ArgOp(mov, mov);
+			Standard3ArgOp(atmod, atmod);
+			Standard3ArgOp(atadd, atadd);
+            case Opcode::movl: 
                 movl(i._source1, i._source2); 
                 break;
-            case Opcodes::Movt: 
+            case Opcode::movt: 
                 movt(i._source1, i._source2); 
                 break;
-            case Opcodes::Movq: 
+            case Opcode::movq: 
                 movq(i._source1, i._source2); 
                 break;
 #warning "synmovl, synmovt, and synmovq have not been implemented as they have special logic"
-			Standard2ArgOp(Spanbit, spanbit);
-			Standard2ArgOp(Scanbit, scanbit);
-			Standard3ArgOp(Modac, modac);
-			Standard3ArgOp(Modify, modify);
-			Standard3ArgOp(Extract, extract);
-			Standard3ArgOp(Modtc, modtc);
-			Standard3ArgOp(Modpc, modpc);
-			case Opcodes::Calls: 
+			Standard2ArgOp(spanbit, spanbit);
+			Standard2ArgOp(scanbit, scanbit);
+			Standard3ArgOp(modac, modac);
+			Standard3ArgOp(modify, modify);
+			Standard3ArgOp(extract, extract);
+			Standard3ArgOp(modtc, modtc);
+			Standard3ArgOp(modpc, modpc);
+			case Opcode::calls: 
 				calls(src1);
 				break;
-			case Opcodes::Mark:
+			case Opcode::mark:
 				mark();
 				break;
-			case Opcodes::Fmark:
+			case Opcode::fmark:
 				fmark();
 				break;
-			case Opcodes::Flushreg:
+			case Opcode::flushreg:
 				flushreg();
 				break;
-			case Opcodes::Syncf:
+			case Opcode::syncf:
 				syncf();
 				break;
 #warning "Emul not impl'd as it is a special form"
 #warning "Ediv not impl'd as it is a special form"
-			Standard3ArgOpIO(Mul, mul);
-			Standard3ArgOpIO(Rem, rem);
-			Standard3ArgOpIO(Div, div);
+			Standard3ArgOpIO(mul, mul);
+			Standard3ArgOpIO(rem, rem);
+			Standard3ArgOpIO(div, div);
 #warning "Modi not impl'd as it is a special form"
 #undef Standard3ArgOp
 #undef Standard2ArgOp
