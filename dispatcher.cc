@@ -273,12 +273,15 @@ namespace i960 {
 				throw "illegal instruction!";
 		}
 	}
+	void Core::onFloatingPoint(const Instruction::REGFormat& i)  {
+		throw "Floating Point not supported!";
+	}
 	void Core::dispatch(const Instruction::REGFormat& i) noexcept {
 		NormalRegister imm1;
 		NormalRegister imm2;
 		NormalRegister imm3;
 		if (i.isFloatingPoint()) {
-			dispatchFP(i);
+			onFloatingPoint(i);
 			return;
 		}
 		NormalRegister& src1 = i.src1IsLiteral() ? imm1 : getRegister(i._source1);

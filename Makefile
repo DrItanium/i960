@@ -1,10 +1,15 @@
 include config.mk
 
-OBJS := misc.o sim.o numericops.o core.o dispatcher.o numericsisa.o
-PROG := sim960
+I960MC_OBJS := misc.o sim.o numericops.o core.o dispatcher.o numericsisa.o
+I960JX_OBJS := misc.o sim.o core.o dispatcher.o 
+OBJS := $(I960MC_OBJS) $(I960JX_OBJS)
+
+I960MC_PROG := sim960mc
+I960JX_PROG := sim960jx
+PROGS := $(I960JX_PROG) $(I960MC_PROG)
 
 
-all: $(PROG)
+all: $(I960MC_PROG) $(I960JX_PROG)
 
 options:
 	@echo Build Options
@@ -14,9 +19,13 @@ options:
 	@echo LDFLAGS = ${LDFLAGS}
 	@echo ------------------
 
-$(PROG): $(OBJS)
-	@echo LD ${PROG}
-	@${LD} ${LDFLAGS} -o ${PROG} ${OBJS}
+$(I960MC_PROG): $(I960MC_OBJS)
+	@echo LD ${I960MC_PROG}
+	@${LD} ${LDFLAGS} -o ${I960MC_PROG} ${I960MC_OBJS}
+
+$(I960JX_PROG): $(I960JX_OBJS)
+	@echo LD ${I960JX_PROG}
+	@${LD} ${LDFLAGS} -o ${I960JX_PROG} ${I960JX_OBJS}
 
 .cc.o :
 	@echo CXX $<
@@ -24,7 +33,7 @@ $(PROG): $(OBJS)
 
 clean: 
 	@echo Cleaning...
-	@rm -f ${OBJS} ${PROG}
+	@rm -f ${OBJS} ${PROGS}
 
 numericops.o: operations.h types.h archlevel.h conditional_kinds.def numericops.cc
 sim.o: operations.h types.h opcodes.h archlevel.h conditional_kinds.def sim.cc
