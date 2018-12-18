@@ -114,16 +114,19 @@ namespace i960 {
             void ldis(__DEFAULT_TWO_ARGS__) noexcept;
             void ldl0(SourceRegister src, LongDestinationRegister dest) noexcept;
 			inline void ldl(SourceRegister src, Ordinal srcDestIndex) noexcept {
+				// TODO make sure that the srcDestIndex makes sense
 				DoubleRegister reg(getRegister(srcDestIndex), getRegister(srcDestIndex + 1));
 				ldl0(src, reg);
 			}
             void ldt0(SourceRegister src, TripleRegister& dest) noexcept;
 			inline void ldt(SourceRegister src, Ordinal srcDestIndex) noexcept {
+				// TODO make sure that the srcDestIndex makes sense
 				TripleRegister reg(getRegister(srcDestIndex), getRegister(srcDestIndex + 1), getRegister(srcDestIndex + 2));
 				ldt0(src, reg);
 			}
             void ldq0(SourceRegister src, QuadRegister& dest) noexcept;
 			inline void ldq(SourceRegister src, Ordinal index) noexcept {
+				// TODO make sure that the srcDestIndex makes sense
 				QuadRegister reg(getRegister(index), getRegister(index + 1), getRegister(index + 2), getRegister(index + 3));
 				ldq0(src, reg);
 			}
@@ -139,16 +142,19 @@ namespace i960 {
             void movt0(const TripleRegister& src, TripleRegister& dest) noexcept;
             void movq0(const QuadRegister& src, QuadRegister& dest) noexcept;
             inline void movl(ByteOrdinal src, ByteOrdinal dest) noexcept {
+				// TODO make sure that the src and dest indicies make sense
                 DoubleRegister s(getRegister(src), getRegister(src + 1));
                 DoubleRegister d(getRegister(dest), getRegister(dest + 1));
                 movl0(s, d);
             }
             inline void movt(ByteOrdinal src, ByteOrdinal dest) noexcept {
+				// TODO make sure that the src and dest indicies make sense
                 TripleRegister s(getRegister(src), getRegister(src + 1), getRegister(src + 2));
                 TripleRegister d(getRegister(dest), getRegister(dest + 1), getRegister(dest + 2));
                 movt0(s, d);
             }
             inline void movq(ByteOrdinal src, ByteOrdinal dest) noexcept {
+				// TODO make sure that the src and dest indicies make sense
                 QuadRegister s(getRegister(src), getRegister(src + 1), getRegister(src + 2), getRegister(src + 3));
                 QuadRegister d(getRegister(dest), getRegister(dest + 1), getRegister(dest + 2), getRegister(dest + 3));
                 movq0(s, d);
@@ -300,6 +306,11 @@ namespace i960 {
 		private:
 			template<Ordinal opcode>
 			static const auto CorrespondingFunction = false;
+			template<Ordinal opcode, typename ... Args>
+			void invokeOperation(Args&& ... args) {
+				static_assert(!std::is_same<std::decay_t<decltype(CorrespondingFunction<opcode>)>, bool>::value, "Given opcode is actually undefined");
+				CorrespondingFunction<opcode>(*this, std::forward<Args>(args)...);
+			}
         private:
             RegisterWindow _globalRegisters;
             // The hardware implementations use register sets, however

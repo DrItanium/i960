@@ -1,10 +1,9 @@
 #ifndef I960_OPCODES_H__
 #define I960_OPCODES_H__
 #include "types.h"
-namespace i960 {
-	namespace Opcode {
+namespace i960::Opcode {
 		struct Description final {
-			enum class Class {
+			enum class Class : Ordinal {
 				Undefined,
 				Reg,
 				Cobr,
@@ -47,6 +46,5 @@ namespace i960 {
 
 		const Description& getDescription(const Instruction& inst) noexcept;
 		const Description& getDescription(Ordinal opcode) noexcept;
-    }
-} // end namespace i960
+} // end namespace i960::Opcode
 #endif // end I960_OPCODES_H__
