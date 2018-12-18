@@ -1,6 +1,6 @@
 include config.mk
 
-I960JX_OBJS := misc.o sim.o core.o dispatcher.o 
+I960JX_OBJS := misc.o sim.o core.o dispatcher.o opcodes.o
 OBJS := $(I960JX_OBJS)
 
 I960JX_PROG := sim960jx
@@ -34,6 +34,7 @@ sim.o: operations.h types.h opcodes.def opcodes.h conditional_kinds.def sim.cc
 misc.o: types.h conditional_kinds.def misc.cc
 core.o: types.h memiface.h core.h operations.h opcodes.def opcodes.h conditional_kinds.def core.cc
 dispatcher.o: types.h core.h opcodes.def opcodes.h conditional_kinds.def dispatcher.cc 
+opcodes.o: types.h opcodes.def opcodes.h opcodes.cc
 
 
 .PHONY: options

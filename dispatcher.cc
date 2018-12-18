@@ -9,13 +9,13 @@
 #define __DEFAULT_DOUBLE_WIDE_TWO_ARGS__ const DoubleRegister& src, DoubleRegister& dest
 namespace i960 {
 	void Core::dispatch(const Instruction& inst) noexcept {
-		if (inst.isRegFormat()) {
+		if (auto desc = Opcode::getDescription(inst); desc.isReg()) {
 			dispatch(inst._reg);
-		} else if (inst.isMemFormat()) {
+		} else if (desc.isMem()) {
 			dispatch(inst._mem);
-		} else if (inst.isControlFormat()) {
+		} else if (desc.isCtrl()) {
 			dispatch(inst._ctrl);
-		} else if (inst.isCompareAndBranchFormat()) {
+		} else if (desc.isCobr()) {
 			dispatch(inst._cobr);
 		} else {
 #warning "This throw statement should be a fault of some kind"

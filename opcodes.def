@@ -1,3 +1,12 @@
+#define creg(baseName, baseAddress) \
+		reg(baseName ## e, (baseAddress | 0x0a0)) \
+		reg(baseName ## g, (baseAddress | 0x090)) \
+		reg(baseName ## ge, (baseAddress | 0x0b0)) \
+		reg(baseName ## l, (baseAddress | 0x0c0)) \
+		reg(baseName ## le, (baseAddress | 0x0e0)) \
+		reg(baseName ## ne, (baseAddress | 0x0d0)) \
+		reg(baseName ## no, (baseAddress | 0x080)) \
+		reg(baseName ## o, (baseAddress | 0x0f0))
 reg(addc, 0x5b0)
 reg(addi, 0x591)
 creg(addi, 0x701)
@@ -143,3 +152,4 @@ cobr(testno, 0x20)
 cobr(testo, 0x27)
 reg(xnor, 0x589)
 reg(opxor, 0x586)
+#undef creg
