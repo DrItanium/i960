@@ -25,7 +25,37 @@ namespace i960 {
 #undef ctrl
 #undef o
 	void Core::dispatch(const Instruction& inst) noexcept {
-		if (auto desc = Opcode::getDescription(inst); desc.isReg()) {
+		if (auto desc = Opcode::getDescription(inst); desc.isUndefined()) {
+		 	// TODO raise fault
+			throw "illegal instruction";
+		} else if (Opcode::hasZeroArguments(desc)) {
+			// these operations require no further decoding effort so short
+			// circuit them :D
+			switch (desc) {
+				case Opcode::mark:
+					invokeOperation<Opcode::mark>();
+					break;
+				case Opcode::fmark:
+					invokeOperation<Opcode::fmark>();
+					break;
+				case Opcode::flushreg:
+					invokeOperation<Opcode::flushreg>();
+					break;
+				case Opcode::syncf:
+					invokeOperation<Opcode::syncf>();
+					break;
+				case Opcode::ret:
+					invokeOperation<Opcode::ret>();
+					break;
+#define X(kind) \
+			case Opcode:: fault ## kind : invokeOperation<Opcode:: fault ## kind > () ; break;
+#include "conditional_kinds.def"
+#undef X
+				default:
+					throw "unimplemented instruction";
+			}
+			
+		} else if (desc.isReg()) {
 			dispatch(inst._reg);
 		} else if (desc.isMem()) {
 			dispatch(inst._mem);
@@ -34,8 +64,8 @@ namespace i960 {
 		} else if (desc.isCobr()) {
 			dispatch(inst._cobr);
 		} else {
-#warning "This throw statement should be a fault of some kind"
-			throw "Illegal instruction";
+			// this is another anomaly case where the 
+			throw "unimplemented instruction";
 		}
 	}
 	void Core::dispatch(const Instruction::CTRLFormat& i) noexcept {
@@ -47,20 +77,16 @@ namespace i960 {
 			case Opcode::call: 
 				invokeOperation<Opcode::call>(displacement);
 				break;
-			case Opcode::ret:
-				invokeOperation<Opcode::ret>();
-				break;
 			case Opcode::bal:
 				invokeOperation<Opcode::bal>(displacement);
 				break;
 #define X(kind) \
-			case Opcode:: b ## kind : invokeOperation< Opcode:: b ## kind > (displacement) ; break; \
-			case Opcode:: fault ## kind : invokeOperation<Opcode:: fault ## kind > () ; break;
+			case Opcode:: b ## kind : invokeOperation< Opcode:: b ## kind > (displacement) ; break; 
 #include "conditional_kinds.def"
 #undef X
 			default:
 #warning "Generate illegal instruction fault"
-				throw "Illegal Instruction";
+									  throw "Illegal Instruction";
 		}
 	}
 	void Core::dispatch(const Instruction::COBRFormat& i) noexcept {
@@ -294,45 +320,45 @@ namespace i960 {
 		NormalRegister& srcDest = i.srcDestIsLiteral() ? imm3 : getRegister(i._src_dest);
 #warning "It is impossible for m3 to be set when srcDest is used as a dest, error out before hand"
 		switch(i.getOpcode()) {
-#define Standard3ArgOp(kind, fn) case Opcode:: kind : invokeOperation<Opcode:: kind> ( src1, src2, srcDest ) ; break
-#define Standard2ArgOp(kind, fn) case Opcode:: kind : invokeOperation<Opcode:: kind> ( src1, srcDest ) ; break
-#define Standard3ArgOpIO(kind, fn) Standard3ArgOp(kind ## o, fn ## o); Standard3ArgOp(kind ## i, fn ## i)
-#define Standard2ArgOpIO(kind, fn) Standard2ArgOp(kind ## o, fn ## o); Standard2ArgOp(kind ## i, fn ## i)
-#define Standard2SourceOp(kind, fn) case Opcode:: kind : invokeOperation<Opcode:: kind > ( src1, src2) ; break
-			Standard3ArgOp(notbit, notbit);
-            Standard3ArgOp(clrbit, clrbit);
-            Standard3ArgOp(notor, notor);
-			Standard3ArgOp(opand, opand);
-			Standard3ArgOp(andnot, andnot);
-			Standard3ArgOp(setbit, setbit);
-			Standard3ArgOp(notand, notand);
-			Standard3ArgOp(opxor, opxor);
-			Standard3ArgOp(opor, opor);
-			Standard3ArgOp(nor, nor);
-			Standard3ArgOp(xnor, xnor);
-			Standard2ArgOp(opnot, opnot);
-			Standard3ArgOp(ornot, ornot);
-			Standard3ArgOp(nand, nand);
-			Standard3ArgOp(alterbit, alterbit);
-			Standard3ArgOpIO(add, add);
-			Standard3ArgOpIO(sub, sub);
-			Standard3ArgOp(shro, shro);
-			Standard3ArgOp(shrdi, shrdi);
-			Standard3ArgOp(shri, shri);
-			Standard3ArgOp(shlo, shlo);
-			Standard3ArgOp(rotate, rotate);
-			Standard3ArgOp(shli, shli);
-			Standard2ArgOpIO(cmp, cmp);
-			Standard2ArgOpIO(concmp, concmp);
-			Standard3ArgOpIO(cmpinc, cmpinc);
-			Standard3ArgOpIO(cmpdec, cmpdec);
-			Standard2SourceOp(scanbyte, scanbyte);
-			Standard2ArgOp(chkbit, chkbit);
-			Standard3ArgOp(addc, addc);
-			Standard3ArgOp(subc, subc);
-			Standard2ArgOp(mov, mov);
-			Standard3ArgOp(atmod, atmod);
-			Standard3ArgOp(atadd, atadd);
+#define Standard3ArgOp(kind) case Opcode:: kind : invokeOperation<Opcode:: kind> ( src1, src2, srcDest ) ; break
+#define Standard2ArgOp(kind) case Opcode:: kind : invokeOperation<Opcode:: kind> ( src1, srcDest ) ; break
+#define Standard3ArgOpIO(kind) Standard3ArgOp(kind ## o); Standard3ArgOp(kind ## i)
+#define Standard2ArgOpIO(kind) Standard2ArgOp(kind ## o); Standard2ArgOp(kind ## i)
+#define Standard2SourceOp(kind) case Opcode:: kind : invokeOperation<Opcode:: kind > ( src1, src2) ; break
+			Standard3ArgOp(notbit);
+            Standard3ArgOp(clrbit);
+            Standard3ArgOp(notor);
+			Standard3ArgOp(opand);
+			Standard3ArgOp(andnot);
+			Standard3ArgOp(setbit);
+			Standard3ArgOp(notand);
+			Standard3ArgOp(opxor);
+			Standard3ArgOp(opor);
+			Standard3ArgOp(nor);
+			Standard3ArgOp(xnor);
+			Standard2ArgOp(opnot);
+			Standard3ArgOp(ornot);
+			Standard3ArgOp(nand);
+			Standard3ArgOp(alterbit);
+			Standard3ArgOpIO(add);
+			Standard3ArgOpIO(sub);
+			Standard3ArgOp(shro);
+			Standard3ArgOp(shrdi);
+			Standard3ArgOp(shri);
+			Standard3ArgOp(shlo);
+			Standard3ArgOp(rotate);
+			Standard3ArgOp(shli);
+			Standard2ArgOpIO(cmp);
+			Standard2ArgOpIO(concmp);
+			Standard3ArgOpIO(cmpinc);
+			Standard3ArgOpIO(cmpdec);
+			Standard2SourceOp(scanbyte);
+			Standard2ArgOp(chkbit);
+			Standard3ArgOp(addc);
+			Standard3ArgOp(subc);
+			Standard2ArgOp(mov);
+			Standard3ArgOp(atmod);
+			Standard3ArgOp(atadd);
             case Opcode::movl: 
 				invokeOperation<Opcode::movl>(i._source1, i._source2);
                 break;
@@ -342,33 +368,21 @@ namespace i960 {
             case Opcode::movq: 
 				invokeOperation<Opcode::movq>(i._source1, i._source2);
                 break;
-			Standard2ArgOp(spanbit, spanbit);
-			Standard2ArgOp(scanbit, scanbit);
-			Standard3ArgOp(modac, modac);
-			Standard3ArgOp(modify, modify);
-			Standard3ArgOp(extract, extract);
-			Standard3ArgOp(modtc, modtc);
-			Standard3ArgOp(modpc, modpc);
+			Standard2ArgOp(spanbit);
+			Standard2ArgOp(scanbit);
+			Standard3ArgOp(modac);
+			Standard3ArgOp(modify);
+			Standard3ArgOp(extract);
+			Standard3ArgOp(modtc);
+			Standard3ArgOp(modpc);
 			case Opcode::calls: 
 				invokeOperation<Opcode::calls>(src1);
 				break;
-			case Opcode::mark:
-				invokeOperation<Opcode::mark>();
-				break;
-			case Opcode::fmark:
-				invokeOperation<Opcode::fmark>();
-				break;
-			case Opcode::flushreg:
-				invokeOperation<Opcode::flushreg>();
-				break;
-			case Opcode::syncf:
-				invokeOperation<Opcode::syncf>();
-				break;
 #warning "Emul not impl'd as it is a special form"
 #warning "Ediv not impl'd as it is a special form"
-			Standard3ArgOpIO(mul, mul);
-			Standard3ArgOpIO(rem, rem);
-			Standard3ArgOpIO(div, div);
+			Standard3ArgOpIO(mul);
+			Standard3ArgOpIO(rem);
+			Standard3ArgOpIO(div);
 #warning "Modi not impl'd as it is a special form"
 #undef Standard3ArgOp
 #undef Standard2ArgOp
