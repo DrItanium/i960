@@ -242,30 +242,6 @@ namespace i960 {
                 }
             }
 			__GEN_DEFAULT_THREE_ARG_SIGS__(sysctl);
-            __GEN_DEFAULT_THREE_ARG_SIGS__(suboo);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(subono);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(subone);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(subole);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(subol);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(suboge);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(subog);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(suboe);
-            __GEN_DEFAULT_THREE_ARG_SIGS__(subio);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(subino);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(subine);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(subile);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(subil);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(subige);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(subig);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(subie);
-            __GEN_DEFAULT_THREE_ARG_SIGS__(selo);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(selno);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(selne);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(selle);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(sell);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(selge);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(selg);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(sele);
 			void inten();
 			void intdis();
 			void intctl(__DEFAULT_TWO_ARGS__);
@@ -278,22 +254,14 @@ namespace i960 {
             void cmpob(SourceRegister src1, SourceRegister src2) noexcept;
             void cmpib(SourceRegister src1, SourceRegister src2) noexcept;
 			void bswap(DestinationRegister src1, DestinationRegister src2) noexcept;
-            __GEN_DEFAULT_THREE_ARG_SIGS__(addoo);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(addono);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(addone);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(addole);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(addol);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(addoge);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(addog);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(addoe);
-            __GEN_DEFAULT_THREE_ARG_SIGS__(addio);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(addino);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(addine);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(addile);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(addil);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(addige);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(addig);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(addie);
+#define X(kind) \
+			__GEN_DEFAULT_THREE_ARG_SIGS__(addo ## kind) ; \
+			__GEN_DEFAULT_THREE_ARG_SIGS__(addi ## kind) ; \
+			__GEN_DEFAULT_THREE_ARG_SIGS__(subo ## kind) ; \
+			__GEN_DEFAULT_THREE_ARG_SIGS__(subi ## kind) ; \
+			__GEN_DEFAULT_THREE_ARG_SIGS__(sel ## kind) ;
+#include "conditional_kinds.def"
+#undef X 
 		private:
 			void dispatch(const Instruction::REGFormat& inst) noexcept;
 			void dispatch(const Instruction::COBRFormat& inst) noexcept;

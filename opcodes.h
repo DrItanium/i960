@@ -74,6 +74,8 @@ namespace i960::Opcode {
 				case Opcode::faulto:
 				case Opcode::flushreg:
 				case Opcode::syncf:
+				case Opcode::inten:
+				case Opcode::intdis:
 					return true;
 				default:
 					return false;
