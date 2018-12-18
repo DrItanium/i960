@@ -177,7 +177,7 @@ namespace i960 {
 		auto p = pos.get<Ordinal>() & 0b11111;
 		dest.set<Ordinal>((_ac.conditionCode & 0b010) == 0 ? s & (~(1 << p)) : s | (1 << p));
 	}
-	void Core::andOp(__DEFAULT_THREE_ARGS__) noexcept {
+	void Core::opand(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set<Ordinal>(i960::andOp<Ordinal>(src2.get<Ordinal>(), src1.get<Ordinal>()));
 	}
 	void Core::andnot(__DEFAULT_THREE_ARGS__) noexcept {
@@ -208,13 +208,13 @@ namespace i960 {
 	void Core::mov(SourceRegister src, DestinationRegister dest) noexcept { 
 		move(src, dest);
 	}
-	void Core::movl(LongSourceRegister src, LongDestinationRegister dest) noexcept { 
+	void Core::movl0(LongSourceRegister src, LongDestinationRegister dest) noexcept { 
 		move(src, dest);
 	}
-	void Core::movt(const TripleRegister& src, TripleRegister& dest) noexcept { 
+	void Core::movt0(const TripleRegister& src, TripleRegister& dest) noexcept { 
 		move(src, dest);
 	}
-	void Core::movq(const QuadRegister& src, QuadRegister& dest) noexcept {
+	void Core::movq0(const QuadRegister& src, QuadRegister& dest) noexcept {
 		move(src, dest);
 	}
 
@@ -346,7 +346,7 @@ namespace i960 {
 		dest.set<Integer>((ShortInteger)load(src.get<Ordinal>()));
 	}
 
-	void Core::ldl(SourceRegister src, LongDestinationRegister dest) noexcept {
+	void Core::ldl0(SourceRegister src, LongDestinationRegister dest) noexcept {
 		auto addr = src.get<Ordinal>();
 		dest.set(load(addr), load(addr + 1));
 	}
@@ -354,7 +354,7 @@ namespace i960 {
 		_lower.set<Ordinal>(lower);
 		_upper.set<Ordinal>(upper);
 	}
-	void Core::ldt(SourceRegister src, TripleRegister& dest) noexcept {
+	void Core::ldt0(SourceRegister src, TripleRegister& dest) noexcept {
 		auto addr = src.get<Ordinal>();
 		dest.set(load(addr), load(addr + 1), load(addr + 2));
 	}
@@ -363,7 +363,7 @@ namespace i960 {
 		_mid.set<Ordinal>(m);
 		_upper.set<Ordinal>(u);
 	}
-	void Core::ldq(SourceRegister src, QuadRegister& dest) noexcept {
+	void Core::ldq0(SourceRegister src, QuadRegister& dest) noexcept {
 		auto addr = src.get<Ordinal>();
 		dest.set(load(addr), load(addr + 1), load(addr + 2), load(addr + 3));
 	}
@@ -384,17 +384,17 @@ namespace i960 {
 		// TODO add divide by zero check
 		dest.set(src2.get<Integer>() % src1.get<Integer>());
 	}
-	void Core::stl(LongSourceRegister src, SourceRegister dest) noexcept {
+	void Core::stl0(LongSourceRegister src, SourceRegister dest) noexcept {
 		store(dest.get<Ordinal>(), src.getLowerHalf());
 		store(dest.get<Ordinal>() + sizeof(Ordinal), src.getUpperHalf());
 	}
-	void Core::stt(const TripleRegister& src, SourceRegister dest) noexcept {
+	void Core::stt0(const TripleRegister& src, SourceRegister dest) noexcept {
 		auto addr = dest.get<Ordinal>();
 		store(addr, src.getLowerPart());
 		store(addr + sizeof(Ordinal), src.getMiddlePart());
 		store(addr + (2 * sizeof(Ordinal)), src.getUpperPart());
 	}
-	void Core::stq(const QuadRegister& src, SourceRegister dest) noexcept {
+	void Core::stq0(const QuadRegister& src, SourceRegister dest) noexcept {
 		auto addr = dest.get<Ordinal>();
 		store(addr, src.getLowestPart());
 		store(addr + sizeof(Ordinal), src.getLowerPart());
@@ -729,13 +729,13 @@ namespace i960 {
 	void Core::notor(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set<Ordinal>(i960::notOr(src2.get<Ordinal>(), src1.get<Ordinal>()));
 	}
-	void Core::orOp(__DEFAULT_THREE_ARGS__) noexcept {
+	void Core::opor(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set(i960::orOp<Ordinal>(src2.get<Ordinal>(), src1.get<Ordinal>()));
 	}
 	void Core::nor(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set(i960::nor(src2.get<Ordinal>(), src1.get<Ordinal>()));
 	}
-	void Core::notOp(__DEFAULT_TWO_ARGS__) noexcept {
+	void Core::opnot(__DEFAULT_TWO_ARGS__) noexcept {
 		dest.set(i960::notOp(src.get<Ordinal>()));
 	}
 	void Core::ornot(__DEFAULT_THREE_ARGS__) noexcept {
@@ -924,9 +924,15 @@ namespace i960 {
     void Core::xnor(__DEFAULT_THREE_ARGS__) noexcept {
         dest.set<Ordinal>(i960::xnor<Ordinal>(src1.get<Ordinal>(), src2.get<Ordinal>()));
     }
-    void Core::xorOp(__DEFAULT_THREE_ARGS__) noexcept {
+    void Core::opxor(__DEFAULT_THREE_ARGS__) noexcept {
         dest.set<Ordinal>(i960::xorOp<Ordinal>(src1.get<Ordinal>(), src2.get<Ordinal>()));
     }
+	void Core::intdis() {
+
+	}
+	void Core::inten() {
+
+	}
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__

@@ -2,12 +2,26 @@
 #include "core.h"
 #include "opcodes.h"
 #include <map>
+#include <functional>
 
 #define __DEFAULT_THREE_ARGS__ Core::SourceRegister src1, Core::SourceRegister src2, Core::DestinationRegister dest
 #define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ const DoubleRegister& src1, const DoubleRegister& src2, DoubleRegister& dest
 #define __DEFAULT_TWO_ARGS__ Core::SourceRegister src, Core::DestinationRegister dest
 #define __DEFAULT_DOUBLE_WIDE_TWO_ARGS__ const DoubleRegister& src, DoubleRegister& dest
 namespace i960 {
+#define o(name, code, kind) \
+	template<> \
+	const decltype(auto) Core::CorrespondingFunction< code > = std::mem_fn( & Core:: name );
+#define reg(name, code) o(name, code, Reg)
+#define cobr(name, code) o(name, code, Cobr) 
+#define mem(name, code) o(name, code, Mem) 
+#define ctrl(name, code) o(name, code, Ctrl)
+#include "opcodes.def"
+#undef reg
+#undef cobr
+#undef mem
+#undef ctrl
+#undef o
 	void Core::dispatch(const Instruction& inst) noexcept {
 		if (auto desc = Opcode::getDescription(inst); desc.isReg()) {
 			dispatch(inst._reg);
@@ -297,15 +311,15 @@ namespace i960 {
 			Standard3ArgOp(notbit, notbit);
             Standard3ArgOp(clrbit, clrbit);
             Standard3ArgOp(notor, notor);
-			Standard3ArgOp(opand, andOp);
+			Standard3ArgOp(opand, opand);
 			Standard3ArgOp(andnot, andnot);
 			Standard3ArgOp(setbit, setbit);
 			Standard3ArgOp(notand, notand);
-			Standard3ArgOp(opxor, xorOp);
-			Standard3ArgOp(opor, orOp);
+			Standard3ArgOp(opxor, opxor);
+			Standard3ArgOp(opor, opor);
 			Standard3ArgOp(nor, nor);
 			Standard3ArgOp(xnor, xnor);
-			Standard2ArgOp(opnot, notOp);
+			Standard2ArgOp(opnot, opnot);
 			Standard3ArgOp(ornot, ornot);
 			Standard3ArgOp(nand, nand);
 			Standard3ArgOp(alterbit, alterbit);

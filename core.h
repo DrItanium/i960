@@ -63,7 +63,7 @@ namespace i960 {
             __GEN_DEFAULT_THREE_ARG_SIGS__(addi);
             void chkbit(SourceRegister pos, SourceRegister src) noexcept;
             __GEN_DEFAULT_THREE_ARG_SIGS__(alterbit);
-            __GEN_DEFAULT_THREE_ARG_SIGS__(andOp);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(opand);
             __GEN_DEFAULT_THREE_ARG_SIGS__(andnot);
             void atadd(__DEFAULT_THREE_ARGS__) noexcept; // TODO add other forms of atadd
             void atmod(SourceRegister src, SourceRegister mask, DestinationRegister srcDest) noexcept; // TODO check out other forms of this instruction
@@ -112,20 +112,20 @@ namespace i960 {
             void ldos(__DEFAULT_TWO_ARGS__) noexcept;
             void ldib(__DEFAULT_TWO_ARGS__) noexcept;
             void ldis(__DEFAULT_TWO_ARGS__) noexcept;
-            void ldl(SourceRegister src, LongDestinationRegister dest) noexcept;
+            void ldl0(SourceRegister src, LongDestinationRegister dest) noexcept;
 			inline void ldl(SourceRegister src, Ordinal srcDestIndex) noexcept {
 				DoubleRegister reg(getRegister(srcDestIndex), getRegister(srcDestIndex + 1));
-				ldl(src, reg);
+				ldl0(src, reg);
 			}
-            void ldt(SourceRegister src, TripleRegister& dest) noexcept;
+            void ldt0(SourceRegister src, TripleRegister& dest) noexcept;
 			inline void ldt(SourceRegister src, Ordinal srcDestIndex) noexcept {
 				TripleRegister reg(getRegister(srcDestIndex), getRegister(srcDestIndex + 1), getRegister(srcDestIndex + 2));
-				ldt(src, reg);
+				ldt0(src, reg);
 			}
-            void ldq(SourceRegister src, QuadRegister& dest) noexcept;
+            void ldq0(SourceRegister src, QuadRegister& dest) noexcept;
 			inline void ldq(SourceRegister src, Ordinal index) noexcept {
 				QuadRegister reg(getRegister(index), getRegister(index + 1), getRegister(index + 2), getRegister(index + 3));
-				ldq(src, reg);
+				ldq0(src, reg);
 			}
             void lda(__DEFAULT_TWO_ARGS__) noexcept;
             void mark() noexcept;
@@ -135,33 +135,33 @@ namespace i960 {
             __GEN_DEFAULT_THREE_ARG_SIGS__(modpc);
             __GEN_DEFAULT_THREE_ARG_SIGS__(modtc);
             void mov(__DEFAULT_TWO_ARGS__) noexcept;
-            void movl(LongSourceRegister src, LongDestinationRegister dest) noexcept;
-            void movt(const TripleRegister& src, TripleRegister& dest) noexcept;
-            void movq(const QuadRegister& src, QuadRegister& dest) noexcept;
+            void movl0(LongSourceRegister src, LongDestinationRegister dest) noexcept;
+            void movt0(const TripleRegister& src, TripleRegister& dest) noexcept;
+            void movq0(const QuadRegister& src, QuadRegister& dest) noexcept;
             inline void movl(ByteOrdinal src, ByteOrdinal dest) noexcept {
                 DoubleRegister s(getRegister(src), getRegister(src + 1));
                 DoubleRegister d(getRegister(dest), getRegister(dest + 1));
-                movl(s, d);
+                movl0(s, d);
             }
             inline void movt(ByteOrdinal src, ByteOrdinal dest) noexcept {
                 TripleRegister s(getRegister(src), getRegister(src + 1), getRegister(src + 2));
                 TripleRegister d(getRegister(dest), getRegister(dest + 1), getRegister(dest + 2));
-                movt(s, d);
+                movt0(s, d);
             }
             inline void movq(ByteOrdinal src, ByteOrdinal dest) noexcept {
                 QuadRegister s(getRegister(src), getRegister(src + 1), getRegister(src + 2), getRegister(src + 3));
                 QuadRegister d(getRegister(dest), getRegister(dest + 1), getRegister(dest + 2), getRegister(dest + 3));
-                movq(s, d);
+                movq0(s, d);
             }
             __GEN_DEFAULT_THREE_ARG_SIGS__(mulo);
             __GEN_DEFAULT_THREE_ARG_SIGS__(muli);
             __GEN_DEFAULT_THREE_ARG_SIGS__(nand);
             __GEN_DEFAULT_THREE_ARG_SIGS__(nor);
-            void notOp(__DEFAULT_TWO_ARGS__) noexcept;
+            void opnot(__DEFAULT_TWO_ARGS__) noexcept;
             __GEN_DEFAULT_THREE_ARG_SIGS__(notand);
             __GEN_DEFAULT_THREE_ARG_SIGS__(notbit);
             __GEN_DEFAULT_THREE_ARG_SIGS__(notor);
-            __GEN_DEFAULT_THREE_ARG_SIGS__(orOp);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(opor);
             __GEN_DEFAULT_THREE_ARG_SIGS__(ornot);
             __GEN_DEFAULT_THREE_ARG_SIGS__(remo);
             __GEN_DEFAULT_THREE_ARG_SIGS__(remi);
@@ -182,28 +182,28 @@ namespace i960 {
             void stos(__TWO_SOURCE_REGS__) noexcept;
             void stib(__TWO_SOURCE_REGS__) noexcept;
             void stis(__TWO_SOURCE_REGS__) noexcept;
-            void stl(LongSourceRegister src, SourceRegister dest) noexcept;
+            void stl0(LongSourceRegister src, SourceRegister dest) noexcept;
 			inline void stl(Ordinal ind, SourceRegister dest) noexcept {
 				DoubleRegister reg(getRegister(ind), getRegister(ind + 1));
-				stl(reg, dest);
+				stl0(reg, dest);
 			}
-            void stt(const TripleRegister& src, SourceRegister dest) noexcept;
+            void stt0(const TripleRegister& src, SourceRegister dest) noexcept;
             inline void stt(Ordinal ind, SourceRegister dest) noexcept {
 				TripleRegister reg(getRegister(ind), getRegister(ind + 1), getRegister(ind + 2));
-				stt(reg, dest);
+				stt0(reg, dest);
 			}
 
-            void stq(const QuadRegister& src, SourceRegister dest) noexcept;
+            void stq0(const QuadRegister& src, SourceRegister dest) noexcept;
             inline void stq(Ordinal ind, SourceRegister dest) noexcept {
 				QuadRegister reg(getRegister(ind), getRegister(ind + 1), getRegister(ind + 2), getRegister(ind + 3));
-				stq(reg, dest);
+				stq0(reg, dest);
 			}
             __GEN_DEFAULT_THREE_ARG_SIGS__(subc); 
             __GEN_DEFAULT_THREE_ARG_SIGS__(subo);
             __GEN_DEFAULT_THREE_ARG_SIGS__(subi);
             void syncf() noexcept;
             __GEN_DEFAULT_THREE_ARG_SIGS__(xnor);
-            __GEN_DEFAULT_THREE_ARG_SIGS__(xorOp);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(opxor);
             // end core architecture
             template<typename T>
             void compare(T src1, T src2) noexcept {
@@ -235,6 +235,59 @@ namespace i960 {
                     }
                 }
             }
+			__GEN_DEFAULT_THREE_ARG_SIGS__(sysctl);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(suboo);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(subono);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(subone);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(subole);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(subol);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(suboge);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(subog);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(suboe);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(subio);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(subino);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(subine);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(subile);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(subil);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(subige);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(subig);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(subie);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(selo);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(selno);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(selne);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(selle);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(sell);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(selge);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(selg);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(sele);
+			void inten();
+			void intdis();
+			void intctl(__DEFAULT_TWO_ARGS__);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(icctl);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(eshro);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(dcctl);
+			void halt(SourceRegister src1);
+            void cmpos(SourceRegister src1, SourceRegister src2) noexcept;
+            void cmpis(SourceRegister src1, SourceRegister src2) noexcept;
+            void cmpob(SourceRegister src1, SourceRegister src2) noexcept;
+            void cmpib(SourceRegister src1, SourceRegister src2) noexcept;
+			void bswap(DestinationRegister src1, DestinationRegister src2) noexcept;
+            __GEN_DEFAULT_THREE_ARG_SIGS__(addoo);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(addono);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(addone);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(addole);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(addol);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(addoge);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(addog);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(addoe);
+            __GEN_DEFAULT_THREE_ARG_SIGS__(addio);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(addino);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(addine);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(addile);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(addil);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(addige);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(addig);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(addie);
 		private:
 			void dispatch(const Instruction::REGFormat& inst) noexcept;
 			void dispatch(const Instruction::COBRFormat& inst) noexcept;
@@ -244,6 +297,9 @@ namespace i960 {
 			void dispatch(const Instruction::MemFormat::MEMAFormat& inst) noexcept;
 			void dispatch(const Instruction::MemFormat::MEMBFormat& inst) noexcept;
 			Integer getFullDisplacement() noexcept;
+		private:
+			template<Ordinal opcode>
+			static const auto CorrespondingFunction = false;
         private:
             RegisterWindow _globalRegisters;
             // The hardware implementations use register sets, however
