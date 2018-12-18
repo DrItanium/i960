@@ -933,6 +933,61 @@ namespace i960 {
 	void Core::inten() {
 
 	}
+	void Core::sele(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::selg(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::selge(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::sell(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::selle(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::selne(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::selno(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::selo(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::subie(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::subig(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::subige(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::subil(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::subile(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::subine(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::subino(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::subio(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::suboe(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::subog(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::suboge(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::subol(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::subole(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::subone(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::subono(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::suboo(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::addie(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::addig(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::addige(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::addil(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::addile(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::addine(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::addino(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::addio(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::addoe(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::addog(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::addoge(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::addol(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::addole(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::addone(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::addono(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::addoo(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::halt(SourceRegister src1) {
+
+	}
+	void Core::bswap(DestinationRegister src1, DestinationRegister src2) noexcept {
+
+	}
+	void Core::cmpos(SourceRegister src1, SourceRegister src2) noexcept { }
+	void Core::cmpis(SourceRegister src1, SourceRegister src2) noexcept { }
+	void Core::cmpob(SourceRegister src1, SourceRegister src2) noexcept { }
+	void Core::cmpib(SourceRegister src1, SourceRegister src2) noexcept { }
+	void Core::dcctl(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::eshro(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::icctl(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::intctl(__DEFAULT_TWO_ARGS__) { }
+	void Core::sysctl(__DEFAULT_THREE_ARGS__) noexcept { }
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__
