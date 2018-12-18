@@ -300,8 +300,6 @@ namespace i960 {
 			void dispatch(const Instruction::CTRLFormat& inst) noexcept;
 			void dispatch(const Instruction::MemFormat& inst) noexcept;
 			void dispatch(const Instruction& decodedInstruction) noexcept;
-			void dispatch(const Instruction::MemFormat::MEMAFormat& inst) noexcept;
-			void dispatch(const Instruction::MemFormat::MEMBFormat& inst) noexcept;
 			Integer getFullDisplacement() noexcept;
 		private:
 			template<Ordinal opcode>

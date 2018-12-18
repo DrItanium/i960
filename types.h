@@ -450,6 +450,20 @@ namespace i960 {
                     }
                 }
             };
+			Ordinal getSrcDestIndex() const noexcept {
+				if (isMemAFormat()) {
+					return _mema._src_dest;
+				} else {
+					return _memb._src_dest;
+				}
+			}
+			Ordinal getOpcode() const noexcept {
+				if (isMemAFormat()) {
+					return _mema._opcode;
+				} else {
+					return _memb._opcode;
+				}
+			}
             bool isMemAFormat() const noexcept {
                 return _mema._unused == 0;
             }

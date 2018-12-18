@@ -123,123 +123,55 @@ namespace i960 {
 		}
 	}
 	void Core::dispatch(const Instruction::MemFormat& i) noexcept {
+		NormalRegister immediateStorage;
+		auto srcDestIndex = i.getSrcDestIndex();
+		auto srcDest = getRegister(srcDestIndex);
 		if (i.isMemAFormat()) {
-			dispatch(i._mema);
+			auto ma = i._mema;
+			using E = std::decay_t<decltype(ma)>;
+			auto offset = ma._offset;
+			auto mode = ma._md == 0 ? E::AddressingModes::Offset : E::AddressingModes::Abase_Plus_Offset;
+			auto abase = getRegister(ma._abase);
+			immediateStorage.set<Ordinal>(mode == E::AddressingModes::Offset ? offset : (abase.get<Ordinal>() + offset));
 		} else {
-			dispatch(i._memb);
-		}
-	}
-	void Core::dispatch(const Instruction::MemFormat::MEMAFormat& i) noexcept {
-		using E = std::decay_t<decltype(i)>;
-		NormalRegister immediateStorage;
-		auto offset = i._offset;
-		auto mode = i._md == 0 ? E::AddressingModes::Offset : E::AddressingModes::Abase_Plus_Offset;
-		auto abase = getRegister(i._abase);
-		immediateStorage.set<Ordinal>(mode == E::AddressingModes::Offset ? offset : (abase.get<Ordinal>() + offset));
-		auto srcDest = getRegister(i._src_dest);
-		switch(i._opcode) {
-			case Opcode::ldob:
-				invokeOperation<Opcode::ldob>(immediateStorage, srcDest);
-				break;
-			case Opcode::stob:
-				invokeOperation<Opcode::stob>(srcDest, immediateStorage);
-				break;
-			case Opcode::bx:
-				invokeOperation<Opcode::bx>(immediateStorage);
-				break;
-			case Opcode::balx:
-				invokeOperation<Opcode::balx>(immediateStorage, srcDest);
-				break;
-			case Opcode::callx:
-				invokeOperation<Opcode::callx>(immediateStorage);
-				break;
-			case Opcode::ldos:
-				invokeOperation<Opcode::ldos>(immediateStorage, srcDest);
-				break;
-			case Opcode::stos:
-				invokeOperation<Opcode::stos>(srcDest, immediateStorage);
-				break;
-			case Opcode::lda:
-				invokeOperation<Opcode::lda>(immediateStorage, srcDest);
-				break;
-			case Opcode::ld:
-				invokeOperation<Opcode::ld>(immediateStorage, srcDest);
-				break;
-			case Opcode::st:
-				invokeOperation<Opcode::st>(srcDest, immediateStorage);
-				break;
-			case Opcode::ldl:
-				invokeOperation<Opcode::ldl>(immediateStorage, i._src_dest);
-				break;
-			case Opcode::stl:
-				invokeOperation<Opcode::stl>(i._src_dest, immediateStorage);
-				break;
-			case Opcode::ldt:
-				invokeOperation<Opcode::ldt>(immediateStorage, i._src_dest);
-				break;
-			case Opcode::stt:
-				invokeOperation<Opcode::stt>(i._src_dest, immediateStorage);
-				break;
-			case Opcode::ldq:
-				invokeOperation<Opcode::ldq>(immediateStorage, i._src_dest);
-				break;
-			case Opcode::stq:
-				invokeOperation<Opcode::stq>(i._src_dest, immediateStorage);
-				break;
-			case Opcode::ldib:
-				invokeOperation<Opcode::ldib>(immediateStorage, srcDest);
-				break;
-			case Opcode::stib:
-				invokeOperation<Opcode::stib>(srcDest, immediateStorage);
-				break;
-			case Opcode::ldis:
-				invokeOperation<Opcode::ldis>(immediateStorage, srcDest);
-				break;
-			case Opcode::stis:
-				invokeOperation<Opcode::stis>(srcDest, immediateStorage);
-				break;
-			default:
-#warning "generate illegal instruction fault"
-				throw "illegal instruction!";
-		}
-	}
-	void Core::dispatch(const Instruction::MemFormat::MEMBFormat& i) noexcept {
-		NormalRegister immediateStorage;
-		using K = std::decay_t<decltype(i)>;
-		using E = K::AddressingModes;
-		auto index = i._index;
-		auto scale = i.getScaleFactor();
-		auto mode = i.getAddressingMode();
-		auto displacement = i.has32bitDisplacement() ? getFullDisplacement() : 0;
-		auto srcDest = getRegister(i._src_dest);
-		auto abase = getRegister(i._abase);
-		switch (mode) {
-			case E::Abase:
-				immediateStorage.move(abase);
-				break;
-			case E::IP_Plus_Displacement_Plus_8:
-				immediateStorage.set<Ordinal>(_instructionPointer + displacement + 8);
-				break;
-			case E::Abase_Plus_Index_Times_2_Pow_Scale:
-				immediateStorage.set<Ordinal>(abase.get<Ordinal>() + index * scale);
-				break;
-			case E::Displacement:
-				immediateStorage.set(displacement);
-				break;
-			case E::Abase_Plus_Displacement:
-				immediateStorage.set(displacement + abase.get<Ordinal>());
-				break;
-			case E::Index_Times_2_Pow_Scale_Plus_Displacement:
-				immediateStorage.set(index * scale + displacement);
-				break;
-			case E::Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement:
-				immediateStorage.set(abase.get<Ordinal>() + index * scale + displacement);
-				break;
-			default:
+			auto mb = i._memb;
+			using K = std::decay_t<decltype(mb)>;
+			using E = K::AddressingModes;
+			auto index = mb._index;
+			auto scale = mb.getScaleFactor();
+			auto mode = mb.getAddressingMode();
+			auto displacement = mb.has32bitDisplacement() ? getFullDisplacement() : 0;
+			auto abase = getRegister(mb._abase);
+			switch (mode) {
+				case E::Abase:
+					immediateStorage.move(abase);
+					break;
+				case E::IP_Plus_Displacement_Plus_8:
+					immediateStorage.set<Ordinal>(_instructionPointer + displacement + 8);
+					break;
+				case E::Abase_Plus_Index_Times_2_Pow_Scale:
+					immediateStorage.set<Ordinal>(abase.get<Ordinal>() + index * scale);
+					break;
+				case E::Displacement:
+					immediateStorage.set(displacement);
+					break;
+				case E::Abase_Plus_Displacement:
+					immediateStorage.set(displacement + abase.get<Ordinal>());
+					break;
+				case E::Index_Times_2_Pow_Scale_Plus_Displacement:
+					immediateStorage.set(index * scale + displacement);
+					break;
+				case E::Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement:
+					immediateStorage.set(abase.get<Ordinal>() + index * scale + displacement);
+					break;
+				default:
 #warning "Fault on illegal mode!"
-				throw "Illegal mode!";
+					throw "Illegal mode!";
+			}
 		}
-		switch(i._opcode) {
+		// opcode does not differentiate between mema and memb, another bit
+		// does, so the actual arguments differ, not the set of actions
+		switch(i.getOpcode()) {
 			case Opcode::ldob:
 				invokeOperation<Opcode::ldob>(immediateStorage, srcDest);
 				break;
@@ -271,22 +203,22 @@ namespace i960 {
 				invokeOperation<Opcode::st>(srcDest, immediateStorage);
 				break;
 			case Opcode::ldl:
-				invokeOperation<Opcode::ldl>(immediateStorage, i._src_dest);
+				invokeOperation<Opcode::ldl>(immediateStorage, srcDestIndex);
 				break;
 			case Opcode::stl:
-				invokeOperation<Opcode::stl>(i._src_dest, immediateStorage);
+				invokeOperation<Opcode::stl>(srcDestIndex, immediateStorage);
 				break;
 			case Opcode::ldt:
-				invokeOperation<Opcode::ldt>(immediateStorage, i._src_dest);
+				invokeOperation<Opcode::ldt>(immediateStorage, srcDestIndex);
 				break;
 			case Opcode::stt:
-				invokeOperation<Opcode::stt>(i._src_dest, immediateStorage);
+				invokeOperation<Opcode::stt>(srcDestIndex, immediateStorage);
 				break;
 			case Opcode::ldq:
-				invokeOperation<Opcode::ldq>(immediateStorage, i._src_dest);
+				invokeOperation<Opcode::ldq>(immediateStorage, srcDestIndex);
 				break;
 			case Opcode::stq:
-				invokeOperation<Opcode::stq>(i._src_dest, immediateStorage);
+				invokeOperation<Opcode::stq>(srcDestIndex, immediateStorage);
 				break;
 			case Opcode::ldib:
 				invokeOperation<Opcode::ldib>(immediateStorage, srcDest);
