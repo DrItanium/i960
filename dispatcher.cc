@@ -9,21 +9,6 @@
 #define __DEFAULT_TWO_ARGS__ Core::SourceRegister src, Core::DestinationRegister dest
 #define __DEFAULT_DOUBLE_WIDE_TWO_ARGS__ const DoubleRegister& src, DoubleRegister& dest
 namespace i960 {
-	// while slower than doing direct wiring, this design decouples names and
-	// bodies from each other.
-#define o(name, code, kind) \
-	template<> \
-	const decltype(auto) Core::CorrespondingFunction< Opcode:: name > = std::mem_fn( & Core:: name );
-#define reg(name, code) o(name, code, Reg)
-#define cobr(name, code) o(name, code, Cobr) 
-#define mem(name, code) o(name, code, Mem) 
-#define ctrl(name, code) o(name, code, Ctrl)
-#include "opcodes.def"
-#undef reg
-#undef cobr
-#undef mem
-#undef ctrl
-#undef o
 	void Core::dispatch(const Instruction& inst) noexcept {
 		if (auto desc = Opcode::getDescription(inst); desc.isUndefined()) {
 		 	// TODO raise fault
@@ -33,22 +18,22 @@ namespace i960 {
 			// circuit them :D
 			switch (desc) {
 				case Opcode::mark:
-					invokeOperation<Opcode::mark>();
+					mark();
 					break;
 				case Opcode::fmark:
-					invokeOperation<Opcode::fmark>();
+					fmark();
 					break;
 				case Opcode::flushreg:
-					invokeOperation<Opcode::flushreg>();
+					flushreg();
 					break;
 				case Opcode::syncf:
-					invokeOperation<Opcode::syncf>();
+					syncf();
 					break;
 				case Opcode::ret:
-					invokeOperation<Opcode::ret>();
+					ret();
 					break;
 #define X(kind) \
-			case Opcode:: fault ## kind : invokeOperation<Opcode:: fault ## kind > () ; break;
+			case Opcode:: fault ## kind : fault ## kind () ; break;
 #include "conditional_kinds.def"
 #undef X
 				default:
@@ -72,16 +57,16 @@ namespace i960 {
 		Integer displacement = i._displacement;
 		switch (i._opcode) {
 			case Opcode::b: 
-				invokeOperation<Opcode::b>(displacement);
+				b(displacement);
 				break;
 			case Opcode::call: 
-				invokeOperation<Opcode::call>(displacement);
+				call(displacement);
 				break;
 			case Opcode::bal:
-				invokeOperation<Opcode::bal>(displacement);
+				bal(displacement);
 				break;
 #define X(kind) \
-			case Opcode:: b ## kind : invokeOperation< Opcode:: b ## kind > (displacement) ; break; 
+			case Opcode:: b ## kind : b ## kind (displacement) ; break; 
 #include "conditional_kinds.def"
 #undef X
 			default:
@@ -98,23 +83,23 @@ namespace i960 {
 		}
 		auto& src2 = getRegister(i._source2);
 		switch(i._opcode) {
-#define X(kind) case Opcode:: test ## kind : invokeOperation<Opcode:: test ## kind > (src1); break;
+#define X(kind) case Opcode:: test ## kind : test ## kind (src1); break;
 #include "conditional_kinds.def"
 #undef X
 			case Opcode::bbc:
-				invokeOperation<Opcode::bbc>(src1, src2, displacement);
+				bbc(src1, src2, displacement);
 				break;
 			case Opcode::bbs:
-				invokeOperation<Opcode::bbs>(src1, src2, displacement);
+				bbs(src1, src2, displacement);
 				break;
-#define X(kind) case Opcode:: cmpob ## kind : invokeOperation<Opcode:: cmpob ## kind > ( src1, src2, displacement ) ; break;
+#define X(kind) case Opcode:: cmpob ## kind : cmpob ## kind ( src1, src2, displacement ) ; break;
 				X(e)
 				X(ge)
 				X(l)
 				X(ne)
 				X(le)
 #undef X
-#define X(kind) case Opcode:: cmpib ## kind : invokeOperation<Opcode:: cmpib ## kind > ( src1, src2, displacement ) ; break;
+#define X(kind) case Opcode:: cmpib ## kind : cmpib ## kind ( src1, src2, displacement ) ; break;
 #include "conditional_kinds.def"
 #undef X
 			default:
@@ -172,66 +157,26 @@ namespace i960 {
 		// opcode does not differentiate between mema and memb, another bit
 		// does, so the actual arguments differ, not the set of actions
 		switch(i.getOpcode()) {
-			case Opcode::ldob:
-				invokeOperation<Opcode::ldob>(immediateStorage, srcDest);
-				break;
-			case Opcode::stob:
-				invokeOperation<Opcode::stob>(srcDest, immediateStorage);
-				break;
-			case Opcode::bx:
-				invokeOperation<Opcode::bx>(immediateStorage);
-				break;
-			case Opcode::balx:
-				invokeOperation<Opcode::balx>(immediateStorage, srcDest);
-				break;
-			case Opcode::callx:
-				invokeOperation<Opcode::callx>(immediateStorage);
-				break;
-			case Opcode::ldos:
-				invokeOperation<Opcode::ldos>(immediateStorage, srcDest);
-				break;
-			case Opcode::stos:
-				invokeOperation<Opcode::stos>(srcDest, immediateStorage);
-				break;
-			case Opcode::lda:
-				invokeOperation<Opcode::lda>(immediateStorage, srcDest);
-				break;
-			case Opcode::ld:
-				invokeOperation<Opcode::ld>(immediateStorage, srcDest);
-				break;
-			case Opcode::st:
-				invokeOperation<Opcode::st>(srcDest, immediateStorage);
-				break;
-			case Opcode::ldl:
-				invokeOperation<Opcode::ldl>(immediateStorage, srcDestIndex);
-				break;
-			case Opcode::stl:
-				invokeOperation<Opcode::stl>(srcDestIndex, immediateStorage);
-				break;
-			case Opcode::ldt:
-				invokeOperation<Opcode::ldt>(immediateStorage, srcDestIndex);
-				break;
-			case Opcode::stt:
-				invokeOperation<Opcode::stt>(srcDestIndex, immediateStorage);
-				break;
-			case Opcode::ldq:
-				invokeOperation<Opcode::ldq>(immediateStorage, srcDestIndex);
-				break;
-			case Opcode::stq:
-				invokeOperation<Opcode::stq>(srcDestIndex, immediateStorage);
-				break;
-			case Opcode::ldib:
-				invokeOperation<Opcode::ldib>(immediateStorage, srcDest);
-				break;
-			case Opcode::stib:
-				invokeOperation<Opcode::stib>(srcDest, immediateStorage);
-				break;
-			case Opcode::ldis:
-				invokeOperation<Opcode::ldis>(immediateStorage, srcDest);
-				break;
-			case Opcode::stis:
-				invokeOperation<Opcode::stis>(srcDest, immediateStorage);
-				break;
+			case Opcode::ldob: ldob(immediateStorage, srcDest); break;
+			case Opcode::stob: stob(srcDest, immediateStorage); break;
+			case Opcode::bx: bx(immediateStorage); break;
+			case Opcode::balx: balx(immediateStorage, srcDest); break;
+			case Opcode::callx: callx(immediateStorage); break;
+			case Opcode::ldos: ldos(immediateStorage, srcDest); break;
+			case Opcode::stos: stos(srcDest, immediateStorage); break;
+			case Opcode::lda: lda(immediateStorage, srcDest); break;
+			case Opcode::ld: ld(immediateStorage, srcDest); break;
+			case Opcode::st: st(srcDest, immediateStorage); break;
+			case Opcode::ldl: ldl(immediateStorage, srcDestIndex); break;
+			case Opcode::stl: stl(srcDestIndex, immediateStorage); break;
+			case Opcode::ldt: ldt(immediateStorage, srcDestIndex); break;
+			case Opcode::stt: stt(srcDestIndex, immediateStorage); break;
+			case Opcode::ldq: ldq(immediateStorage, srcDestIndex); break;
+			case Opcode::stq: stq(srcDestIndex, immediateStorage); break;
+			case Opcode::ldib: ldib(immediateStorage, srcDest); break;
+			case Opcode::stib: stib(srcDest, immediateStorage); break;
+			case Opcode::ldis: ldis(immediateStorage, srcDest); break;
+			case Opcode::stis: stis(srcDest, immediateStorage); break;
 			default:
 #warning "generate illegal instruction fault"
 				throw "illegal instruction!";
@@ -241,22 +186,25 @@ namespace i960 {
 		NormalRegister imm1;
 		NormalRegister imm2;
 		NormalRegister imm3;
-		NormalRegister& src1 = i.src1IsLiteral() ? imm1 : getRegister(i._source1);
+		auto src1Ind = i._source1;
+		auto src2Ind = i._source2;
+		auto src3Ind = i._src_dest;
+		NormalRegister& src1 = i.src1IsLiteral() ? imm1 : getRegister(src1Ind);
 		if (i.src1IsLiteral()) {
 			imm1.set(i.src1ToIntegerLiteral());
 		}
-		NormalRegister& src2 = i.src2IsLiteral() ? imm2 : getRegister(i._source2);
+		NormalRegister& src2 = i.src2IsLiteral() ? imm2 : getRegister(src2Ind);
 		if (i.src2IsLiteral()) {
 			imm2.set(i.src2ToIntegerLiteral());
 		}
-		NormalRegister& srcDest = i.srcDestIsLiteral() ? imm3 : getRegister(i._src_dest);
+		NormalRegister& srcDest = i.srcDestIsLiteral() ? imm3 : getRegister(src3Ind);
 #warning "It is impossible for m3 to be set when srcDest is used as a dest, error out before hand"
 		switch(i.getOpcode()) {
-#define Standard3ArgOp(kind) case Opcode:: kind : invokeOperation<Opcode:: kind> ( src1, src2, srcDest ) ; break
-#define Standard2ArgOp(kind) case Opcode:: kind : invokeOperation<Opcode:: kind> ( src1, srcDest ) ; break
+#define Standard3ArgOp(kind) case Opcode:: kind : kind ( src1, src2, srcDest ) ; break
+#define Standard2ArgOp(kind) case Opcode:: kind : kind ( src1, srcDest ) ; break
 #define Standard3ArgOpIO(kind) Standard3ArgOp(kind ## o); Standard3ArgOp(kind ## i)
 #define Standard2ArgOpIO(kind) Standard2ArgOp(kind ## o); Standard2ArgOp(kind ## i)
-#define Standard2SourceOp(kind) case Opcode:: kind : invokeOperation<Opcode:: kind > ( src1, src2) ; break
+#define Standard2SourceOp(kind) case Opcode:: kind : kind ( src1, src2) ; break
 			Standard3ArgOp(notbit);
             Standard3ArgOp(clrbit);
             Standard3ArgOp(notor);
@@ -291,15 +239,9 @@ namespace i960 {
 			Standard2ArgOp(mov);
 			Standard3ArgOp(atmod);
 			Standard3ArgOp(atadd);
-            case Opcode::movl: 
-				invokeOperation<Opcode::movl>(i._source1, i._source2);
-                break;
-            case Opcode::movt: 
-				invokeOperation<Opcode::movt>(i._source1, i._source2);
-                break;
-            case Opcode::movq: 
-				invokeOperation<Opcode::movq>(i._source1, i._source2);
-                break;
+            case Opcode::movl: movl(src1Ind, src2Ind); break;
+            case Opcode::movt: movt(src1Ind, src2Ind); break;
+            case Opcode::movq: movq(src1Ind, src2Ind); break;
 			Standard2ArgOp(spanbit);
 			Standard2ArgOp(scanbit);
 			Standard3ArgOp(modac);
@@ -307,14 +249,12 @@ namespace i960 {
 			Standard3ArgOp(extract);
 			Standard3ArgOp(modtc);
 			Standard3ArgOp(modpc);
-			case Opcode::calls: 
-				invokeOperation<Opcode::calls>(src1);
-				break;
-#warning "Emul not impl'd as it is a special form"
-#warning "Ediv not impl'd as it is a special form"
 			Standard3ArgOpIO(mul);
 			Standard3ArgOpIO(rem);
 			Standard3ArgOpIO(div);
+			case Opcode::calls: calls(src1); break;
+#warning "Emul not impl'd as it is a special form"
+#warning "Ediv not impl'd as it is a special form"
 #warning "Modi not impl'd as it is a special form"
 #undef Standard3ArgOp
 #undef Standard2ArgOp

@@ -301,14 +301,6 @@ namespace i960 {
 			void dispatch(const Instruction::MemFormat& inst) noexcept;
 			void dispatch(const Instruction& decodedInstruction) noexcept;
 			Integer getFullDisplacement() noexcept;
-		private:
-			template<Ordinal opcode>
-			static const auto CorrespondingFunction = false;
-			template<Ordinal opcode, typename ... Args>
-			void invokeOperation(Args&& ... args) {
-				static_assert(!std::is_same<std::decay_t<decltype(CorrespondingFunction<opcode>)>, bool>::value, "Given opcode is actually undefined");
-				CorrespondingFunction<opcode>(*this, std::forward<Args>(args)...);
-			}
         private:
             RegisterWindow _globalRegisters;
             // The hardware implementations use register sets, however
