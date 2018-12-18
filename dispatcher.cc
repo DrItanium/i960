@@ -1,6 +1,7 @@
 #include "types.h"
 #include "core.h"
 #include "opcodes.h"
+#include <map>
 
 #define __DEFAULT_THREE_ARGS__ Core::SourceRegister src1, Core::SourceRegister src2, Core::DestinationRegister dest
 #define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ const DoubleRegister& src1, const DoubleRegister& src2, DoubleRegister& dest
