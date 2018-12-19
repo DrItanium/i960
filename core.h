@@ -263,10 +263,6 @@ namespace i960 {
 #include "conditional_kinds.def"
 #undef X 
 		private:
-			void dispatch(const Instruction::REGFormat& inst) noexcept;
-			void dispatch(const Instruction::COBRFormat& inst) noexcept;
-			void dispatch(const Instruction::CTRLFormat& inst) noexcept;
-			void dispatch(const Instruction::MemFormat& inst) noexcept;
 			void dispatch(const Instruction& decodedInstruction) noexcept;
 			Integer getFullDisplacement() noexcept;
         private:
