@@ -27,6 +27,7 @@ namespace i960::Opcode {
 			constexpr auto getOpcode() const noexcept { return _opcode; }
 			constexpr auto getType() const noexcept { return _type; }
 			constexpr auto getString() const noexcept { return _str; }
+			constexpr bool hasZeroArguments() const noexcept;
 #define X(cl) constexpr bool is ## cl () const noexcept { return isOfClass<Class:: cl > () ; }
 			X(Reg);
 			X(Cobr);
@@ -80,6 +81,9 @@ namespace i960::Opcode {
 				default:
 					return false;
 			}
+		}
+		constexpr bool Description::hasZeroArguments() const noexcept {
+			return i960::Opcode::hasZeroArguments(_opcode);
 		}
 } // end namespace i960::Opcode
 #endif // end I960_OPCODES_H__

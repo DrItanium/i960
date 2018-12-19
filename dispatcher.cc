@@ -9,7 +9,7 @@ namespace i960 {
 		if (auto desc = Opcode::getDescription(inst); desc.isUndefined()) {
 			// TODO raise fault
 			throw "illegal instruction";
-		} else if (Opcode::hasZeroArguments(desc)) {
+		} else if (desc.hasZeroArguments()) {
 			// these operations require no further decoding effort so short
 			// circuit them :D
 			switch (desc) {
