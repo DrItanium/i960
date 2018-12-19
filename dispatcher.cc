@@ -48,75 +48,75 @@ namespace i960 {
 			// TODO It is impossible for m3 to be set when srcDest is used as a dest, error out before hand
 			NormalRegister& srcDest = reg.srcDestIsLiteral() ? imm3 : getRegister(src3Ind);
 			switch(desc) {
-#define GenericInvoke(kind, args) case Opcode:: kind : kind args ; break 
-#define Standard3ArgOp(kind) GenericInvoke(kind, (src1, src2, srcDest))
-#define Standard2ArgOp(kind) GenericInvoke(kind, (src1, srcDest))
-#define Standard3ArgOpIO(kind) Standard3ArgOp(kind ## o); Standard3ArgOp(kind ## i)
-#define Standard2ArgOpIO(kind) Standard2ArgOp(kind ## o); Standard2ArgOp(kind ## i)
-#define Standard2SourceOp(kind) GenericInvoke(kind, (src1, src2))
-				Standard3ArgOp(notbit);
-				Standard3ArgOp(clrbit);
-				Standard3ArgOp(notor);
-				Standard3ArgOp(opand);
-				Standard3ArgOp(andnot);
-				Standard3ArgOp(setbit);
-				Standard3ArgOp(notand);
-				Standard3ArgOp(opxor);
-				Standard3ArgOp(opor);
-				Standard3ArgOp(nor);
-				Standard3ArgOp(xnor);
-				Standard2ArgOp(opnot);
-				Standard3ArgOp(ornot);
-				Standard3ArgOp(nand);
-				Standard3ArgOp(alterbit);
-				Standard3ArgOpIO(add);
-				Standard3ArgOpIO(sub);
-				Standard3ArgOp(shro);
-				Standard3ArgOp(shrdi);
-				Standard3ArgOp(shri);
-				Standard3ArgOp(shlo);
-				Standard3ArgOp(rotate);
-				Standard3ArgOp(shli);
-				Standard2ArgOpIO(cmp);
-				Standard2ArgOpIO(concmp);
-				Standard3ArgOpIO(cmpinc);
-				Standard3ArgOpIO(cmpdec);
-				Standard2SourceOp(scanbyte);
-				Standard2ArgOp(chkbit);
-				Standard3ArgOp(addc);
-				Standard3ArgOp(subc);
-				Standard2ArgOp(mov);
-				Standard3ArgOp(atmod);
-				Standard3ArgOp(atadd);
-				GenericInvoke(movl, (src1Ind, src2Ind));
-				GenericInvoke(movt, (src1Ind, src2Ind));
-				GenericInvoke(movq, (src1Ind, src2Ind));
-				Standard2ArgOp(spanbit);
-				Standard2ArgOp(scanbit);
-				Standard3ArgOp(modac);
-				Standard3ArgOp(modify);
-				Standard3ArgOp(extract);
-				Standard3ArgOp(modtc);
-				Standard3ArgOp(modpc);
-				Standard3ArgOpIO(mul);
-				Standard3ArgOpIO(rem);
-				Standard3ArgOpIO(div);
-				GenericInvoke(calls, (src1));
+#define GI(kind, args) case Opcode:: kind : kind args ; break 
+#define Op3Arg(kind) GI(kind, (src1, src2, srcDest))
+#define Op2Arg(kind) GI(kind, (src1, srcDest))
+#define Op3ArgIO(kind) Op3Arg(kind ## o); Op3Arg(kind ## i)
+#define Op2ArgIO(kind) Op2Arg(kind ## o); Op2Arg(kind ## i)
+#define Op2Source(kind) GI(kind, (src1, src2))
+				Op3Arg(notbit);
+				Op3Arg(clrbit);
+				Op3Arg(notor);
+				Op3Arg(opand);
+				Op3Arg(andnot);
+				Op3Arg(setbit);
+				Op3Arg(notand);
+				Op3Arg(opxor);
+				Op3Arg(opor);
+				Op3Arg(nor);
+				Op3Arg(xnor);
+				Op2Arg(opnot);
+				Op3Arg(ornot);
+				Op3Arg(nand);
+				Op3Arg(alterbit);
+				Op3ArgIO(add);
+				Op3ArgIO(sub);
+				Op3Arg(shro);
+				Op3Arg(shrdi);
+				Op3Arg(shri);
+				Op3Arg(shlo);
+				Op3Arg(rotate);
+				Op3Arg(shli);
+				Op2ArgIO(cmp);
+				Op2ArgIO(concmp);
+				Op3ArgIO(cmpinc);
+				Op3ArgIO(cmpdec);
+				Op2Source(scanbyte);
+				Op2Arg(chkbit);
+				Op3Arg(addc);
+				Op3Arg(subc);
+				Op2Arg(mov);
+				Op3Arg(atmod);
+				Op3Arg(atadd);
+				GI(movl, (src1Ind, src2Ind));
+				GI(movt, (src1Ind, src2Ind));
+				GI(movq, (src1Ind, src2Ind));
+				Op2Arg(spanbit);
+				Op2Arg(scanbit);
+				Op3Arg(modac);
+				Op3Arg(modify);
+				Op3Arg(extract);
+				Op3Arg(modtc);
+				Op3Arg(modpc);
+				Op3ArgIO(mul);
+				Op3ArgIO(rem);
+				Op3ArgIO(div);
+				GI(calls, (src1));
 #define X(kind) \
-				Standard3ArgOp(addo ## kind); \
-				Standard3ArgOp(addi ## kind); \
-				Standard3ArgOp(subo ## kind); \
-				Standard3ArgOp(subi ## kind); \
-				Standard3ArgOp(sel ## kind); 
+				Op3Arg(addo ## kind); \
+				Op3Arg(addi ## kind); \
+				Op3Arg(subo ## kind); \
+				Op3Arg(subi ## kind); \
+				Op3Arg(sel ## kind); 
 #include "conditional_kinds.def"
 #undef X
 #warning "Emul not impl'd as it is a special form"
 #warning "Ediv not impl'd as it is a special form"
 #warning "Modi not impl'd as it is a special form"
-#undef Standard3ArgOp
-#undef Standard2ArgOp
-#undef Standard2SourceOp
-#undef GenericInvoke
+#undef Op3Arg
+#undef Op2Arg
+#undef Op2Source
+#undef GI
 				default:
 #warning "generate illegal instruction fault"
 				throw "illegal instruction!";
