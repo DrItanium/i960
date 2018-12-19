@@ -400,6 +400,9 @@ namespace i960 {
                 AddressingModes getAddressingMode() const noexcept {
                     return static_cast<AddressingModes>(_md);
                 }
+				bool isOffsetAddressingMode() const noexcept {
+					return getAddressingMode() == AddressingModes::Offset;
+				}
             };
             struct MEMBFormat {
                 enum AddressingModes {

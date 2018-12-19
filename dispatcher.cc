@@ -21,7 +21,9 @@ namespace i960 {
 				case Opcode::inten:    inten(); break;
 				case Opcode::intdis:   intdis(); break;
 #define X(kind) \
-				case Opcode:: fault ## kind : fault ## kind () ; break;
+				case Opcode:: fault ## kind : \
+					fault ## kind () ; \
+					break;
 #include "conditional_kinds.def"
 #undef X
 				default:
@@ -43,8 +45,8 @@ namespace i960 {
 			if (reg.src2IsLiteral()) {
 				imm2.set(reg.src2ToIntegerLiteral());
 			}
+			// TODO It is impossible for m3 to be set when srcDest is used as a dest, error out before hand
 			NormalRegister& srcDest = reg.srcDestIsLiteral() ? imm3 : getRegister(src3Ind);
-#warning "It is impossible for m3 to be set when srcDest is used as a dest, error out before hand"
 			switch(desc) {
 #define GenericInvoke(kind, args) case Opcode:: kind : kind args ; break 
 #define Standard3ArgOp(kind) GenericInvoke(kind, (src1, src2, srcDest))
@@ -128,9 +130,8 @@ namespace i960 {
 				auto ma = mem._mema;
 				using E = std::decay_t<decltype(ma)>;
 				auto offset = ma._offset;
-				auto mode = ma._md == 0 ? E::AddressingModes::Offset : E::AddressingModes::Abase_Plus_Offset;
 				auto abase = getRegister(ma._abase);
-				immediateStorage.set<Ordinal>(mode == E::AddressingModes::Offset ? offset : (abase.get<Ordinal>() + offset));
+				immediateStorage.set<Ordinal>(ma.isOffsetAddressingMode() ?  offset : offset + abase.get<Ordinal>());
 			} else {
 				auto mb = mem._memb;
 				using K = std::decay_t<decltype(mb)>;
@@ -170,49 +171,56 @@ namespace i960 {
 			// opcode does not differentiate between mema and memb, another bit
 			// does, so the actual arguments differ, not the set of actions
 			switch(desc) {
-				case Opcode::ldob:  ldob(immediateStorage, srcDest); break;
-				case Opcode::stob:  stob(srcDest, immediateStorage); break;
-				case Opcode::bx:    bx(immediateStorage); break;
-				case Opcode::balx:  balx(immediateStorage, srcDest); break;
-				case Opcode::callx: callx(immediateStorage); break;
-				case Opcode::ldos:  ldos(immediateStorage, srcDest); break;
-				case Opcode::stos:  stos(srcDest, immediateStorage); break;
-				case Opcode::lda:   lda(immediateStorage, srcDest); break;
-				case Opcode::ld:    ld(immediateStorage, srcDest); break;
-				case Opcode::st:    st(srcDest, immediateStorage); break;
-				case Opcode::ldl:   ldl(immediateStorage, srcDestIndex); break;
-				case Opcode::stl:   stl(srcDestIndex, immediateStorage); break;
-				case Opcode::ldt:   ldt(immediateStorage, srcDestIndex); break;
-				case Opcode::stt:   stt(srcDestIndex, immediateStorage); break;
-				case Opcode::ldq:   ldq(immediateStorage, srcDestIndex); break;
-				case Opcode::stq:   stq(srcDestIndex, immediateStorage); break;
-				case Opcode::ldib:  ldib(immediateStorage, srcDest); break;
-				case Opcode::stib:  stib(srcDest, immediateStorage); break;
-				case Opcode::ldis:  ldis(immediateStorage, srcDest); break;
-				case Opcode::stis:  stis(srcDest, immediateStorage); break;
+#define Y(kind, a, b) \
+		case Opcode:: kind : \
+				kind ( a , b ) ; \
+				break;
+#define Z(kind, a) \
+		case Opcode:: kind : \
+				kind ( a ) ; \
+				break;
+#define LDP(suffix) \
+				Y(ld ## suffix , immediateStorage, srcDest); \
+				Y(st ## suffix , srcDest, immediateStorage );
+#define WLDP(suffix) \
+				Y(ld ## suffix, immediateStorage, srcDestIndex ); \
+				Y(st ## suffix, srcDestIndex, immediateStorage ); 
+				LDP(ob);
+				LDP(os);
+				LDP(ib);
+				LDP(is);
+				WLDP(l);
+				WLDP(t);
+				WLDP(q);
+				Y(ld, immediateStorage, srcDest);
+				Y(st, srcDest, immediateStorage);
+				Y(lda, immediateStorage, srcDest);
+				Y(balx, immediateStorage, srcDest);
+				Z(bx, immediateStorage);
+				Z(callx, immediateStorage);
+#undef WLDP
+#undef LDP
+#undef Y
+#undef Z
 				default:
 #warning "generate illegal instruction fault"
-									throw "illegal instruction!";
+					throw "illegal instruction!";
 			}
 		} else if (desc.isCtrl()) {
 			auto ctrl = inst._ctrl;
 			Integer displacement = ctrl._displacement;
 			switch (desc.getOpcode()) {
-				case Opcode::b: 
-					b(displacement);
+#define Y(kind) \
+				case Opcode:: kind : \
+					kind ( displacement ) ; \
 					break;
-				case Opcode::call: 
-					call(displacement);
-					break;
-				case Opcode::bal:
-					bal(displacement);
-					break;
-#define X(kind) \
-				case Opcode:: b ## kind : \
-					b ## kind (displacement) ; \
-					break; 
+#define X(kind) Y(b ## kind) 
+				Y(b)
+				Y(call)
+				Y(bal)
 #include "conditional_kinds.def"
 #undef X
+#undef Y
 				default:
 					throw "Illegal Instruction";
 #warning "Generate illegal instruction fault"
@@ -227,24 +235,25 @@ namespace i960 {
 			}
 			auto& src2 = getRegister(cobr._source2);
 			switch(desc) {
-				case Opcode::bbc:
-					bbc(src1, src2, displacement);
-					break;
-				case Opcode::bbs:
-					bbs(src1, src2, displacement);
-					break;
-#define X(kind) case Opcode:: cmpob ## kind : cmpob ## kind ( src1, src2, displacement ) ; break
-					X(e);
-					X(ge);
-					X(l);
-					X(ne);
-					X(le);
+#define Y(kind) \
+				case Opcode:: kind : \
+					kind ( src1, src2, displacement ); \
+				break
+#define X(kind) Y( cmpob ## kind ) 
+				Y(bbc);
+				Y(bbs);
+				X(e);
+				X(ge);
+				X(l);
+				X(ne);
+				X(le);
 #undef X
 #define X(kind) \
-				case Opcode:: cmpib ## kind : cmpib ## kind ( src1, src2, displacement ) ; break; \
+				Y(cmpib ## kind ); \
 				case Opcode:: test ## kind : test ## kind (src1); break;
 #include "conditional_kinds.def"
 #undef X
+#undef Y
 				default:
 #warning "generate illegal instruction fault"
 											 throw "illegal instruction!";
@@ -254,27 +263,6 @@ namespace i960 {
 			throw "unimplemented instruction";
 		}
 	}
-    template<typename T, typename K>
-    void optionalCheck(const std::optional<T>& src1, const std::optional<K>& dest) {
-            if (!src1.has_value()) {
-                throw "Something really bad happened! No src";
-            }
-            if (!dest.has_value()) {
-                throw "Something really bad happened! No dest";
-            }
-    }
-    template<typename T, typename K>
-    void optionalCheck(const std::optional<T>& src1, const std::optional<T>& src2, const std::optional<K>& dest) {
-            if (!src1.has_value()) {
-                throw "Something really bad happened! No src1";
-            }
-            if (!src2.has_value()) {
-                throw "Something really bad happened! No src2";
-            }
-            if (!dest.has_value()) {
-                throw "Something really bad happened! No dest";
-            }
-    }
     Integer Core::getFullDisplacement() noexcept {
         auto addr = _instructionPointer + 4;
         union {
