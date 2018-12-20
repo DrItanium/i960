@@ -3,8 +3,17 @@
 #include "opcodes.h"
 #include <map>
 #include <functional>
+#include <sstream>
+#include <string>
 
 namespace i960 {
+	void throwUnimplementedDescription(const Opcode::Description& desc) {
+		// TODO generate illegal instruction fault
+		std::stringstream message;
+		message << "unimplemented operation: " << desc.getString();
+		auto str = message.str();
+		throw str;
+	}
 	void Core::dispatch(const Instruction& inst) noexcept {
 		if (auto desc = Opcode::getDescription(inst); desc.isUndefined()) {
 			// TODO raise fault
@@ -21,8 +30,7 @@ namespace i960 {
 #include "conditional_kinds.def"
 #undef X
 #undef Y
-				default:
-											  throw "unimplemented instruction";
+				default: throwUnimplementedDescription(desc);
 			}
 		} else if (desc.isReg()) {
 			auto reg = inst._reg;
@@ -81,9 +89,7 @@ namespace i960 {
 #undef Op3Arg
 #undef Op2Arg
 #undef Y
-				default:
-#warning "generate illegal instruction fault"
-				throw "illegal instruction!";
+				default: throwUnimplementedDescription(desc);
 			}
 		} else if (desc.isMem()) {
 			auto mem = inst._mem;
@@ -92,7 +98,6 @@ namespace i960 {
 			auto srcDest = getRegister(srcDestIndex);
 			if (mem.isMemAFormat()) {
 				auto ma = mem._mema;
-				using E = std::decay_t<decltype(ma)>;
 				auto offset = ma._offset;
 				auto abase = getRegister(ma._abase);
 				immediateStorage.set<Ordinal>(ma.isOffsetAddressingMode() ?  offset : offset + abase.get<Ordinal>());
@@ -102,10 +107,9 @@ namespace i960 {
 				using E = K::AddressingModes;
 				auto index = mb._index;
 				auto scale = mb.getScaleFactor();
-				auto mode = mb.getAddressingMode();
 				auto displacement = mb.has32bitDisplacement() ? getFullDisplacement() : 0;
 				auto abase = getRegister(mb._abase);
-				switch (mode) {
+				switch (mb.getAddressingMode()) {
 					case E::Abase:
 						immediateStorage.move(abase);
 						break;
@@ -158,13 +162,11 @@ namespace i960 {
 #undef WLDP
 #undef LDP
 #undef Y
-				default:
-#warning "generate illegal instruction fault"
-					throw "illegal instruction!";
+				default: throwUnimplementedDescription(desc);
 			}
 		} else if (desc.isCtrl()) {
 			auto ctrl = inst._ctrl;
-			auto displacement = ctrl.getDisplacement();
+			Integer displacement = ctrl._displacement;
 			switch (desc) {
 #define Y(kind) \
 				case Opcode:: kind : \
@@ -177,14 +179,12 @@ namespace i960 {
 #include "conditional_kinds.def"
 #undef X
 #undef Y
-				default:
-					throw "Illegal Instruction";
-#warning "Generate illegal instruction fault"
+				default: throwUnimplementedDescription(desc);
 			}
 		} else if (desc.isCobr()) {
 			auto cobr = inst._cobr;
 			NormalRegister immediateStorage;
-			auto displacement = cobr.getDisplacement();
+			auto displacement = cobr._displacement;
 			auto& src1 = cobr.src1IsLiteral() ? immediateStorage : getRegister(cobr._source1);
 			if (cobr.src1IsLiteral()) {
 				immediateStorage.set<ByteOrdinal>(cobr._source1);
@@ -203,13 +203,10 @@ namespace i960 {
 #include "conditional_kinds.def"
 #undef X
 #undef Y
-				default:
-#warning "generate illegal instruction fault"
-											 throw "illegal instruction!";
+				default: throwUnimplementedDescription(desc);
 			}
 		} else {
-			// this is another anomaly case where the 
-			throw "unimplemented instruction";
+			throwUnimplementedDescription(desc);
 		}
 	}
     Integer Core::getFullDisplacement() noexcept {
