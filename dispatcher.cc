@@ -144,29 +144,26 @@ namespace i960 {
 		case Opcode:: kind : \
 				kind ( a , b ) ; \
 				break;
+#define YISSD(kind) Y(kind, immediateStorage, srcDest);
+#define YSDIS(kind) Y(kind, srcDest, immediateStorage);
 #define Z(kind, a) \
 		case Opcode:: kind : \
 				kind ( a ) ; \
 				break;
+#define ZIS(kind) Z(kind, immediateStorage);
 #define LDP(suffix) \
-				Y(ld ## suffix , immediateStorage, srcDest); \
-				Y(st ## suffix , srcDest, immediateStorage );
+				YISSD(ld ## suffix); \
+				YSDIS(st ## suffix);
 #define WLDP(suffix) \
 				Y(ld ## suffix, immediateStorage, srcDestIndex ); \
 				Y(st ## suffix, srcDestIndex, immediateStorage ); 
-				LDP(ob);
-				LDP(os);
-				LDP(ib);
-				LDP(is);
-				WLDP(l);
-				WLDP(t);
-				WLDP(q);
-				Y(ld, immediateStorage, srcDest);
-				Y(st, srcDest, immediateStorage);
-				Y(lda, immediateStorage, srcDest);
-				Y(balx, immediateStorage, srcDest);
-				Z(bx, immediateStorage);
-				Z(callx, immediateStorage);
+				LDP(ob);     LDP(os);   LDP(ib); LDP(is);
+				WLDP(l);     WLDP(t);   WLDP(q); 
+				YSDIS(st);   YISSD(ld); YISSD(lda); 
+				YISSD(balx); ZIS(bx);   ZIS(callx);
+#undef ZIS
+#undef YISSD
+#undef YSDIS 
 #undef WLDP
 #undef LDP
 #undef Y
@@ -209,12 +206,9 @@ namespace i960 {
 					kind ( src1, src2, displacement ); \
 				break
 #define X(kind) Y( cmpob ## kind ) 
-				Y(bbc);
-				Y(bbs);
-				X(e);
-				X(ge);
-				X(l);
-				X(ne);
+				Y(bbc); Y(bbs);
+				X(e);   X(ge);
+				X(l);   X(ne);
 				X(le);
 #undef X
 #define X(kind) \
