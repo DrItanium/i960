@@ -955,7 +955,13 @@ X(cmpi, bno);
 		// 	              # g8 = 0x89ABCDEF
 		// 	bswap g8, g10 # reverse byte order
 		// 				  # g10 = 0xEFCDAB89
-		
+		//
+		// 	action: dst = (rotate_left(src, 8) & 0x00FF00FF) +
+		// 				  (rotate_left(src, 24) & 0xFF00FF00)
+		auto src = src1.get<Ordinal>();
+		auto rotl8 = i960::rotate(src, 8) & 0x00FF00FF; // rotate the upper 8 bits around to the bottom
+		auto rotl24 = i960::rotate(src, 24) & 0xFF00FF00;
+		src2.set<Ordinal>(rotl8 + rotl24);
 	}
 	void Core::cmpos(SourceRegister src1, SourceRegister src2) noexcept { }
 	void Core::cmpis(SourceRegister src1, SourceRegister src2) noexcept { }
