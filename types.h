@@ -110,6 +110,12 @@ namespace i960 {
 			ByteOrdinal mostSignificantBit() const noexcept {
 				return (ordinal & 0x80000000);
 			}
+			bool mostSignificantBitSet() const noexcept {
+				return mostSignificantBit() == 1;
+			}
+			bool mostSignificantBitClear() const noexcept {
+				return mostSignificantBit() == 0;
+			}
     };
 	static_assert(sizeof(NormalRegister) == sizeof(Ordinal), "NormalRegister must be 32-bits wide!");
 

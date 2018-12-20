@@ -198,20 +198,15 @@ X(cmpi, bno);
 	void Core::addo(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set<Ordinal>(src2.get<Ordinal>() + src1.get<Ordinal>());
 	}
-	constexpr Integer getSignBit(Integer a) noexcept {
-		return (a & 0x8000'0000) >> 31;
-	}
-	bool overflowed(Integer a, Integer b, Integer result) {
-		// taken from http://www.c-jump.com/CIS77/CPU/Overflow/lecture.html
-		return (getSignBit(a) == getSignBit(b)) && (getSignBit(result) != getSignBit(a));
-	}
 	void Core::addi(__DEFAULT_THREE_ARGS__) noexcept {
-		auto v0 = src2.get<Integer>();
-		auto v1 = src1.get<Integer>();
-		auto result = v0 + v1;
-		dest.set<Integer>(result);
-		if (overflowed(v0, v1, result)) {
-			// TODO implement logic for raising an overflow fault
+		dest.set<Integer>(src2.get<Integer>() + src1.get<Integer>());
+		// check for overflow
+		if ((src2.mostSignificantBit() == src1.mostSignificantBit()) && (src2.mostSignificantBit() != dest.mostSignificantBit())) {
+			if (_ac.integerOverflowMask == 1) {
+				_ac.integerOverflowFlag = 1;
+			} else {
+				// TODO generate_fault(ARITHMETIC.OVERFLOW);
+			}
 		}
 	}
 	void Core::subo(__DEFAULT_THREE_ARGS__) noexcept {
@@ -240,7 +235,13 @@ X(cmpi, bno);
 	void Core::alterbit(SourceRegister pos, SourceRegister src, DestinationRegister dest) noexcept {
 		auto s = src.get<Ordinal>();
 		auto p = pos.get<Ordinal>() & 0b11111;
-		dest.set<Ordinal>((_ac.conditionCode & 0b010) == 0 ? s & (~(1 << p)) : s | (1 << p));
+		if ((_ac.conditionCode & 0b010)  == 0) {
+			// if the condition bit is clear then we clear the given bit
+			dest.set<Ordinal>(s & (~(1 << p)));
+		} else {
+			// if the condition bit is set then we set the given bit
+			dest.set<Ordinal>(s | (1 << p));
+		}
 	}
 	void Core::opand(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set<Ordinal>(i960::andOp<Ordinal>(src2.get<Ordinal>(), src1.get<Ordinal>()));
@@ -319,27 +320,20 @@ X(cmpi, bno);
 		srcDest.set<Ordinal>(decode(bitpos.get<Ordinal>(), len.get<Ordinal>(), srcDest.get<Ordinal>()));
 	}
 
-	constexpr bool mostSignificantBitSet(Ordinal value) noexcept {
-		return (value & 0x8000'0000) != 0;
-	}
-	constexpr bool mostSignificantBitClear(Ordinal value) noexcept {
-		return !mostSignificantBitSet(value);
-	}
 	/**
 	 * Find the most significant set bit
 	 */
 	void Core::scanbit(SourceRegister src, DestinationRegister dest) noexcept {
 		auto k = src.get<Ordinal>();
+		dest.set<Ordinal>(0xFFFF'FFFF);
 		_ac.conditionCode = 0b000;
 		for (int i = 31; i >= 0; --i) {
-			if (mostSignificantBitSet(k)) {
+			if (auto k = 1 << i; (src & k) != 0) {
 				_ac.conditionCode = 0b010;
 				dest.set<Ordinal>(i);
-				return;
+				break;
 			}
-			k <<= 1;
 		}
-		dest.set<Ordinal>(0xFFFF'FFFF);
 	}
 	/**
 	 * Find the most significant clear bit
@@ -475,11 +469,15 @@ X(cmpi, bno);
 		// stack when a call happens
 	}
 	void Core::subi(__DEFAULT_THREE_ARGS__) noexcept {
-		// just add a negative inverted value by copying to an internal
-		// register
-		NormalRegister newSrc1;
-		newSrc1.set<Integer>(-(src1.get<Integer>()));
-		addi(src2, newSrc1, dest);
+		dest.set<Integer>(src2.get<Integer>() - src1.get<Integer>());
+		// check for overflow
+		if ((src2.mostSignificantBit() != src1.mostSignificantBit()) && (src2.mostSignificantBit() != dest.mostSignificantBit())) {
+			if (_ac.integerOverflowMask == 1) {
+				_ac.integerOverflowFlag = 1;
+			} else {
+				// TODO generate_fault(ARITHMETIC.OVERFLOW);
+			}
+		}
 	}
 	void Core::modtc(SourceRegister src, SourceRegister mask, DestinationRegister dest) noexcept {
 		TraceControls tmp;
@@ -517,12 +515,11 @@ X(cmpi, bno);
 		dest.set<Ordinal>(tmp);
 	}
 	void Core::addc(__DEFAULT_THREE_ARGS__) noexcept {
-		LongOrdinal combination = ((LongOrdinal)src2.get<Ordinal>()) + ((LongOrdinal)src1.get<Ordinal>()) + _ac.getCarryValue();
-		auto lower = static_cast<Ordinal>(combination);
-		auto setCarry = shouldSetCarryBit(combination) ? 0b010 : 0;
-		auto intOverflowHappened = isIntegerOverflow(lower) ? 0b001 : 0;
-		_ac.conditionCode = setCarry | intOverflowHappened;
-		dest.set<Ordinal>(lower);
+		dest.set<Ordinal>(src2.get<Ordinal>() + src1.get<Ordinal>() + _ac.getCarryValue());
+		_ac.conditionCode = 0b000; // odd that they would do this first as it breaks their action description in the manual
+		auto overflowHappened = ((src2.mostSignificantBit() == src1.mostSignificantBit()) && (src2.mostSignificantBit() != dest.mostSignificantBit()));
+		// combine the most significant bit of the 
+		_ac.conditionCode = (dest.mostSignificantBit() << 1) + (overflowHappened ? 1 : 0);
 	}
 	void Core::testno(DestinationRegister dest) noexcept { testGeneric<TestTypes::Unordered>(dest); }
 	void Core::testg(DestinationRegister dest) noexcept { testGeneric<TestTypes::Greater>( dest); }
