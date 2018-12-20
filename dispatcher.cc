@@ -43,9 +43,9 @@ namespace i960 {
 			// TODO It is impossible for m3 to be set when srcDest is used as a dest, error out before hand
 			NormalRegister& srcDest = reg.srcDestIsLiteral() ? imm3 : getRegister(src3Ind);
 			switch(desc) {
-#define GI(kind, args) case Opcode:: kind : kind args ; break 
-#define Op3Arg(kind) GI(kind, (src1, src2, srcDest))
-#define Op2Arg(kind) GI(kind, (src1, srcDest))
+#define Y(kind, args) case Opcode:: kind : kind args ; break 
+#define Op3Arg(kind) Y(kind, (src1, src2, srcDest))
+#define Op2Arg(kind) Y(kind, (src1, srcDest))
 				Op2Arg(spanbit); Op2Arg(scanbit); Op2Arg(opnot);
 				Op2Arg(chkbit);  Op2Arg(mov);     Op2Arg(cmpo);
 				Op2Arg(cmpi);    Op2Arg(concmpo); Op2Arg(concmpi);
@@ -62,11 +62,11 @@ namespace i960 {
 				Op3Arg(cmpdeci); Op3Arg(mulo);     Op3Arg(muli);    Op3Arg(remo);
 				Op3Arg(remi);    Op3Arg(divo);     Op3Arg(divi);
 
-				GI(scanbyte, (src1, src2));
-				GI(movl, (src1Ind, src2Ind));
-				GI(movt, (src1Ind, src2Ind));
-				GI(movq, (src1Ind, src2Ind));
-				GI(calls, (src1));
+				Y(scanbyte, (src1, src2));
+				Y(movl, (src1Ind, src2Ind));
+				Y(movt, (src1Ind, src2Ind));
+				Y(movq, (src1Ind, src2Ind));
+				Y(calls, (src1));
 #define X(kind) \
 				Op3Arg(addo ## kind); \
 				Op3Arg(addi ## kind); \
@@ -80,7 +80,7 @@ namespace i960 {
 #warning "Modi not impl'd as it is a special form"
 #undef Op3Arg
 #undef Op2Arg
-#undef GI
+#undef Y
 				default:
 #warning "generate illegal instruction fault"
 				throw "illegal instruction!";
@@ -170,10 +170,10 @@ namespace i960 {
 				case Opcode:: kind : \
 					kind ( displacement ) ; \
 					break;
-#define X(kind) Y(b ## kind) 
 				Y(b)
 				Y(call)
 				Y(bal)
+#define X(kind) Y(b ## kind) 
 #include "conditional_kinds.def"
 #undef X
 #undef Y
@@ -193,9 +193,8 @@ namespace i960 {
 			switch(desc) {
 #define Y(kind) case Opcode:: kind : kind ( src1, src2, displacement ); break
 #define X(kind) Y( cmpob ## kind ) 
-				Y(bbc); Y(bbs);
-				X(e);   X(ge);
-				X(l);   X(ne);
+				Y(bbc); Y(bbs); X(e);
+				X(ge);  X(l);   X(ne);
 				X(le);
 #undef X
 #define X(kind) \
