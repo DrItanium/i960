@@ -59,6 +59,8 @@ namespace i960 {
             Integer integer;
             ByteOrdinal byteOrd;
             ShortOrdinal shortOrd;
+			ByteInteger byteInt;
+			ShortInteger shortInt;
 
             template<typename T>
             T get() const noexcept {
@@ -69,8 +71,12 @@ namespace i960 {
                     return integer;
                 } else if constexpr(std::is_same_v<K, ByteOrdinal>) {
                     return byteOrd;
+				} else if constexpr(std::is_same_v<K, ByteInteger>) {
+					return byteInt;
                 } else if constexpr(std::is_same_v<K, ShortOrdinal>) {
                     return shortOrd;
+				} else if constexpr(std::is_same_v<K, ShortInteger>) {
+					return shortInt;
                 } else if constexpr(std::is_same_v<K, PreviousFramePointer>) {
                     return pfp;
                 } else if constexpr(std::is_same_v<K, LongOrdinal>) {

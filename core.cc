@@ -990,10 +990,18 @@ X(cmpi, bno);
 		auto rotl24 = i960::rotate(src, 24) & 0xFF00FF00;
 		src2.set<Ordinal>(rotl8 + rotl24);
 	}
-	void Core::cmpos(SourceRegister src1, SourceRegister src2) noexcept { }
-	void Core::cmpis(SourceRegister src1, SourceRegister src2) noexcept { }
-	void Core::cmpob(SourceRegister src1, SourceRegister src2) noexcept { }
-	void Core::cmpib(SourceRegister src1, SourceRegister src2) noexcept { }
+	void Core::cmpos(SourceRegister src1, SourceRegister src2) noexcept { 
+		compare<ShortOrdinal>(src1.get<ShortOrdinal>(), src2.get<ShortOrdinal>());
+	}
+	void Core::cmpis(SourceRegister src1, SourceRegister src2) noexcept { 
+		compare<ShortInteger>(src1.get<ShortInteger>(), src2.get<ShortInteger>());
+	}
+	void Core::cmpob(SourceRegister src1, SourceRegister src2) noexcept { 
+		compare<ByteOrdinal>(src1.get<ByteOrdinal>(), src2.get<ByteOrdinal>());
+	}
+	void Core::cmpib(SourceRegister src1, SourceRegister src2) noexcept { 
+		compare<ByteInteger>(src1.get<ByteInteger>(), src2.get<ByteInteger>());
+	}
 	void Core::dcctl(__DEFAULT_THREE_ARGS__) noexcept { 
 		// while I don't implement a data cache myself, this instruction must
 		// do something!
