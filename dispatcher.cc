@@ -13,19 +13,14 @@ namespace i960 {
 			// these operations require no further decoding effort so short
 			// circuit them :D
 			switch (desc) {
-				case Opcode::mark:     mark(); break;
-				case Opcode::fmark:    fmark(); break;
-				case Opcode::flushreg: flushreg(); break;
-				case Opcode::syncf:    syncf(); break;
-				case Opcode::ret:      ret(); break;
-				case Opcode::inten:    inten(); break;
-				case Opcode::intdis:   intdis(); break;
-#define X(kind) \
-				case Opcode:: fault ## kind : \
-					fault ## kind () ; \
-					break;
+#define Y(kind) case Opcode:: kind :  kind () ; break;
+				Y(mark);  Y(fmark); Y(flushreg); 
+				Y(syncf); Y(ret);   Y(inten);
+				Y(intdis);
+#define X(kind) Y(fault ## kind );
 #include "conditional_kinds.def"
 #undef X
+#undef Y
 				default:
 											  throw "unimplemented instruction";
 			}
@@ -146,11 +141,7 @@ namespace i960 {
 				break;
 #define YISSD(kind) Y(kind, immediateStorage, srcDest);
 #define YSDIS(kind) Y(kind, srcDest, immediateStorage);
-#define Z(kind, a) \
-		case Opcode:: kind : \
-				kind ( a ) ; \
-				break;
-#define ZIS(kind) Z(kind, immediateStorage);
+#define ZIS(kind) case Opcode:: kind : kind ( immediateStorage ) ; break;
 #define LDP(suffix) \
 				YISSD(ld ## suffix); \
 				YSDIS(st ## suffix);
@@ -167,7 +158,6 @@ namespace i960 {
 #undef WLDP
 #undef LDP
 #undef Y
-#undef Z
 				default:
 #warning "generate illegal instruction fault"
 					throw "illegal instruction!";
@@ -175,7 +165,7 @@ namespace i960 {
 		} else if (desc.isCtrl()) {
 			auto ctrl = inst._ctrl;
 			Integer displacement = ctrl._displacement;
-			switch (desc.getOpcode()) {
+			switch (desc) {
 #define Y(kind) \
 				case Opcode:: kind : \
 					kind ( displacement ) ; \
@@ -201,10 +191,7 @@ namespace i960 {
 			}
 			auto& src2 = getRegister(cobr._source2);
 			switch(desc) {
-#define Y(kind) \
-				case Opcode:: kind : \
-					kind ( src1, src2, displacement ); \
-				break
+#define Y(kind) case Opcode:: kind : kind ( src1, src2, displacement ); break
 #define X(kind) Y( cmpob ## kind ) 
 				Y(bbc); Y(bbs);
 				X(e);   X(ge);
