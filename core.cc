@@ -940,8 +940,41 @@ X(cmpi, bno);
 	void Core::addone(__DEFAULT_THREE_ARGS__) noexcept { }
 	void Core::addono(__DEFAULT_THREE_ARGS__) noexcept { }
 	void Core::addoo(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::halt(SourceRegister src1) {
 
+	void Core::halt(SourceRegister src1) {
+		// TODO finish implementing this
+		// From the i960Jx manual:
+		// causes the processor to enter HALT mode which is described in
+		// Chapter 16, HALT MODE. Entry into Halt mode allows the interrupt
+		// enable state to be conditionally changed based on the value of src1
+		// if src1 == 0 then Disable interrupts and halt
+		// if src1 == 1 then Enable interrupts and halt
+		// if src1 == 2 then Use current interrupt enable state and halt
+		//
+		// The processor exits Halt mode on a hardware reset or upon receipt of
+		// an interrupt that should be delivered based on teh current process
+		// priority. After executing the interrupt that forced the processor
+		// out of Halt mode, execution resumes at the instruction immediately
+		// after the halt instruction. The processor must be in supervisor mode
+		// to use this instruction
+		syncf(); // implicit syncf
+		if (_pc.executionMode != 1) { /* In supervisor mode? */
+			switch (src1.get<Ordinal>()) {
+				case 0: // Disable interrupts. Clear ICON.gie
+					// globalInterruptEnable = false; 
+					break;
+				case 1: // enable interrupts. Set ICON.gie
+					// globalInterruptEnable = true;
+					break;
+				case 2: // use the current interrupt enable state.
+					break;
+				default:
+					// TODO generate an Operation.Invalid_Operand
+					break;
+			}
+		}
+		// ensure_bus_is_quiescient; // WAT!??
+		// enter_HALT_mode; // TODO
 	}
 	void Core::bswap(SourceRegister src1, DestinationRegister src2) noexcept {
 		// Taken from the i960 Jx reference manual:
@@ -967,8 +1000,15 @@ X(cmpi, bno);
 	void Core::cmpis(SourceRegister src1, SourceRegister src2) noexcept { }
 	void Core::cmpob(SourceRegister src1, SourceRegister src2) noexcept { }
 	void Core::cmpib(SourceRegister src1, SourceRegister src2) noexcept { }
-	void Core::dcctl(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::eshro(__DEFAULT_THREE_ARGS__) noexcept { }
+	void Core::dcctl(__DEFAULT_THREE_ARGS__) noexcept { 
+		// while I don't implement a data cache myself, this instruction must
+		// do something!
+		// TODO something
+	}
+	void Core::eshro(__DEFAULT_THREE_ARGS__) noexcept { 
+		// extended shift right ordinal
+		
+	}
 	void Core::icctl(__DEFAULT_THREE_ARGS__) noexcept { }
 	void Core::intctl(__DEFAULT_TWO_ARGS__) { }
 	void Core::sysctl(__DEFAULT_THREE_ARGS__) noexcept { }
