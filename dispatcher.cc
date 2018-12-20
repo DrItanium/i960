@@ -164,7 +164,7 @@ namespace i960 {
 			}
 		} else if (desc.isCtrl()) {
 			auto ctrl = inst._ctrl;
-			Integer displacement = ctrl._displacement;
+			auto displacement = ctrl.getDisplacement();
 			switch (desc) {
 #define Y(kind) \
 				case Opcode:: kind : \
@@ -184,7 +184,7 @@ namespace i960 {
 		} else if (desc.isCobr()) {
 			auto cobr = inst._cobr;
 			NormalRegister immediateStorage;
-			auto displacement = cobr._displacement;
+			auto displacement = cobr.getDisplacement();
 			auto& src1 = cobr.src1IsLiteral() ? immediateStorage : getRegister(cobr._source1);
 			if (cobr.src1IsLiteral()) {
 				immediateStorage.set<ByteOrdinal>(cobr._source1);

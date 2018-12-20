@@ -376,14 +376,15 @@ namespace i960 {
             Ordinal _source2 : 5; 
             Ordinal _source1 : 5;
             Ordinal _opcode : 8;
-            bool src1IsLiteral() const noexcept { return _m1 != 0; }
-
+            auto src1IsLiteral() const noexcept { return _m1 != 0; }
+			auto getDisplacement() const noexcept { return _displacement; }
         };
         struct CTRLFormat {
             Ordinal _sfr : 1;
             Ordinal _bp : 1;
             Ordinal _displacement : 22;
             Ordinal _opcode : 8;
+			Integer getDisplacement() const noexcept { return _displacement; }
         };
         union MemFormat {
             struct MEMAFormat {
