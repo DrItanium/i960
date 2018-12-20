@@ -254,6 +254,7 @@ namespace i960 {
             void cmpob(SourceRegister src1, SourceRegister src2) noexcept;
             void cmpib(SourceRegister src1, SourceRegister src2) noexcept;
 			void bswap(SourceRegister src1, DestinationRegister src2) noexcept;
+			void baseSelect(bool condition, __DEFAULT_THREE_ARGS__) noexcept;
 #define X(kind) \
 			__GEN_DEFAULT_THREE_ARG_SIGS__(addo ## kind) ; \
 			__GEN_DEFAULT_THREE_ARG_SIGS__(addi ## kind) ; \
@@ -262,6 +263,35 @@ namespace i960 {
 			__GEN_DEFAULT_THREE_ARG_SIGS__(sel ## kind) ;
 #include "conditional_kinds.def"
 #undef X 
+			template<Ordinal mask>
+			void baseSelect(__DEFAULT_THREE_ARGS__) noexcept {
+				if (((mask & _ac.conditionCode) != 0) || (mask == _ac.conditionCode)) {
+					dest.set<Ordinal>(src2.get<Ordinal>());
+				} else {
+					dest.set<Ordinal>(src1.get<Ordinal>());
+				}
+			}
+			template<Ordinal mask>
+			void suboBase(__DEFAULT_THREE_ARGS__) noexcept {
+				if (((mask & _ac.conditionCode) != 0) || (mask == _ac.conditionCode)) {
+					subo(src1, src2, dest);
+				}
+			}
+			template<Ordinal mask>
+			void subiBase(__DEFAULT_THREE_ARGS__) noexcept {
+				if (((mask & _ac.conditionCode) != 0) || (mask == _ac.conditionCode)) {
+					dest.set<Integer>(src2.get<Integer>() - src1.get<Integer>());
+				}
+				// according to the docs, the arithmetic overflow always is
+				// computed even if the subtraction is not performed
+				if ((src2.mostSignificantBit() != src1.mostSignificantBit()) && (src2.mostSignificantBit() != dest.mostSignificantBit())) {
+					if (_ac.integerOverflowMask == 1) {
+						_ac.integerOverflowFlag = 1;
+					} else {
+						// TODO generate_fault(ARITHMETIC.OVERFLOW);
+					}
+				}
+			}
 		private:
 			void dispatch(const Instruction& decodedInstruction) noexcept;
         private:

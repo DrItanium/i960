@@ -97,6 +97,9 @@ namespace i960 {
                 }
             }
             void move(const NormalRegister& other) noexcept { set<Ordinal>(other.get<Ordinal>()); }
+			ByteOrdinal mostSignificantBit() const noexcept {
+				return (ordinal & 0x80000000);
+			}
     };
 	static_assert(sizeof(NormalRegister) == sizeof(Ordinal), "NormalRegister must be 32-bits wide!");
 

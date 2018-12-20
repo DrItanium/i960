@@ -895,35 +895,37 @@ X(cmpi, bno);
         dest.set<Ordinal>(i960::xorOp<Ordinal>(src1.get<Ordinal>(), src2.get<Ordinal>()));
     }
 	void Core::intdis() {
-
+		// TODO implement
 	}
 	void Core::inten() {
-
+		// TODO implement
 	}
-	void Core::sele(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::selg(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::selge(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::sell(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::selle(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::selne(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::selno(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::selo(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::subie(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::subig(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::subige(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::subil(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::subile(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::subine(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::subino(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::subio(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::suboe(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::subog(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::suboge(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::subol(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::subole(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::subone(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::subono(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::suboo(__DEFAULT_THREE_ARGS__) noexcept { }
+#define X(kind, mask) \
+	void Core:: sel ## kind (__DEFAULT_THREE_ARGS__) noexcept { \
+		baseSelect<mask>(src1, src2, dest); \
+	}
+	X(no, 0b000);
+	X(g, 0b001);
+	X(e, 0b010);
+	X(ge, 0b011);
+	X(l, 0b100);
+	X(ne, 0b101);
+	X(le, 0b110);
+	X(o, 0b111);
+#undef X
+#define X(base, kind, code) \
+	void Core:: base ## kind ( __DEFAULT_THREE_ARGS__ ) noexcept { \
+		base ## Base <code> ( src1, src2, dest ) ; \
+	}
+	X(subo, no, 0b000); X(subi, no, 0b000);
+	X(subo, g, 0b001);  X(subi, g, 0b001);
+	X(subo, e, 0b010);  X(subi, e, 0b010);
+	X(subo, ge, 0b011); X(subi, ge, 0b011);
+	X(subo, l, 0b100); X(subi, l, 0b100);
+	X(subo, ne, 0b101); X(subi, ne, 0b101);
+	X(subo, le, 0b110); X(subi, le, 0b110);
+	X(subo, o, 0b111); X(subi, o, 0b111);
+#undef X
 	void Core::addie(__DEFAULT_THREE_ARGS__) noexcept { }
 	void Core::addig(__DEFAULT_THREE_ARGS__) noexcept { }
 	void Core::addige(__DEFAULT_THREE_ARGS__) noexcept { }
