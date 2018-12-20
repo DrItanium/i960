@@ -83,9 +83,6 @@ namespace i960 {
 				Op3Arg(sel ## kind); 
 #include "conditional_kinds.def"
 #undef X
-#warning "Emul not impl'd as it is a special form"
-#warning "Ediv not impl'd as it is a special form"
-#warning "Modi not impl'd as it is a special form"
 #undef Op3Arg
 #undef Op2Arg
 #undef Y
@@ -102,6 +99,15 @@ namespace i960 {
 				auto abase = getRegister(ma._abase);
 				immediateStorage.set<Ordinal>(ma.isOffsetAddressingMode() ?  offset : offset + abase.get<Ordinal>());
 			} else {
+				auto getFullDisplacement = [this]() {
+					auto addr = _instructionPointer + 4;
+					union {
+						Ordinal _ord;
+						Integer _int;
+					} conv;
+					conv._ord = load(addr);
+					return conv._int;
+				};
 				auto mb = mem._memb;
 				using K = std::decay_t<decltype(mb)>;
 				using E = K::AddressingModes;
@@ -140,8 +146,8 @@ namespace i960 {
 			// does, so the actual arguments differ, not the set of actions
 			switch(desc) {
 #define Y(kind, a, b) \
-		case Opcode:: kind : \
-				kind ( a , b ) ; \
+				case Opcode:: kind : \
+									 kind ( a , b ) ; \
 				break;
 #define YISSD(kind) Y(kind, immediateStorage, srcDest);
 #define YSDIS(kind) Y(kind, srcDest, immediateStorage);
@@ -170,11 +176,11 @@ namespace i960 {
 			switch (desc) {
 #define Y(kind) \
 				case Opcode:: kind : \
-					kind ( displacement ) ; \
-					break;
+									 kind ( displacement ) ; \
+				break;
 				Y(b)
-				Y(call)
-				Y(bal)
+					Y(call)
+					Y(bal)
 #define X(kind) Y(b ## kind) 
 #include "conditional_kinds.def"
 #undef X
@@ -209,14 +215,5 @@ namespace i960 {
 			throwUnimplementedDescription(desc);
 		}
 	}
-    Integer Core::getFullDisplacement() noexcept {
-        auto addr = _instructionPointer + 4;
-        union {
-            Ordinal _ord;
-            Integer _int;
-        } conv;
-        conv._ord = load(addr);
-        return conv._int;
-    }
 
 } // end namespace i960

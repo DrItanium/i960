@@ -264,7 +264,6 @@ namespace i960 {
 #undef X 
 		private:
 			void dispatch(const Instruction& decodedInstruction) noexcept;
-			Integer getFullDisplacement() noexcept;
         private:
             RegisterWindow _globalRegisters;
             // The hardware implementations use register sets, however
