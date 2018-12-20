@@ -51,9 +51,16 @@ namespace i960 {
 #define GI(kind, args) case Opcode:: kind : kind args ; break 
 #define Op3Arg(kind) GI(kind, (src1, src2, srcDest))
 #define Op2Arg(kind) GI(kind, (src1, srcDest))
-#define Op3ArgIO(kind) Op3Arg(kind ## o); Op3Arg(kind ## i)
-#define Op2ArgIO(kind) Op2Arg(kind ## o); Op2Arg(kind ## i)
-#define Op2Source(kind) GI(kind, (src1, src2))
+				Op2Arg(spanbit);
+				Op2Arg(scanbit);
+				Op2Arg(opnot);
+				Op2Arg(chkbit);
+				Op2Arg(mov);
+				Op2Arg(cmpo);
+				Op2Arg(cmpi);
+				Op2Arg(concmpo);
+				Op2Arg(concmpi);
+
 				Op3Arg(notbit);
 				Op3Arg(clrbit);
 				Op3Arg(notor);
@@ -65,42 +72,43 @@ namespace i960 {
 				Op3Arg(opor);
 				Op3Arg(nor);
 				Op3Arg(xnor);
-				Op2Arg(opnot);
 				Op3Arg(ornot);
 				Op3Arg(nand);
 				Op3Arg(alterbit);
-				Op3ArgIO(add);
-				Op3ArgIO(sub);
 				Op3Arg(shro);
 				Op3Arg(shrdi);
 				Op3Arg(shri);
 				Op3Arg(shlo);
 				Op3Arg(rotate);
 				Op3Arg(shli);
-				Op2ArgIO(cmp);
-				Op2ArgIO(concmp);
-				Op3ArgIO(cmpinc);
-				Op3ArgIO(cmpdec);
-				Op2Source(scanbyte);
-				Op2Arg(chkbit);
 				Op3Arg(addc);
 				Op3Arg(subc);
-				Op2Arg(mov);
 				Op3Arg(atmod);
 				Op3Arg(atadd);
-				GI(movl, (src1Ind, src2Ind));
-				GI(movt, (src1Ind, src2Ind));
-				GI(movq, (src1Ind, src2Ind));
-				Op2Arg(spanbit);
-				Op2Arg(scanbit);
 				Op3Arg(modac);
 				Op3Arg(modify);
 				Op3Arg(extract);
 				Op3Arg(modtc);
 				Op3Arg(modpc);
-				Op3ArgIO(mul);
-				Op3ArgIO(rem);
-				Op3ArgIO(div);
+				Op3Arg(addo);
+				Op3Arg(addi);
+				Op3Arg(subo);
+				Op3Arg(subi);
+				Op3Arg(cmpinco);
+				Op3Arg(cmpinci);
+				Op3Arg(cmpdeco);
+				Op3Arg(cmpdeci);
+				Op3Arg(mulo);
+				Op3Arg(muli);
+				Op3Arg(remo);
+				Op3Arg(remi);
+				Op3Arg(divo);
+				Op3Arg(divi);
+
+				GI(scanbyte, (src1, src2));
+				GI(movl, (src1Ind, src2Ind));
+				GI(movt, (src1Ind, src2Ind));
+				GI(movq, (src1Ind, src2Ind));
 				GI(calls, (src1));
 #define X(kind) \
 				Op3Arg(addo ## kind); \
@@ -115,7 +123,6 @@ namespace i960 {
 #warning "Modi not impl'd as it is a special form"
 #undef Op3Arg
 #undef Op2Arg
-#undef Op2Source
 #undef GI
 				default:
 #warning "generate illegal instruction fault"
