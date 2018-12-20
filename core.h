@@ -253,7 +253,7 @@ namespace i960 {
             void cmpis(SourceRegister src1, SourceRegister src2) noexcept;
             void cmpob(SourceRegister src1, SourceRegister src2) noexcept;
             void cmpib(SourceRegister src1, SourceRegister src2) noexcept;
-			void bswap(DestinationRegister src1, DestinationRegister src2) noexcept;
+			void bswap(SourceRegister src1, DestinationRegister src2) noexcept;
 #define X(kind) \
 			__GEN_DEFAULT_THREE_ARG_SIGS__(addo ## kind) ; \
 			__GEN_DEFAULT_THREE_ARG_SIGS__(addi ## kind) ; \

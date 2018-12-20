@@ -943,8 +943,19 @@ X(cmpi, bno);
 	void Core::halt(SourceRegister src1) {
 
 	}
-	void Core::bswap(DestinationRegister src1, DestinationRegister src2) noexcept {
-
+	void Core::bswap(SourceRegister src1, DestinationRegister src2) noexcept {
+		// Taken from the i960 Jx reference manual:
+		// alter the order of bytes in a word, reversing its "endianness."
+		//
+		// Copies bytes 3:0 of src1 to src2 reversing order of the bytes. Byte
+		// 0 of src1 becomes byte 3 of src2, byte 1 of src1 becomes byte 2 of
+		// src2, etc.
+		//
+		// Example: 
+		// 	              # g8 = 0x89ABCDEF
+		// 	bswap g8, g10 # reverse byte order
+		// 				  # g10 = 0xEFCDAB89
+		
 	}
 	void Core::cmpos(SourceRegister src1, SourceRegister src2) noexcept { }
 	void Core::cmpis(SourceRegister src1, SourceRegister src2) noexcept { }

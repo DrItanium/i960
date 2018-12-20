@@ -86,7 +86,11 @@ namespace i960 {
 #undef Op3Arg
 #undef Op2Arg
 #undef Y
-				default: throwUnimplementedDescription(desc);
+				case Opcode::bswap:
+					bswap(src1, src2);
+					break;
+				default: 
+					throwUnimplementedDescription(desc);
 			}
 		} else if (desc.isMem()) {
 			auto mem = inst._mem;
