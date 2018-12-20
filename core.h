@@ -272,6 +272,27 @@ namespace i960 {
 				}
 			}
 			template<Ordinal mask>
+			void addoBase(__DEFAULT_THREE_ARGS__) noexcept {
+				if (((mask & _ac.conditionCode) != 0) || (mask == _ac.conditionCode)) {
+					addo(src1, src2, dest);
+				}
+			}
+			template<Ordinal mask>
+			void addiBase(__DEFAULT_THREE_ARGS__) noexcept {
+				if (((mask & _ac.conditionCode) != 0) || (mask == _ac.conditionCode)) {
+					dest.set<Integer>(src1.get<Integer>() + src2.get<Integer>());
+				}
+				// according to the docs, the arithmetic overflow always is
+				// computed even if the addition is not performed
+				if ((src2.mostSignificantBit() == src1.mostSignificantBit()) && (src2.mostSignificantBit() != dest.mostSignificantBit())) {
+					if (_ac.integerOverflowMask == 1) {
+						_ac.integerOverflowFlag = 1;
+					} else {
+						// TODO generate_fault(ARITHMETIC.OVERFLOW);
+					}
+				}
+			}
+			template<Ordinal mask>
 			void suboBase(__DEFAULT_THREE_ARGS__) noexcept {
 				if (((mask & _ac.conditionCode) != 0) || (mask == _ac.conditionCode)) {
 					subo(src1, src2, dest);

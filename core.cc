@@ -925,23 +925,15 @@ X(cmpi, bno);
 	X(subo, ne, 0b101); X(subi, ne, 0b101);
 	X(subo, le, 0b110); X(subi, le, 0b110);
 	X(subo, o, 0b111); X(subi, o, 0b111);
+	X(addo, no, 0b000); X(addi, no, 0b000);
+	X(addo, g, 0b001);  X(addi, g, 0b001);
+	X(addo, e, 0b010);  X(addi, e, 0b010);
+	X(addo, ge, 0b011); X(addi, ge, 0b011);
+	X(addo, l, 0b100); X(addi, l, 0b100);
+	X(addo, ne, 0b101); X(addi, ne, 0b101);
+	X(addo, le, 0b110); X(addi, le, 0b110);
+	X(addo, o, 0b111); X(addi, o, 0b111);
 #undef X
-	void Core::addie(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::addig(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::addige(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::addil(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::addile(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::addine(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::addino(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::addio(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::addoe(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::addog(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::addoge(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::addol(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::addole(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::addone(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::addono(__DEFAULT_THREE_ARGS__) noexcept { }
-	void Core::addoo(__DEFAULT_THREE_ARGS__) noexcept { }
 
 	void Core::halt(SourceRegister src1) {
 		// TODO finish implementing this
