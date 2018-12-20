@@ -96,6 +96,10 @@ namespace i960 {
                     byteOrd = value;
                 } else if constexpr(std::is_same_v<K, ShortOrdinal>) {
                     shortOrd = value;
+				} else if constexpr(std::is_same_v<K, ByteInteger>) {
+					byteInt = value;
+				} else if constexpr(std::is_same_v<K, ShortInteger>) {
+					shortInt = value;
                 } else if constexpr(std::is_same_v<K, PreviousFramePointer>) {
                     ordinal = value.value;
                 } else {
