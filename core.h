@@ -313,6 +313,39 @@ namespace i960 {
 					}
 				}
 			}
+			template<bool checkIfSet>
+			static constexpr bool checkIfBitIs(Ordinal s, Ordinal mask) noexcept {
+				if constexpr (auto maskedValue = s & mask; checkIfSet) {
+					return maskedValue == 1;
+				} else {
+					return maskedValue == 0;
+				}
+			}
+			template<bool branchOnSet>
+			void checkBitAndBranchIf(SourceRegister bitpos, SourceRegister src, Integer targ) noexcept {
+				// check bit and branch if clear
+				auto shiftAmount = bitpos.get<Ordinal>() & 0b11111;
+				auto mask = 1 << shiftAmount;
+				if (auto s = src.get<Ordinal>(); checkIfBitIs<branchOnSet>(s, mask)) {
+					if constexpr (branchOnSet) {
+						_ac.conditionCode = 0b010;
+					} else {
+						_ac.conditionCode = 0;
+					}
+
+					union {
+						Integer value : 11;
+					} displacement;
+					displacement.value = targ;
+					_instructionPointer = _instructionPointer + 4 + (displacement.value * 4);
+				} else {
+					if constexpr (branchOnSet) {
+						_ac.conditionCode = 0;
+					} else {
+						_ac.conditionCode = 0b010;
+					}
+				}
+			}
 		private:
 			void dispatch(const Instruction& decodedInstruction) noexcept;
         private:

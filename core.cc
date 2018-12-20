@@ -289,15 +289,33 @@ X(cmpi, bno);
 			Integer _value : 24;
 		} conv;
 		conv._value = displacement;
-		conv._value = conv._value > 8388604 ? 8388604 : conv._value;
+		conv._value = conv._value > 0x7F'FFFC ? 0x7F'FFFC : conv._value;
 		_instructionPointer += conv._value;
+		_instructionPointer &= 0xFFFF'FFFC; // make sure the least significant two bits are clear
 	}
 	void Core::bx(SourceRegister src) noexcept {
 		_instructionPointer = src.get<Ordinal>();
+		_instructionPointer &= 0xFFFF'FFFC; // make sure the least significant two bits are clear
 	}
 	void Core::bal(Integer displacement) noexcept {
 		_globalRegisters[14].set<Ordinal>(_instructionPointer + 4);
 		b(displacement);
+	}
+
+	void Core::balx(__DEFAULT_TWO_ARGS__) noexcept {
+		// TODO support 4 or 8 byte versions
+		dest.set<Ordinal>(_instructionPointer + 4);
+		_instructionPointer = src.get<Ordinal>();
+	}
+
+	void Core::bbc(SourceRegister bitpos, SourceRegister src, Integer targ) noexcept {
+
+		// check bit and branch if clear
+		checkBitAndBranchIf<false>(bitpos, src, targ);
+	}
+	void Core::bbs(SourceRegister bitpos, SourceRegister src, Integer targ) noexcept {
+		// check bit and branch if set
+		checkBitAndBranchIf<true>(bitpos, src, targ);
 	}
 
 
@@ -327,8 +345,8 @@ X(cmpi, bno);
 		auto k = src.get<Ordinal>();
 		dest.set<Ordinal>(0xFFFF'FFFF);
 		_ac.conditionCode = 0b000;
-		for (int i = 31; i >= 0; --i) {
-			if (auto k = 1 << i; (src & k) != 0) {
+		for (Ordinal i = 31; i >= 0; --i) {
+			if (auto k = 1 << i; (src.get<Ordinal>() & k) != 0) {
 				_ac.conditionCode = 0b010;
 				dest.set<Ordinal>(i);
 				break;
@@ -339,17 +357,15 @@ X(cmpi, bno);
 	 * Find the most significant clear bit
 	 */
 	void Core::spanbit(SourceRegister src, DestinationRegister dest) noexcept {
-		auto k = src.get<Ordinal>();
-		_ac.conditionCode = 0b000;
-		for (int i = 31; i >= 0; --i) {
-			if (mostSignificantBitClear(k)) {
-				_ac.conditionCode = 0b010;
-				dest.set<Ordinal>(i);
-				return;
-			}
-			k <<= 1;
-		}
 		dest.set<Ordinal>(0xFFFF'FFFF);
+		_ac.conditionCode = 0b000;
+		for (Ordinal i = 31; i >= 0; --i) {
+			if (auto k = (1 << i); (src.get<Ordinal>() & k) == 0) {
+				dest.set<Ordinal>(i);
+				_ac.conditionCode = 0b010;
+				break;
+			}
+		}
 	}
 	void Core::modi(__DEFAULT_THREE_ARGS__) noexcept {
 		auto s1 = src1.get<Integer>();
@@ -656,44 +672,6 @@ X(cmpi, bno);
 		    //TODO implement
         }
 	}
-	void Core::bbc(SourceRegister bitpos, SourceRegister src, Integer targ) noexcept {
-		// check bit and branch if clear
-		auto shiftAmount = bitpos.get<Ordinal>() & 0b11111;
-		auto mask = 1 << shiftAmount;
-		if (auto s = src.get<Ordinal>(); (s & mask) == 0) {
-			_ac.conditionCode = 0b010;
-
-			union {
-				Integer value : 11;
-			} displacement;
-			displacement.value = targ;
-			_instructionPointer = _instructionPointer + 4 + (displacement.value * 4);
-		} else {
-			_ac.conditionCode = 0;
-			_instructionPointer += 4;
-		}
-	}
-	void Core::bbs(SourceRegister bitpos, SourceRegister src, Integer targ) noexcept {
-		// check bit and branch if set
-		auto shiftAmount = bitpos.get<Ordinal>() & 0b11111;
-		auto mask = 1 << shiftAmount;
-		if (auto s = src.get<Ordinal>(); (s & mask) != 0) {
-			_ac.conditionCode = 0b010;
-			union {
-				Integer value : 11;
-			} displacement;
-			displacement.value = targ;
-			_instructionPointer = _instructionPointer + 4 + (displacement.value * 4);
-		} else {
-			_ac.conditionCode = 0;
-			_instructionPointer += 4;
-		}
-	}
-	void Core::balx(__DEFAULT_TWO_ARGS__) noexcept {
-		// TODO support 4 or 8 byte versions
-		dest.set<Ordinal>(_instructionPointer + 4);
-		_instructionPointer = src.get<Ordinal>();
-	}
 	void Core::stob(__TWO_SOURCE_REGS__) noexcept {
 		auto upper = load(src2.get<Ordinal>()) & 0xFFFFFF00;
 		auto lower = src1.get<ByteOrdinal>();
@@ -791,6 +769,7 @@ X(cmpi, bno);
 		return value & (~0x3);
 	}
 	void Core::atmod(__DEFAULT_THREE_ARGS__) noexcept {
+		// TODO implement
 		auto srcDest = dest.get<Ordinal>();
 		auto mask = src2.get<Ordinal>();
 		auto fixedAddr = alignToWordBoundary(src1.get<Ordinal>());
@@ -799,6 +778,7 @@ X(cmpi, bno);
 		dest.set<Ordinal>(tmp);
 	}
 	void Core::atadd(__DEFAULT_THREE_ARGS__) noexcept {
+		// TODO implement atomic operations
 		auto fixedAddr = alignToWordBoundary(src1.get<Ordinal>());
 		auto src = src2.get<Ordinal>();
 		auto tmp = load(fixedAddr, true);
