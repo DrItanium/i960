@@ -11,6 +11,71 @@
 #define __TWO_SOURCE_AND_INT_ARGS__ SourceRegister src1, SourceRegister src2, Integer targ
 #define __TWO_SOURCE_REGS__ SourceRegister src1, SourceRegister src2
 namespace i960 {
+#define X(kind, code) \
+	void Core:: b ## kind (Integer addr) noexcept { branchIfGeneric<ConditionCode:: code > ( addr ) ; } 
+	X(e, Equal);
+	X(ne, NotEqual);
+	X(l, LessThan);
+	X(le, LessThanOrEqual);
+	X(g, GreaterThan);
+	X(ge, GreaterThanOrEqual);
+	X(o, Ordered);
+	X(no, Unordered);
+#undef X
+#define X(kind, mask) \
+	void Core:: sel ## kind (__DEFAULT_THREE_ARGS__) noexcept { \
+		baseSelect<mask>(src1, src2, dest); \
+	}
+	X(no, 0b000);
+	X(g, 0b001);
+	X(e, 0b010);
+	X(ge, 0b011);
+	X(l, 0b100);
+	X(ne, 0b101);
+	X(le, 0b110);
+	X(o, 0b111);
+#undef X
+#define X(base, kind, code) \
+	void Core:: base ## kind ( __DEFAULT_THREE_ARGS__ ) noexcept { \
+		base ## Base <code> ( src1, src2, dest ) ; \
+	}
+	X(subo, no, 0b000); X(subi, no, 0b000);
+	X(subo, g, 0b001);  X(subi, g, 0b001);
+	X(subo, e, 0b010);  X(subi, e, 0b010);
+	X(subo, ge, 0b011); X(subi, ge, 0b011);
+	X(subo, l, 0b100); X(subi, l, 0b100);
+	X(subo, ne, 0b101); X(subi, ne, 0b101);
+	X(subo, le, 0b110); X(subi, le, 0b110);
+	X(subo, o, 0b111); X(subi, o, 0b111);
+	X(addo, no, 0b000); X(addi, no, 0b000);
+	X(addo, g, 0b001);  X(addi, g, 0b001);
+	X(addo, e, 0b010);  X(addi, e, 0b010);
+	X(addo, ge, 0b011); X(addi, ge, 0b011);
+	X(addo, l, 0b100); X(addi, l, 0b100);
+	X(addo, ne, 0b101); X(addi, ne, 0b101);
+	X(addo, le, 0b110); X(addi, le, 0b110);
+	X(addo, o, 0b111); X(addi, o, 0b111);
+#undef X
+#define X(cmpop, bop) \
+	void Core:: cmpop ## bop ( __TWO_SOURCE_AND_INT_ARGS__ ) noexcept { \
+		cmpop ( src1, src2 ) ; \
+		bop ( targ ) ; \
+	}
+X(cmpo, bg);
+X(cmpo, be);
+X(cmpo, bge);
+X(cmpo, bl);
+X(cmpo, bne);
+X(cmpo, ble);
+X(cmpi, bg);
+X(cmpi, be);
+X(cmpi, bge);
+X(cmpi, bl);
+X(cmpi, bne);
+X(cmpi, ble);
+X(cmpi, bo);
+X(cmpi, bno);
+#undef X
 	Core::Core(MemoryInterface& mem) : _mem(mem) { }
 	Ordinal Core::getStackPointerAddress() const noexcept {
 		return _localRegisters[StackPointerIndex].get<Ordinal>();
@@ -955,71 +1020,6 @@ namespace i960 {
 	void Core::sysctl(__DEFAULT_THREE_ARGS__) noexcept { 
 		// TODO: implement
 	}
-#define X(kind, code) \
-	void Core:: b ## kind (Integer addr) noexcept { branchIfGeneric<ConditionCode:: code > ( addr ) ; } 
-	X(e, Equal);
-	X(ne, NotEqual);
-	X(l, LessThan);
-	X(le, LessThanOrEqual);
-	X(g, GreaterThan);
-	X(ge, GreaterThanOrEqual);
-	X(o, Ordered);
-	X(no, Unordered);
-#undef X
-#define X(kind, mask) \
-	void Core:: sel ## kind (__DEFAULT_THREE_ARGS__) noexcept { \
-		baseSelect<mask>(src1, src2, dest); \
-	}
-	X(no, 0b000);
-	X(g, 0b001);
-	X(e, 0b010);
-	X(ge, 0b011);
-	X(l, 0b100);
-	X(ne, 0b101);
-	X(le, 0b110);
-	X(o, 0b111);
-#undef X
-#define X(base, kind, code) \
-	void Core:: base ## kind ( __DEFAULT_THREE_ARGS__ ) noexcept { \
-		base ## Base <code> ( src1, src2, dest ) ; \
-	}
-	X(subo, no, 0b000); X(subi, no, 0b000);
-	X(subo, g, 0b001);  X(subi, g, 0b001);
-	X(subo, e, 0b010);  X(subi, e, 0b010);
-	X(subo, ge, 0b011); X(subi, ge, 0b011);
-	X(subo, l, 0b100); X(subi, l, 0b100);
-	X(subo, ne, 0b101); X(subi, ne, 0b101);
-	X(subo, le, 0b110); X(subi, le, 0b110);
-	X(subo, o, 0b111); X(subi, o, 0b111);
-	X(addo, no, 0b000); X(addi, no, 0b000);
-	X(addo, g, 0b001);  X(addi, g, 0b001);
-	X(addo, e, 0b010);  X(addi, e, 0b010);
-	X(addo, ge, 0b011); X(addi, ge, 0b011);
-	X(addo, l, 0b100); X(addi, l, 0b100);
-	X(addo, ne, 0b101); X(addi, ne, 0b101);
-	X(addo, le, 0b110); X(addi, le, 0b110);
-	X(addo, o, 0b111); X(addi, o, 0b111);
-#undef X
-#define X(cmpop, bop) \
-	void Core:: cmpop ## bop ( __TWO_SOURCE_AND_INT_ARGS__ ) noexcept { \
-		cmpop ( src1, src2 ) ; \
-		bop ( targ ) ; \
-	}
-X(cmpo, bg);
-X(cmpo, be);
-X(cmpo, bge);
-X(cmpo, bl);
-X(cmpo, bne);
-X(cmpo, ble);
-X(cmpi, bg);
-X(cmpi, be);
-X(cmpi, bge);
-X(cmpi, bl);
-X(cmpi, bne);
-X(cmpi, ble);
-X(cmpi, bo);
-X(cmpi, bno);
-#undef X
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__
