@@ -210,6 +210,10 @@ namespace i960 {
         // I think that the safest solution is to actually raise a fault if both
         // are true or both are false.
 
+		template<Ordinal mask>
+		bool conditionCodeBitSet() const noexcept {
+			return (conditionCode & mask) == 0;
+		}
         bool conditionIsTrue() const noexcept {
             return conditionCode == 0b010;
         }
@@ -266,6 +270,9 @@ namespace i960 {
             Ordinal internalState : 11;
         };
         Ordinal value;
+		bool traceEnabled() const noexcept {
+			return traceEnable != 0;
+		}
     } __attribute__((packed));
 
 
@@ -273,23 +280,26 @@ namespace i960 {
     union TraceControls {
         struct {
             Ordinal unused0 : 1;
+			// trace mode bits
             Ordinal instructionTraceMode : 1;
             Ordinal branchTraceMode : 1;
+			Ordinal callTraceMode : 1;
             Ordinal returnTraceMode : 1;
             Ordinal prereturnTraceMode : 1;
             Ordinal supervisorTraceMode : 1;
-            Ordinal breakPointTraceMode : 1;
-            Ordinal unused1 : 9;
-            Ordinal instructionTraceEvent : 1;
-            Ordinal branchTraceEvent : 1;
-            Ordinal callTraceEvent : 1;
-            Ordinal returnTraceEvent : 1;
-            Ordinal prereturnTraceEvent: 1;
-            Ordinal supervisorTraceEvent : 1;
-            Ordinal breakpointTraceEvent : 1;
-            Ordinal unused2 : 8;
+            Ordinal markTraceMode : 1;
+            Ordinal unused1 : 16;
+			// hardware breakpoint event flags
+			Ordinal instructionAddressBreakpoint0 : 1;
+			Ordinal instructionAddressBreakpoint1 : 1;
+			Ordinal dataAddressBreakpoint0 : 1;
+			Ordinal dataAddressBreakpoint1 : 1;
+            Ordinal unused2 : 4;
         };
         Ordinal value;
+		bool traceMarked() const noexcept {
+			return markTraceMode != 0;
+		}
     } __attribute__((packed));
 	static_assert(sizeof(TraceControls) == sizeof(Ordinal), "TraceControls must be the size of an ordinal!");
 
@@ -329,20 +339,6 @@ namespace i960 {
         NotEqual = 0b101, 
         LessOrEqual = 0b110,
         Ordered = 0b111,
-    };
-
-    /**
-     * Aritmetic status bits, four bits wide with a sign bit as the upper most 
-     * bit of this field. It is taken from the sign of the value being 
-     * classified.
-     */
-    enum ArithmeticStatusCode : Ordinal {
-        Zero = 0b000,
-        DenormalizedNumber,
-        NormalFiniteNumber,
-        QuietNaN,
-        SignalingNaN,
-        ReservedOperand,
     };
 
     union Instruction {

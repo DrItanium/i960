@@ -554,14 +554,17 @@ namespace i960 {
 				throw "Undefined operation";
 		}
 	}
-	void Core::be(Integer addr) noexcept { branchIfGeneric<ConditionCode::Equal>(addr); }
-	void Core::bne(Integer addr) noexcept { branchIfGeneric<ConditionCode::NotEqual>(addr); }
-	void Core::bl(Integer addr) noexcept { branchIfGeneric<ConditionCode::LessThan>(addr); }
-	void Core::ble(Integer addr) noexcept { branchIfGeneric<ConditionCode::LessThanOrEqual>(addr); }
-	void Core::bg(Integer addr) noexcept { branchIfGeneric<ConditionCode::GreaterThan>(addr); }
-	void Core::bge(Integer addr) noexcept { branchIfGeneric<ConditionCode::GreaterThanOrEqual>(addr); }
-	void Core::bo(Integer addr) noexcept { branchIfGeneric<ConditionCode::Ordered>(addr); }
-	void Core::bno(Integer addr) noexcept { branchIfGeneric<ConditionCode::Unordered>(addr); }
+#define X(kind, code) \
+	void Core:: b ## kind (Integer addr) noexcept { branchIfGeneric<ConditionCode:: code > ( addr ) ; } 
+	X(e, Equal);
+	X(ne, NotEqual);
+	X(l, LessThan);
+	X(le, LessThanOrEqual);
+	X(g, GreaterThan);
+	X(ge, GreaterThanOrEqual);
+	X(o, Ordered);
+	X(no, Unordered);
+#undef X
 	void Core::faulte() noexcept {
         if (conditionCodeIs<ConditionCode::Equal>()) {
 		    //TODO implement
@@ -635,62 +638,26 @@ namespace i960 {
 			_instructionPointer += 4;
 		}
 	}
-	void Core::cmpobg(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-        cmpo(src1, src2);
-        bg(targ);
+#define X(cmpop, bop) \
+	void Core:: cmpop ## bop ( __TWO_SOURCE_AND_INT_ARGS__ ) noexcept { \
+		cmpop ( src1, src2 ) ; \
+		bop ( targ ) ; \
 	}
-	void Core::cmpobe(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-        cmpo(src1, src2);
-        be(targ);
-	}
-	void Core::cmpobge(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-        cmpo(src1, src2);
-        bge(targ);
-	}
-	void Core::cmpobl(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-        cmpo(src1, src2);
-        bl(targ);
-	}
-	void Core::cmpobne(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-        cmpo(src1, src2);
-        bne(targ);
-	}
-	void Core::cmpoble(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-        cmpo(src1, src2);
-        ble(targ);
-	}
-	void Core::cmpibg(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-        cmpi(src1, src2);
-        bg(targ);
-	}
-	void Core::cmpibe(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-        cmpi(src1, src2);
-        be(targ);
-	}
-	void Core::cmpibge(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-        cmpi(src1, src2);
-        bge(targ);
-	}
-	void Core::cmpibl(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-        cmpi(src1, src2);
-        bl(targ);
-	}
-	void Core::cmpibne(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-        cmpi(src1, src2);
-        bne(targ);
-	}
-	void Core::cmpible(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-        cmpi(src1, src2);
-        ble(targ);
-	}
-	void Core::cmpibo(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-        cmpi(src1, src2);
-        bo(targ);
-	}
-	void Core::cmpibno(__TWO_SOURCE_AND_INT_ARGS__) noexcept {
-        cmpi(src1, src2);
-        bno(targ);
-	}
+X(cmpo, bg);
+X(cmpo, be);
+X(cmpo, bge);
+X(cmpo, bl);
+X(cmpo, bne);
+X(cmpo, ble);
+X(cmpi, bg);
+X(cmpi, be);
+X(cmpi, bge);
+X(cmpi, bl);
+X(cmpi, bne);
+X(cmpi, ble);
+X(cmpi, bo);
+X(cmpi, bno);
+#undef X
 	void Core::balx(__DEFAULT_TWO_ARGS__) noexcept {
 		// TODO support 4 or 8 byte versions
 		dest.set<Ordinal>(_instructionPointer + 4);
@@ -774,9 +741,9 @@ namespace i960 {
 		srcDest.set<Ordinal>((s & m) | (srcDest.get<Ordinal>() & (~m)));
 	}
 	template<Ordinal mask>
-		constexpr bool maskedEquals(Ordinal src1, Ordinal src2) noexcept {
-			return (src1 & mask) == (src2 & mask);
-		}
+	constexpr bool maskedEquals(Ordinal src1, Ordinal src2) noexcept {
+		return (src1 & mask) == (src2 & mask);
+	}
 	void Core::scanbyte(__TWO_SOURCE_REGS__) noexcept {
 		auto s1 = src1.get<Ordinal>();
 		auto s2 = src2.get<Ordinal>();
@@ -808,7 +775,7 @@ namespace i960 {
 		dest.set<Ordinal>(tmp);
 	}
 	void Core::concmpo(__TWO_SOURCE_REGS__) noexcept {
-		if ((_ac.conditionCode & 0b100) == 0) {
+		if (_ac.conditionCodeBitSet<0b100>()) {
 			if (auto s1 = src1.get<Ordinal>(), s2 = src2.get<Ordinal>(); s1 <= s2) {
 				_ac.conditionCode = 0b010;
 			} else {
@@ -817,7 +784,7 @@ namespace i960 {
 		}
 	}
 	void Core::concmpi(__TWO_SOURCE_REGS__) noexcept {
-		if ((_ac.conditionCode & 0b100) == 0) {
+		if (_ac.conditionCodeBitSet<0b100>()) {
 			if (auto s1 = src1.get<Integer>(), s2 = src2.get<Integer>(); s1 <= s2) {
 				_ac.conditionCode = 0b010;
 			} else {
@@ -911,13 +878,13 @@ namespace i960 {
 		_globalRegisters[15].set<Ordinal>(load(_prcbAddress + 24));
 	}
 	void Core::mark() noexcept {
-		if ((_pc.traceEnable != 0) && (_tc.breakpointTraceEvent != 0)) {
+		if (_pc.traceEnabled() && _tc.traceMarked()) {
 			// TODO raise trace breakpoint fault
 		}
 	}
 	void Core::fmark() noexcept {
 		// force mark aka generate a breakpoint trace-event
-		if (_pc.traceEnable != 0) {
+		if (_pc.traceEnabled()) {
 			// TODO raise trace breakpoint fault
 		}
 	}
