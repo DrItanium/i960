@@ -11,18 +11,9 @@
 #define __TWO_SOURCE_AND_INT_ARGS__ SourceRegister src1, SourceRegister src2, Integer targ
 #define __TWO_SOURCE_REGS__ SourceRegister src1, SourceRegister src2
 namespace i960 {
-#define X(cmp, action) void Core:: test ## cmp (DestinationRegister dest) noexcept { testGeneric<TestTypes:: action>(dest); }
-	X(no, Unordered);
-	X(g, Greater);
-	X(e, Equal);
-	X(ge, GreaterOrEqual);
-	X(l, Less);
-	X(ne, NotEqual);
-	X(le, LessOrEqual);
-	X(o, Ordered);
-#undef X
-#define X(kind, code) \
-	void Core:: b ## kind (Integer addr) noexcept { branchIfGeneric<ConditionCode:: code > ( addr ) ; } 
+#define X(kind, action) \
+	void Core:: test ## kind (DestinationRegister dest) noexcept { testGeneric<TestTypes:: action>(dest); } \
+	void Core:: b ## kind (Integer addr) noexcept { branchIfGeneric<ConditionCode:: action > ( addr ) ; } 
 #include "conditional_kinds.def"
 #undef X
 #define X(kind, mask) \
