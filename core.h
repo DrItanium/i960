@@ -75,7 +75,7 @@ namespace i960 {
             void bbs(SourceRegister pos, SourceRegister src, Integer targ) noexcept;
             // compare and branch instructions as well
             // faults too
-#define X(kind) \
+#define X(kind, __) \
             void b ## kind (Integer) noexcept; \
             void cmpib ## kind ( SourceRegister, SourceRegister, Integer) noexcept; \
             void fault ## kind () noexcept; \
@@ -255,7 +255,7 @@ namespace i960 {
             void cmpib(SourceRegister src1, SourceRegister src2) noexcept;
 			void bswap(SourceRegister src1, DestinationRegister src2) noexcept;
 			void baseSelect(bool condition, __DEFAULT_THREE_ARGS__) noexcept;
-#define X(kind) \
+#define X(kind, __) \
 			__GEN_DEFAULT_THREE_ARG_SIGS__(addo ## kind) ; \
 			__GEN_DEFAULT_THREE_ARG_SIGS__(addi ## kind) ; \
 			__GEN_DEFAULT_THREE_ARG_SIGS__(subo ## kind) ; \

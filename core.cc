@@ -11,16 +11,19 @@
 #define __TWO_SOURCE_AND_INT_ARGS__ SourceRegister src1, SourceRegister src2, Integer targ
 #define __TWO_SOURCE_REGS__ SourceRegister src1, SourceRegister src2
 namespace i960 {
+#define X(cmp, action) void Core:: test ## cmp (DestinationRegister dest) noexcept { testGeneric<TestTypes:: action>(dest); }
+	X(no, Unordered);
+	X(g, Greater);
+	X(e, Equal);
+	X(ge, GreaterOrEqual);
+	X(l, Less);
+	X(ne, NotEqual);
+	X(le, LessOrEqual);
+	X(o, Ordered);
+#undef X
 #define X(kind, code) \
 	void Core:: b ## kind (Integer addr) noexcept { branchIfGeneric<ConditionCode:: code > ( addr ) ; } 
-	X(e, Equal);
-	X(ne, NotEqual);
-	X(l, LessThan);
-	X(le, LessThanOrEqual);
-	X(g, GreaterThan);
-	X(ge, GreaterThanOrEqual);
-	X(o, Ordered);
-	X(no, Unordered);
+#include "conditional_kinds.def"
 #undef X
 #define X(kind, mask) \
 	void Core:: sel ## kind (__DEFAULT_THREE_ARGS__) noexcept { \
@@ -537,14 +540,6 @@ X(cmpi, bno);
 		// combine the most significant bit of the 
 		_ac.conditionCode = (dest.mostSignificantBit() << 1) + (overflowHappened ? 1 : 0);
 	}
-	void Core::testno(DestinationRegister dest) noexcept { testGeneric<TestTypes::Unordered>(dest); }
-	void Core::testg(DestinationRegister dest) noexcept { testGeneric<TestTypes::Greater>( dest); }
-	void Core::teste(DestinationRegister dest) noexcept { testGeneric<TestTypes::Equal>( dest); }
-	void Core::testge(DestinationRegister dest) noexcept { testGeneric<TestTypes::GreaterOrEqual>( dest); }
-	void Core::testl(DestinationRegister dest) noexcept { testGeneric<TestTypes::Less>( dest); }
-	void Core::testne(DestinationRegister dest) noexcept { testGeneric<TestTypes::NotEqual>( dest); }
-	void Core::testle(DestinationRegister dest) noexcept { testGeneric<TestTypes::LessOrEqual>( dest); }
-	void Core::testo(DestinationRegister dest) noexcept { testGeneric<TestTypes::Ordered>( dest); }
 	void Core::ret() noexcept {
 		// TODO implement
 		auto pfp = getPFP();
@@ -643,22 +638,22 @@ X(cmpi, bno);
         }
 	}
 	void Core::faultl() noexcept {
-        if (conditionCodeIs<ConditionCode::LessThan>()) {
+        if (conditionCodeIs<ConditionCode::Less>()) {
 		    //TODO implement
         }
 	}
 	void Core::faultle() noexcept {
-        if (conditionCodeIs<ConditionCode::LessThanOrEqual>()) {
+        if (conditionCodeIs<ConditionCode::LessOrEqual>()) {
 		    //TODO implement
         }
 	}
 	void Core::faultg() noexcept {
-        if (conditionCodeIs<ConditionCode::GreaterThan>()) {
+        if (conditionCodeIs<ConditionCode::Greater>()) {
 		    //TODO implement
         }
 	}
 	void Core::faultge() noexcept {
-        if (conditionCodeIs<ConditionCode::GreaterThanOrEqual>()) {
+        if (conditionCodeIs<ConditionCode::GreaterOrEqual>()) {
 		    //TODO implement
         }
 	}
@@ -900,10 +895,16 @@ X(cmpi, bno);
 		}
 	}
     void Core::xnor(__DEFAULT_THREE_ARGS__) noexcept {
-        dest.set<Ordinal>(i960::xnor<Ordinal>(src1.get<Ordinal>(), src2.get<Ordinal>()));
+		auto s1 = src1.get<Ordinal>();
+		auto s2 = src2.get<Ordinal>();
+		dest.set<Ordinal>(~(s2 | s1) | (s2 & s1));
     }
     void Core::opxor(__DEFAULT_THREE_ARGS__) noexcept {
-        dest.set<Ordinal>(i960::xorOp<Ordinal>(src1.get<Ordinal>(), src2.get<Ordinal>()));
+		auto s1 = src1.get<Ordinal>();
+		auto s2 = src2.get<Ordinal>();
+		// there is an actual implementation within the manual so I'm going to
+		// use that instead of the xor operator.
+		dest.set<Ordinal>((s2 | s1) & ~(s2 & s1));
     }
 	void Core::intdis() {
 		// TODO implement

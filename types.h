@@ -339,15 +339,15 @@ namespace i960 {
     constexpr Ordinal LowestAddress = 0;
     enum class ConditionCode : Ordinal {
         False = 0b000,
-        Unordered = False,
-        GreaterThan = 0b001,
+        Greater = 0b001,
         Equal = 0b010,
-        True = Equal,
-        LessThan = 0b100,
+        Less = 0b100,
         Ordered = 0b111,
         NotEqual = 0b101,
-        LessThanOrEqual = 0b110,
-        GreaterThanOrEqual = 0b011,
+        LessOrEqual = 0b110,
+        GreaterOrEqual = 0b011,
+        Unordered = False,
+        True = Equal,
     };
     enum class TestTypes : Ordinal {
         Unordered = 0b000,

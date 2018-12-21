@@ -26,7 +26,7 @@ namespace i960 {
 				Y(mark);  Y(fmark); Y(flushreg); 
 				Y(syncf); Y(ret);   Y(inten);
 				Y(intdis);
-#define X(kind) Y(fault ## kind );
+#define X(kind, __) Y(fault ## kind );
 #include "conditional_kinds.def"
 #undef X
 #undef Y
@@ -75,7 +75,7 @@ namespace i960 {
 				Y(movt, (src1Ind, src2Ind));
 				Y(movq, (src1Ind, src2Ind));
 				Y(calls, (src1));
-#define X(kind) \
+#define X(kind, __) \
 				Op3Arg(addo ## kind); \
 				Op3Arg(addi ## kind); \
 				Op3Arg(subo ## kind); \
@@ -185,7 +185,7 @@ namespace i960 {
 				Y(b)
 					Y(call)
 					Y(bal)
-#define X(kind) Y(b ## kind) 
+#define X(kind, __) Y(b ## kind) 
 #include "conditional_kinds.def"
 #undef X
 #undef Y
@@ -207,7 +207,7 @@ namespace i960 {
 				X(ge);  X(l);   X(ne);
 				X(le);
 #undef X
-#define X(kind) \
+#define X(kind, __) \
 				Y(cmpib ## kind ); \
 				case Opcode:: test ## kind : test ## kind (src1); break;
 #include "conditional_kinds.def"
