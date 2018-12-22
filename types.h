@@ -494,7 +494,7 @@ namespace i960 {
         Instruction(Ordinal raw) : _raw(raw) { }
         Instruction() : Instruction(0) { }
         Ordinal getBaseOpcode() const noexcept {
-            return 0xFF000000 & _raw >> 24;
+            return (0xFF000000 & _raw) >> 24;
         }
         Ordinal getOpcode() const noexcept {
             if (isRegFormat()) {
