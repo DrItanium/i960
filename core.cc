@@ -211,16 +211,18 @@ X(cmpi, bno);
 	}
 	void Core::divo(__DEFAULT_THREE_ARGS__) noexcept {
 		if (auto denominator = src1.get<Ordinal>(); denominator == 0) {
-			// TODO implement logic for divide by zero fault
+			// generateFault(ARITHMETIC.ZERO_DIVIDE);
 		} else {
 			dest.set(src2.get<Ordinal>() / denominator);
 		}
 	}
 	void Core::remo(__DEFAULT_THREE_ARGS__) noexcept {
-		if (auto denom = src1.get<Ordinal>(); denom == 0) {
-			// TODO implement logic for divide by zero fault
+		if (auto denominator = src1.get<Ordinal>(); denominator == 0) {
+			// raise a ARITHMETIC.ZERO_DIVIDE fault
 		} else {
-			dest.set(src2.get<Ordinal>() % denom);
+			// as defined in the manual
+			auto numerator = src2.get<Ordinal>();
+			dest.set(numerator - (denominator / numerator) * denominator);
 		}
 	}
 	void Core::chkbit(SourceRegister pos, SourceRegister src) noexcept {
@@ -362,39 +364,59 @@ X(cmpi, bno);
 		}
 	}
 	void Core::modi(__DEFAULT_THREE_ARGS__) noexcept {
-		auto s1 = src1.get<Integer>();
-		auto s2 = src2.get<Integer>();
-		NormalRegister internalRegister;
-		divi(src1, src2, internalRegister);
-		auto result = internalRegister.get<Integer>() * s1;
-		dest.set<Integer>(s2 - result);
-		if ((s2 * s1) < 0) {
-			dest.set<Integer>(dest.get<Integer>() + s1);
+		if (auto s1 = src1.get<Integer>(); s1 == 0) {
+			// raise a arithmetic.zero_divide fault
+			dest.set<Integer>(-1); // says in the manual, to assign it to an undefined value
+		} else {
+			auto s2 = src2.get<Integer>();
+			dest.set<Integer>(s2 - (s2 / s1) * s1);
+			if ((s2 * s1) < 0) {
+				dest.set<Integer>(dest.get<Integer>() + s1);
+			}
 		}
 	}
 	void Core::subc(__DEFAULT_THREE_ARGS__) noexcept {
 		auto s1 = src1.get<Ordinal>() - 1u;
 		auto s2 = src2.get<Ordinal>();
-		auto carryBit = (_ac.conditionCode & 0b010) != 0 ? 1u : 0u;
-		// need to identify if overflow will occur
-		auto result = s2 - s1;
-		result += carryBit;
-		// TODO implement integer overflow detection
-		auto v = 0; // TODO fix this by identifying if integer subtraction would've produced an overflow and set v
-		_ac.conditionCode = (carryBit << 1) | v;
-		dest.set<Ordinal>(result);
+		auto carryBit = (_ac.conditionCode & 0b010) >> 1;
+		dest.set<Ordinal>(s2 - s1 + carryBit);
+		_ac.conditionCode = 0b000;
+		if ((src2.mostSignificantBit() == src1.mostSignificantBit()) && (src2.mostSignificantBit() != dest.mostSignificantBit())) {
+			// we've overflowed
+			_ac.conditionCode = 0b001;
+		}
+		_ac.conditionCode += (dest.mostSignificantBit() << 1);
 	}
-	void Core::ediv(SourceRegister src1, LongSourceRegister src2, DestinationRegister remainder, DestinationRegister quotient) noexcept {
-		auto s2 = src2.get<LongOrdinal>();
-		auto s1 = src1.get<Ordinal>();
-		auto divOp = s2 / s1;
-		// TODO perform divide by zero check
-		remainder.set<Ordinal>(s2 - divOp * s1);
-		quotient.set<Ordinal>(divOp);
+	void Core::ediv0(SourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest) noexcept {
+		if (auto s1 = src1.get<LongOrdinal>(); s1 == 0) {
+			dest.set<LongOrdinal>(-1); // set to undefined value
+			// TODO generateFault(OPERATION.INVALID_OPERATION)
+		} else {
+			auto s2 = src2.get<LongOrdinal>();
+			auto divOp = s2 / s1;
+			// lower contains remainder, upper contains quotient
+			auto quotient = s2 / s1;
+			auto remainder = s2 - (s2 / s1) * s1;
+			dest.set(remainder, quotient);
+		}
 	}
 	void Core::divi(__DEFAULT_THREE_ARGS__) noexcept {
-		// TODO perform divide by zero check
-		dest.set<Integer>(src2.get<Integer>() / src1.get<Integer>());
+		if (auto denominator = src1.get<Integer>(); denominator == 0) {
+			dest.set<Integer>(-1);
+			//generateFault(ARITHMETIC.ZERO_DIVIDE);
+		} else if (auto numerator = src2.get<Integer>(); (numerator == 0x8000'0000) && (denominator == -1)) {
+			// this one is a little strange, the manual states -2**31
+			// which is just 0x8000'0000 in signed integer, no clue why they
+			// described it like that. So I'm just going to put 0x8000'0000
+			dest.set<Integer>(0x8000'0000);
+			if (_ac.integerOverflowMask == 1) {
+				_ac.integerOverflowFlag = 1;
+			} else {
+				// generateFault(ARITHMETIC.OVERFLOW);
+			}
+		} else {
+			dest.set<Integer>(numerator / denominator);
+		}
 	}
 
 	void Core::ld(SourceRegister src, DestinationRegister dest) noexcept {
@@ -446,12 +468,25 @@ X(cmpi, bno);
 	void Core::cmpi(SourceRegister src1, SourceRegister src2) noexcept { compare(src1.get<Integer>(), src2.get<Integer>()); }
 	void Core::cmpo(SourceRegister src1, SourceRegister src2) noexcept { compare(src1.get<Ordinal>(), src2.get<Ordinal>()); }
 	void Core::muli(SourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept {
-		// TODO raise important faults
-		dest.set(src2.get<Integer>() * src1.get<Integer>());
+		auto s2 = src2.get<Integer>();
+		auto s1 = src1.get<Integer>();
+		dest.set(s2 * s1);
+		if ((src2.mostSignificantBit() == src1.mostSignificantBit()) && (src2.mostSignificantBit() != dest.mostSignificantBit())) {
+			if (_ac.integerOverflowMask == 1) {
+				_ac.integerOverflowFlag = 1;
+			} else {
+				// raise a ARITHMETIC.OVERFLOW fault
+			}
+		}
 	}
 	void Core::remi(SourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept {
-		// TODO add divide by zero check
-		dest.set(src2.get<Integer>() % src1.get<Integer>());
+		if (auto denominator = src1.get<Integer>(); denominator == 0) {
+			// raise a ARITHMETIC.ZERO_DIVIDE fault
+		} else {
+			// as defined in the manual
+			auto numerator = src2.get<Integer>();
+			dest.set(numerator - (denominator / numerator) * denominator);
+		}
 	}
 	void Core::stl0(LongSourceRegister src, SourceRegister dest) noexcept {
 		store(dest.get<Ordinal>(), src.getLowerHalf());
@@ -517,11 +552,10 @@ X(cmpi, bno);
 		}
 	}
 	void Core::modac(__DEFAULT_THREE_ARGS__) noexcept {
-		auto tmp = _ac.value;
 		auto src = src2.get<Ordinal>();
 		auto mask = src1.get<Ordinal>();
-		auto ac = _ac.value;
-		_ac.value = (src & mask) | (ac & (~mask));
+		auto tmp = _ac.value;
+		_ac.value = (src & mask) | (_ac.value & (~mask));
 		dest.set<Ordinal>(tmp);
 	}
 	void Core::addc(__DEFAULT_THREE_ARGS__) noexcept {
@@ -682,29 +716,34 @@ X(cmpi, bno);
 	void Core::st(__TWO_SOURCE_REGS__) noexcept {
 		store(src2.get<Ordinal>(), src1.get<Ordinal>());
 	}
+	void Core::opnot(__DEFAULT_TWO_ARGS__) noexcept {
+		dest.set(~src.get<Ordinal>());
+	}
+	void Core::notand(__DEFAULT_THREE_ARGS__) noexcept {
+		dest.set<Ordinal>((~src2.get<Ordinal>()) & src2.get<Ordinal>());
+	}
 	void Core::notbit(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set<Ordinal>(i960::notBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
 	}
-	void Core::notand(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>(i960::notAnd(src2.get<Ordinal>(), src1.get<Ordinal>()));
-	}
 	void Core::notor(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>(i960::notOr(src2.get<Ordinal>(), src1.get<Ordinal>()));
+		dest.set<Ordinal>((~src2.get<Ordinal>()) | src1.get<Ordinal>());
 	}
 	void Core::opor(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set(i960::orOp<Ordinal>(src2.get<Ordinal>(), src1.get<Ordinal>()));
-	}
-	void Core::nor(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set(i960::nor(src2.get<Ordinal>(), src1.get<Ordinal>()));
-	}
-	void Core::opnot(__DEFAULT_TWO_ARGS__) noexcept {
-		dest.set(i960::notOp(src.get<Ordinal>()));
+		dest.set(src2.get<Ordinal>() | src1.get<Ordinal>());
 	}
 	void Core::ornot(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set(i960::orNot(src2.get<Ordinal>(), src1.get<Ordinal>()));
+		dest.set(src2.get<Ordinal>() | (~src1.get<Ordinal>()));
 	}
 	void Core::nand(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set(i960::nand(src2.get<Ordinal>(), src1.get<Ordinal>()));
+		auto s1 = src1.get<Ordinal>();
+		auto s2 = src2.get<Ordinal>();
+		// as shown in the manual
+		dest.set((~s2) | (~s1));
+	}
+	void Core::nor(__DEFAULT_THREE_ARGS__) noexcept {
+		auto s1 = src1.get<Ordinal>();
+		auto s2 = src2.get<Ordinal>();
+		dest.set((~s2) & (~s1));
 	}
 	void Core::shro(__DEFAULT_THREE_ARGS__) noexcept {
 		auto shift = src1.get<Ordinal>();
@@ -772,22 +811,10 @@ X(cmpi, bno);
 		dest.set<Ordinal>(tmp);
 	}
 	void Core::concmpo(__TWO_SOURCE_REGS__) noexcept {
-		if (_ac.conditionCodeBitSet<0b100>()) {
-			if (auto s1 = src1.get<Ordinal>(), s2 = src2.get<Ordinal>(); s1 <= s2) {
-				_ac.conditionCode = 0b010;
-			} else {
-				_ac.conditionCode = 0b001;
-			}
-		}
+		concmpBase<Ordinal>(src1, src2);
 	}
 	void Core::concmpi(__TWO_SOURCE_REGS__) noexcept {
-		if (_ac.conditionCodeBitSet<0b100>()) {
-			if (auto s1 = src1.get<Integer>(), s2 = src2.get<Integer>(); s1 <= s2) {
-				_ac.conditionCode = 0b010;
-			} else {
-				_ac.conditionCode = 0b001;
-			}
-		}
+		concmpBase<Integer>(src1, src2);
 	}
 	void Core::cmpinco(__DEFAULT_THREE_ARGS__) noexcept {
 		// TODO add support for overflow detection
@@ -813,10 +840,11 @@ X(cmpi, bno);
 	void Core::setbit(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set<Ordinal>(i960::setBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
 	}
-	void Core::emul(SourceRegister src1, SourceRegister src2, LongDestinationRegister dest) noexcept {
+	void Core::emul0(SourceRegister src1, SourceRegister src2, LongDestinationRegister dest) noexcept {
 		dest.set<LongOrdinal>(src2.get<LongOrdinal>() * src1.get<LongOrdinal>());
 	}
 	void Core::lda(SourceRegister src, DestinationRegister dest) noexcept {
+		// already computed this value by proxy of decoding
 		dest.move(src);
 	}
 	void Core::reset() {
@@ -874,15 +902,16 @@ X(cmpi, bno);
 		_pc.priority = 31;
 		_globalRegisters[15].set<Ordinal>(load(_prcbAddress + 24));
 	}
-	void Core::mark() noexcept {
-		if (_pc.traceEnabled() && _tc.traceMarked()) {
+	void Core::fmark() noexcept {
+		if (_pc.traceEnabled()) {
 			// TODO raise trace breakpoint fault
 		}
 	}
-	void Core::fmark() noexcept {
+	void Core::mark() noexcept {
 		// force mark aka generate a breakpoint trace-event
-		if (_pc.traceEnabled()) {
+		if (_pc.traceEnabled() && _tc.traceMarked()) {
 			// TODO raise trace breakpoint fault
+			// generateFault(TRACE.MARK);
 		}
 	}
     void Core::xnor(__DEFAULT_THREE_ARGS__) noexcept {
@@ -976,9 +1005,9 @@ X(cmpi, bno);
 		// do something!
 		// TODO something
 	}
-	void Core::eshro(__DEFAULT_THREE_ARGS__) noexcept { 
+	void Core::eshro0(SourceRegister src1, LongSourceRegister src2, DestinationRegister dest) noexcept { 
 		// extended shift right ordinal
-		
+		dest.set<Ordinal>(src2.get<LongOrdinal>() >> (src1.get<Ordinal>() & 0b11111));
 	}
 	void Core::icctl(__DEFAULT_THREE_ARGS__) noexcept { 
 		// TODO implement

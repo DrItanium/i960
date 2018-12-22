@@ -99,10 +99,31 @@ namespace i960 {
             __GEN_DEFAULT_THREE_ARG_SIGS__(cmpinco);
             void concmpi(SourceRegister src1, SourceRegister src2) noexcept;
             void concmpo(SourceRegister src1, SourceRegister src2) noexcept;
+			template<typename T>
+			void concmpBase(SourceRegister src1, SourceRegister src2) noexcept {
+				if (_ac.conditionCodeBitSet<0b100>()) {
+					if (auto s1 = src1.get<T>(), s2 = src2.get<T>(); s1 <= s2) {
+						_ac.conditionCode = 0b010;
+					} else {
+						_ac.conditionCode = 0b001;
+					}
+				}
+			}
             __GEN_DEFAULT_THREE_ARG_SIGS__(divo);
             __GEN_DEFAULT_THREE_ARG_SIGS__(divi);
-            void ediv(SourceRegister src1, LongSourceRegister src2, DestinationRegister remainder, DestinationRegister quotient) noexcept;
-            void emul(SourceRegister src1, SourceRegister src2, LongDestinationRegister dest) noexcept;
+            void ediv0(SourceRegister src1, LongSourceRegister src2, LongDestinationRegister destination) noexcept;
+			inline void ediv(SourceRegister src1, ByteOrdinal src2Ind, ByteOrdinal destInd) noexcept {
+				// TODO make sure that src2 and dest indicies are even
+				LongRegister src2(getRegister(src2Ind), getRegister(src2Ind + 1));
+				LongRegister dest(getRegister(destInd), getRegister(destInd + 1));
+				ediv0(src1, src2, dest);
+			}
+            void emul0(SourceRegister src1, SourceRegister src2, LongDestinationRegister dest) noexcept;
+			inline void emul(SourceRegister src1, SourceRegister src2, ByteOrdinal destIndex) noexcept {
+				// TODO perform double register validity check
+				DoubleRegister dest(getRegister(destIndex), getRegister(destIndex + 1));
+				emul0(src1, src2, dest);
+			}
             __GEN_DEFAULT_THREE_ARG_SIGS__(extract);
             void fill(SourceRegister dst, SourceRegister value, SourceRegister len) noexcept;
             void flushreg() noexcept;
@@ -246,6 +267,12 @@ namespace i960 {
 			void intdis();
 			void intctl(__DEFAULT_TWO_ARGS__);
 			__GEN_DEFAULT_THREE_ARG_SIGS__(icctl);
+			void eshro0(SourceRegister src1, LongSourceRegister src2, DestinationRegister dest) noexcept;
+			inline void eshro(SourceRegister src1, ByteOrdinal src2Ind, DestinationRegister dest) noexcept {
+				// TODO perform byte ordinal check to make sure it is even
+				DoubleRegister src2(getRegister(src2Ind), getRegister(src2Ind + 1));
+				eshro0(src1, src2, dest);
+			}
 			__GEN_DEFAULT_THREE_ARG_SIGS__(eshro);
 			__GEN_DEFAULT_THREE_ARG_SIGS__(dcctl);
 			void halt(SourceRegister src1);
