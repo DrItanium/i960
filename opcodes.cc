@@ -13,6 +13,7 @@ namespace i960::Opcode {
 #define cobr(name, code)  body(name, code)
 #define mem(name, code)  body(name, code)
 #define ctrl(name, code)  body(name, code)
+#include "opcodes.def"
 #undef reg
 #undef cobr
 #undef mem
