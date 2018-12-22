@@ -70,25 +70,43 @@ void testOverflowOfDisplacement() noexcept {
 	std::cout << "Combined value: " << (_base + converter._displacement) << std::endl;
 	std::cout << "Combined value is less: " << std::boolalpha << ((_base + converter._displacement) < _base) << std::endl;
 }
-void testInstructionEncoding(const i960::Instruction& test) noexcept {
+bool testInstructionEncoding(const i960::Instruction& test, const std::string& compareAgainst) noexcept {
 	std::cout << "test encoding: " << std::hex << test._raw << std::endl;
 	std::cout << "\tbase opcode: 0x" << std::hex << test.getOpcode() << std::endl;
 	std::cout << "\tencoded format for mema: " << std::hex << test._mem._mema._offset << std::endl;
 	if (auto description = i960::Opcode::getDescription(test.getOpcode()); description.isUndefined()) {
 		std::cout << "\tInstruction mnemonic: 'undefined'" << std::endl;
+		return false;
 	} else {
-		std::cout << "\tInstruction mnemonic: '" << description.getString() << "'" << std::endl;
+		std::string tmp(description.getString());
+		std::cout << "\tInstruction mnemonic: '" << tmp << "'" << std::endl;
+		return tmp == compareAgainst;
 	}
 }
 void testInstructionEncoding() {
 	using Instruction = i960::Instruction;
-	auto fn = [](i960::Ordinal opcode) {
+	auto fn = [](i960::Ordinal opcode, const std::string& compareAgainst) {
 		Instruction tmp(0);
-		tmp._raw = opcode << 24;
-		testInstructionEncoding(tmp);
+		if (opcode > 0xFF) {
+			auto upperOpcode = (0xFF0 & opcode) >> 4;
+			auto lowerOpcode = (0x00F & opcode) ;
+			tmp._reg._opcode = upperOpcode;
+			tmp._reg._opcode2 = lowerOpcode;
+		} else {
+			// non register kind
+			tmp._raw = opcode << 24;
+		}
+		return testInstructionEncoding(tmp, compareAgainst);
 	};
-#define X(name, code) fn(code);
-#define reg(name, code) 
+#define X(name, code) \
+	std::cout << "Decoding: " << #name << std::endl; \
+	if (fn(code, #name)) { \
+		std::cout << "Outcome: successful!" << std::endl; \
+	} else { \
+		std::cout << "Outcome: failed!" << std::endl; \
+		return; \
+	}
+#define reg(name, code) X(name, code);
 #define mem(name, code) X(name, code)
 #define cobr(name, code) X(name, code)
 #define ctrl(name, code) X(name, code)
@@ -98,13 +116,11 @@ void testInstructionEncoding() {
 #undef mem
 #undef cobr
 #undef ctrl
-
-	Instruction test(127);
 }
 int main() {
 	int errorCode = 0;
 	bootupMessage(std::cout);
-	testMemoryAllocation();
+	//testMemoryAllocation();
 	outputTypeInformation();
     testOverflowOfDisplacement();
 	testInstructionEncoding();
