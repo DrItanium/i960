@@ -383,6 +383,7 @@ namespace i960 {
             ByteOrdinal src1ToIntegerLiteral() const noexcept { return _source1; }
             ByteOrdinal src2ToIntegerLiteral() const noexcept { return _source2; }
         };
+		static_assert(sizeof(REGFormat) == sizeof(Ordinal), "RegFormat sizes is does not equal Ordinal's size!");
         struct COBRFormat {
             Ordinal _sfr : 1;
             Ordinal _bp : 1;

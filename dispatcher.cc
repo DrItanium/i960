@@ -54,9 +54,9 @@ namespace i960 {
 #define Y(kind, args) case Opcode:: kind : kind args ; break 
 #define Op3Arg(kind) Y(kind, (src1, src2, srcDest))
 #define Op2Arg(kind) Y(kind, (src1, srcDest))
-				Op2Arg(spanbit); Op2Arg(scanbit); Op2Arg(opnot);
-				Op2Arg(chkbit);  Op2Arg(mov);     Op2Arg(cmpo);
-				Op2Arg(cmpi);    Op2Arg(concmpo); Op2Arg(concmpi);
+				Op2Arg(spanbit); Op2Arg(scanbit);  Op2Arg(opnot);
+				Op2Arg(chkbit);  Op2Arg(mov);      Op2Arg(cmpo);
+				Op2Arg(cmpi);    Op2Arg(concmpo);  Op2Arg(concmpi);
 
 				Op3Arg(notbit);  Op3Arg(clrbit);   Op3Arg(notor);   Op3Arg(opand);
 				Op3Arg(andnot);  Op3Arg(setbit);   Op3Arg(notand);  Op3Arg(opxor);
@@ -68,13 +68,17 @@ namespace i960 {
 				Op3Arg(modpc);   Op3Arg(addo);     Op3Arg(addi);    Op3Arg(subo);
 				Op3Arg(subi);    Op3Arg(cmpinco);  Op3Arg(cmpinci); Op3Arg(cmpdeco);
 				Op3Arg(cmpdeci); Op3Arg(mulo);     Op3Arg(muli);    Op3Arg(remo);
-				Op3Arg(remi);    Op3Arg(divo);     Op3Arg(divi);
+				Op3Arg(remi);    Op3Arg(divo);     Op3Arg(divi);    Op3Arg(dcctl);
+
 
 				Y(scanbyte, (src1, src2));
 				Y(movl, (src1Ind, src2Ind));
 				Y(movt, (src1Ind, src2Ind));
 				Y(movq, (src1Ind, src2Ind));
 				Y(calls, (src1));
+				Y(eshro, (src1, src2Ind, srcDest));
+				Y(emul, (src1, src2, src3Ind));
+				Y(ediv, (src1, src2Ind, src3Ind));
 #define X(kind, __) \
 				Op3Arg(addo ## kind); \
 				Op3Arg(addi ## kind); \
