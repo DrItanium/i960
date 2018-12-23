@@ -535,7 +535,7 @@ X(cmpi, bno);
 		// modify process controls
 		auto maskVal = mask.get<Ordinal>();
 		if (maskVal != 0) {
-			if (_pc.executionMode == 0) {
+			if (_pc.inUserMode()) {
 				// TODO raise a type-mismatch fault
 				return;
 			}
@@ -928,9 +928,15 @@ X(cmpi, bno);
     }
 	void Core::intdis() {
 		// TODO implement
+		if (!_pc.inSupervisorMode) {
+			// generateFault(TYPE.MISMATCH);
+		}
 	}
 	void Core::inten() {
 		// TODO implement
+		if (!_pc.inSupervisorMode) {
+			// generateFault(TYPE.MISMATCH);
+		}
 	}
 
 	void Core::halt(SourceRegister src1) {
@@ -950,7 +956,9 @@ X(cmpi, bno);
 		// after the halt instruction. The processor must be in supervisor mode
 		// to use this instruction
 		syncf(); // implicit syncf
-		if (_pc.executionMode != 1) { /* In supervisor mode? */
+		if (!_pc.inSupervisorMode()) {
+			// generateFault(TYPE.MISMATCH);
+		} else {
 			switch (src1.get<Ordinal>()) {
 				case 0: // Disable interrupts. Clear ICON.gie
 					// globalInterruptEnable = false; 
@@ -961,7 +969,7 @@ X(cmpi, bno);
 				case 2: // use the current interrupt enable state.
 					break;
 				default:
-					// TODO generate an Operation.Invalid_Operand
+					// TODO generate an Operation.Invalid_Operand fault
 					break;
 			}
 		}
@@ -1004,6 +1012,9 @@ X(cmpi, bno);
 		// while I don't implement a data cache myself, this instruction must
 		// do something!
 		// TODO something
+		if (!_pc.inSupervisorMode) {
+			// generateFault(TYPE.MISMATCH);
+		}
 	}
 	void Core::eshro0(SourceRegister src1, LongSourceRegister src2, DestinationRegister dest) noexcept { 
 		// extended shift right ordinal
@@ -1011,12 +1022,21 @@ X(cmpi, bno);
 	}
 	void Core::icctl(__DEFAULT_THREE_ARGS__) noexcept { 
 		// TODO implement
+		if (!_pc.inSupervisorMode) {
+			// generateFault(TYPE.MISMATCH);
+		}
 	}
 	void Core::intctl(__DEFAULT_TWO_ARGS__) { 
 		// TODO: implement
+		if (!_pc.inSupervisorMode) {
+			// generateFault(TYPE.MISMATCH);
+		}
 	}
 	void Core::sysctl(__DEFAULT_THREE_ARGS__) noexcept { 
 		// TODO: implement
+		if (!_pc.inSupervisorMode) {
+			// generateFault(TYPE.MISMATCH);
+		}
 	}
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
