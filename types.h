@@ -230,39 +230,36 @@ namespace i960 {
         // are true or both are false.
 
 		template<Ordinal mask>
-		bool conditionCodeBitSet() const noexcept {
-			return (conditionCode & mask) == 0;
+		bool conditionCodeIs() const noexcept {
+			return conditionCode == mask;
 		}
-        bool conditionIsTrue() const noexcept {
-            return conditionCode == 0b010;
-        }
-        bool conditionIsFalse() const noexcept {
-            return conditionCode == 0b000;
-        }
-        bool conditionIsUnordered() const noexcept {
-            return conditionCode == 0b000;
-        }
-        bool conditionIsGreaterThan() const noexcept {
-            return conditionCode == 0b001;
-        }
-        bool conditionIsEqual() const noexcept {
-            return conditionCode == 0b010;
-        }
-        bool conditionIsGreaterThanOrEqual() const noexcept {
-            return conditionCode == 0b011;
-        }
-        bool conditionIsLessThan() const noexcept {
-            return conditionCode == 0b100;
-        }
-        bool conditionIsNotEqual() const noexcept {
-            return conditionCode == 0b101;
-        }
-        bool conditionIsLessThanOrEqual() const noexcept {
-            return conditionCode == 0b110;
-        }
-        bool conditionIsOrdered() const noexcept {
-            return conditionCode == 0b111;
-        }
+		template<Ordinal mask>
+		bool conditionCodeBitSet() const noexcept {
+			return (conditionCode & mask) != 0;
+		}
+#define X(title, mask) \
+		bool conditionIs ## title () const noexcept { \
+			return conditionCodeIs<0b010>(); \
+		}
+		X(True, 0b010);
+		X(False, 0b000);
+		X(Unordered, 0b000);
+		X(Greater, 0b001);
+		X(Equal, 0b010);
+		X(GreaterOrEqual, 0b011);
+		X(Less, 0b100);
+		X(NotEqual, 0b101);
+		X(LessOrEqual, 0b110);
+		X(Ordered, 0b111);
+#undef X
+		bool shouldCarryOut() const noexcept {
+			// 0b01X where X is don't care
+			return conditionCode == 0b010 || conditionCode == 0b011;
+		}
+		bool markedAsOverflow() const noexcept {
+			// 0b0X1 where X is don't care
+			return conditionCode == 0b001 || conditionCode == 0b011;
+		}
         Ordinal getConditionCode() const noexcept {
             return conditionCode;
         }
@@ -386,9 +383,9 @@ namespace i960 {
 	constexpr Operand operator"" _lreg(unsigned long long n) {
 		return Operand((n & 0b1111));
 	}
-	constexpr Operand r0 = 0_lreg;
-	constexpr Operand r1 = 1_lreg;
-	constexpr Operand r2 = 2_lreg;
+	constexpr Operand pfp = 0_lreg;
+	constexpr Operand sp = 1_lreg;
+	constexpr Operand rip = 2_lreg;
 	constexpr Operand r3 = 3_lreg;
 	constexpr Operand r4 = 4_lreg;
 	constexpr Operand r5 = 5_lreg;
@@ -418,10 +415,11 @@ namespace i960 {
 	constexpr Operand g13 = 13_greg;
 	constexpr Operand g14 = 14_greg;
 	constexpr Operand g15 = 15_greg;
+	constexpr Operand fp = 15_greg;
     union Instruction {
         struct REGFormat {
             Ordinal _source1 : 5;
-            Ordinal _sfr : 2;
+            Ordinal _unused : 2;
             Ordinal _opcode2 : 4;
             Ordinal _m1 : 1;
             Ordinal _m2 : 1;
@@ -448,23 +446,32 @@ namespace i960 {
 				_source2 = operand.getValue();
 				_m2 = operand.isLiteral() ? 1 : 0;
 			}
+			void encodeSrcDest(const Operand& operand) noexcept {
+				_src_dest = operand.getValue();
+				_m3 = operand.isLiteral() ? 1 : 0;
+			}
         };
 		static_assert(sizeof(REGFormat) == sizeof(Ordinal), "RegFormat sizes is does not equal Ordinal's size!");
         struct COBRFormat {
-            Ordinal _sfr : 1;
-            Ordinal _bp : 1;
+			Ordinal _unused : 2;
             Ordinal _displacement : 11;
             Ordinal _m1 : 1;
             Ordinal _source2 : 5; 
             Ordinal _source1 : 5;
             Ordinal _opcode : 8;
             auto src1IsLiteral() const noexcept { return _m1 != 0; }
+			void encodeSrc1(const Operand& operand) noexcept {
+				_source1 = operand.getValue();
+				_m1 = operand.isLiteral() ? 1 : 0;
+			}
         };
         struct CTRLFormat {
-            Ordinal _sfr : 1;
-            Ordinal _bp : 1;
+			Ordinal _unused : 2;
             Ordinal _displacement : 22;
             Ordinal _opcode : 8;
+			void encodeDisplacement(Ordinal value) noexcept {
+				_displacement = value;
+			}
         };
         union MemFormat {
             struct MEMAFormat {
@@ -497,7 +504,7 @@ namespace i960 {
                     Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement = 0b1111,
                 };
                 Ordinal _index : 5;
-                Ordinal _sfr : 2;
+                Ordinal _unused : 2;
                 Ordinal _scale : 3;
                 Ordinal _mode : 4;
                 Ordinal _abase : 5;
@@ -677,5 +684,24 @@ namespace i960 {
         Ordinal systemErrorFaultRecord[11];
     } __attribute__((packed));
 
+	// memory map
+	namespace MemoryMap {
+		// internal data ram 1 kbyte is mapped into the memory space
+		constexpr Ordinal NMIVector = 0x0000'0000;
+		constexpr Ordinal OptionalInterruptVectorsBegin = 0x0000'0004;
+		constexpr Ordinal OptionalInterruptVectorsEnd = 0x0000'003F;
+		constexpr Ordinal DataCacheUnreservedStart = 0x0000'0040;
+		constexpr Ordinal DataCacheUnreservedEnd = 0x0000'03FF;
+		// internal data cache end
+		// normal memory begin
+		constexpr Ordinal ExternalUnusedMemoryBegin = 0x0000'0400;
+		constexpr Ordinal ExternalUnusedMemoryEnd = 0xFEFF'FF2F;
+		constexpr Ordinal InitializationBootRecordBegin = 0xFEFF'FF30;
+		constexpr Ordinal InitializationBootRecordEnd = 0xFEFF'FF5F;
+		constexpr Ordinal ReservedMemoryBegin = 0xFEFF'FF60;
+		constexpr Ordinal ReservedMemoryEnd = 0xFEFF'FFFF;
+		constexpr Ordinal MemoryMappedRegisterSpaceBegin = 0xFF00'0000;
+		constexpr Ordinal MemoryMappedRegisterSpaceEnd = 0xFFFF'FFFF;
+	} // end namespace MemoryMap
 } // end namespace i960
 #endif // end I960_TYPES_H__
