@@ -390,6 +390,8 @@ namespace i960 {
 			Ordinal _initialWords[8];
 			Ordinal _prcbAddress;
 			Ordinal _systemProcedureTableAddress;
+			// the first 1024 bytes of ram is a internal data ram cache
+			// which can be read from and written to but not executed from
     };
 
 }

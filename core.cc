@@ -928,13 +928,13 @@ X(cmpi, bno);
     }
 	void Core::intdis() {
 		// TODO implement
-		if (!_pc.inSupervisorMode) {
+		if (!_pc.inSupervisorMode()) {
 			// generateFault(TYPE.MISMATCH);
 		}
 	}
 	void Core::inten() {
 		// TODO implement
-		if (!_pc.inSupervisorMode) {
+		if (!_pc.inSupervisorMode()) {
 			// generateFault(TYPE.MISMATCH);
 		}
 	}
@@ -1012,7 +1012,7 @@ X(cmpi, bno);
 		// while I don't implement a data cache myself, this instruction must
 		// do something!
 		// TODO something
-		if (!_pc.inSupervisorMode) {
+		if (!_pc.inSupervisorMode()) {
 			// generateFault(TYPE.MISMATCH);
 		}
 	}
@@ -1022,19 +1022,19 @@ X(cmpi, bno);
 	}
 	void Core::icctl(__DEFAULT_THREE_ARGS__) noexcept { 
 		// TODO implement
-		if (!_pc.inSupervisorMode) {
+		if (!_pc.inSupervisorMode()) {
 			// generateFault(TYPE.MISMATCH);
 		}
 	}
 	void Core::intctl(__DEFAULT_TWO_ARGS__) { 
 		// TODO: implement
-		if (!_pc.inSupervisorMode) {
+		if (!_pc.inSupervisorMode()) {
 			// generateFault(TYPE.MISMATCH);
 		}
 	}
 	void Core::sysctl(__DEFAULT_THREE_ARGS__) noexcept { 
 		// TODO: implement
-		if (!_pc.inSupervisorMode) {
+		if (!_pc.inSupervisorMode()) {
 			// generateFault(TYPE.MISMATCH);
 		}
 	}

@@ -724,5 +724,21 @@ namespace i960 {
 		constexpr Ordinal MemoryMappedRegisterSpaceBegin = 0xFF00'0000;
 		constexpr Ordinal MemoryMappedRegisterSpaceEnd = 0xFFFF'FFFF;
 	} // end namespace MemoryMap
+
+	/**
+	 * A block of 1024 bytes which is readable and writable but not
+	 * executable. It is embedded within the processor itself and generates
+	 * no external buss activity is generated when accessed.
+	 */
+	struct InternalDataRam {
+		public:
+			constexpr static Ordinal TotalByteCapacity = 1024;
+			// first 64 bytes are reserved for optional interrupt vectors and the nmi vector
+			constexpr static Ordinal TotalReservedBytes = 64;
+			constexpr static Ordinal TotalUnreservedBytes  = TotalByteCapacity - TotalReservedBytes;
+			constexpr static Ordinal TotalWordCapacity = TotalByteCapacity / sizeof(Ordinal);
+			constexpr static Ordinal TotalReservedWords = TotalReservedBytes / sizeof(Ordinal);
+			constexpr static Ordinal TotalUnreservedWords = TotalUnreservedBytes / sizeof(Ordinal);
+	};
 } // end namespace i960
 #endif // end I960_TYPES_H__
