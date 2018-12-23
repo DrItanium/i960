@@ -730,15 +730,35 @@ namespace i960 {
 	 * executable. It is embedded within the processor itself and generates
 	 * no external buss activity is generated when accessed.
 	 */
+	template<Ordinal numBytes = 1024>
 	struct InternalDataRam {
 		public:
-			constexpr static Ordinal TotalByteCapacity = 1024;
 			// first 64 bytes are reserved for optional interrupt vectors and the nmi vector
+			constexpr static Ordinal MinimumSize = 4;
 			constexpr static Ordinal TotalReservedBytes = 64;
+			constexpr static Ordinal TotalByteCapacity = numBytes;
+			static_assert(numBytes >= MinimumSize, "InternalDataRam must be at least 4 bytes in size");
 			constexpr static Ordinal TotalUnreservedBytes  = TotalByteCapacity - TotalReservedBytes;
 			constexpr static Ordinal TotalWordCapacity = TotalByteCapacity / sizeof(Ordinal);
 			constexpr static Ordinal TotalReservedWords = TotalReservedBytes / sizeof(Ordinal);
 			constexpr static Ordinal TotalUnreservedWords = TotalUnreservedBytes / sizeof(Ordinal);
+		public:
+			InternalDataRam() = default;
+			~InternalDataRam() = default;
+			void initialize() noexcept;
+			void write(Ordinal address, Ordinal value) noexcept;
+			Ordinal read(Ordinal address) const noexcept;
+			constexpr Ordinal totalByteCapacity() const noexcept { return TotalByteCapacity; }
+		private:
+			Ordinal _nmiVector;
+			Ordinal _optionalInterrupts[TotalReservedWords - 1];
+			Ordinal _unreservedValues[TotalUnreservedWords];
+	} __attribute__((packed));
+	using JxCPUInternalDataRam = InternalDataRam<1024>;
+	static_assert(sizeof(JxCPUInternalDataRam) == JxCPUInternalDataRam::TotalByteCapacity, "InternalDataRam is larger than its storage footprint!");
+
+	struct LocalRegisterCache {
+
 	};
 } // end namespace i960
 #endif // end I960_TYPES_H__
