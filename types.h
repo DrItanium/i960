@@ -730,7 +730,7 @@ namespace i960 {
 	 * executable. It is embedded within the processor itself and generates
 	 * no external buss activity is generated when accessed.
 	 */
-	template<Ordinal numBytes = 1024>
+	template<Ordinal numBytes>
 	struct InternalDataRam {
 		public:
 			// first 64 bytes are reserved for optional interrupt vectors and the nmi vector
@@ -757,8 +757,5 @@ namespace i960 {
 	using JxCPUInternalDataRam = InternalDataRam<1024>;
 	static_assert(sizeof(JxCPUInternalDataRam) == JxCPUInternalDataRam::TotalByteCapacity, "InternalDataRam is larger than its storage footprint!");
 
-	struct LocalRegisterCache {
-
-	};
 } // end namespace i960
 #endif // end I960_TYPES_H__
