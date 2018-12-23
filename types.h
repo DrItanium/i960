@@ -283,11 +283,32 @@ namespace i960 {
             Ordinal state : 1;
             Ordinal unused2 : 2;
             Ordinal priority : 5;
-            Ordinal internalState : 11;
+            Ordinal unused3 : 11;
         };
         Ordinal value;
 		bool traceEnabled() const noexcept {
 			return traceEnable != 0;
+		}
+		bool inUserMode() const noexcept {
+			return executionMode == 0;
+		}
+		bool inSupervisorMode() const noexcept {
+			return executionMode != 0;
+		}
+		bool traceFaultIsPending() const noexcept {
+			return traceFaultPending != 0;
+		}
+		bool traceFaultIsNotPending() const noexcept {
+			return traceFaultPending == 0;
+		}
+		bool isExecuting() const noexcept {
+			return state == 0;
+		}
+		bool isInterrupted() const noexcept {
+			return state != 0;
+		}
+		Ordinal getProcessPriority() const noexcept {
+			return priority;
 		}
     } __attribute__((packed));
 
