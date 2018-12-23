@@ -162,10 +162,18 @@ X(cmpi, bno);
 	}
 
 	Ordinal Core::load(Ordinal address, bool atomic) noexcept {
-		return _mem.load(address, atomic);
+		if (address <= _internalDataRam.LargestAddress<0>) {
+			return _internalDataRam.read(address & (~0b11));
+		} else {
+			return _mem.load(address, atomic);
+		}
 	}
 	void Core::store(Ordinal address, Ordinal value, bool atomic) noexcept {
-		_mem.store(address, value, atomic);
+		if (address <= _internalDataRam.LargestAddress<0>) {
+			_internalDataRam.write(address & (~0b11), value);
+		} else {
+			_mem.store(address, value, atomic);
+		}
 	}
 	NormalRegister& Core::getRegister(ByteOrdinal index) noexcept {
 		if (auto offset = (index & 0b01111) ; (index & 0b10000) == 0) {
@@ -848,6 +856,8 @@ X(cmpi, bno);
 		dest.move(src);
 	}
 	void Core::reset() {
+		// clear out the internal data ram
+		_internalDataRam.reset();
 		/* Taken from the 80960MC manual on how initialization works:
 		 *
 		 * 1. Assert the FAILURE output pin and perform the internal self-test.
@@ -862,10 +872,10 @@ X(cmpi, bno);
 		 * processor, continue with the step below; otherwise enter the stopped
 		 * state.
 		 */
-		_tc.value = 0;
+		_tc.clear();
 		// disable the breakpoint registers
-		_pc.value = 0;
-		_pc.executionMode = 1; // supervisor mode
+		_pc.clear();
+		_pc.enterSupervisorMode();
 		// assume that we are the initialization processor for now
 		/*
 		 * 3. Read eight words from memory, beginning at location 0. Clear the
@@ -874,7 +884,7 @@ X(cmpi, bno);
 		 * the sum is 0, continue with the step below; otherwise assert the
 		 * FAILURE pin and enter the stopped state.
 		 */
-		_ac.conditionCode = 0;
+		_ac.clear();
 		auto& dest = _globalRegisters[10];
 		dest.set<Ordinal>(0);
 		auto& src = _globalRegisters[11];
