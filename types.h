@@ -359,7 +359,65 @@ namespace i960 {
         LessOrEqual = 0b110,
         Ordered = 0b111,
     };
-
+	/**
+	 * Describes a register or literal in a single type. Internally
+	 * the operand is a 6 bit number where bits [0,4] represent the value
+	 * with the uppermost bit (bit 5) denoting if it is a literal or register
+	 * reference.
+	 */
+	struct Operand final {
+		public:
+			static constexpr Ordinal encodingMask = 0b111111; 
+			static constexpr Ordinal typeMask = 0b100000;
+			static constexpr Ordinal valueMask = 0b011111;
+			constexpr Operand(Ordinal rawValue) : _raw(rawValue & encodingMask) { }
+			constexpr bool isLiteral() const noexcept { return (_raw & typeMask) != 0; }
+			constexpr bool isRegister() const noexcept { return (_raw & typeMask) == 0; }
+			constexpr Ordinal getValue() const noexcept { return (_raw & valueMask); }
+		private:
+			Ordinal _raw;
+	};
+	constexpr Operand operator"" _lit(unsigned long long n) {
+		return Operand((Operand::valueMask & Ordinal(n) + Operand::typeMask));
+	}
+	constexpr Operand operator"" _greg(unsigned long long n) {
+		return Operand((n & 0b1111) + 0b10000);
+	}
+	constexpr Operand operator"" _lreg(unsigned long long n) {
+		return Operand((n & 0b1111));
+	}
+	constexpr Operand r0 = 0_lreg;
+	constexpr Operand r1 = 1_lreg;
+	constexpr Operand r2 = 2_lreg;
+	constexpr Operand r3 = 3_lreg;
+	constexpr Operand r4 = 4_lreg;
+	constexpr Operand r5 = 5_lreg;
+	constexpr Operand r6 = 6_lreg;
+	constexpr Operand r7 = 7_lreg;
+	constexpr Operand r8 = 8_lreg;
+	constexpr Operand r9 = 9_lreg;
+	constexpr Operand r10 = 10_lreg;
+	constexpr Operand r11 = 11_lreg;
+	constexpr Operand r12 = 12_lreg;
+	constexpr Operand r13 = 13_lreg;
+	constexpr Operand r14 = 14_lreg;
+	constexpr Operand r15 = 15_lreg;
+	constexpr Operand g0 = 0_greg;
+	constexpr Operand g1 = 1_greg;
+	constexpr Operand g2 = 2_greg;
+	constexpr Operand g3 = 3_greg;
+	constexpr Operand g4 = 4_greg;
+	constexpr Operand g5 = 5_greg;
+	constexpr Operand g6 = 6_greg;
+	constexpr Operand g7 = 7_greg;
+	constexpr Operand g8 = 8_greg;
+	constexpr Operand g9 = 9_greg;
+	constexpr Operand g10 = 10_greg;
+	constexpr Operand g11 = 11_greg;
+	constexpr Operand g12 = 12_greg;
+	constexpr Operand g13 = 13_greg;
+	constexpr Operand g14 = 14_greg;
+	constexpr Operand g15 = 15_greg;
     union Instruction {
         struct REGFormat {
             Ordinal _source1 : 5;
@@ -382,6 +440,14 @@ namespace i960 {
             bool srcDestIsLiteral() const noexcept { return _m3 != 0; }
             ByteOrdinal src1ToIntegerLiteral() const noexcept { return _source1; }
             ByteOrdinal src2ToIntegerLiteral() const noexcept { return _source2; }
+			void encodeSrc1(const Operand& operand) noexcept {
+				_source1 = operand.getValue();
+				_m1 = operand.isLiteral() ? 1 : 0;
+			}
+			void encodeSrc2(const Operand& operand) noexcept {
+				_source2 = operand.getValue();
+				_m2 = operand.isLiteral() ? 1 : 0;
+			}
         };
 		static_assert(sizeof(REGFormat) == sizeof(Ordinal), "RegFormat sizes is does not equal Ordinal's size!");
         struct COBRFormat {
