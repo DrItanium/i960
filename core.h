@@ -82,16 +82,6 @@ namespace i960 {
             __GEN_DEFAULT_THREE_ARG_SIGS__(cmpinco);
             void concmpi(SourceRegister src1, SourceRegister src2) noexcept;
             void concmpo(SourceRegister src1, SourceRegister src2) noexcept;
-			template<typename T>
-			void concmpBase(SourceRegister src1, SourceRegister src2) noexcept {
-				if (_ac.conditionCodeBitSet<0b100>()) {
-					if (auto s1 = src1.get<T>(), s2 = src2.get<T>(); s1 <= s2) {
-						_ac.conditionCode = 0b010;
-					} else {
-						_ac.conditionCode = 0b001;
-					}
-				}
-			}
             __GEN_DEFAULT_THREE_ARG_SIGS__(divo);
             __GEN_DEFAULT_THREE_ARG_SIGS__(divi);
 			void ediv(SourceRegister src1, ByteOrdinal src2Ind, ByteOrdinal destInd) noexcept;
@@ -116,33 +106,9 @@ namespace i960 {
             __GEN_DEFAULT_THREE_ARG_SIGS__(modpc);
             __GEN_DEFAULT_THREE_ARG_SIGS__(modtc);
             void mov(__DEFAULT_TWO_ARGS__) noexcept;
-            void movl0(LongSourceRegister src, LongDestinationRegister dest) noexcept;
-            void movt0(const TripleRegister& src, TripleRegister& dest) noexcept;
-            void movq0(const QuadRegister& src, QuadRegister& dest) noexcept;
-            inline void movl(ByteOrdinal src, ByteOrdinal dest) noexcept {
-				// TODO make sure that the src and dest indicies make sense
-				LongRegister s = makeLongRegister(src);
-				LongRegister d = makeLongRegister(dest);
-                //LongRegister s(getRegister(src), getRegister(src + 1));
-                //LongRegister d(getRegister(dest), getRegister(dest + 1));
-                movl0(s, d);
-            }
-            inline void movt(ByteOrdinal src, ByteOrdinal dest) noexcept {
-				// TODO make sure that the src and dest indicies make sense
-                //TripleRegister s(getRegister(src), getRegister(src + 1), getRegister(src + 2));
-                //TripleRegister d(getRegister(dest), getRegister(dest + 1), getRegister(dest + 2));
-				TripleRegister s = makeTripleRegister(src);
-				TripleRegister d = makeTripleRegister(dest);
-                movt0(s, d);
-            }
-            inline void movq(ByteOrdinal src, ByteOrdinal dest) noexcept {
-				// TODO make sure that the src and dest indicies make sense
-                //QuadRegister s(getRegister(src), getRegister(src + 1), getRegister(src + 2), getRegister(src + 3));
-                //QuadRegister d(getRegister(dest), getRegister(dest + 1), getRegister(dest + 2), getRegister(dest + 3));
-				QuadRegister s = makeQuadRegister(src);
-				QuadRegister d = makeQuadRegister(dest);
-                movq0(s, d);
-            }
+            void movl(ByteOrdinal src, ByteOrdinal dest) noexcept;
+            void movt(ByteOrdinal src, ByteOrdinal dest) noexcept;
+            void movq(ByteOrdinal src, ByteOrdinal dest) noexcept;
             __GEN_DEFAULT_THREE_ARG_SIGS__(mulo);
             __GEN_DEFAULT_THREE_ARG_SIGS__(muli);
             __GEN_DEFAULT_THREE_ARG_SIGS__(nand);
@@ -172,41 +138,42 @@ namespace i960 {
             void stos(__TWO_SOURCE_REGS__) noexcept;
             void stib(__TWO_SOURCE_REGS__) noexcept;
             void stis(__TWO_SOURCE_REGS__) noexcept;
-            void stl0(LongSourceRegister src, SourceRegister dest) noexcept;
-			inline void stl(Ordinal ind, SourceRegister dest) noexcept {
-				LongRegister reg(getRegister(ind), getRegister(ind + 1));
-				stl0(reg, dest);
-			}
-            void stt0(const TripleRegister& src, SourceRegister dest) noexcept;
-            inline void stt(Ordinal ind, SourceRegister dest) noexcept {
-				// TODO perform fault checks
-				TripleRegister reg = makeTripleRegister(ind);
-				//TripleRegister reg(getRegister(ind), getRegister(ind + 1), getRegister(ind + 2));
-				stt0(reg, dest);
-			}
-
-            void stq0(const QuadRegister& src, SourceRegister dest) noexcept;
-            inline void stq(Ordinal ind, SourceRegister dest) noexcept {
-				QuadRegister reg = makeQuadRegister(ind);
-				stq0(reg, dest);
-			}
+			void stl(Ordinal ind, SourceRegister dest) noexcept;
+            void stt(Ordinal ind, SourceRegister dest) noexcept;
+            void stq(Ordinal ind, SourceRegister dest) noexcept;
             __GEN_DEFAULT_THREE_ARG_SIGS__(subc); 
             __GEN_DEFAULT_THREE_ARG_SIGS__(subo);
             __GEN_DEFAULT_THREE_ARG_SIGS__(subi);
             void syncf() noexcept;
             __GEN_DEFAULT_THREE_ARG_SIGS__(xnor);
             __GEN_DEFAULT_THREE_ARG_SIGS__(opxor);
-            // end core architecture
-            template<typename T>
-            void compare(T src1, T src2) noexcept {
-                if (src1 < src2) {
-                    _ac.conditionCode = 0b100;
-                } else if (src1 == src2) {
-                    _ac.conditionCode = 0b010;
-                } else {
-                    _ac.conditionCode = 0b001;
-                }
-            }
+			__GEN_DEFAULT_THREE_ARG_SIGS__(sysctl);
+			void inten();
+			void intdis();
+			void intctl(__DEFAULT_TWO_ARGS__);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(icctl);
+			void eshro(SourceRegister src1, ByteOrdinal src2Ind, DestinationRegister dest) noexcept;
+			__GEN_DEFAULT_THREE_ARG_SIGS__(eshro);
+			__GEN_DEFAULT_THREE_ARG_SIGS__(dcctl);
+			void halt(SourceRegister src1);
+            void cmpos(SourceRegister src1, SourceRegister src2) noexcept;
+            void cmpis(SourceRegister src1, SourceRegister src2) noexcept;
+            void cmpob(SourceRegister src1, SourceRegister src2) noexcept;
+            void cmpib(SourceRegister src1, SourceRegister src2) noexcept;
+			void bswap(SourceRegister src1, DestinationRegister src2) noexcept;
+			void baseSelect(bool condition, __DEFAULT_THREE_ARGS__) noexcept;
+		private:
+			// templated bodies
+			template<typename T>
+			void concmpBase(SourceRegister src1, SourceRegister src2) noexcept {
+				if (_ac.conditionCodeBitSet<0b100>()) {
+					if (auto s1 = src1.get<T>(), s2 = src2.get<T>(); s1 <= s2) {
+						_ac.conditionCode = 0b010;
+					} else {
+						_ac.conditionCode = 0b001;
+					}
+				}
+			}
             template<TestTypes t>
             void testGeneric(DestinationRegister dest) noexcept {
                 dest.set<Ordinal>((_ac.conditionCode & (Ordinal(t))) != 0 ? 1 : 0);
@@ -227,27 +194,16 @@ namespace i960 {
                     }
                 }
             }
-			__GEN_DEFAULT_THREE_ARG_SIGS__(sysctl);
-			void inten();
-			void intdis();
-			void intctl(__DEFAULT_TWO_ARGS__);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(icctl);
-			void eshro0(SourceRegister src1, LongSourceRegister src2, DestinationRegister dest) noexcept;
-			inline void eshro(SourceRegister src1, ByteOrdinal src2Ind, DestinationRegister dest) noexcept {
-				// TODO perform byte ordinal check to make sure it is even
-				//LongRegister src2(getRegister(src2Ind), getRegister(src2Ind + 1));
-				LongRegister src2 = makeLongRegister(src2Ind);
-				eshro0(src1, src2, dest);
-			}
-			__GEN_DEFAULT_THREE_ARG_SIGS__(eshro);
-			__GEN_DEFAULT_THREE_ARG_SIGS__(dcctl);
-			void halt(SourceRegister src1);
-            void cmpos(SourceRegister src1, SourceRegister src2) noexcept;
-            void cmpis(SourceRegister src1, SourceRegister src2) noexcept;
-            void cmpob(SourceRegister src1, SourceRegister src2) noexcept;
-            void cmpib(SourceRegister src1, SourceRegister src2) noexcept;
-			void bswap(SourceRegister src1, DestinationRegister src2) noexcept;
-			void baseSelect(bool condition, __DEFAULT_THREE_ARGS__) noexcept;
+            template<typename T>
+            void compare(T src1, T src2) noexcept {
+                if (src1 < src2) {
+                    _ac.conditionCode = 0b100;
+                } else if (src1 == src2) {
+                    _ac.conditionCode = 0b010;
+                } else {
+                    _ac.conditionCode = 0b001;
+                }
+            }
 			template<Ordinal mask>
 			void baseSelect(__DEFAULT_THREE_ARGS__) noexcept {
 				if (((mask & _ac.conditionCode) != 0) || (mask == _ac.conditionCode)) {

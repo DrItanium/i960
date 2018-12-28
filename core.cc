@@ -267,21 +267,36 @@ X(cmpi, bno);
 	}
 
 	template<typename T>
-		void move(const T& src, T& dest) noexcept {
-			dest.move(src);
-		}
+	void move(const T& src, T& dest) noexcept {
+		dest.move(src);
+	}
 
 	void Core::mov(SourceRegister src, DestinationRegister dest) noexcept { 
 		move(src, dest);
 	}
-	void Core::movl0(LongSourceRegister src, LongDestinationRegister dest) noexcept { 
-		move(src, dest);
+	void Core::movl(ByteOrdinal src, ByteOrdinal dest) noexcept {
+		// TODO make sure that the src and dest indicies make sense
+		LongRegister s = makeLongRegister(src);
+		LongRegister d = makeLongRegister(dest);
+		//LongRegister s(getRegister(src), getRegister(src + 1));
+		//LongRegister d(getRegister(dest), getRegister(dest + 1));
+		move(s, d);
 	}
-	void Core::movt0(const TripleRegister& src, TripleRegister& dest) noexcept { 
-		move(src, dest);
+	void Core::movt(ByteOrdinal src, ByteOrdinal dest) noexcept {
+		// TODO make sure that the src and dest indicies make sense
+		//TripleRegister s(getRegister(src), getRegister(src + 1), getRegister(src + 2));
+		//TripleRegister d(getRegister(dest), getRegister(dest + 1), getRegister(dest + 2));
+		TripleRegister s = makeTripleRegister(src);
+		TripleRegister d = makeTripleRegister(dest);
+		move(s, d);
 	}
-	void Core::movq0(const QuadRegister& src, QuadRegister& dest) noexcept {
-		move(src, dest);
+	void Core::movq(ByteOrdinal src, ByteOrdinal dest) noexcept {
+		// TODO make sure that the src and dest indicies make sense
+		//QuadRegister s(getRegister(src), getRegister(src + 1), getRegister(src + 2), getRegister(src + 3));
+		//QuadRegister d(getRegister(dest), getRegister(dest + 1), getRegister(dest + 2), getRegister(dest + 3));
+		QuadRegister s = makeQuadRegister(src);
+		QuadRegister d = makeQuadRegister(dest);
+		move(s, d);
 	}
 
 	void Core::b(Integer displacement) noexcept {
@@ -503,17 +518,24 @@ X(cmpi, bno);
 			dest.set(numerator - (denominator / numerator) * denominator);
 		}
 	}
-	void Core::stl0(LongSourceRegister src, SourceRegister dest) noexcept {
+	void Core::stl(Ordinal ind, SourceRegister dest) noexcept {
+		// TODO check for valid register
+		LongRegister src = makeLongRegister(ind);
 		store(dest.get<Ordinal>(), src.getLowerHalf());
 		store(dest.get<Ordinal>() + sizeof(Ordinal), src.getUpperHalf());
 	}
-	void Core::stt0(const TripleRegister& src, SourceRegister dest) noexcept {
+
+	void Core::stt(Ordinal ind, SourceRegister dest) noexcept {
+		// TODO perform fault checks
+		TripleRegister src = makeTripleRegister(ind);
 		auto addr = dest.get<Ordinal>();
 		store(addr, src.getLowerPart());
 		store(addr + sizeof(Ordinal), src.getMiddlePart());
 		store(addr + (2 * sizeof(Ordinal)), src.getUpperPart());
 	}
-	void Core::stq0(const QuadRegister& src, SourceRegister dest) noexcept {
+
+	void Core::stq(Ordinal ind, SourceRegister dest) noexcept {
+		QuadRegister src = makeQuadRegister(ind);
 		auto addr = dest.get<Ordinal>();
 		store(addr, src.getLowestPart());
 		store(addr + sizeof(Ordinal), src.getLowerPart());
@@ -1035,8 +1057,10 @@ X(cmpi, bno);
 			// generateFault(TYPE.MISMATCH);
 		}
 	}
-	void Core::eshro0(SourceRegister src1, LongSourceRegister src2, DestinationRegister dest) noexcept { 
-		// extended shift right ordinal
+	void Core::eshro(SourceRegister src1, ByteOrdinal src2Ind, DestinationRegister dest) noexcept {
+		// TODO perform byte ordinal check to make sure it is even
+		//LongRegister src2(getRegister(src2Ind), getRegister(src2Ind + 1));
+		LongRegister src2 = makeLongRegister(src2Ind);
 		dest.set<Ordinal>(src2.get<LongOrdinal>() >> (src1.get<Ordinal>() & 0b11111));
 	}
 	void Core::icctl(__DEFAULT_THREE_ARGS__) noexcept { 
