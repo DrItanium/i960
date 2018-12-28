@@ -34,24 +34,24 @@ namespace i960 {
 			}
 		} else if (desc.isReg()) {
 			auto reg = inst._reg;
+			auto opSrc1 = reg.decodeSrc1();
+			auto opSrc2 = reg.decodeSrc2();
+			auto opSrcDest = reg.decodeSrcDest();
 			NormalRegister imm1;
 			NormalRegister imm2;
 			NormalRegister imm3;
-			auto src1Ind = reg._source1;
-			auto src2Ind = reg._source2;
-			auto src3Ind = reg._src_dest;
-			NormalRegister& src1 = reg.src1IsLiteral() ? imm1 : getRegister(src1Ind);
-			if (reg.src1IsLiteral()) {
-				imm1.set(reg.src1ToIntegerLiteral());
+			NormalRegister& src1 = opSrc1.isLiteral() ? imm1 : getRegister(opSrc1);
+			if (opSrc1.isLiteral()) {
+				imm1.set(opSrc1.getValue());
 			}
-			NormalRegister& src2 = reg.src2IsLiteral() ? imm2 : getRegister(src2Ind);
-			if (reg.src2IsLiteral()) {
-				imm2.set(reg.src2ToIntegerLiteral());
+			NormalRegister& src2 = opSrc2.isLiteral() ? imm2 : getRegister(opSrc2);
+			if (opSrc2.isLiteral()) {
+				imm2.set(opSrc2.getValue());
 			}
 			// TODO It is impossible for m3 to be set when srcDest is used as a dest, error out before hand
-			NormalRegister& srcDest = reg.srcDestIsLiteral() ? imm3 : getRegister(src3Ind);
-			if (reg.srcDestIsLiteral()) {
-				imm3.set(reg.srcDestToIntegerLiteral());
+			NormalRegister& srcDest = opSrcDest.isLiteral() ? imm3 : getRegister(opSrcDest);
+			if (opSrcDest.isLiteral()) {
+				imm3.set(opSrcDest.getValue());
 			}
 			switch(desc) {
 #define Y(kind, args) case Opcode:: kind : kind args ; break 
@@ -75,13 +75,13 @@ namespace i960 {
 
 
 				Y(scanbyte, (src1, src2));
-				Y(movl, (src1Ind, src2Ind));
-				Y(movt, (src1Ind, src2Ind));
-				Y(movq, (src1Ind, src2Ind));
+				Y(movl, (opSrc1, opSrc2));
+				Y(movt, (opSrc1, opSrc2));
+				Y(movq, (opSrc1, opSrc2));
 				Y(calls, (src1));
-				Y(eshro, (src1, src2Ind, srcDest));
-				Y(emul, (src1, src2, src3Ind));
-				Y(ediv, (src1, src2Ind, src3Ind));
+				Y(eshro, (src1, opSrc2, srcDest));
+				Y(emul, (src1, src2, opSrcDest));
+				Y(ediv, (src1, opSrc2, opSrcDest));
 #define X(kind, __) \
 				Op3Arg(addo ## kind); \
 				Op3Arg(addi ## kind); \

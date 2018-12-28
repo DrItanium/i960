@@ -403,10 +403,14 @@ namespace i960 {
 			static constexpr Ordinal encodingMask = 0b111111; 
 			static constexpr Ordinal typeMask = 0b100000;
 			static constexpr Ordinal valueMask = 0b011111;
+			static constexpr Ordinal typeInputMask = 0b1;
+			static constexpr Ordinal typeShiftAmount = 5;
 			constexpr Operand(Ordinal rawValue) : _raw(rawValue & encodingMask) { }
+			constexpr Operand(Ordinal type, Ordinal value) : Operand(((type & typeInputMask) << typeShiftAmount) | (value & valueMask)) { }
 			constexpr bool isLiteral() const noexcept { return (_raw & typeMask) != 0; }
 			constexpr bool isRegister() const noexcept { return (_raw & typeMask) == 0; }
 			constexpr Ordinal getValue() const noexcept { return (_raw & valueMask); }
+			constexpr operator ByteOrdinal() const noexcept { return ByteOrdinal(getValue()); }
 		private:
 			Ordinal _raw;
 	};
@@ -447,16 +451,22 @@ namespace i960 {
 				_source1 = operand.getValue();
 				_m1 = operand.isLiteral() ? 1 : 0;
 			}
-			const Operand& decodeSrc1() const noexcept {
-				
+			Operand decodeSrc1() const noexcept {
+				return Operand(_m1, _source1);
 			}
 			void encodeSrc2(const Operand& operand) noexcept {
 				_source2 = operand.getValue();
 				_m2 = operand.isLiteral() ? 1 : 0;
 			}
+			Operand decodeSrc2() const noexcept {
+				return Operand(_m2, _source2);
+			}
 			void encodeSrcDest(const Operand& operand) noexcept {
 				_src_dest = operand.getValue();
 				_m3 = operand.isLiteral() ? 1 : 0;
+			}
+			Operand decodeSrcDest() const noexcept {
+				return Operand(_m3, _src_dest);
 			}
         };
 		static_assert(sizeof(REGFormat) == sizeof(Ordinal), "RegFormat sizes is does not equal Ordinal's size!");
