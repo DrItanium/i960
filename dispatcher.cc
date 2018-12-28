@@ -15,6 +15,14 @@ namespace i960 {
 		throw str;
 	}
 	void Core::dispatch(const Instruction& inst) noexcept {
+		auto selectRegister = [this](const Operand& operand, NormalRegister& imm) -> NormalRegister& {
+			if (operand.isLiteral()) {
+				imm.set(operand.getValue());
+				return imm;
+			} else {
+				return getRegister(operand);
+			}
+		};
 		if (auto desc = Opcode::getDescription(inst); desc.isUndefined()) {
 			// TODO raise fault
 			throw "illegal instruction";
@@ -40,19 +48,10 @@ namespace i960 {
 			NormalRegister imm1;
 			NormalRegister imm2;
 			NormalRegister imm3;
-			NormalRegister& src1 = opSrc1.isLiteral() ? imm1 : getRegister(opSrc1);
-			if (opSrc1.isLiteral()) {
-				imm1.set(opSrc1.getValue());
-			}
-			NormalRegister& src2 = opSrc2.isLiteral() ? imm2 : getRegister(opSrc2);
-			if (opSrc2.isLiteral()) {
-				imm2.set(opSrc2.getValue());
-			}
+			NormalRegister& src1 = selectRegister(opSrc1, imm1);
+			NormalRegister& src2 = selectRegister(opSrc2, imm2);
 			// TODO It is impossible for m3 to be set when srcDest is used as a dest, error out before hand
-			NormalRegister& srcDest = opSrcDest.isLiteral() ? imm3 : getRegister(opSrcDest);
-			if (opSrcDest.isLiteral()) {
-				imm3.set(opSrcDest.getValue());
-			}
+			NormalRegister& srcDest = selectRegister(opSrcDest, imm3);
 			switch(desc) {
 #define Y(kind, args) case Opcode:: kind : kind args ; break 
 #define Op3Arg(kind) Y(kind, (src1, src2, srcDest))
@@ -198,11 +197,7 @@ namespace i960 {
 		} else if (desc.isCobr()) {
 			auto cobr = inst._cobr;
 			NormalRegister immediateStorage;
-			auto opSrc1 = cobr.decodeSrc1();
-			auto& src1 = opSrc1.isLiteral() ? immediateStorage : getRegister(opSrc1);
-			if (opSrc1.isLiteral()) {
-				immediateStorage.set<ByteOrdinal>(opSrc1.getValue());
-			}
+			auto& src1 = selectRegister(cobr.decodeSrc1(), immediateStorage);
 			switch(desc) {
 #define Y(kind) case Opcode:: kind : kind ( src1, getRegister(cobr.decodeSrc2()), cobr.decodeDisplacement()); break
 #define X(kind) Y( cmpob ## kind ) 
