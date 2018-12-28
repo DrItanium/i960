@@ -105,10 +105,10 @@ namespace i960 {
             __GEN_DEFAULT_THREE_ARG_SIGS__(modify);
             __GEN_DEFAULT_THREE_ARG_SIGS__(modpc);
             __GEN_DEFAULT_THREE_ARG_SIGS__(modtc);
-            void mov(__DEFAULT_TWO_ARGS__) noexcept;
-            void movl(ByteOrdinal src, ByteOrdinal dest) noexcept;
-            void movt(ByteOrdinal src, ByteOrdinal dest) noexcept;
-            void movq(ByteOrdinal src, ByteOrdinal dest) noexcept;
+            void mov(const Operand& src, const Operand& dest) noexcept;
+            void movl(const Operand& src, const Operand& dest) noexcept;
+            void movt(const Operand& src, const Operand& dest) noexcept;
+            void movq(const Operand& src, const Operand& dest) noexcept;
             __GEN_DEFAULT_THREE_ARG_SIGS__(mulo);
             __GEN_DEFAULT_THREE_ARG_SIGS__(muli);
             __GEN_DEFAULT_THREE_ARG_SIGS__(nand);

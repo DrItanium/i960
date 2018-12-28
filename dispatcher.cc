@@ -57,8 +57,8 @@ namespace i960 {
 #define Op3Arg(kind) Y(kind, (src1, src2, srcDest))
 #define Op2Arg(kind) Y(kind, (src1, srcDest))
 				Op2Arg(spanbit); Op2Arg(scanbit);  Op2Arg(opnot);
-				Op2Arg(chkbit);  Op2Arg(mov);      Op2Arg(cmpo);
-				Op2Arg(cmpi);    Op2Arg(concmpo);  Op2Arg(concmpi);
+				Op2Arg(chkbit);  Op2Arg(cmpo);     Op2Arg(cmpi);    
+				Op2Arg(concmpo);  Op2Arg(concmpi);
 
 				Op3Arg(notbit);  Op3Arg(clrbit);   Op3Arg(notor);   Op3Arg(opand);
 				Op3Arg(andnot);  Op3Arg(setbit);   Op3Arg(notand);  Op3Arg(opxor);
@@ -74,9 +74,10 @@ namespace i960 {
 
 
 				Y(scanbyte, (src1, src2));
-				Y(movl, (opSrc1, opSrc2));
-				Y(movt, (opSrc1, opSrc2));
-				Y(movq, (opSrc1, opSrc2));
+				Y(mov, (opSrc1, opSrcDest));
+				Y(movl, (opSrc1, opSrcDest));
+				Y(movt, (opSrc1, opSrcDest));
+				Y(movq, (opSrc1, opSrcDest));
 				Y(calls, (src1));
 				Y(eshro, (src1, opSrc2, srcDest));
 				Y(emul, (src1, src2, opSrcDest));

@@ -11,6 +11,9 @@
 #define __TWO_SOURCE_AND_INT_ARGS__ SourceRegister src1, SourceRegister src2, Integer targ
 #define __TWO_SOURCE_REGS__ SourceRegister src1, SourceRegister src2
 namespace i960 {
+	constexpr bool notDivisibleBy(ByteOrdinal value, ByteOrdinal factor) noexcept {
+		return ((value % factor) != 0);
+	}
 #define X(kind, action) \
 	void Core:: test ## kind (DestinationRegister dest) noexcept { testGeneric<TestTypes:: action>(dest); } \
 	void Core:: b ## kind (Integer addr) noexcept { branchIfGeneric<ConditionCode:: action > ( addr ) ; } 
@@ -266,37 +269,70 @@ X(cmpi, bno);
 		_highest.move(other._highest);
 	}
 
-	template<typename T>
-	void move(const T& src, T& dest) noexcept {
-		dest.move(src);
+	void Core::mov(const Operand& src, const Operand& dest) noexcept { 
+		if (DestinationRegister d = getRegister(dest); src.isRegister()) {
+			d.move(getRegister(src));
+		} else {
+			// in the manual the arguments are differentiated
+			d.set<Ordinal>(src.getValue());
+		}
 	}
-
-	void Core::mov(SourceRegister src, DestinationRegister dest) noexcept { 
-		move(src, dest);
+	void Core::movl(const Operand& src, const Operand& dest) noexcept {
+		if (notDivisibleBy(src, 2) || notDivisibleBy(dest, 2)) {
+			// registers are not properly aligned so watch things burn...
+			// however the manual states that this is an acceptable state
+			getRegister(dest).set<Integer>(-1);
+			getRegister(dest.next()).set<Integer>(-1);
+			// generateFault(Operation.InvalidOperation);
+		} else if (src.isRegister()) {
+			mov(src, dest);
+			mov(src.next(), dest.next());
+		} else {
+			mov(src, dest);
+			getRegister(dest.next()).set<Ordinal>(0);
+		}
 	}
-	void Core::movl(ByteOrdinal src, ByteOrdinal dest) noexcept {
-		// TODO make sure that the src and dest indicies make sense
-		LongRegister s = makeLongRegister(src);
-		LongRegister d = makeLongRegister(dest);
-		//LongRegister s(getRegister(src), getRegister(src + 1));
-		//LongRegister d(getRegister(dest), getRegister(dest + 1));
-		move(s, d);
+	void Core::movt(const Operand& src, const Operand& dest) noexcept {
+		DestinationRegister d0 = getRegister(dest);
+		DestinationRegister d1 = getRegister(dest.next());
+		DestinationRegister d2 = getRegister(dest.next().next());
+		if (notDivisibleBy(src, 4) || notDivisibleBy(dest, 4)) {
+			d0.set(-1);
+			d1.set(-1);
+			d2.set(-1);
+			// generateFault(Operation.InvalidOperation)
+		} else if (src.isRegister()) {
+			d0.move(getRegister(src));
+			d1.move(getRegister(src.next()));
+			d2.move(getRegister(src.next().next()));
+		} else {
+			d0.set<Ordinal>(src.getValue());
+			d1.set(0);
+			d2.set(0);
+		}
 	}
-	void Core::movt(ByteOrdinal src, ByteOrdinal dest) noexcept {
-		// TODO make sure that the src and dest indicies make sense
-		//TripleRegister s(getRegister(src), getRegister(src + 1), getRegister(src + 2));
-		//TripleRegister d(getRegister(dest), getRegister(dest + 1), getRegister(dest + 2));
-		TripleRegister s = makeTripleRegister(src);
-		TripleRegister d = makeTripleRegister(dest);
-		move(s, d);
-	}
-	void Core::movq(ByteOrdinal src, ByteOrdinal dest) noexcept {
-		// TODO make sure that the src and dest indicies make sense
-		//QuadRegister s(getRegister(src), getRegister(src + 1), getRegister(src + 2), getRegister(src + 3));
-		//QuadRegister d(getRegister(dest), getRegister(dest + 1), getRegister(dest + 2), getRegister(dest + 3));
-		QuadRegister s = makeQuadRegister(src);
-		QuadRegister d = makeQuadRegister(dest);
-		move(s, d);
+	void Core::movq(const Operand& src, const Operand& dest) noexcept {
+		DestinationRegister d0 = getRegister(dest);
+		DestinationRegister d1 = getRegister(dest.next());
+		DestinationRegister d2 = getRegister(dest.next().next());
+		DestinationRegister d3 = getRegister(dest.next().next().next());
+		if (notDivisibleBy(src, 4) || notDivisibleBy(dest, 4)) {
+			d0.set(-1);
+			d1.set(-1);
+			d2.set(-1);
+			d3.set(-1);
+			// generateFault(Operation.InvalidOperation)
+		} else if (src.isRegister()) {
+			d0.move(getRegister(src));
+			d1.move(getRegister(src.next()));
+			d2.move(getRegister(src.next().next()));
+			d3.move(getRegister(src.next().next().next()));
+		} else {
+			d0.set<Ordinal>(src.getValue());
+			d1.set(0);
+			d2.set(0);
+			d3.set(0);
+		}
 	}
 
 	void Core::b(Integer displacement) noexcept {
