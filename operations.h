@@ -86,18 +86,6 @@ namespace i960 {
             return clearBit(value, position);
         }
     }
-    constexpr LongOrdinal multiply(LongOrdinal a, LongOrdinal b) noexcept {
-        return a * b;
-    }
-    /** 
-     * Multiplies src2 by src1 and returns the result.
-     * @param src1 An Ordinal operand
-     * @param src2 An Ordinal operand
-     * @return A LongOrdinal which contains the result of the multiply
-     */
-    constexpr LongOrdinal extendedMultiply(Ordinal src1, Ordinal src2) noexcept {
-        return multiply(LongOrdinal(src1), LongOrdinal(src2));
-    }
 
     constexpr Ordinal rotate(Ordinal src, Ordinal length) noexcept {
 		// taken from the wikipedia entry on circular shifts through my syn
