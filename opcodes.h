@@ -84,9 +84,8 @@ namespace i960::Opcode {
 				Integer _argCount;
 				ArgumentLayout _layout;
 		};
-		constexpr Description undefined = Description(0xFFFF'FFFF, Description::Class::Undefined, "undefined", Description::ArgumentLayout::Undefined);
 #define o(name, code, arg, kind) \
-	constexpr Description name = Description(code, Description::Class:: kind, #name , Description::ArgumentLayout:: arg ) ;
+	constexpr Ordinal name = code;
 #define reg(name, code, arg) o(name, code, arg, Reg)
 #define cobr(name, code, arg) o(name, code, arg, Cobr) 
 #define mem(name, code, arg) o(name, code, arg, Mem) 
