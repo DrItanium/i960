@@ -54,14 +54,18 @@ namespace i960::Opcode {
 				}
 			}
 
-			constexpr Description(Ordinal opcode, Class type, const char* str, ArgumentLayout layout = ArgumentLayout::Undefined) noexcept : 
+			constexpr Description(Ordinal opcode, Class type, const char* str, ArgumentLayout layout) noexcept : 
 				_opcode(opcode), _type(type), _str(str), _argCount(getArgumentCount(layout)), _layout(layout) { }
 			constexpr auto getOpcode() const noexcept { return _opcode; }
 			constexpr auto getType() const noexcept { return _type; }
 			constexpr auto getString() const noexcept { return _str; }
 			constexpr auto getArgumentCount() const noexcept { return _argCount; }
 			constexpr auto getArgumentLayout() const noexcept { return _layout; }
-			constexpr bool hasZeroArguments() const noexcept { return _argCount == 0; }
+			constexpr auto hasZeroArguments() const noexcept { return _argCount == 0; }
+			constexpr auto hasOneArgument() const noexcept { return _argCount == 1; }
+			constexpr auto hasTwoArguments() const noexcept { return _argCount == 2; } 
+			constexpr auto hasThreeArguments() const noexcept { return _argCount == 3; } 
+			constexpr auto argumentCountUndefined() const noexcept { return _argCount == -1; }
 #define X(cl) constexpr bool is ## cl () const noexcept { return isOfClass<Class:: cl > () ; }
 			X(Reg);
 			X(Cobr);
@@ -80,7 +84,7 @@ namespace i960::Opcode {
 				Integer _argCount;
 				ArgumentLayout _layout;
 		};
-		constexpr Description undefined = Description(0xFFFF'FFFF, Description::Class::Undefined, "undefined");
+		constexpr Description undefined = Description(0xFFFF'FFFF, Description::Class::Undefined, "undefined", Description::ArgumentLayout::Undefined);
 #define o(name, code, arg, kind) \
 	constexpr Description name = Description(code, Description::Class:: kind, #name , Description::ArgumentLayout:: arg ) ;
 #define reg(name, code, arg) o(name, code, arg, Reg)

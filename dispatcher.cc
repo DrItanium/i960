@@ -50,6 +50,9 @@ namespace i960 {
 			}
 			// TODO It is impossible for m3 to be set when srcDest is used as a dest, error out before hand
 			NormalRegister& srcDest = reg.srcDestIsLiteral() ? imm3 : getRegister(src3Ind);
+			if (reg.srcDestIsLiteral()) {
+				imm3.set(reg.srcDestToIntegerLiteral());
+			}
 			switch(desc) {
 #define Y(kind, args) case Opcode:: kind : kind args ; break 
 #define Op3Arg(kind) Y(kind, (src1, src2, srcDest))
@@ -153,10 +156,7 @@ namespace i960 {
 			// opcode does not differentiate between mema and memb, another bit
 			// does, so the actual arguments differ, not the set of actions
 			switch(desc) {
-#define Y(kind, a, b) \
-				case Opcode:: kind : \
-									 kind ( a , b ) ; \
-				break;
+#define Y(kind, a, b) case Opcode:: kind : kind ( a , b ) ; break;
 #define YISSD(kind) Y(kind, immediateStorage, srcDest);
 #define YSDIS(kind) Y(kind, srcDest, immediateStorage);
 #define ZIS(kind) case Opcode:: kind : kind ( immediateStorage ) ; break;

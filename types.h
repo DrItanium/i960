@@ -474,6 +474,7 @@ namespace i960 {
             bool srcDestIsLiteral() const noexcept { return _m3 != 0; }
             ByteOrdinal src1ToIntegerLiteral() const noexcept { return _source1; }
             ByteOrdinal src2ToIntegerLiteral() const noexcept { return _source2; }
+			ByteOrdinal srcDestToIntegerLiteral() const noexcept { return _src_dest; }
 			void encodeSrc1(const Operand& operand) noexcept {
 				_source1 = operand.getValue();
 				_m1 = operand.isLiteral() ? 1 : 0;
