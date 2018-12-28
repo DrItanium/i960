@@ -413,45 +413,13 @@ namespace i960 {
 	constexpr Operand operator"" _lit(unsigned long long n) {
 		return Operand(((Operand::valueMask & Ordinal(n)) + Operand::typeMask));
 	}
-	constexpr Operand operator"" _greg(unsigned long long n) {
+	constexpr Operand operator"" _gr(unsigned long long n) {
 		return Operand((n & 0b1111) + 0b10000);
 	}
-	constexpr Operand operator"" _lreg(unsigned long long n) {
+	constexpr Operand operator"" _lr(unsigned long long n) {
 		return Operand((n & 0b1111));
 	}
-	constexpr Operand pfp = 0_lreg;
-	constexpr Operand sp = 1_lreg;
-	constexpr Operand rip = 2_lreg;
-	constexpr Operand r3 = 3_lreg;
-	constexpr Operand r4 = 4_lreg;
-	constexpr Operand r5 = 5_lreg;
-	constexpr Operand r6 = 6_lreg;
-	constexpr Operand r7 = 7_lreg;
-	constexpr Operand r8 = 8_lreg;
-	constexpr Operand r9 = 9_lreg;
-	constexpr Operand r10 = 10_lreg;
-	constexpr Operand r11 = 11_lreg;
-	constexpr Operand r12 = 12_lreg;
-	constexpr Operand r13 = 13_lreg;
-	constexpr Operand r14 = 14_lreg;
-	constexpr Operand r15 = 15_lreg;
-	constexpr Operand g0 = 0_greg;
-	constexpr Operand g1 = 1_greg;
-	constexpr Operand g2 = 2_greg;
-	constexpr Operand g3 = 3_greg;
-	constexpr Operand g4 = 4_greg;
-	constexpr Operand g5 = 5_greg;
-	constexpr Operand g6 = 6_greg;
-	constexpr Operand g7 = 7_greg;
-	constexpr Operand g8 = 8_greg;
-	constexpr Operand g9 = 9_greg;
-	constexpr Operand g10 = 10_greg;
-	constexpr Operand g11 = 11_greg;
-	constexpr Operand g12 = 12_greg;
-	constexpr Operand g13 = 13_greg;
-	constexpr Operand g14 = 14_greg;
-	constexpr Operand g15 = 15_greg;
-	constexpr Operand fp = 15_greg;
+	
     union Instruction {
         struct REGFormat {
             Ordinal _source1 : 5;
@@ -478,6 +446,9 @@ namespace i960 {
 			void encodeSrc1(const Operand& operand) noexcept {
 				_source1 = operand.getValue();
 				_m1 = operand.isLiteral() ? 1 : 0;
+			}
+			const Operand& decodeSrc1() const noexcept {
+				
 			}
 			void encodeSrc2(const Operand& operand) noexcept {
 				_source2 = operand.getValue();
