@@ -9,10 +9,10 @@ namespace i960::Opcode {
 		static std::map<Ordinal, const Description&> lookupTable = {
 #define body(name, code) \
 			{ code , i960::Opcode:: name }, 
-#define reg(name, code)  body(name, code)
-#define cobr(name, code)  body(name, code)
-#define mem(name, code)  body(name, code)
-#define ctrl(name, code)  body(name, code)
+#define reg(name, code, __)  body(name, code)
+#define cobr(name, code, __)  body(name, code)
+#define mem(name, code, __)  body(name, code)
+#define ctrl(name, code, __)  body(name, code)
 #include "opcodes.def"
 #undef reg
 #undef cobr

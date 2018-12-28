@@ -106,10 +106,10 @@ void testInstructionEncoding() {
 		std::cout << "Outcome: failed!" << std::endl; \
 		return; \
 	}
-#define reg(name, code) X(name, code);
-#define mem(name, code) X(name, code)
-#define cobr(name, code) X(name, code)
-#define ctrl(name, code) X(name, code)
+#define reg(name, code, __) X(name, code);
+#define mem(name, code, __) X(name, code)
+#define cobr(name, code, __) X(name, code)
+#define ctrl(name, code, __) X(name, code)
 #include "opcodes.def"
 #undef X
 #undef reg
