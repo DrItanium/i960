@@ -33,22 +33,18 @@ namespace i960 {
 	void Core:: base ## kind ( __DEFAULT_THREE_ARGS__ ) noexcept { \
 		base ## Base <code> ( src1, src2, dest ) ; \
 	}
-	X(subo, no, 0b000); X(subi, no, 0b000);
-	X(subo, g, 0b001);  X(subi, g, 0b001);
-	X(subo, e, 0b010);  X(subi, e, 0b010);
-	X(subo, ge, 0b011); X(subi, ge, 0b011);
-	X(subo, l, 0b100); X(subi, l, 0b100);
-	X(subo, ne, 0b101); X(subi, ne, 0b101);
-	X(subo, le, 0b110); X(subi, le, 0b110);
-	X(subo, o, 0b111); X(subi, o, 0b111);
-	X(addo, no, 0b000); X(addi, no, 0b000);
-	X(addo, g, 0b001);  X(addi, g, 0b001);
-	X(addo, e, 0b010);  X(addi, e, 0b010);
-	X(addo, ge, 0b011); X(addi, ge, 0b011);
-	X(addo, l, 0b100); X(addi, l, 0b100);
-	X(addo, ne, 0b101); X(addi, ne, 0b101);
-	X(addo, le, 0b110); X(addi, le, 0b110);
-	X(addo, o, 0b111); X(addi, o, 0b111);
+#define Y(base) \
+	X(base, no, 0b000); \
+	X(base, g, 0b001); \
+	X(base, e, 0b010); \
+	X(base, ge, 0b011); \
+	X(base, l, 0b100); \
+	X(base, ne, 0b101); \
+	X(base, le, 0b110); \
+	X(base, o, 0b111);
+	Y(subo); Y(subi);
+	Y(addo); Y(addi);
+#undef Y
 #undef X
 #define X(cmpop, bop) \
 	void Core:: cmpop ## bop ( __TWO_SOURCE_AND_INT_ARGS__ ) noexcept { \
