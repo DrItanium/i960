@@ -107,8 +107,7 @@ namespace i960 {
 			if (mem.isMemAFormat()) {
 				auto ma = mem._mema;
 				auto offset = ma._offset;
-				auto opAbase = ma.decodeAbase();
-				auto abase = getRegister(opAbase);
+				auto abase = getRegister(ma.decodeAbase());
 				immediateStorage.set<Ordinal>(ma.isOffsetAddressingMode() ?  offset : offset + abase.get<Ordinal>());
 			} else {
 				auto getFullDisplacement = [this]() {
