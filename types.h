@@ -484,6 +484,9 @@ namespace i960 {
 			auto decodeSrc2() const noexcept {
 				return Operand(0, _source2);
 			}
+			auto decodeDisplacement() const noexcept {
+				return _displacement;
+			}
         };
         struct CTRLFormat {
 			Ordinal _unused : 2;
@@ -576,11 +579,11 @@ namespace i960 {
 					return Operand(0, _abase);
 				}
             };
-			Ordinal getSrcDestIndex() const noexcept {
+			auto decodeSrcDest() const noexcept {
 				if (isMemAFormat()) {
-					return _mema._src_dest;
+					return _mema.decodeSrcDest();
 				} else {
-					return _memb._src_dest;
+					return _memb.decodeSrcDest();
 				}
 			}
 			Ordinal getOpcode() const noexcept {

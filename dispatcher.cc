@@ -101,13 +101,14 @@ namespace i960 {
 			}
 		} else if (desc.isMem()) {
 			auto mem = inst._mem;
+			auto opSrcDest = mem.decodeSrcDest();
 			NormalRegister immediateStorage;
-			auto srcDestIndex = mem.getSrcDestIndex();
-			auto srcDest = getRegister(srcDestIndex);
+			auto srcDest = getRegister(opSrcDest);
 			if (mem.isMemAFormat()) {
 				auto ma = mem._mema;
 				auto offset = ma._offset;
-				auto abase = getRegister(ma._abase);
+				auto opAbase = ma.decodeAbase();
+				auto abase = getRegister(opAbase);
 				immediateStorage.set<Ordinal>(ma.isOffsetAddressingMode() ?  offset : offset + abase.get<Ordinal>());
 			} else {
 				auto getFullDisplacement = [this]() {
@@ -125,7 +126,7 @@ namespace i960 {
 				auto index = mb._index;
 				auto scale = mb.getScaleFactor();
 				auto displacement = mb.has32bitDisplacement() ? getFullDisplacement() : 0;
-				auto abase = getRegister(mb._abase);
+				auto abase = getRegister(mb.decodeAbase());
 				switch (mb.getAddressingMode()) {
 					case E::Abase:
 						immediateStorage.move(abase);
@@ -164,8 +165,8 @@ namespace i960 {
 				YISSD(ld ## suffix); \
 				YSDIS(st ## suffix);
 #define WLDP(suffix) \
-				Y(ld ## suffix, immediateStorage, srcDestIndex ); \
-				Y(st ## suffix, srcDestIndex, immediateStorage ); 
+				Y(ld ## suffix, immediateStorage, opSrcDest); \
+				Y(st ## suffix, opSrcDest, immediateStorage ); 
 				LDP(ob);     LDP(os);   LDP(ib); LDP(is);
 				WLDP(l);     WLDP(t);   WLDP(q); 
 				YSDIS(st);   YISSD(ld); YISSD(lda); 
@@ -180,7 +181,7 @@ namespace i960 {
 			}
 		} else if (desc.isCtrl()) {
 			auto ctrl = inst._ctrl;
-			Integer displacement = ctrl._displacement;
+			Integer displacement = ctrl.decodeDisplacement();
 			switch (desc) {
 #define Y(kind) \
 				case Opcode:: kind : \
@@ -198,14 +199,13 @@ namespace i960 {
 		} else if (desc.isCobr()) {
 			auto cobr = inst._cobr;
 			NormalRegister immediateStorage;
-			auto displacement = cobr._displacement;
-			auto& src1 = cobr.src1IsLiteral() ? immediateStorage : getRegister(cobr._source1);
-			if (cobr.src1IsLiteral()) {
-				immediateStorage.set<ByteOrdinal>(cobr._source1);
+			auto opSrc1 = cobr.decodeSrc1();
+			auto& src1 = opSrc1.isLiteral() ? immediateStorage : getRegister(opSrc1);
+			if (opSrc1.isLiteral()) {
+				immediateStorage.set<ByteOrdinal>(opSrc1.getValue());
 			}
-			auto& src2 = getRegister(cobr._source2);
 			switch(desc) {
-#define Y(kind) case Opcode:: kind : kind ( src1, src2, displacement ); break
+#define Y(kind) case Opcode:: kind : kind ( src1, getRegister(cobr.decodeSrc2()), cobr.decodeDisplacement()); break
 #define X(kind) Y( cmpob ## kind ) 
 				Y(bbc); Y(bbs); X(e);
 				X(ge);  X(l);   X(ne);
