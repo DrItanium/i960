@@ -84,8 +84,9 @@ namespace i960::Opcode {
 				Integer _argCount;
 				ArgumentLayout _layout;
 		};
+		enum Id : Ordinal {
 #define o(name, code, arg, kind) \
-	constexpr Ordinal name = code;
+	name = code,
 #define reg(name, code, arg) o(name, code, arg, Reg)
 #define cobr(name, code, arg) o(name, code, arg, Cobr) 
 #define mem(name, code, arg) o(name, code, arg, Mem) 
@@ -96,6 +97,7 @@ namespace i960::Opcode {
 #undef mem
 #undef ctrl
 #undef o
+		};
 
 		const Description& getDescription(const Instruction& inst) noexcept;
 		const Description& getDescription(Ordinal opcode) noexcept;
