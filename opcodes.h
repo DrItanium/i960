@@ -2,6 +2,7 @@
 #define I960_OPCODES_H__
 #include "types.h"
 namespace i960::Opcode {
+		constexpr bool hasZeroArguments(Ordinal opcode) noexcept;
 		struct Description final {
 			enum class Class : Ordinal {
 				Undefined,
@@ -12,22 +13,47 @@ namespace i960::Opcode {
 			};
 			enum class ArgumentLayout {
 				None,
-				RegLit_RegLit_Reg,
-				Reg_RegLit_Reg,
+				// 1 arg
 				Disp,
-				Mem_Reg,
-				RegLit_Reg_Disp,
-				RegLit_Reg,
 				Mem,
 				RegLit,
-				RegLit_RegLit,
 				Reg,
+				// 2 args
+				Mem_Reg,
+				RegLit_Reg,
+				RegLit_RegLit,
+				// 3 args
+				RegLit_RegLit_Reg,
+				Reg_RegLit_Reg,
+				RegLit_Reg_Disp,
 			};
+			static constexpr Integer getArgumentCount(ArgumentLayout layout) noexcept {
+				switch (layout) {
+					case ArgumentLayout::None:
+						return 0;
+					case ArgumentLayout::Disp:
+					case ArgumentLayout::Mem:
+					case ArgumentLayout::Reg:
+					case ArgumentLayout::RegLit:
+						return 1;
+					case ArgumentLayout::Mem_Reg:
+					case ArgumentLayout::RegLit_Reg:
+					case ArgumentLayout::RegLit_RegLit:
+						return 2;
+					case ArgumentLayout::RegLit_Reg_Disp:
+					case ArgumentLayout::RegLit_RegLit_Reg:
+					case ArgumentLayout::Reg_RegLit_Reg:
+						return 3;
+					default:
+						return -1;
+				}
+			}
+
 			constexpr Description(Ordinal opcode, Class type, const char* str) noexcept : _opcode(opcode), _type(type), _str(str) { }
 			constexpr auto getOpcode() const noexcept { return _opcode; }
 			constexpr auto getType() const noexcept { return _type; }
 			constexpr auto getString() const noexcept { return _str; }
-			constexpr bool hasZeroArguments() const noexcept;
+			constexpr bool hasZeroArguments() const noexcept { return i960::Opcode::hasZeroArguments(_opcode); }
 #define X(cl) constexpr bool is ## cl () const noexcept { return isOfClass<Class:: cl > () ; }
 			X(Reg);
 			X(Cobr);
@@ -35,7 +61,7 @@ namespace i960::Opcode {
 			X(Ctrl);
 			X(Undefined);
 #undef X
-			constexpr operator Ordinal() const { return _opcode; }
+			constexpr operator Ordinal() const noexcept { return _opcode; }
 			private:
 				template<Class t>
 				constexpr bool isOfClass() const noexcept { return _type == t; }
@@ -44,7 +70,7 @@ namespace i960::Opcode {
 				Class _type;
 				const char* _str;
 		};
-		constexpr Description unknown = Description(0xFFFF'FFFF, Description::Class::Undefined, "undefined");
+		constexpr Description undefined = Description(0xFFFF'FFFF, Description::Class::Undefined, "undefined");
 #define o(name, code, kind) \
 	constexpr Description name = Description(code, Description::Class:: kind, #name ) ;
 #define reg(name, code) o(name, code, Reg)
@@ -81,9 +107,6 @@ namespace i960::Opcode {
 				default:
 					return false;
 			}
-		}
-		constexpr bool Description::hasZeroArguments() const noexcept {
-			return i960::Opcode::hasZeroArguments(_opcode);
 		}
 } // end namespace i960::Opcode
 #endif // end I960_OPCODES_H__

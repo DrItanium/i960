@@ -23,7 +23,7 @@ namespace i960::Opcode {
 		if (auto pos = lookupTable.find(opcode); pos != lookupTable.end()) {
 			return pos->second;
 		} else {
-			return unknown;
+			return undefined;
 		}
 	}
 } // end namespace i960
