@@ -20,11 +20,6 @@ namespace i960 {
     using LongSourceRegister = const LongRegister&;
     using LongDestinationRegister = LongRegister&;
     
-    // ExtendedRegisters are used for move to and from floating point
-    using ExtendedRegister = TripleRegister;
-    using ExtendedSourceRegister = const ExtendedRegister&; 
-    using ExtendedDestinationRegister = ExtendedRegister&;
-
     using RegisterWindow = NormalRegister[LocalRegisterCount];
     class Core {
         public:
@@ -51,6 +46,9 @@ namespace i960 {
             }
             void setRegister(ByteOrdinal index, SourceRegister other) noexcept;
             NormalRegister& getRegister(ByteOrdinal index) noexcept;
+			LongRegister makeLongRegister(ByteOrdinal index) noexcept;
+			TripleRegister makeTripleRegister(ByteOrdinal index) noexcept;
+			QuadRegister makeQuadRegister(ByteOrdinal index) noexcept;
             PreviousFramePointer& getPFP() noexcept;
             Ordinal getStackPointerAddress() const noexcept;
             void setFramePointer(Ordinal value) noexcept;
@@ -75,21 +73,6 @@ namespace i960 {
             void bbs(SourceRegister pos, SourceRegister src, Integer targ) noexcept;
             // compare and branch instructions as well
             // faults too
-#define X(kind, __) \
-            void b ## kind (Integer) noexcept; \
-            void cmpib ## kind ( SourceRegister, SourceRegister, Integer) noexcept; \
-            void fault ## kind () noexcept; \
-            void test ## kind ( DestinationRegister) noexcept;
-#define Y(kind) void cmp ## kind ( SourceRegister, SourceRegister, Integer) noexcept;
-#include "conditional_kinds.def"
-			Y(obe)
-			Y(obne)
-			Y(obl)
-			Y(oble)
-			Y(obg)
-			Y(obge)
-#undef X
-#undef Y
             void clrbit(SourceRegister pos, SourceRegister src, DestinationRegister dest) noexcept; // TODO look into the various forms further
             void cmpi(SourceRegister src1, SourceRegister src2) noexcept;
             void cmpo(SourceRegister src1, SourceRegister src2) noexcept;
@@ -111,19 +94,8 @@ namespace i960 {
 			}
             __GEN_DEFAULT_THREE_ARG_SIGS__(divo);
             __GEN_DEFAULT_THREE_ARG_SIGS__(divi);
-            void ediv0(SourceRegister src1, LongSourceRegister src2, LongDestinationRegister destination) noexcept;
-			inline void ediv(SourceRegister src1, ByteOrdinal src2Ind, ByteOrdinal destInd) noexcept {
-				// TODO make sure that src2 and dest indicies are even
-				LongRegister src2(getRegister(src2Ind), getRegister(src2Ind + 1));
-				LongRegister dest(getRegister(destInd), getRegister(destInd + 1));
-				ediv0(src1, src2, dest);
-			}
-            void emul0(SourceRegister src1, SourceRegister src2, LongDestinationRegister dest) noexcept;
-			inline void emul(SourceRegister src1, SourceRegister src2, ByteOrdinal destIndex) noexcept {
-				// TODO perform double register validity check
-				DoubleRegister dest(getRegister(destIndex), getRegister(destIndex + 1));
-				emul0(src1, src2, dest);
-			}
+			void ediv(SourceRegister src1, ByteOrdinal src2Ind, ByteOrdinal destInd) noexcept;
+			void emul(SourceRegister src1, SourceRegister src2, ByteOrdinal destIndex) noexcept;
             __GEN_DEFAULT_THREE_ARG_SIGS__(extract);
             void fill(SourceRegister dst, SourceRegister value, SourceRegister len) noexcept;
             void flushreg() noexcept;
@@ -133,24 +105,9 @@ namespace i960 {
             void ldos(__DEFAULT_TWO_ARGS__) noexcept;
             void ldib(__DEFAULT_TWO_ARGS__) noexcept;
             void ldis(__DEFAULT_TWO_ARGS__) noexcept;
-            void ldl0(SourceRegister src, LongDestinationRegister dest) noexcept;
-			inline void ldl(SourceRegister src, Ordinal srcDestIndex) noexcept {
-				// TODO make sure that the srcDestIndex makes sense
-				DoubleRegister reg(getRegister(srcDestIndex), getRegister(srcDestIndex + 1));
-				ldl0(src, reg);
-			}
-            void ldt0(SourceRegister src, TripleRegister& dest) noexcept;
-			inline void ldt(SourceRegister src, Ordinal srcDestIndex) noexcept {
-				// TODO make sure that the srcDestIndex makes sense
-				TripleRegister reg(getRegister(srcDestIndex), getRegister(srcDestIndex + 1), getRegister(srcDestIndex + 2));
-				ldt0(src, reg);
-			}
-            void ldq0(SourceRegister src, QuadRegister& dest) noexcept;
-			inline void ldq(SourceRegister src, Ordinal index) noexcept {
-				// TODO make sure that the srcDestIndex makes sense
-				QuadRegister reg(getRegister(index), getRegister(index + 1), getRegister(index + 2), getRegister(index + 3));
-				ldq0(src, reg);
-			}
+			void ldl(SourceRegister src, Ordinal srcDestIndex) noexcept;
+			void ldt(SourceRegister src, Ordinal srcDestIndex) noexcept;
+			void ldq(SourceRegister src, Ordinal index) noexcept;
             void lda(__DEFAULT_TWO_ARGS__) noexcept;
             void mark() noexcept;
             __GEN_DEFAULT_THREE_ARG_SIGS__(modac);
@@ -164,20 +121,26 @@ namespace i960 {
             void movq0(const QuadRegister& src, QuadRegister& dest) noexcept;
             inline void movl(ByteOrdinal src, ByteOrdinal dest) noexcept {
 				// TODO make sure that the src and dest indicies make sense
-                DoubleRegister s(getRegister(src), getRegister(src + 1));
-                DoubleRegister d(getRegister(dest), getRegister(dest + 1));
+				LongRegister s = makeLongRegister(src);
+				LongRegister d = makeLongRegister(dest);
+                //LongRegister s(getRegister(src), getRegister(src + 1));
+                //LongRegister d(getRegister(dest), getRegister(dest + 1));
                 movl0(s, d);
             }
             inline void movt(ByteOrdinal src, ByteOrdinal dest) noexcept {
 				// TODO make sure that the src and dest indicies make sense
-                TripleRegister s(getRegister(src), getRegister(src + 1), getRegister(src + 2));
-                TripleRegister d(getRegister(dest), getRegister(dest + 1), getRegister(dest + 2));
+                //TripleRegister s(getRegister(src), getRegister(src + 1), getRegister(src + 2));
+                //TripleRegister d(getRegister(dest), getRegister(dest + 1), getRegister(dest + 2));
+				TripleRegister s = makeTripleRegister(src);
+				TripleRegister d = makeTripleRegister(dest);
                 movt0(s, d);
             }
             inline void movq(ByteOrdinal src, ByteOrdinal dest) noexcept {
 				// TODO make sure that the src and dest indicies make sense
-                QuadRegister s(getRegister(src), getRegister(src + 1), getRegister(src + 2), getRegister(src + 3));
-                QuadRegister d(getRegister(dest), getRegister(dest + 1), getRegister(dest + 2), getRegister(dest + 3));
+                //QuadRegister s(getRegister(src), getRegister(src + 1), getRegister(src + 2), getRegister(src + 3));
+                //QuadRegister d(getRegister(dest), getRegister(dest + 1), getRegister(dest + 2), getRegister(dest + 3));
+				QuadRegister s = makeQuadRegister(src);
+				QuadRegister d = makeQuadRegister(dest);
                 movq0(s, d);
             }
             __GEN_DEFAULT_THREE_ARG_SIGS__(mulo);
@@ -211,18 +174,20 @@ namespace i960 {
             void stis(__TWO_SOURCE_REGS__) noexcept;
             void stl0(LongSourceRegister src, SourceRegister dest) noexcept;
 			inline void stl(Ordinal ind, SourceRegister dest) noexcept {
-				DoubleRegister reg(getRegister(ind), getRegister(ind + 1));
+				LongRegister reg(getRegister(ind), getRegister(ind + 1));
 				stl0(reg, dest);
 			}
             void stt0(const TripleRegister& src, SourceRegister dest) noexcept;
             inline void stt(Ordinal ind, SourceRegister dest) noexcept {
-				TripleRegister reg(getRegister(ind), getRegister(ind + 1), getRegister(ind + 2));
+				// TODO perform fault checks
+				TripleRegister reg = makeTripleRegister(ind);
+				//TripleRegister reg(getRegister(ind), getRegister(ind + 1), getRegister(ind + 2));
 				stt0(reg, dest);
 			}
 
             void stq0(const QuadRegister& src, SourceRegister dest) noexcept;
             inline void stq(Ordinal ind, SourceRegister dest) noexcept {
-				QuadRegister reg(getRegister(ind), getRegister(ind + 1), getRegister(ind + 2), getRegister(ind + 3));
+				QuadRegister reg = makeQuadRegister(ind);
 				stq0(reg, dest);
 			}
             __GEN_DEFAULT_THREE_ARG_SIGS__(subc); 
@@ -270,7 +235,8 @@ namespace i960 {
 			void eshro0(SourceRegister src1, LongSourceRegister src2, DestinationRegister dest) noexcept;
 			inline void eshro(SourceRegister src1, ByteOrdinal src2Ind, DestinationRegister dest) noexcept {
 				// TODO perform byte ordinal check to make sure it is even
-				DoubleRegister src2(getRegister(src2Ind), getRegister(src2Ind + 1));
+				//LongRegister src2(getRegister(src2Ind), getRegister(src2Ind + 1));
+				LongRegister src2 = makeLongRegister(src2Ind);
 				eshro0(src1, src2, dest);
 			}
 			__GEN_DEFAULT_THREE_ARG_SIGS__(eshro);
@@ -282,14 +248,6 @@ namespace i960 {
             void cmpib(SourceRegister src1, SourceRegister src2) noexcept;
 			void bswap(SourceRegister src1, DestinationRegister src2) noexcept;
 			void baseSelect(bool condition, __DEFAULT_THREE_ARGS__) noexcept;
-#define X(kind, __) \
-			__GEN_DEFAULT_THREE_ARG_SIGS__(addo ## kind) ; \
-			__GEN_DEFAULT_THREE_ARG_SIGS__(addi ## kind) ; \
-			__GEN_DEFAULT_THREE_ARG_SIGS__(subo ## kind) ; \
-			__GEN_DEFAULT_THREE_ARG_SIGS__(subi ## kind) ; \
-			__GEN_DEFAULT_THREE_ARG_SIGS__(sel ## kind) ;
-#include "conditional_kinds.def"
-#undef X 
 			template<Ordinal mask>
 			void baseSelect(__DEFAULT_THREE_ARGS__) noexcept {
 				if (((mask & _ac.conditionCode) != 0) || (mask == _ac.conditionCode)) {
@@ -373,6 +331,31 @@ namespace i960 {
 					}
 				}
 			}
+		private:
+			// auto generated routines
+#define X(kind, __) \
+            void b ## kind (Integer) noexcept; \
+            void cmpib ## kind ( SourceRegister, SourceRegister, Integer) noexcept; \
+            void fault ## kind () noexcept; \
+            void test ## kind ( DestinationRegister) noexcept;
+#define Y(kind) void cmp ## kind ( SourceRegister, SourceRegister, Integer) noexcept;
+#include "conditional_kinds.def"
+			Y(obe)
+			Y(obne)
+			Y(obl)
+			Y(oble)
+			Y(obg)
+			Y(obge)
+#undef X
+#undef Y
+#define X(kind, __) \
+			__GEN_DEFAULT_THREE_ARG_SIGS__(addo ## kind) ; \
+			__GEN_DEFAULT_THREE_ARG_SIGS__(addi ## kind) ; \
+			__GEN_DEFAULT_THREE_ARG_SIGS__(subo ## kind) ; \
+			__GEN_DEFAULT_THREE_ARG_SIGS__(subi ## kind) ; \
+			__GEN_DEFAULT_THREE_ARG_SIGS__(sel ## kind) ;
+#include "conditional_kinds.def"
+#undef X 
 		private:
 			void dispatch(const Instruction& decodedInstruction) noexcept;
         private:

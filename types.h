@@ -30,12 +30,6 @@ namespace i960 {
         return (a & 0xF0) != 0;
     }
 
-    union Displacement {
-        Displacement(Integer value) : _value(value) { }
-        ~Displacement() = default;
-        Integer _value : 22;
-    };
-
     union PreviousFramePointer {
         struct {
             Ordinal returnCode : 3;
@@ -602,8 +596,7 @@ namespace i960 {
 
         static_assert(sizeof(MemFormat) == sizeof(Ordinal), "MemFormat must be the size of an ordinal!");
 
-        Instruction(Ordinal raw) : _raw(raw) { }
-        Instruction() : Instruction(0) { }
+        Instruction(Ordinal raw = 0) : _raw(raw) { }
         Ordinal getBaseOpcode() const noexcept {
             return (0xFF000000 & _raw) >> 24;
         }

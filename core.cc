@@ -391,7 +391,10 @@ X(cmpi, bno);
 		}
 		_ac.conditionCode += (dest.mostSignificantBit() << 1);
 	}
-	void Core::ediv0(SourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest) noexcept {
+	void Core::ediv(SourceRegister src1, ByteOrdinal src2Ind, ByteOrdinal destInd) noexcept {
+		// TODO make sure that src2 and dest indicies are even
+		LongRegister src2 = makeLongRegister(src2Ind);
+		LongRegister dest = makeLongRegister(destInd);
 		if (auto s1 = src1.get<LongOrdinal>(); s1 == 0) {
 			dest.set<LongOrdinal>(-1); // set to undefined value
 			// TODO generateFault(OPERATION.INVALID_OPERATION)
@@ -441,7 +444,9 @@ X(cmpi, bno);
 		dest.set<Integer>((ShortInteger)load(src.get<Ordinal>()));
 	}
 
-	void Core::ldl0(SourceRegister src, LongDestinationRegister dest) noexcept {
+	void Core::ldl(SourceRegister src, Ordinal srcDestIndex) noexcept {
+		// TODO make sure that the srcDestIndex makes sense
+		LongRegister dest = makeLongRegister(srcDestIndex);
 		auto addr = src.get<Ordinal>();
 		dest.set(load(addr), load(addr + 1));
 	}
@@ -449,7 +454,10 @@ X(cmpi, bno);
 		_lower.set<Ordinal>(lower);
 		_upper.set<Ordinal>(upper);
 	}
-	void Core::ldt0(SourceRegister src, TripleRegister& dest) noexcept {
+	void Core::ldt(SourceRegister src, Ordinal srcDestIndex) noexcept {
+		// TODO make sure that the srcDestIndex makes sense
+		TripleRegister dest = makeTripleRegister(srcDestIndex);
+		//TripleRegister reg(getRegister(srcDestIndex), getRegister(srcDestIndex + 1), getRegister(srcDestIndex + 2));
 		auto addr = src.get<Ordinal>();
 		dest.set(load(addr), load(addr + 1), load(addr + 2));
 	}
@@ -458,7 +466,10 @@ X(cmpi, bno);
 		_mid.set<Ordinal>(m);
 		_upper.set<Ordinal>(u);
 	}
-	void Core::ldq0(SourceRegister src, QuadRegister& dest) noexcept {
+	void Core::ldq(SourceRegister src, Ordinal index) noexcept {
+		// TODO make sure that the srcDestIndex makes sense
+		QuadRegister dest = makeQuadRegister(index);
+		//QuadRegister reg(getRegister(index), getRegister(index + 1), getRegister(index + 2), getRegister(index + 3));
 		auto addr = src.get<Ordinal>();
 		dest.set(load(addr), load(addr + 1), load(addr + 2), load(addr + 3));
 	}
@@ -844,7 +855,9 @@ X(cmpi, bno);
 	void Core::setbit(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set<Ordinal>(i960::setBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
 	}
-	void Core::emul0(SourceRegister src1, SourceRegister src2, LongDestinationRegister dest) noexcept {
+	void Core::emul(SourceRegister src1, SourceRegister src2, ByteOrdinal destIndex) noexcept {
+		// TODO perform double register validity check
+		LongRegister dest = makeLongRegister(destIndex);
 		dest.set<LongOrdinal>(src2.get<LongOrdinal>() * src1.get<LongOrdinal>());
 	}
 	void Core::lda(SourceRegister src, DestinationRegister dest) noexcept {
@@ -1043,6 +1056,15 @@ X(cmpi, bno);
 		if (!_pc.inSupervisorMode()) {
 			// generateFault(TYPE.MISMATCH);
 		}
+	}
+	QuadRegister Core::makeQuadRegister(ByteOrdinal index) noexcept {
+		return QuadRegister(getRegister(index), getRegister(index + 1), getRegister(index + 2), getRegister(index + 3));
+	}
+	TripleRegister Core::makeTripleRegister(ByteOrdinal index) noexcept {
+		return TripleRegister(getRegister(index), getRegister(index + 1), getRegister(index + 2));
+	}
+	LongRegister Core::makeLongRegister(ByteOrdinal index) noexcept {
+		return LongRegister(getRegister(index), getRegister(index + 1));
 	}
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
