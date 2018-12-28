@@ -438,34 +438,25 @@ namespace i960 {
             Ordinal getOpcode() const noexcept {
                 return (_opcode << 4) | _opcode2;
             }
-            bool m1Set() const noexcept { return _m1 != 0; }
-            bool m2Set() const noexcept { return _m2 != 0; }
-            bool m3Set() const noexcept { return _m3 != 0; }
-            bool src1IsLiteral() const noexcept { return _m1 != 0; }
-            bool src2IsLiteral() const noexcept { return _m2 != 0; }
-            bool srcDestIsLiteral() const noexcept { return _m3 != 0; }
-            ByteOrdinal src1ToIntegerLiteral() const noexcept { return _source1; }
-            ByteOrdinal src2ToIntegerLiteral() const noexcept { return _source2; }
-			ByteOrdinal srcDestToIntegerLiteral() const noexcept { return _src_dest; }
 			void encodeSrc1(const Operand& operand) noexcept {
 				_source1 = operand.getValue();
 				_m1 = operand.isLiteral() ? 1 : 0;
 			}
-			Operand decodeSrc1() const noexcept {
+			auto decodeSrc1() const noexcept {
 				return Operand(_m1, _source1);
 			}
 			void encodeSrc2(const Operand& operand) noexcept {
 				_source2 = operand.getValue();
 				_m2 = operand.isLiteral() ? 1 : 0;
 			}
-			Operand decodeSrc2() const noexcept {
+			auto decodeSrc2() const noexcept {
 				return Operand(_m2, _source2);
 			}
 			void encodeSrcDest(const Operand& operand) noexcept {
 				_src_dest = operand.getValue();
 				_m3 = operand.isLiteral() ? 1 : 0;
 			}
-			Operand decodeSrcDest() const noexcept {
+			auto decodeSrcDest() const noexcept {
 				return Operand(_m3, _src_dest);
 			}
         };
@@ -482,6 +473,17 @@ namespace i960 {
 				_source1 = operand.getValue();
 				_m1 = operand.isLiteral() ? 1 : 0;
 			}
+			auto decodeSrc1() const noexcept {
+				return Operand(_m1, _source1); 
+			}
+			void encodeSrc2(const Operand& operand) noexcept {
+				// regardless if you give me a literal or a register, use the
+				// value as is.
+				_source2 = operand.getValue();
+			}
+			auto decodeSrc2() const noexcept {
+				return Operand(0, _source2);
+			}
         };
         struct CTRLFormat {
 			Ordinal _unused : 2;
@@ -489,6 +491,9 @@ namespace i960 {
             Ordinal _opcode : 8;
 			void encodeDisplacement(Ordinal value) noexcept {
 				_displacement = value;
+			}
+			auto decodeDisplacement() const noexcept {
+				return _displacement;
 			}
         };
         union MemFormat {
@@ -508,6 +513,12 @@ namespace i960 {
                 }
 				bool isOffsetAddressingMode() const noexcept {
 					return getAddressingMode() == AddressingModes::Offset;
+				}
+				auto decodeSrcDest() const noexcept {
+					return Operand(0, _src_dest);
+				}
+				auto decodeAbase() const noexcept {
+					return Operand(0, _abase);
 				}
             };
             struct MEMBFormat {
@@ -558,6 +569,12 @@ namespace i960 {
                             return 0; 
                     }
                 }
+				auto decodeSrcDest() const noexcept {
+					return Operand(0, _src_dest);
+				}
+				auto decodeAbase() const noexcept {
+					return Operand(0, _abase);
+				}
             };
 			Ordinal getSrcDestIndex() const noexcept {
 				if (isMemAFormat()) {
