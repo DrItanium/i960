@@ -448,7 +448,10 @@ X(cmpi, bno);
 		LongRegister dest = makeLongRegister(destInd);
 		if (auto s1 = src1.get<LongOrdinal>(); s1 == 0) {
 			dest.set<LongOrdinal>(-1); // set to undefined value
-			// TODO generateFault(OPERATION.INVALID_OPERATION)
+			generateFault(OperationFaultSubtype::InvalidOperand);
+		} else if (src1.get<Ordinal>() == 0) {
+			dest.set<LongOrdinal>(-1);
+			generateFault(ArithmeticFaultSubtype::ZeroDivide);
 		} else {
 			auto s2 = src2.get<LongOrdinal>();
 			auto divOp = s2 / s1;
@@ -461,7 +464,7 @@ X(cmpi, bno);
 	void Core::divi(__DEFAULT_THREE_ARGS__) noexcept {
 		if (auto denominator = src1.get<Integer>(); denominator == 0) {
 			dest.set<Integer>(-1);
-			//generateFault(ARITHMETIC.ZERO_DIVIDE);
+			generateFault(ArithmeticFaultSubtype::ZeroDivide);
 		} else if (auto numerator = src2.get<Integer>(); (numerator == 0x8000'0000) && (denominator == -1)) {
 			// this one is a little strange, the manual states -2**31
 			// which is just 0x8000'0000 in signed integer, no clue why they
@@ -470,7 +473,7 @@ X(cmpi, bno);
 			if (_ac.integerOverflowMask == 1) {
 				_ac.integerOverflowFlag = 1;
 			} else {
-				// generateFault(ARITHMETIC.OVERFLOW);
+				generateFault(ArithmeticFaultSubtype::IntegerOverflow);
 			}
 		} else {
 			dest.set<Integer>(numerator / denominator);
@@ -981,14 +984,13 @@ X(cmpi, bno);
 	}
 	void Core::fmark() noexcept {
 		if (_pc.traceEnabled()) {
-			// TODO raise trace breakpoint fault
+			generateFault(TraceFaultSubtype::Mark);
 		}
 	}
 	void Core::mark() noexcept {
 		// force mark aka generate a breakpoint trace-event
 		if (_pc.traceEnabled() && _tc.traceMarked()) {
-			// TODO raise trace breakpoint fault
-			// generateFault(TRACE.MARK);
+			generateFault(TraceFaultSubtype::Mark);
 		}
 	}
     void Core::xnor(__DEFAULT_THREE_ARGS__) noexcept {
@@ -1006,13 +1008,13 @@ X(cmpi, bno);
 	void Core::intdis() {
 		// TODO implement
 		if (!_pc.inSupervisorMode()) {
-			// generateFault(TYPE.MISMATCH);
+			generateFault(TypeFaultSubtype::Mismatch);
 		}
 	}
 	void Core::inten() {
 		// TODO implement
 		if (!_pc.inSupervisorMode()) {
-			// generateFault(TYPE.MISMATCH);
+			generateFault(TypeFaultSubtype::Mismatch);
 		}
 	}
 
@@ -1034,7 +1036,7 @@ X(cmpi, bno);
 		// to use this instruction
 		syncf(); // implicit syncf
 		if (!_pc.inSupervisorMode()) {
-			// generateFault(TYPE.MISMATCH);
+			generateFault(TypeFaultSubtype::Mismatch);
 		} else {
 			switch (src1.get<Ordinal>()) {
 				case 0: // Disable interrupts. Clear ICON.gie
@@ -1090,7 +1092,7 @@ X(cmpi, bno);
 		// do something!
 		// TODO something
 		if (!_pc.inSupervisorMode()) {
-			// generateFault(TYPE.MISMATCH);
+			generateFault(TypeFaultSubtype::Mismatch);
 		}
 	}
 	void Core::eshro(SourceRegister src1, ByteOrdinal src2Ind, DestinationRegister dest) noexcept {
@@ -1102,19 +1104,19 @@ X(cmpi, bno);
 	void Core::icctl(__DEFAULT_THREE_ARGS__) noexcept { 
 		// TODO implement
 		if (!_pc.inSupervisorMode()) {
-			// generateFault(TYPE.MISMATCH);
+			generateFault(TypeFaultSubtype::Mismatch);
 		}
 	}
 	void Core::intctl(__DEFAULT_TWO_ARGS__) { 
 		// TODO: implement
 		if (!_pc.inSupervisorMode()) {
-			// generateFault(TYPE.MISMATCH);
+			generateFault(TypeFaultSubtype::Mismatch);
 		}
 	}
 	void Core::sysctl(__DEFAULT_THREE_ARGS__) noexcept { 
 		// TODO: implement
 		if (!_pc.inSupervisorMode()) {
-			// generateFault(TYPE.MISMATCH);
+			generateFault(TypeFaultSubtype::Mismatch);
 		}
 	}
 	QuadRegister Core::makeQuadRegister(ByteOrdinal index) noexcept {
@@ -1127,7 +1129,7 @@ X(cmpi, bno);
 		return LongRegister(getRegister(index), getRegister(index + 1));
 	}
 	void Core::generateFault(ByteOrdinal faultType, ByteOrdinal faultSubtype) {
-
+		// TODO implement
 	}
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
