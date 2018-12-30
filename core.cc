@@ -206,7 +206,7 @@ X(cmpi, bno);
 			if (_ac.integerOverflowMask == 1) {
 				_ac.integerOverflowFlag = 1;
 			} else {
-				// TODO generate_fault(ARITHMETIC.OVERFLOW);
+				generateFault(ArithmeticFaultSubtype::IntegerOverflow);
 			}
 		}
 	}
@@ -218,14 +218,14 @@ X(cmpi, bno);
 	}
 	void Core::divo(__DEFAULT_THREE_ARGS__) noexcept {
 		if (auto denominator = src1.get<Ordinal>(); denominator == 0) {
-			// generateFault(ARITHMETIC.ZERO_DIVIDE);
+			generateFault(ArithmeticFaultSubtype::ZeroDivide);
 		} else {
 			dest.set(src2.get<Ordinal>() / denominator);
 		}
 	}
 	void Core::remo(__DEFAULT_THREE_ARGS__) noexcept {
 		if (auto denominator = src1.get<Ordinal>(); denominator == 0) {
-			// raise a ARITHMETIC.ZERO_DIVIDE fault
+			generateFault(ArithmeticFaultSubtype::ZeroDivide);
 		} else {
 			// as defined in the manual
 			auto numerator = src2.get<Ordinal>();
@@ -283,7 +283,7 @@ X(cmpi, bno);
 			// however the manual states that this is an acceptable state
 			getRegister(dest).set<Integer>(-1);
 			getRegister(dest.next()).set<Integer>(-1);
-			// generateFault(Operation.InvalidOperation);
+			generateFault(OperationFaultSubtype::InvalidOperand);
 		} else if (src.isRegister()) {
 			mov(src, dest);
 			mov(src.next(), dest.next());
@@ -300,7 +300,7 @@ X(cmpi, bno);
 			d0.set(-1);
 			d1.set(-1);
 			d2.set(-1);
-			// generateFault(Operation.InvalidOperation)
+			generateFault(OperationFaultSubtype::InvalidOperand);
 		} else if (src.isRegister()) {
 			d0.move(getRegister(src));
 			d1.move(getRegister(src.next()));
@@ -321,7 +321,7 @@ X(cmpi, bno);
 			d1.set(-1);
 			d2.set(-1);
 			d3.set(-1);
-			// generateFault(Operation.InvalidOperation)
+			generateFault(OperationFaultSubtype::InvalidOperand);
 		} else if (src.isRegister()) {
 			d0.move(getRegister(src));
 			d1.move(getRegister(src.next()));
@@ -420,8 +420,8 @@ X(cmpi, bno);
 	}
 	void Core::modi(__DEFAULT_THREE_ARGS__) noexcept {
 		if (auto s1 = src1.get<Integer>(); s1 == 0) {
-			// raise a arithmetic.zero_divide fault
 			dest.set<Integer>(-1); // says in the manual, to assign it to an undefined value
+			generateFault(ArithmeticFaultSubtype::ZeroDivide);
 		} else {
 			auto s2 = src2.get<Integer>();
 			dest.set<Integer>(s2 - (s2 / s1) * s1);
@@ -541,13 +541,13 @@ X(cmpi, bno);
 			if (_ac.integerOverflowMask == 1) {
 				_ac.integerOverflowFlag = 1;
 			} else {
-				// raise a ARITHMETIC.OVERFLOW fault
+				generateFault(ArithmeticFaultSubtype::IntegerOverflow);
 			}
 		}
 	}
 	void Core::remi(SourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept {
 		if (auto denominator = src1.get<Integer>(); denominator == 0) {
-			// raise a ARITHMETIC.ZERO_DIVIDE fault
+			generateFault(ArithmeticFaultSubtype::ZeroDivide);
 		} else {
 			// as defined in the manual
 			auto numerator = src2.get<Integer>();
@@ -593,7 +593,7 @@ X(cmpi, bno);
 			if (_ac.integerOverflowMask == 1) {
 				_ac.integerOverflowFlag = 1;
 			} else {
-				// TODO generate_fault(ARITHMETIC.OVERFLOW);
+				generateFault(ArithmeticFaultSubtype::IntegerOverflow);
 			}
 		}
 	}
@@ -609,7 +609,7 @@ X(cmpi, bno);
 		auto maskVal = mask.get<Ordinal>();
 		if (maskVal != 0) {
 			if (_pc.inUserMode()) {
-				// TODO raise a type-mismatch fault
+				generateFault(TypeFaultSubtype::Mismatch);
 				return;
 			}
 			ProcessControls temp;
@@ -727,42 +727,42 @@ X(cmpi, bno);
 	}
 	void Core::faulte() noexcept {
         if (conditionCodeIs<ConditionCode::Equal>()) {
-		    //TODO implement
+			generateFault(ConstraintFaultSubtype::Range);
         }
 	}
 	void Core::faultne() noexcept {
         if (conditionCodeIs<ConditionCode::NotEqual>()) {
-		    //TODO implement
+			generateFault(ConstraintFaultSubtype::Range);
         }
 	}
 	void Core::faultl() noexcept {
         if (conditionCodeIs<ConditionCode::Less>()) {
-		    //TODO implement
+			generateFault(ConstraintFaultSubtype::Range);
         }
 	}
 	void Core::faultle() noexcept {
         if (conditionCodeIs<ConditionCode::LessOrEqual>()) {
-		    //TODO implement
+			generateFault(ConstraintFaultSubtype::Range);
         }
 	}
 	void Core::faultg() noexcept {
         if (conditionCodeIs<ConditionCode::Greater>()) {
-		    //TODO implement
+			generateFault(ConstraintFaultSubtype::Range);
         }
 	}
 	void Core::faultge() noexcept {
         if (conditionCodeIs<ConditionCode::GreaterOrEqual>()) {
-		    //TODO implement
+			generateFault(ConstraintFaultSubtype::Range);
         }
 	}
 	void Core::faulto() noexcept {
         if (conditionCodeIs<ConditionCode::Ordered>()) {
-		    //TODO implement
+			generateFault(ConstraintFaultSubtype::Range);
         }
 	}
 	void Core::faultno() noexcept {
         if (_ac.conditionCode == 0) {
-		    //TODO implement
+			generateFault(ConstraintFaultSubtype::Range);
         }
 	}
 	void Core::stob(__TWO_SOURCE_REGS__) noexcept {
@@ -1125,6 +1125,9 @@ X(cmpi, bno);
 	}
 	LongRegister Core::makeLongRegister(ByteOrdinal index) noexcept {
 		return LongRegister(getRegister(index), getRegister(index + 1));
+	}
+	void Core::generateFault(ByteOrdinal faultType, ByteOrdinal faultSubtype) {
+
 	}
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__

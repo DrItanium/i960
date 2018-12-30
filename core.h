@@ -21,6 +21,71 @@ namespace i960 {
     using LongDestinationRegister = LongRegister&;
     
     using RegisterWindow = NormalRegister[LocalRegisterCount];
+		enum class FaultType : ByteOrdinal {
+			Override = 0x0,
+			Parallel = 0x0,
+			Trace = 0x1,
+			Operation = 0x2,
+			Arithmetic = 0x3,
+			Constraint = 0x5,
+			Protection = 0x7,
+			Type = 0xA,
+		};
+		enum class TraceFaultSubtype : ByteOrdinal {
+			Instruction = 0x02,
+			Branch = 0x04,
+			Call = 0x08,
+			Return = 0x10,
+			PreReturn = 0x20,
+			Supervisor = 0x40,
+			Mark = 0x80,
+		};
+		enum class OperationFaultSubtype : ByteOrdinal {
+			InvalidOpcode = 0x1,
+			Unimplemented = 0x2,
+			Unaligned = 0x3,
+			InvalidOperand = 0x4,
+		};
+		enum class ArithmeticFaultSubtype : ByteOrdinal {
+			IntegerOverflow = 0x1,
+			ZeroDivide = 0x2,
+		};
+		enum class ConstraintFaultSubtype : ByteOrdinal {
+			Range = 0x1,
+		};
+		enum class ProtectionFaultSubtype : ByteOrdinal {
+			Length = 0x1,
+		};
+		enum class TypeFaultSubtype : ByteOrdinal {
+			Mismatch = 0x1,
+		};
+		template<typename T>
+		class FaultAssociation final {
+			public:
+			private:
+				FaultAssociation() = delete;
+				FaultAssociation(const FaultAssociation&) = delete;
+				FaultAssociation(FaultAssociation&&) = delete;
+				~FaultAssociation() = delete;
+		};
+#define X(type, parent) \
+		template<> \
+		class FaultAssociation< type > final { \
+			public: \
+				static constexpr auto ParentFaultType = FaultType:: parent ; \
+			private: \
+				FaultAssociation() = delete; \
+				FaultAssociation(const FaultAssociation&) = delete; \
+				FaultAssociation(FaultAssociation&&) = delete; \
+				~FaultAssociation() = delete; \
+		}
+		X(TraceFaultSubtype, Trace);
+		X(OperationFaultSubtype, Operation);
+		X(ArithmeticFaultSubtype, Arithmetic);
+		X(ConstraintFaultSubtype, Constraint);
+		X(ProtectionFaultSubtype, Protection);
+		X(TypeFaultSubtype, Type);
+#undef X
     class Core {
         public:
 			Core(MemoryInterface& mem);
@@ -31,6 +96,11 @@ namespace i960 {
             // TODO finish this once we have all the other sub components implemented behind the
             // scenes
         private:
+			void generateFault(ByteOrdinal faultType, ByteOrdinal faultSubtype = 0);
+			template<typename T>
+			void generateFault(T faultSubtype) {
+				generateFault(ByteOrdinal(FaultAssociation<T>::ParentFaultType), ByteOrdinal(faultSubtype));
+			}
             /** 
              * perform a call
              */
@@ -229,7 +299,7 @@ namespace i960 {
 					if (_ac.integerOverflowMask == 1) {
 						_ac.integerOverflowFlag = 1;
 					} else {
-						// TODO generate_fault(ARITHMETIC.OVERFLOW);
+						generateFault(ArithmeticFaultSubtype::IntegerOverflow);
 					}
 				}
 			}
@@ -250,7 +320,7 @@ namespace i960 {
 					if (_ac.integerOverflowMask == 1) {
 						_ac.integerOverflowFlag = 1;
 					} else {
-						// TODO generate_fault(ARITHMETIC.OVERFLOW);
+						generateFault(ArithmeticFaultSubtype::IntegerOverflow);
 					}
 				}
 			}
