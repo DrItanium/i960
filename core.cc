@@ -955,32 +955,14 @@ X(cmpi, bno);
 		 * FAILURE pin and enter the stopped state.
 		 */
 		_ac.clear();
-		auto& dest = _globalRegisters[10];
-		dest.set<Ordinal>(0);
-		auto& src = _globalRegisters[11];
-		for (int i = 0; i < 8; ++i) {
-			_initialWords[i] = load(i); // load the eight words
-			src.set<Ordinal>(_initialWords[i]);
-			addc(src, dest, dest);
+		_instructionPointer = 0x001F2002;
+		for (Ordinal i = 0xFEFF'FF30, j = 0; i < 0xFEFF'FF5C; i += 4, ++j) {
+			_initialWords[j] = load(i);
 		}
-		src.set<Ordinal>(0xFFFF'FFFF);
-		addc(src, dest, dest);
-		if (dest.get<Ordinal>() != 0) {
-			// TODO assert the FAILURE pin
-			// TODO enter stop state
-			return;
-		}
-	    /*
-		 * 4. Use words 0 and 1 as the pointers to the initial data structures,
-		 * and set the IP to the value of word 3. In the process controls, set
-		 * the priority to 31 and the state to interrupted. Store the interrupt
-		 * stack pointer in FP (g15), and begin execution.
-		 */
-		_systemProcedureTableAddress = _initialWords[0];
-		_prcbAddress = _initialWords[1];
-		_instructionPointer = _initialWords[3];
-		_pc.priority = 31;
-		_globalRegisters[15].set<Ordinal>(load(_prcbAddress + 24));
+		_instructionPointer = _initialWords[4];
+		_prcbAddress = _initialWords[5];
+		//_pc.priority = 31;
+		//_globalRegisters[15].set<Ordinal>(load(_prcbAddress + 24));
 	}
 	void Core::fmark() noexcept {
 		if (_pc.traceEnabled()) {
@@ -1129,7 +1111,8 @@ X(cmpi, bno);
 		return LongRegister(getRegister(index), getRegister(index + 1));
 	}
 	void Core::generateFault(ByteOrdinal faultType, ByteOrdinal faultSubtype) {
-		// TODO implement
+		// get the fault table base address
+		auto faultTableBaseAddress = load(_prcbAddress);
 	}
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__

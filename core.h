@@ -396,7 +396,7 @@ namespace i960 {
             ProcessControls _pc;
             TraceControls _tc;
 			MemoryInterface& _mem;
-			Ordinal _initialWords[8];
+			Ordinal _initialWords[12];
 			Ordinal _prcbAddress;
 			Ordinal _systemProcedureTableAddress;
 			// the first 1024 bytes of ram is a internal data ram cache
