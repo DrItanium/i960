@@ -123,9 +123,11 @@ X(cmpi, bno);
 	void Core::calls(const NormalRegister& value) {
 		auto targ = value.get<ShortOrdinal>();
 		if (targ > 259) {
-			// raise protection length fault here
+			generateFault(ProtectionFaultSubtype::Length);
 			return;
 		}
+		// TODO reimplement for the i960 jx
+		/*
 		Ordinal temp = 0;
 		Ordinal newRRR = 0;
 		// This code is 80960KB specific, I keep getting different answers :(
@@ -158,6 +160,7 @@ X(cmpi, bno);
 		getRegister(PreviousFramePointerIndex).pfp.returnCode = newRRR;
 		setFramePointer(temp);
 		setRegister(StackPointerIndex, temp + 64);
+		*/
 	}
 
 	Ordinal Core::load(Ordinal address, bool atomic) noexcept {
@@ -925,45 +928,6 @@ X(cmpi, bno);
 		// already computed this value by proxy of decoding
 		dest.move(src);
 	}
-	void Core::reset() {
-		// clear out the internal data ram
-		_internalDataRam.reset();
-		/* Taken from the 80960MC manual on how initialization works:
-		 *
-		 * 1. Assert the FAILURE output pin and perform the internal self-test.
-		 * If the test passes, deassert FAILURE and continue with the step
-		 * below; otherwise enter the stopped state.
-		 */
-
-		/*
-		 * 2. Clear the trace controls, disable the breakpoint registers, clear
-		 * the process controls, and then set the em flag in the process
-		 * controls (supervisor mode). If the processor is an initialization
-		 * processor, continue with the step below; otherwise enter the stopped
-		 * state.
-		 */
-		_tc.clear();
-		// disable the breakpoint registers
-		_pc.clear();
-		_pc.enterSupervisorMode();
-		// assume that we are the initialization processor for now
-		/*
-		 * 3. Read eight words from memory, beginning at location 0. Clear the
-		 * condition code, sum these eight words with the ADDC (add-with-carry)
-		 * operation, and then add 0xFFFF'FFFF to the sum (again with addc). If
-		 * the sum is 0, continue with the step below; otherwise assert the
-		 * FAILURE pin and enter the stopped state.
-		 */
-		_ac.clear();
-		_instructionPointer = 0x001F2002;
-		for (Ordinal i = 0xFEFF'FF30, j = 0; i < 0xFEFF'FF5C; i += 4, ++j) {
-			_initialWords[j] = load(i);
-		}
-		_instructionPointer = _initialWords[4];
-		_prcbAddress = _initialWords[5];
-		//_pc.priority = 31;
-		//_globalRegisters[15].set<Ordinal>(load(_prcbAddress + 24));
-	}
 	void Core::fmark() noexcept {
 		if (_pc.traceEnabled()) {
 			generateFault(TraceFaultSubtype::Mark);
@@ -1112,7 +1076,91 @@ X(cmpi, bno);
 	}
 	void Core::generateFault(ByteOrdinal faultType, ByteOrdinal faultSubtype) {
 		// get the fault table base address
-		auto faultTableBaseAddress = load(_prcbAddress);
+		auto faultTableBaseAddress = getFaultTableBaseAddress();
+	}
+	Ordinal Core::getFaultTableBaseAddress() noexcept {
+		return load(_prcbAddress + 0x00);
+	}
+	Ordinal Core::getControlTableBaseAddress() noexcept {
+		return load(_prcbAddress + 0x04);
+	}
+	Ordinal Core::getACRegisterInitialImage() noexcept {
+		return load(_prcbAddress + 0x08);
+	}
+	Ordinal Core::getFaultConfigurationWord() noexcept {
+		return load(_prcbAddress + 0x0C);
+	}
+	Ordinal Core::getInterruptTableBaseAddress() noexcept {
+		return load(_prcbAddress + 0x10);
+	}
+	Ordinal Core::getSystemProcedureTableBaseAddress() noexcept {
+		return load(_prcbAddress + 0x14);
+	}
+	Ordinal Core::getInterruptStackPointer() noexcept {
+		// _prcbAddress + 24 is reserved in the manual
+		return load(_prcbAddress + 0x1C);
+	}
+	Ordinal Core::getInstructionCacheConfigurationWord() noexcept {
+		return load(_prcbAddress + 0x20);
+	}
+	Ordinal Core::getRegisterCacheConfigurationWord() noexcept {
+		return load(_prcbAddress + 0x24);
+	}
+	void Core::reset() {
+		_internalDataRam.reset();
+		initializeProcessor();
+	}
+	void Core::initializeProcessor() {
+		// taken from the manual but modified to reflect future implementation
+		// data.
+		// _failPin = true;
+		// restoreFullCacheMode();
+		// _icache.disable();
+		// _icache.invalidate();
+		// _dcache.disable();
+		// _dcache.invalidate();
+		// _bcon.ctv = 0; // selects _pmcon14_15 to control all accesses
+		// _pmcon14_15 = 0; // selects 8-bit bus width
+		/// Exit reset state and start init 
+		// if (stestOnRisingEdgeOfReset) {
+		//   _status = bist(); // bist does not return if it fails
+		// }
+		// _failPin = false;
+		_pc.value = 0x001F2002; 
+		constexpr Ordinal ibrPtr = 0xFEFF'FF30;
+		// read pmcon14_15 image in ibr 
+		// _failPin = true;
+		// _imsk = 0;
+		// _dlmcon.dcen = 0;
+		// _lmmr0.lmte = 0;
+		// _lmmr1.lmte = 0;
+		// _dlmcon.be = load(ibrPtr + 0xc] >> 7;
+		// _pmcon14_15.byte2 = 0xc0 & load(ibrPtr + 0x08);
+		// compute checksum on boot record
+		auto carry = 0u;
+		auto checksum = 0xFFFF'FFFF;
+		for (auto i = 0; i < 6; ++i) {
+			// carry is carry out from previous add
+			checksum = load(ibrPtr + 16 + (i * 4)) + checksum + carry;
+		}
+		if (checksum != 0) {
+			constexpr Ordinal failMsg = 0xFEFF'FF64; // fail bus confidence test
+			auto dummy = load(failMsg); // do load with address = failMsg
+			// loop forever with FAIL pin true (hardware does this)
+			// for (;;);
+		} else {
+			// failPin = false;
+		}
+		// process prcb and control table
+		_prcbAddress = load(ibrPtr + 0x14);
+		_ctrlTable = load(ibrPtr + 0x04);
+		processPrcb();
+		_instructionPointer = load(ibrPtr + 0x10);
+		static constexpr Ordinal DEVICE_ID = 0xFDED; // TODO figure out what this actually is
+		setRegister(0_gr, DEVICE_ID);
+	}
+	void Core::processPrcb() {
+		// TODO implement according to the manual
 	}
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__

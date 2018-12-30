@@ -93,9 +93,20 @@ namespace i960 {
 			 * Invoked by the external RESET pin, initializes the core.
 			 */
 			void reset();
-            // TODO finish this once we have all the other sub components implemented behind the
-            // scenes
+			void initializeProcessor();
+			void processPrcb();
         private:
+			Ordinal getFaultTableBaseAddress() noexcept;
+			Ordinal getControlTableBaseAddress() noexcept;
+			Ordinal getACRegisterInitialImage() noexcept;
+			Ordinal getFaultConfigurationWord() noexcept;
+			Ordinal getInterruptTableBaseAddress() noexcept;
+			Ordinal getSystemProcedureTableBaseAddress() noexcept;
+			Ordinal getInterruptStackPointer() noexcept;
+			Ordinal getInstructionCacheConfigurationWord() noexcept;
+			Ordinal getRegisterCacheConfigurationWord() noexcept;
+			Ordinal getPRCBPointer() noexcept;
+			Ordinal getFirstInstructionPointer() noexcept;
 			void generateFault(ByteOrdinal faultType, ByteOrdinal faultSubtype = 0);
 			template<typename T>
 			void generateFault(T faultSubtype) {
@@ -396,9 +407,8 @@ namespace i960 {
             ProcessControls _pc;
             TraceControls _tc;
 			MemoryInterface& _mem;
-			Ordinal _initialWords[12];
 			Ordinal _prcbAddress;
-			Ordinal _systemProcedureTableAddress;
+			Ordinal _ctrlTable;
 			// the first 1024 bytes of ram is a internal data ram cache
 			// which can be read from and written to but not executed from
 			i960::JxCPUInternalDataRam _internalDataRam;
