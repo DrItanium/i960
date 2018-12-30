@@ -407,7 +407,7 @@ namespace i960 {
 			constexpr operator ByteOrdinal() const noexcept { return ByteOrdinal(getValue()); }
 			constexpr auto notDivisibleBy(ByteOrdinal value) const noexcept { return (((ByteOrdinal)getValue()) % value) != 0; }
 			constexpr Operand next() const noexcept {
-				return Operand(_raw & typeMask != 0, getValue() + 1);
+				return Operand((_raw & typeMask) != 0, getValue() + 1);
 			}
 		private:
 			Ordinal _raw;

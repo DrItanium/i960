@@ -7,13 +7,6 @@
 #include <string>
 
 namespace i960 {
-	void throwUnimplementedDescription(const Opcode::Description& desc) {
-		// TODO generate illegal instruction fault
-		std::stringstream message;
-		message << "unimplemented operation: " << desc.getString();
-		auto str = message.str();
-		throw str;
-	}
 	void Core::dispatch(const Instruction& inst) noexcept {
 		auto selectRegister = [this](const Operand& operand, NormalRegister& imm) -> NormalRegister& {
 			if (operand.isLiteral()) {
@@ -25,7 +18,7 @@ namespace i960 {
 		};
 		if (auto desc = Opcode::getDescription(inst); desc.isUndefined()) {
 			// TODO raise fault
-			throw "illegal instruction";
+			generateFault(OperationFaultSubtype::InvalidOpcode);
 		} else if (desc.hasZeroArguments()) {
 			// these operations require no further decoding effort so short
 			// circuit them :D
@@ -38,7 +31,7 @@ namespace i960 {
 #include "conditional_kinds.def"
 #undef X
 #undef Y
-				default: throwUnimplementedDescription(desc);
+				default: generateFault(OperationFaultSubtype::InvalidOpcode); break;
 			}
 		} else if (desc.isReg()) {
 			auto reg = inst._reg;
@@ -96,8 +89,7 @@ namespace i960 {
 				case Opcode::bswap:
 					bswap(src1, src2);
 					break;
-				default: 
-					throwUnimplementedDescription(desc);
+				default: generateFault(OperationFaultSubtype::InvalidOpcode); break;
 			}
 		} else if (desc.isMem()) {
 			auto mem = inst._mem;
@@ -148,9 +140,9 @@ namespace i960 {
 					case E::Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement:
 						immediateStorage.set(abase.get<Ordinal>() + index * scale + displacement);
 						break;
-					default:
-#warning "Fault on illegal mode!"
-						throw "Illegal mode!";
+					default: 
+						generateFault(OperationFaultSubtype::InvalidOpcode); 
+						break;
 				}
 			}
 			// opcode does not differentiate between mema and memb, another bit
@@ -176,7 +168,9 @@ namespace i960 {
 #undef WLDP
 #undef LDP
 #undef Y
-				default: throwUnimplementedDescription(desc);
+				default: 
+					generateFault(OperationFaultSubtype::InvalidOpcode); 
+					break;
 			}
 		} else if (desc.isCtrl()) {
 			auto ctrl = inst._ctrl;
@@ -193,7 +187,9 @@ namespace i960 {
 #include "conditional_kinds.def"
 #undef X
 #undef Y
-				default: throwUnimplementedDescription(desc);
+				default: 
+					generateFault(OperationFaultSubtype::InvalidOpcode); 
+					break;
 			}
 		} else if (desc.isCobr()) {
 			auto cobr = inst._cobr;
@@ -212,11 +208,12 @@ namespace i960 {
 #include "conditional_kinds.def"
 #undef X
 #undef Y
-				default: throwUnimplementedDescription(desc);
+				default: 
+					generateFault(OperationFaultSubtype::InvalidOpcode); 
+					break;
 			}
 		} else {
-			throwUnimplementedDescription(desc);
+			generateFault(OperationFaultSubtype::InvalidOpcode); 
 		}
 	}
-
 } // end namespace i960
