@@ -721,7 +721,26 @@ X(Region10_11, 0xA000'0000, 0xBFFF'FFFF);
 X(Region12_13, 0xC000'0000, 0xDFFF'FFFF);
 X(Region14_15, 0xE000'0000, 0xFFFF'FFFF);
 #undef X
-
+	union PMCONRegister final {
+		struct {
+			Ordinal _unused0 : 22;
+			Ordinal _busWidth : 2;
+			Ordinal _unused1 : 8;
+		};
+		Ordinal _value;
+		bool busWidthIs8bit() const noexcept { return _busWidth == 0b00; }
+		bool busWidthIs16bit() const noexcept { return _busWidth == 0b01; }
+		bool busWidthIs32bit() const noexcept { return _busWidth == 0b10; }
+		bool busWidthIsUndefined() const noexcept { return _busWidth == 0b11; }
+	} __attribute__((packed));
+	union BCONRegister final {
+		struct {
+			Ordinal _configurationEntriesInControlTableValid : 1;
+			Ordinal _internalRAMProtection : 1;
+			Ordinal _supervisorInternalRAMProtection : 1;
+		};
+		Ordinal _value;
+	} __attribute__((packed));
     /**
      * Also known as the PRCB, it is a data structure in memory which the cpu uses to track
      * various states
