@@ -21,71 +21,105 @@ namespace i960 {
     using LongDestinationRegister = LongRegister&;
     
     using RegisterWindow = NormalRegister[LocalRegisterCount];
-		enum class FaultType : ByteOrdinal {
-			Override = 0x0,
-			Parallel = 0x0,
-			Trace = 0x1,
-			Operation = 0x2,
-			Arithmetic = 0x3,
-			Constraint = 0x5,
-			Protection = 0x7,
-			Type = 0xA,
-		};
-		enum class TraceFaultSubtype : ByteOrdinal {
-			Instruction = 0x02,
-			Branch = 0x04,
-			Call = 0x08,
-			Return = 0x10,
-			PreReturn = 0x20,
-			Supervisor = 0x40,
-			Mark = 0x80,
-		};
-		enum class OperationFaultSubtype : ByteOrdinal {
-			InvalidOpcode = 0x1,
-			Unimplemented = 0x2,
-			Unaligned = 0x3,
-			InvalidOperand = 0x4,
-		};
-		enum class ArithmeticFaultSubtype : ByteOrdinal {
-			IntegerOverflow = 0x1,
-			ZeroDivide = 0x2,
-		};
-		enum class ConstraintFaultSubtype : ByteOrdinal {
-			Range = 0x1,
-		};
-		enum class ProtectionFaultSubtype : ByteOrdinal {
-			Length = 0x1,
-		};
-		enum class TypeFaultSubtype : ByteOrdinal {
-			Mismatch = 0x1,
-		};
-		template<typename T>
-		class FaultAssociation final {
-			public:
-			private:
-				FaultAssociation() = delete;
-				FaultAssociation(const FaultAssociation&) = delete;
-				FaultAssociation(FaultAssociation&&) = delete;
-				~FaultAssociation() = delete;
-		};
+	enum class FaultType : ByteOrdinal {
+		Override = 0x0,
+		Parallel = 0x0,
+		Trace = 0x1,
+		Operation = 0x2,
+		Arithmetic = 0x3,
+		Constraint = 0x5,
+		Protection = 0x7,
+		Type = 0xA,
+	};
+	enum class TraceFaultSubtype : ByteOrdinal {
+		Instruction = 0x02,
+		Branch = 0x04,
+		Call = 0x08,
+		Return = 0x10,
+		PreReturn = 0x20,
+		Supervisor = 0x40,
+		Mark = 0x80,
+	};
+	enum class OperationFaultSubtype : ByteOrdinal {
+		InvalidOpcode = 0x1,
+		Unimplemented = 0x2,
+		Unaligned = 0x3,
+		InvalidOperand = 0x4,
+	};
+	enum class ArithmeticFaultSubtype : ByteOrdinal {
+		IntegerOverflow = 0x1,
+		ZeroDivide = 0x2,
+	};
+	enum class ConstraintFaultSubtype : ByteOrdinal {
+		Range = 0x1,
+	};
+	enum class ProtectionFaultSubtype : ByteOrdinal {
+		Length = 0x1,
+	};
+	enum class TypeFaultSubtype : ByteOrdinal {
+		Mismatch = 0x1,
+	};
+	template<typename T>
+	class FaultAssociation final {
+		public:
+		private:
+			FaultAssociation() = delete;
+			FaultAssociation(const FaultAssociation&) = delete;
+			FaultAssociation(FaultAssociation&&) = delete;
+			~FaultAssociation() = delete;
+	};
 #define X(type, parent) \
-		template<> \
-		class FaultAssociation< type > final { \
-			public: \
-				static constexpr auto ParentFaultType = FaultType:: parent ; \
-			private: \
-				FaultAssociation() = delete; \
-				FaultAssociation(const FaultAssociation&) = delete; \
-				FaultAssociation(FaultAssociation&&) = delete; \
-				~FaultAssociation() = delete; \
-		}
-		X(TraceFaultSubtype, Trace);
-		X(OperationFaultSubtype, Operation);
-		X(ArithmeticFaultSubtype, Arithmetic);
-		X(ConstraintFaultSubtype, Constraint);
-		X(ProtectionFaultSubtype, Protection);
-		X(TypeFaultSubtype, Type);
+	template<> \
+	class FaultAssociation< type > final { \
+		public: \
+			static constexpr auto ParentFaultType = FaultType:: parent ; \
+		private: \
+			FaultAssociation() = delete; \
+			FaultAssociation(const FaultAssociation&) = delete; \
+			FaultAssociation(FaultAssociation&&) = delete; \
+			~FaultAssociation() = delete; \
+	}
+	X(TraceFaultSubtype, Trace);
+	X(OperationFaultSubtype, Operation);
+	X(ArithmeticFaultSubtype, Arithmetic);
+	X(ConstraintFaultSubtype, Constraint);
+	X(ProtectionFaultSubtype, Protection);
+	X(TypeFaultSubtype, Type);
 #undef X
+	class CoreInformation final {
+		public:
+			enum class CoreVoltageKind {
+				V3_3,
+				V5_0,
+			};
+			constexpr CoreInformation(const char* str, 
+					Ordinal devId, 
+					CoreVoltageKind voltage, 
+					Ordinal icacheSize, 
+					Ordinal dcacheSize) :
+				_str(str), 
+				_devId(devId), 
+				_voltage(voltage), 
+				_icacheSize(icacheSize), 
+				_dcacheSize(dcacheSize) { }
+			constexpr auto getString() const noexcept { return _str; }
+			constexpr auto getDeviceId() const noexcept { return _devId; }
+			constexpr auto getVoltage() const noexcept { return _voltage; }
+			constexpr auto getInstructionCacheSize() const noexcept { return _icacheSize; }
+			constexpr auto getDataCacheSize() const noexcept { return _dcacheSize; }
+		private:
+			const char* _str;
+			Ordinal _devId;
+			CoreVoltageKind _voltage;
+			Ordinal _icacheSize;
+			Ordinal _dcacheSize;
+	};
+	constexpr CoreInformation cpu80L960JA("80L960JA", 0x0082'1013, CoreInformation::CoreVoltageKind::V3_3, 2048u, 1024u);
+	constexpr CoreInformation cpu80960JF("80960JF", 0x0882'0013, CoreInformation::CoreVoltageKind::V5_0, 4096u, 2048u);
+	constexpr CoreInformation cpu80L960JF("80L960JF", 0x0082'0013, CoreInformation::CoreVoltageKind::V3_3, 4096u, 2048u);
+	constexpr CoreInformation cpu80960JD("80960JD", 0x0882'0013, CoreInformation::CoreVoltageKind::V5_0, 4096u, 2048u);
+
+	
     class Core {
         public:
 			Core(MemoryInterface& mem);
