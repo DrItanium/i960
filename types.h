@@ -740,6 +740,47 @@ X(Region14_15, 0xE000'0000, 0xFFFF'FFFF);
 			Ordinal _supervisorInternalRAMProtection : 1;
 		};
 		Ordinal _value;
+		bool pmconEntriesValid() const noexcept { return _configurationEntriesInControlTableValid != 0; }
+		bool internalDataRAMProtectedFromUserModeWrites() const noexcept { return _internalRAMProtection != 0; }
+		bool first64BytesProtectedFromSupervisorModeWrites() const noexcept { return _supervisorInternalRAMProtection != 0; }
+	} __attribute__((packed));
+	union LogicalMemoryTemplateStartingAddressRegister final {
+		struct {
+			Ordinal _byteOrder : 1;
+			Ordinal _dataCacheEnable : 1;
+			Ordinal _reserved : 10;
+			/**
+			 * Upper 20-bits for the starting address for a logical data
+			 * template. The lower 12 bits are fixed at zero. The starting
+			 * address is modulo 4 kbytes
+			 */
+			Ordinal _templateStartingAddress : 20;
+		};
+		Ordinal _value;
+		bool littleEndianByteOrder() const noexcept { return _byteOrder == 0; }
+		bool bigEndianByteOrder() const noexcept { return _byteOrder != 0; }
+		bool dataCacheEnabled() const noexcept { return _dataCacheEnable != 0; }
+		Ordinal getTemplateStartingAddress() const noexcept { return _templateStartingAddress; }
+	} __attribute__((packed));
+	union LogicalMemoryTemplateMaskRegister final {
+		struct {
+			Ordinal _logicalMemoryTemplateEnabled : 1;
+			Ordinal _reserved : 11;
+			Ordinal _templateAddressMask : 20;
+		};
+		Ordinal _value;
+		bool logicalMemoryTemplateEnabled() const noexcept { return _logicalMemoryTemplateEnabled; }
+		Ordinal getTemplateAddressMask() const noexcept { return _templateAddressMask; }
+	} __attribute__((packed));
+	union DefaultLogicalMemoryConfigurationRegister final {
+		struct {
+			Ordinal _byteOrder : 1;
+			Ordinal _dataCacheEnable : 1;
+		};
+		Ordinal _value;
+		bool littleEndianByteOrder() const noexcept { return _byteOrder == 0; }
+		bool bigEndianByteOrder() const noexcept { return _byteOrder != 0; }
+		bool dataCacheEnabled() const noexcept { return _dataCacheEnable != 0; }
 	} __attribute__((packed));
     /**
      * Also known as the PRCB, it is a data structure in memory which the cpu uses to track
