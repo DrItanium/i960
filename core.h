@@ -102,7 +102,6 @@ namespace i960 {
 				_voltage(voltage), 
 				_icacheSize(icacheSize), 
 				_dcacheSize(dcacheSize) { 
-
 				}
 			constexpr auto getString() const noexcept { return _str; }
 			constexpr auto getDeviceId() const noexcept { return _devId; }

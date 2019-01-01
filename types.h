@@ -692,6 +692,35 @@ namespace i960 {
         } vector;
         // I see 
     } __attribute__((packed));
+	/**
+	 * Physical Memory Region Control Register. Represents a 512 mbyte memory
+	 * region to control
+	 */
+	enum class PMCONRegisterKind {
+		Region0_1, 
+		Region2_3, 
+		Region4_5,
+		Region6_7, 
+		Region8_9, 
+		Region10_11,
+		Region12_13,
+		Region14_15,
+	};
+	using PMCONRegisterRange = std::tuple<Ordinal, Ordinal>;
+	template<PMCONRegisterKind kind>
+	constexpr auto PMCONMemoryRange = false;
+#define X(kind, start, end) \
+	template<> \
+	constexpr PMCONRegisterRange PMCONMemoryRange<PMCONRegisterKind:: kind > = std::make_tuple( start, end )
+X(Region0_1,   0x0000'0000, 0x1FFF'FFFF);
+X(Region2_3,   0x2000'0000, 0x3FFF'FFFF);
+X(Region4_5,   0x4000'0000, 0x5FFF'FFFF);
+X(Region6_7,   0x6000'0000, 0x7FFF'FFFF);
+X(Region8_9,   0x8000'0000, 0x9FFF'FFFF);
+X(Region10_11, 0xA000'0000, 0xBFFF'FFFF);
+X(Region12_13, 0xC000'0000, 0xDFFF'FFFF);
+X(Region14_15, 0xE000'0000, 0xFFFF'FFFF);
+#undef X
 
     /**
      * Also known as the PRCB, it is a data structure in memory which the cpu uses to track
