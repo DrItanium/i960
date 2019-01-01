@@ -122,7 +122,7 @@ namespace i960 {
 	
     class Core {
         public:
-			Core(MemoryInterface& mem);
+			Core(const CoreInformation& info, MemoryInterface& mem);
 			/**
 			 * Invoked by the external RESET pin, initializes the core.
 			 */
@@ -446,6 +446,7 @@ namespace i960 {
 			// the first 1024 bytes of ram is a internal data ram cache
 			// which can be read from and written to but not executed from
 			i960::JxCPUInternalDataRam _internalDataRam;
+			const CoreInformation& _deviceId;
     };
 
 }

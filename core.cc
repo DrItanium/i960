@@ -69,7 +69,7 @@ X(cmpi, ble);
 X(cmpi, bo);
 X(cmpi, bno);
 #undef X
-	Core::Core(MemoryInterface& mem) : _mem(mem) { }
+	Core::Core(const CoreInformation& info, MemoryInterface& mem) : _mem(mem), _deviceId(info) { }
 	Ordinal Core::getStackPointerAddress() const noexcept {
 		return _localRegisters[StackPointerIndex].get<Ordinal>();
 	}
@@ -1156,8 +1156,7 @@ X(cmpi, bno);
 		_ctrlTable = load(ibrPtr + 0x04);
 		processPrcb();
 		_instructionPointer = load(ibrPtr + 0x10);
-		static constexpr Ordinal DEVICE_ID = 0xFDED; // TODO figure out what this actually is
-		setRegister(0_gr, DEVICE_ID);
+		setRegister(0_gr, _deviceId.getDeviceId());
 	}
 	void Core::processPrcb() {
 		// TODO implement according to the manual
