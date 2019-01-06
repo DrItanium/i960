@@ -419,10 +419,9 @@ X(cmpi, bno);
 	 * Find the most significant set bit
 	 */
 	void Core::scanbit(SourceRegister src, DestinationRegister dest) noexcept {
-		auto k = src.get<Ordinal>();
 		dest.set<Ordinal>(0xFFFF'FFFF);
 		_ac.conditionCode = 0b000;
-		for (Ordinal i = 31; i >= 0; --i) {
+		for (Integer i = 31; i >= 0; --i) {
 			if (auto k = 1 << i; (src.get<Ordinal>() & k) != 0) {
 				_ac.conditionCode = 0b010;
 				dest.set<Ordinal>(i);
@@ -436,7 +435,7 @@ X(cmpi, bno);
 	void Core::spanbit(SourceRegister src, DestinationRegister dest) noexcept {
 		dest.set<Ordinal>(0xFFFF'FFFF);
 		_ac.conditionCode = 0b000;
-		for (Ordinal i = 31; i >= 0; --i) {
+		for (Integer i = 31; i >= 0; --i) {
 			if (auto k = (1 << i); (src.get<Ordinal>() & k) == 0) {
 				dest.set<Ordinal>(i);
 				_ac.conditionCode = 0b010;
@@ -480,7 +479,6 @@ X(cmpi, bno);
 			generateFault(ArithmeticFaultSubtype::ZeroDivide);
 		} else {
 			auto s2 = src2.get<LongOrdinal>();
-			auto divOp = s2 / s1;
 			// lower contains remainder, upper contains quotient
 			auto quotient = s2 / s1;
 			auto remainder = s2 - (s2 / s1) * s1;
@@ -883,7 +881,7 @@ X(cmpi, bno);
 		dest.set(~src.get<Ordinal>());
 	}
 	void Core::notand(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>((~src2.get<Ordinal>()) & src2.get<Ordinal>());
+		dest.set<Ordinal>((~src2.get<Ordinal>()) & src1.get<Ordinal>());
 	}
 	void Core::notbit(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set<Ordinal>(i960::notBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
