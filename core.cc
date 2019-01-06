@@ -482,41 +482,97 @@ X(cmpi, bno);
 			dest.set<Integer>(numerator / denominator);
 		}
 	}
-
+	constexpr Ordinal getLowestTwoBits(Ordinal address) noexcept {
+		return address & 0b11;
+	}
+	constexpr Ordinal getLowestBit(Ordinal address) noexcept {
+		return address & 0b1;
+	}
 	void Core::ld(SourceRegister src, DestinationRegister dest) noexcept {
 		// this is the base operation for load, src contains the fully computed value
 		// so this will probably be an internal register in most cases.
-		dest.set<Ordinal>(load(src.get<Ordinal>()));
+		auto effectiveAddress = src.get<Ordinal>();
+		dest.set<Ordinal>(load(effectiveAddress));
+		if ((getLowestTwoBits(effectiveAddress) != 0) && unalignedFaultEnabled) {
+			generateFault(OperationFaultSubtype::Unaligned);
+		}
+	}
+	constexpr Ordinal getByteOrdinalMostSignificantBit(Ordinal value) noexcept {
+		return value & 0b1000'0000;
+	}
+	constexpr Ordinal getShortOrdinalMostSignificantBit(Ordinal value) noexcept {
+		return value & 0b1000'0000'0000'0000;
+	}
+	constexpr Ordinal maskToByteOrdinal(Ordinal value) noexcept {
+		return value & 0xFF;
+	}
+	constexpr Ordinal maskToShortOrdinal(Ordinal value) noexcept {
+		return value & 0xFFFF;
 	}
 	void Core::ldob(SourceRegister src, DestinationRegister dest) noexcept {
-		dest.set<ByteOrdinal>(load(src.get<Ordinal>()));
+		dest.set<Ordinal>(maskToByteOrdinal(load(src.get<Ordinal>())));
 	}
 	void Core::ldos(SourceRegister src, DestinationRegister dest) noexcept {
-		dest.set<ShortOrdinal>(load(src.get<Ordinal>()));
+		auto effectiveAddress = src.get<Ordinal>();
+		auto value = maskToShortOrdinal(load(effectiveAddress));
+		dest.set<Ordinal>(value);
+		if ((getLowestBit(effectiveAddress) != 0) && unalignedFaultEnabled) {
+			generateFault(OperationFaultSubtype::Unaligned);
+		}
+		
 	}
 	void Core::ldib(SourceRegister src, DestinationRegister dest) noexcept {
-		dest.set<Integer>((ByteInteger)load(src.get<Ordinal>()));
+		auto effectiveAddress = src.get<Ordinal>();
+		auto result = (maskToByteOrdinal(load(effectiveAddress)));
+		if (getByteOrdinalMostSignificantBit(result) != 0) {
+			result += 0xFFFF'FF00; // 
+		}
+		dest.set<Ordinal>(result);
 	}
 	void Core::ldis(SourceRegister src, DestinationRegister dest) noexcept {
-		dest.set<Integer>((ShortInteger)load(src.get<Ordinal>()));
+		auto effectiveAddress = src.get<Ordinal>();
+		auto value = maskToShortOrdinal(load(effectiveAddress));
+		if (getShortOrdinalMostSignificantBit(value) != 0) {
+			value += 0xFFFF'0000;
+		}
+		dest.set<Ordinal>(value);
+		if ((getLowestBit(effectiveAddress) != 0) && unalignedFaultEnabled) {
+			generateFault(OperationFaultSubtype::Unaligned);
+		}
 	}
-
+	constexpr Ordinal getLowestThreeBits(Ordinal value) noexcept {
+		return value & 0b111;
+	}
 	void Core::ldl(SourceRegister src, Ordinal srcDestIndex) noexcept {
-		// TODO make sure that the srcDestIndex makes sense
-		LongRegister dest = makeLongRegister(srcDestIndex);
-		auto addr = src.get<Ordinal>();
-		dest.set(load(addr), load(addr + 1));
+		if ((srcDestIndex % 2) != 0) {
+			generateFault(OperationFaultSubtype::InvalidOperand);
+		} else {
+			LongRegister dest = makeLongRegister(srcDestIndex);
+			auto addr = src.get<Ordinal>();
+			dest.set(load(addr), load(addr + 1));
+			if ((getLowestThreeBits(addr) != 0) && unalignedFaultEnabled) {
+				generateFault(OperationFaultSubtype::Unaligned);
+			}
+		}
 	}
 	void DoubleRegister::set(Ordinal lower, Ordinal upper) noexcept {
 		_lower.set<Ordinal>(lower);
 		_upper.set<Ordinal>(upper);
 	}
+	constexpr Ordinal getLowestFourBits(Ordinal value) noexcept {
+		return value & 0b1111;
+	}
 	void Core::ldt(SourceRegister src, Ordinal srcDestIndex) noexcept {
-		// TODO make sure that the srcDestIndex makes sense
-		TripleRegister dest = makeTripleRegister(srcDestIndex);
-		//TripleRegister reg(getRegister(srcDestIndex), getRegister(srcDestIndex + 1), getRegister(srcDestIndex + 2));
-		auto addr = src.get<Ordinal>();
-		dest.set(load(addr), load(addr + 1), load(addr + 2));
+		if ((srcDestIndex % 4) != 0) {
+			generateFault(OperationFaultSubtype::InvalidOperand);
+		} else {
+			TripleRegister dest = makeTripleRegister(srcDestIndex);
+			auto addr = src.get<Ordinal>();
+			dest.set(load(addr), load(addr + 1), load(addr + 2));
+			if ((getLowestFourBits(addr) != 0) && unalignedFaultEnabled) {
+				generateFault(OperationFaultSubtype::Unaligned);
+			}
+		}
 	}
 	void TripleRegister::set(Ordinal l, Ordinal m, Ordinal u) noexcept {
 		_lower.set<Ordinal>(l);
@@ -524,11 +580,16 @@ X(cmpi, bno);
 		_upper.set<Ordinal>(u);
 	}
 	void Core::ldq(SourceRegister src, Ordinal index) noexcept {
-		// TODO make sure that the srcDestIndex makes sense
-		QuadRegister dest = makeQuadRegister(index);
-		//QuadRegister reg(getRegister(index), getRegister(index + 1), getRegister(index + 2), getRegister(index + 3));
-		auto addr = src.get<Ordinal>();
-		dest.set(load(addr), load(addr + 1), load(addr + 2), load(addr + 3));
+		if ((index % 4) != 0) {
+			generateFault(OperationFaultSubtype::InvalidOperand);
+		} else {
+			QuadRegister dest = makeQuadRegister(index);
+			auto addr = src.get<Ordinal>();
+			dest.set(load(addr), load(addr + 1), load(addr + 2), load(addr + 3));
+			if ((getLowestFourBits(addr) != 0) && unalignedFaultEnabled) {
+				generateFault(OperationFaultSubtype::Unaligned);
+			}
+		}
 	}
 	void QuadRegister::set(Ordinal l, Ordinal m, Ordinal u, Ordinal h) noexcept {
 		_lower.set(l);

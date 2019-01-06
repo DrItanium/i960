@@ -457,6 +457,8 @@ namespace i960 {
 			// which can be read from and written to but not executed from
 			i960::JxCPUInternalDataRam _internalDataRam;
 			const CoreInformation& _deviceId;
+			// active by default but needs to be setup by processPrcb
+			bool unalignedFaultEnabled = true;
     };
 
 }
