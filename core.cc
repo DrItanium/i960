@@ -108,8 +108,9 @@ X(cmpi, bno);
 		setFramePointer(tmp);
 		setRegister(StackPointerIndex, tmp + 64);
 	}
+	constexpr Ordinal clearLowestTwoBitsMask = ~0b11;
 	constexpr Ordinal getProcedureAddress(Ordinal value) noexcept {
-		return value & (~0b11);
+		return value & clearLowestTwoBitsMask;
 	}
 	constexpr Ordinal getProcedureKind(Ordinal value) noexcept {
 		return value & 0b11;
@@ -165,14 +166,14 @@ X(cmpi, bno);
 
 	Ordinal Core::load(Ordinal address, bool atomic) noexcept {
 		if (address <= _internalDataRam.LargestAddress<0>) {
-			return _internalDataRam.read(address & (~0b11));
+			return _internalDataRam.read(address & clearLowestTwoBitsMask);
 		} else {
 			return _mem.load(address, atomic);
 		}
 	}
 	void Core::store(Ordinal address, Ordinal value, bool atomic) noexcept {
 		if (address <= _internalDataRam.LargestAddress<0>) {
-			_internalDataRam.write(address & (~0b11), value);
+			_internalDataRam.write(address & clearLowestTwoBitsMask, value);
 		} else {
 			_mem.store(address, value, atomic);
 		}
@@ -339,7 +340,6 @@ X(cmpi, bno);
 			d3.set(0);
 		}
 	}
-	constexpr Ordinal clearLowestTwoBitsMask = 0xFFFF'FFFC;
 	void Core::b(Integer displacement) noexcept {
 		union {
 			Integer _value : 24;
