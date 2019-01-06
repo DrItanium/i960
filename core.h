@@ -321,13 +321,19 @@ namespace i960 {
             }
             template<typename T>
             void compare(T src1, T src2) noexcept {
-                if (src1 < src2) {
-                    _ac.conditionCode = 0b100;
-                } else if (src1 == src2) {
-                    _ac.conditionCode = 0b010;
-                } else {
-                    _ac.conditionCode = 0b001;
-                }
+				// saw this nifty trick from a CppCon talk about 
+				// performance improvements. Reduces the number of
+				// assignments but also makes modification easier in
+				// the future if necessary
+				_ac.conditionCode = [&src1, &src2]() noexcept {
+								if (src1 < src2) {
+									return 0b100;
+								} else if (src1 == src2) {
+									return 0b010;
+								} else {
+									return 0b001;
+								}
+				}();
             }
 			template<Ordinal mask>
 			bool genericCondCheck() noexcept {
