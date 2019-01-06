@@ -549,7 +549,7 @@ X(cmpi, bno);
 		} else {
 			LongRegister dest = makeLongRegister(srcDestIndex);
 			auto addr = src.get<Ordinal>();
-			dest.set(load(addr), load(addr + 4));
+			dest.set(load(addr), load(addr + (1 * sizeof(Ordinal))));
 			if ((getLowestThreeBits(addr) != 0) && unalignedFaultEnabled) {
 				generateFault(OperationFaultSubtype::Unaligned);
 			}
@@ -568,7 +568,7 @@ X(cmpi, bno);
 		} else {
 			TripleRegister dest = makeTripleRegister(srcDestIndex);
 			auto addr = src.get<Ordinal>();
-			dest.set(load(addr), load(addr + 4), load(addr + 8));
+			dest.set(load(addr), load(addr + (1 * sizeof(Ordinal))), load(addr + (2 * sizeof(Ordinal))));
 			if ((getLowestFourBits(addr) != 0) && unalignedFaultEnabled) {
 				generateFault(OperationFaultSubtype::Unaligned);
 			}
@@ -585,7 +585,7 @@ X(cmpi, bno);
 		} else {
 			QuadRegister dest = makeQuadRegister(index);
 			auto addr = src.get<Ordinal>();
-			dest.set(load(addr), load(addr + 4), load(addr + 8), load(addr + 12));
+			dest.set(load(addr), load(addr + (1 * sizeof(Ordinal))), load(addr + (2 * sizeof(Ordinal))), load(addr + (3 * sizeof(Ordinal))));
 			if ((getLowestFourBits(addr) != 0) && unalignedFaultEnabled) {
 				generateFault(OperationFaultSubtype::Unaligned);
 			}
