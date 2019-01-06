@@ -335,7 +335,8 @@ namespace i960 {
 			}
 			template<Ordinal mask>
 			void baseSelect(__DEFAULT_THREE_ARGS__) noexcept {
-				dest.set<Ordinal>((genericCondCheck<mask>() ? src2 : src1).get<Ordinal>());
+				SourceRegister sel = genericCondCheck<mask>() ? src2 : src1;
+				dest.set<Ordinal>(sel.get<Ordinal>());
 			}
 			template<Ordinal mask>
 			void addoBase(__DEFAULT_THREE_ARGS__) noexcept {
