@@ -330,22 +330,23 @@ namespace i960 {
                 }
             }
 			template<Ordinal mask>
+			bool genericCondCheck() noexcept {
+				return ((mask & _ac.conditionCode) != 0) || (mask == _ac.conditionCode);
+			}
+			template<Ordinal mask>
 			void baseSelect(__DEFAULT_THREE_ARGS__) noexcept {
-				if (((mask & _ac.conditionCode) != 0) || (mask == _ac.conditionCode)) {
-					dest.set<Ordinal>(src2.get<Ordinal>());
-				} else {
-					dest.set<Ordinal>(src1.get<Ordinal>());
-				}
+				SourceRegister sel = genericCondCheck<mask>() ? src2 : src1;
+				dest.set<Ordinal>(sel.get<Ordinal>());
 			}
 			template<Ordinal mask>
 			void addoBase(__DEFAULT_THREE_ARGS__) noexcept {
-				if (((mask & _ac.conditionCode) != 0) || (mask == _ac.conditionCode)) {
+				if (genericCondCheck<mask>()) {
 					addo(src1, src2, dest);
 				}
 			}
 			template<Ordinal mask>
 			void addiBase(__DEFAULT_THREE_ARGS__) noexcept {
-				if (((mask & _ac.conditionCode) != 0) || (mask == _ac.conditionCode)) {
+				if (genericCondCheck<mask>()) {
 					dest.set<Integer>(src1.get<Integer>() + src2.get<Integer>());
 				}
 				// according to the docs, the arithmetic overflow always is
@@ -360,13 +361,13 @@ namespace i960 {
 			}
 			template<Ordinal mask>
 			void suboBase(__DEFAULT_THREE_ARGS__) noexcept {
-				if (((mask & _ac.conditionCode) != 0) || (mask == _ac.conditionCode)) {
+				if (genericCondCheck<mask>()) {
 					subo(src1, src2, dest);
 				}
 			}
 			template<Ordinal mask>
 			void subiBase(__DEFAULT_THREE_ARGS__) noexcept {
-				if (((mask & _ac.conditionCode) != 0) || (mask == _ac.conditionCode)) {
+				if (genericCondCheck<mask>()) {
 					dest.set<Integer>(src2.get<Integer>() - src1.get<Integer>());
 				}
 				// according to the docs, the arithmetic overflow always is
@@ -376,39 +377,6 @@ namespace i960 {
 						_ac.integerOverflowFlag = 1;
 					} else {
 						generateFault(ArithmeticFaultSubtype::IntegerOverflow);
-					}
-				}
-			}
-			template<bool checkIfSet>
-			static constexpr bool checkIfBitIs(Ordinal s, Ordinal mask) noexcept {
-				if constexpr (auto maskedValue = s & mask; checkIfSet) {
-					return maskedValue == 1;
-				} else {
-					return maskedValue == 0;
-				}
-			}
-			template<bool branchOnSet>
-			void checkBitAndBranchIf(SourceRegister bitpos, SourceRegister src, Integer targ) noexcept {
-				// check bit and branch if clear
-				auto shiftAmount = bitpos.get<Ordinal>() & 0b11111;
-				auto mask = 1 << shiftAmount;
-				if (auto s = src.get<Ordinal>(); checkIfBitIs<branchOnSet>(s, mask)) {
-					if constexpr (branchOnSet) {
-						_ac.conditionCode = 0b010;
-					} else {
-						_ac.conditionCode = 0;
-					}
-
-					union {
-						Integer value : 11;
-					} displacement;
-					displacement.value = targ;
-					_instructionPointer = _instructionPointer + 4 + (displacement.value * 4);
-				} else {
-					if constexpr (branchOnSet) {
-						_ac.conditionCode = 0;
-					} else {
-						_ac.conditionCode = 0b010;
 					}
 				}
 			}
