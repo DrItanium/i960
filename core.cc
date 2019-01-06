@@ -363,12 +363,12 @@ X(cmpi, bno);
 		dest.set<Ordinal>(_instructionPointer + 4);
 		_instructionPointer = src.get<Ordinal>();
 	}
-
+	constexpr Ordinal computeCheckBitMask(Ordinal value) noexcept {
+		return 1 << (value & 0b11111);
+	}
 	void Core::bbc(SourceRegister bitpos, SourceRegister src, Integer targ) noexcept {
 		// check bit and branch if clear
-		auto shiftAmount = bitpos.get<Ordinal>() & 0b11111;
-		auto mask = 1 << shiftAmount;
-		if (auto s = src.get<Ordinal>(); (s & mask) == 0) {
+		if (auto s = src.get<Ordinal>(), mask = computeCheckBitMask(bitpos.get<Ordinal>()); (s & mask) == 0) {
 			_ac.conditionCode = 0;
 			union {
 				Integer value : 11;
@@ -382,9 +382,7 @@ X(cmpi, bno);
 
 	void Core::bbs(SourceRegister bitpos, SourceRegister src, Integer targ) noexcept {
 		// check bit and branch if set
-		auto shiftAmount = bitpos.get<Ordinal>() & 0b11111;
-		auto mask = 1 << shiftAmount;
-		if (auto s = src.get<Ordinal>(); (s & mask) != 0) {
+		if (auto s = src.get<Ordinal>(), mask = computeCheckBitMask(bitpos.get<Ordinal>()); (s & mask) != 0) {
 			_ac.conditionCode = 0b010;
 
 			union {
