@@ -2,6 +2,7 @@
 #include <map>
 
 namespace i960::Opcode {
+	namespace {
 	constexpr Description undefined (0xFFFF'FFFF, Description::Class::Undefined, "undefined", Description::ArgumentLayout::Undefined);
 #define o(name, code, arg, kind) \
 	constexpr Description Desc_ ## name = Description(code, Description::Class:: kind, #name , Description::ArgumentLayout:: arg ) ;
@@ -15,6 +16,7 @@ namespace i960::Opcode {
 #undef mem
 #undef ctrl
 #undef o
+	}
 	const Description& getDescription(const Instruction& inst) noexcept {
 		return getDescription(inst.getOpcode());
 	}

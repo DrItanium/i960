@@ -188,8 +188,10 @@ X(cmpi, bno);
 		setRegister(index, other.get<Ordinal>());
 	}
 	void Core::callx(const NormalRegister& value) noexcept {
+		static constexpr Ordinal boundaryMarker = 63u;
+		static constexpr Ordinal boundaryAlignment = 64u;
 		auto newAddress = value.get<Ordinal>();
-		Ordinal tmp = (getStackPointerAddress() + 63u) && (~63u); // round to the next boundary
+		Ordinal tmp = (getStackPointerAddress() + boundaryMarker) && (~boundaryMarker); // round to the next boundary
 		setRegister(ReturnInstructionPointerIndex, _instructionPointer);
 		// Code for handling multiple internal local register sets not implemented!
 		saveLocalRegisters();
@@ -197,7 +199,7 @@ X(cmpi, bno);
 		_instructionPointer = newAddress;
 		setRegister(PreviousFramePointerIndex, getFramePointerAddress());
 		setFramePointer(tmp);
-		setRegister(StackPointerIndex, tmp + 64u);
+		setRegister(StackPointerIndex, tmp + boundaryAlignment);
 	}
 	void Core::addo(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set<Ordinal>(src2.get<Ordinal>() + src1.get<Ordinal>());
@@ -337,7 +339,7 @@ X(cmpi, bno);
 			d3.set(0);
 		}
 	}
-
+	constexpr Ordinal clearLowestTwoBitsMask = 0xFFFF'FFFC;
 	void Core::b(Integer displacement) noexcept {
 		union {
 			Integer _value : 24;
@@ -345,11 +347,11 @@ X(cmpi, bno);
 		conv._value = displacement;
 		conv._value = conv._value > 0x7F'FFFC ? 0x7F'FFFC : conv._value;
 		_instructionPointer += conv._value;
-		_instructionPointer &= 0xFFFF'FFFC; // make sure the least significant two bits are clear
+		_instructionPointer &= clearLowestTwoBitsMask; // make sure the least significant two bits are clear
 	}
 	void Core::bx(SourceRegister src) noexcept {
 		_instructionPointer = src.get<Ordinal>();
-		_instructionPointer &= 0xFFFF'FFFC; // make sure the least significant two bits are clear
+		_instructionPointer &= clearLowestTwoBitsMask;
 	}
 	void Core::bal(Integer displacement) noexcept {
 		_globalRegisters[14].set<Ordinal>(_instructionPointer + 4);
