@@ -39,6 +39,95 @@ namespace i960 {
         };
         Ordinal value;
     } __attribute__((packed));
+    union ProcedureEntry {
+       struct {
+           Ordinal type : 2;
+           Ordinal address : 30;
+       };
+       Ordinal raw;
+       bool isLocal() const noexcept { return type == 0; }
+       bool isSupervisor() const noexcept { return type == 0b10; }
+    } __attribute__((packed));
+    static_assert(sizeof(ProcedureEntry) == sizeof(Ordinal), "Procedure entry must be of the correct size!");
+    union ProcessControls {
+        struct {
+            Ordinal traceEnable : 1;
+            Ordinal executionMode : 1;
+            Ordinal unused0 : 7;
+            Ordinal resume : 1;
+            Ordinal traceFaultPending : 1;
+            Ordinal unused1 : 2;
+            Ordinal state : 1;
+            Ordinal unused2 : 2;
+            Ordinal priority : 5;
+            Ordinal unused3 : 11;
+        };
+        Ordinal value;
+		void clear() noexcept {
+			value = 0;
+		}
+		bool traceEnabled() const noexcept {
+			return traceEnable != 0;
+		}
+		bool inUserMode() const noexcept {
+			return executionMode == 0;
+		}
+		bool inSupervisorMode() const noexcept {
+			return executionMode != 0;
+		}
+		void enterSupervisorMode() noexcept {
+			executionMode = 1;
+		}
+		void enterUserMode() noexcept {
+			executionMode = 0;
+		}
+		bool traceFaultIsPending() const noexcept {
+			return traceFaultPending != 0;
+		}
+		bool traceFaultIsNotPending() const noexcept {
+			return traceFaultPending == 0;
+		}
+		bool isExecuting() const noexcept {
+			return state == 0;
+		}
+		bool isInterrupted() const noexcept {
+			return state != 0;
+		}
+		Ordinal getProcessPriority() const noexcept {
+			return priority;
+		}
+    } __attribute__((packed));
+
+
+	static_assert(sizeof(ProcessControls) == sizeof(Ordinal), "ProcessControls is not the size of an ordinal!");
+    union TraceControls {
+        struct {
+            Ordinal unused0 : 1;
+			// trace mode bits
+            Ordinal instructionTraceMode : 1;
+            Ordinal branchTraceMode : 1;
+			Ordinal callTraceMode : 1;
+            Ordinal returnTraceMode : 1;
+            Ordinal prereturnTraceMode : 1;
+            Ordinal supervisorTraceMode : 1;
+            Ordinal markTraceMode : 1;
+            Ordinal unused1 : 16;
+			// hardware breakpoint event flags
+			Ordinal instructionAddressBreakpoint0 : 1;
+			Ordinal instructionAddressBreakpoint1 : 1;
+			Ordinal dataAddressBreakpoint0 : 1;
+			Ordinal dataAddressBreakpoint1 : 1;
+            Ordinal unused2 : 4;
+        };
+        Ordinal value;
+		bool traceMarked() const noexcept {
+			return markTraceMode != 0;
+		}
+		void clear() noexcept {
+			value = 0;
+		}
+    } __attribute__((packed));
+	static_assert(sizeof(TraceControls) == sizeof(Ordinal), "TraceControls must be the size of an ordinal!");
     union NormalRegister {
         private:
             template<typename T>
@@ -49,6 +138,9 @@ namespace i960 {
             ~NormalRegister() { ordinal = 0; }
 
             PreviousFramePointer pfp;
+            ProcedureEntry pe;
+            ProcessControls pc;
+            TraceControls te;
             Ordinal ordinal;
             Integer integer;
             ByteOrdinal byteOrd;
@@ -266,98 +358,6 @@ namespace i960 {
 
 
     };
-    union ProcessControls {
-        struct {
-            Ordinal traceEnable : 1;
-            Ordinal executionMode : 1;
-            Ordinal unused0 : 7;
-            Ordinal resume : 1;
-            Ordinal traceFaultPending : 1;
-            Ordinal unused1 : 2;
-            Ordinal state : 1;
-            Ordinal unused2 : 2;
-            Ordinal priority : 5;
-            Ordinal unused3 : 11;
-        };
-        Ordinal value;
-		void clear() noexcept {
-			value = 0;
-		}
-		bool traceEnabled() const noexcept {
-			return traceEnable != 0;
-		}
-		bool inUserMode() const noexcept {
-			return executionMode == 0;
-		}
-		bool inSupervisorMode() const noexcept {
-			return executionMode != 0;
-		}
-		void enterSupervisorMode() noexcept {
-			executionMode = 1;
-		}
-		void enterUserMode() noexcept {
-			executionMode = 0;
-		}
-		bool traceFaultIsPending() const noexcept {
-			return traceFaultPending != 0;
-		}
-		bool traceFaultIsNotPending() const noexcept {
-			return traceFaultPending == 0;
-		}
-		bool isExecuting() const noexcept {
-			return state == 0;
-		}
-		bool isInterrupted() const noexcept {
-			return state != 0;
-		}
-		Ordinal getProcessPriority() const noexcept {
-			return priority;
-		}
-    } __attribute__((packed));
-
-
-	static_assert(sizeof(ProcessControls) == sizeof(Ordinal), "ProcessControls is not the size of an ordinal!");
-    union TraceControls {
-        struct {
-            Ordinal unused0 : 1;
-			// trace mode bits
-            Ordinal instructionTraceMode : 1;
-            Ordinal branchTraceMode : 1;
-			Ordinal callTraceMode : 1;
-            Ordinal returnTraceMode : 1;
-            Ordinal prereturnTraceMode : 1;
-            Ordinal supervisorTraceMode : 1;
-            Ordinal markTraceMode : 1;
-            Ordinal unused1 : 16;
-			// hardware breakpoint event flags
-			Ordinal instructionAddressBreakpoint0 : 1;
-			Ordinal instructionAddressBreakpoint1 : 1;
-			Ordinal dataAddressBreakpoint0 : 1;
-			Ordinal dataAddressBreakpoint1 : 1;
-            Ordinal unused2 : 4;
-        };
-        Ordinal value;
-		bool traceMarked() const noexcept {
-			return markTraceMode != 0;
-		}
-		void clear() noexcept {
-			value = 0;
-		}
-    } __attribute__((packed));
-	static_assert(sizeof(TraceControls) == sizeof(Ordinal), "TraceControls must be the size of an ordinal!");
-
-    constexpr auto GlobalRegisterCount = 16;
-    constexpr auto LocalRegisterCount = 16;
-    // reserved indicies
-    // reserved global registers
-    constexpr auto FramePointerIndex = 15;
-    // reserved local registers
-    constexpr auto PreviousFramePointerIndex = 0;
-    constexpr auto StackPointerIndex = 1;
-    constexpr auto ReturnInstructionPointerIndex = 2;
-
-
-
 
     constexpr Ordinal LargestAddress = 0xFFFF'FFFF;
     constexpr Ordinal LowestAddress = 0;
@@ -401,6 +401,7 @@ namespace i960 {
 			constexpr bool isLiteral() const noexcept { return (_raw & typeMask) != 0; }
 			constexpr bool isRegister() const noexcept { return (_raw & typeMask) == 0; }
 			constexpr Ordinal getValue() const noexcept { return (_raw & valueMask); }
+            constexpr Ordinal getOffset() const noexcept { return (_raw & 0b1111); }
 			constexpr operator ByteOrdinal() const noexcept { return ByteOrdinal(getValue()); }
 			constexpr auto notDivisibleBy(ByteOrdinal value) const noexcept { return (((ByteOrdinal)getValue()) % value) != 0; }
 			constexpr Operand next() const noexcept {
@@ -418,6 +419,11 @@ namespace i960 {
 	constexpr Operand operator"" _lr(unsigned long long n) {
 		return Operand((n & 0b1111));
 	}
+
+    constexpr auto PFP = 0_lr;
+    constexpr auto SP = 1_lr;
+    constexpr auto RIP = 2_lr;
+    constexpr auto FP = 15_gr;
 	
     union Instruction {
         struct REGFormat {
@@ -912,6 +918,7 @@ X(Region14_15, 0xE000'0000, 0xFFFF'FFFF);
 	} __attribute__((packed));
 	using JxCPUInternalDataRam = InternalDataRam<1024>;
 	static_assert(sizeof(JxCPUInternalDataRam) == JxCPUInternalDataRam::TotalByteCapacity, "InternalDataRam is larger than its storage footprint!");
+
 
 } // end namespace i960
 #endif // end I960_TYPES_H__

@@ -20,7 +20,7 @@ namespace i960 {
     using LongSourceRegister = const LongRegister&;
     using LongDestinationRegister = LongRegister&;
     
-    using RegisterWindow = NormalRegister[LocalRegisterCount];
+    using RegisterWindow = NormalRegister[16];
 	enum class FaultType : ByteOrdinal {
 		Override = 0x0,
 		Parallel = 0x0,
@@ -154,6 +154,7 @@ namespace i960 {
 			Ordinal getRegisterCacheConfigurationWord() noexcept;
 			Ordinal getPRCBPointer() noexcept;
 			Ordinal getFirstInstructionPointer() noexcept;
+            Ordinal getSupervisorStackPointerBase() noexcept;
 			void generateFault(ByteOrdinal faultType, ByteOrdinal faultSubtype = 0);
 			template<typename T>
 			void generateFault(T faultSubtype) {
@@ -166,8 +167,6 @@ namespace i960 {
             Ordinal load(Ordinal address, bool atomic = false) noexcept;
             void store(Ordinal address, Ordinal value, bool atomic = false) noexcept;
 
-            void saveLocalRegisters() noexcept;
-            void allocateNewLocalRegisterSet() noexcept;
             template<typename T>
             void setRegister(ByteOrdinal index, T value) noexcept {
                 getRegister(index).set<T>(value);
@@ -420,6 +419,11 @@ namespace i960 {
 		private:
 			void dispatch(const Instruction& decodedInstruction) noexcept;
         private:
+            void saveFrame() noexcept;
+            void allocateNewFrame() noexcept;
+            void saveLocalRegisters() noexcept;
+            void allocateNewLocalRegisterSet() noexcept;
+        private:
             RegisterWindow _globalRegisters;
             // The hardware implementations use register sets, however
             // to start with, we should just follow the logic as is and 
@@ -442,6 +446,7 @@ namespace i960 {
             NormalRegister _temporary0;
             NormalRegister _temporary1;
             NormalRegister _temporary2;
+            bool _frameAvailable = true;
     };
 
 }

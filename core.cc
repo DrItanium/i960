@@ -73,9 +73,10 @@ X(cmpi, bno);
 #undef X
 	Core::Core(const CoreInformation& info, MemoryInterface& mem) : _mem(mem), _deviceId(info) { }
 	Ordinal Core::getStackPointerAddress() const noexcept {
-		return _localRegisters[StackPointerIndex].get<Ordinal>();
+        return _localRegisters[SP.getOffset()].get<Ordinal>();
 	}
 	void Core::saveLocalRegisters() noexcept {
+        static constexpr auto LocalRegisterCount = 16;
 		auto base = getFramePointerAddress();
 		auto end = base + (sizeof(Ordinal) * LocalRegisterCount);
 
@@ -87,13 +88,13 @@ X(cmpi, bno);
 		// this function does nothing at this point as we are always saving locals to ram
 	}
 	void Core::setFramePointer(Ordinal value) noexcept {
-		_globalRegisters[FramePointerIndex].set(value);
+		_globalRegisters[FP.getOffset()].set(value);
 	}
 	Ordinal Core::getFramePointerAddress() const noexcept {
-		return _globalRegisters[FramePointerIndex].get<Ordinal>() & (~0b111111);
+		return _globalRegisters[FP.getOffset()].get<Ordinal>() & (~0b111111);
 	}
 	auto Core::getPFP() noexcept -> PreviousFramePointer& {
-		return _localRegisters[PreviousFramePointerIndex].pfp;
+		return _localRegisters[PFP.getOffset()].pfp;
 	}
 	void Core::call(Integer addr) noexcept {
 		union {
@@ -102,13 +103,13 @@ X(cmpi, bno);
 		conv._value = addr;
 		auto newAddress = conv._value;
 		auto tmp = (getStackPointerAddress() + 63) & (~63); // round to the next boundary
-		setRegister(ReturnInstructionPointerIndex, _instructionPointer);
+		setRegister(RIP, _instructionPointer);
 		saveLocalRegisters();
 		allocateNewLocalRegisterSet();
 		_instructionPointer += newAddress;
-		setRegister(PreviousFramePointerIndex, getFramePointerAddress());
+		setRegister(PFP, getFramePointerAddress());
 		setFramePointer(tmp);
-		setRegister(StackPointerIndex, tmp + 64);
+		setRegister(SP, tmp + 64);
 	}
 	constexpr Ordinal clearLowestTwoBitsMask = ~0b11;
 	constexpr Ordinal getProcedureAddress(Ordinal value) noexcept {
@@ -124,46 +125,44 @@ X(cmpi, bno);
 		return getProcedureKind(value) == 0b10;
 	}
 	void Core::calls(const NormalRegister& value) {
+        constexpr Ordinal SALIGN = 1u;
+        syncf();
 		auto targ = value.get<ShortOrdinal>();
 		if (targ > 259) {
 			generateFault(ProtectionFaultSubtype::Length);
 			return;
 		}
+        NormalRegister tempPE(load(getSystemProcedureTableBaseAddress() + 48 + (4 * targ)));
 		// TODO reimplement for the i960 jx
-		/*
-		Ordinal temp = 0;
-		Ordinal newRRR = 0;
-		// This code is 80960KB specific, I keep getting different answers :(
-		auto tempPE = load(_systemProcedureTableAddress + 48 + (4 * targ));
-		setRegister(ReturnInstructionPointerIndex, _instructionPointer);
-		_instructionPointer = getProcedureAddress(tempPE);
-		if (isLocalProcedure(tempPE) || (_pc.executionMode != 0)) {
-			temp = (getStackPointerAddress() + 63) & (~63);
-			newRRR = 0;
-		} else {
-			// I think the calls documentation for 80960kb is bugged because it references
-			// structures from 80960MC...
-			//
-			// In 80960KB the SSP is in the Procedure Table Structure but the
-			// documentation says to load from the PRCB to get the supervisor stack
-			// address. That makes no sense since 12 bytes off of the PRCB
-			// base is currentProcessSS (segment selector) not the supervisor
-			// stack address
-			//
-			// The 80960 calls loads the supervisor stack from a different
-			// location 
-			temp = load(_systemProcedureTableAddress + 12);
-			newRRR = 0b010 | _pc.traceEnable;
-			_pc.executionMode = 1;
-			_pc.traceEnable = temp & 0b1;
-		}
-		saveLocalRegisters();
-		allocateNewLocalRegisterSet();
-		setRegister(PreviousFramePointerIndex, getFramePointerAddress());
-		getRegister(PreviousFramePointerIndex).pfp.returnCode = newRRR;
-		setFramePointer(temp);
-		setRegister(StackPointerIndex, temp + 64);
-		*/
+        if (_frameAvailable) {
+            allocateNewFrame();
+        } else {
+            saveFrame();
+            allocateNewFrame();
+            // local register references now refer to new frame
+        }
+        setRegister(RIP, _instructionPointer);
+        _instructionPointer = tempPE.ordinal;
+        NormalRegister temp;
+        if ((temp.pe.isLocal()) || (_pc.inSupervisorMode())) {
+            // local call or supervisor call from supervisor mode
+            // in the manual:
+            // temp = (SP + (SALIGN*16 -1)) & ~(SALIGN * 16 - 1)
+            // where SALIGN=1 on i960 Jx processors
+            // round stack pointer to the next boundary
+            temp.ordinal = (getStackPointerAddress() + (SALIGN * 16 - 1)) & ~(SALIGN * 16 - 1);
+            temp.pfp.returnCode = 0b000;
+        } else {
+            // supervisor call from user mode
+            temp.ordinal = getSupervisorStackPointerBase();
+            temp.pfp.returnCode = 0b010 | _pc.traceEnable;
+            _pc.enterSupervisorMode();
+            _pc.traceEnable = temp.pc.traceEnable;
+        }
+        setRegister(PFP, getRegister(FP).get<Ordinal>());
+        getPFP().returnCode = temp.pfp.returnCode;
+        setRegister(FP, temp.ordinal);
+        setRegister(SP, temp.ordinal + 64);
 	}
 
 	Ordinal Core::load(Ordinal address, bool atomic) noexcept {
@@ -192,14 +191,14 @@ X(cmpi, bno);
 		static constexpr Ordinal boundaryAlignment = 64u;
 		auto newAddress = value.get<Ordinal>();
 		Ordinal tmp = (getStackPointerAddress() + boundaryMarker) && (~boundaryMarker); // round to the next boundary
-		setRegister(ReturnInstructionPointerIndex, _instructionPointer);
+		setRegister(RIP, _instructionPointer);
 		// Code for handling multiple internal local register sets not implemented!
 		saveLocalRegisters();
 		allocateNewLocalRegisterSet();
 		_instructionPointer = newAddress;
-		setRegister(PreviousFramePointerIndex, getFramePointerAddress());
+		setRegister(PFP, getFramePointerAddress());
 		setFramePointer(tmp);
-		setRegister(StackPointerIndex, tmp + boundaryAlignment);
+		setRegister(SP, tmp + boundaryAlignment);
 	}
 	void Core::addo(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set<Ordinal>(src2.get<Ordinal>() + src1.get<Ordinal>());
@@ -708,13 +707,13 @@ X(cmpi, bno);
 		// TODO implement
 		auto pfp = getPFP();
 		auto standardRestore = [this, &pfp]() {
-			setRegister(FramePointerIndex, pfp);
+			setRegister(FP, pfp);
 			// TODO implement this logic
 			// free current register set
 			// if register_set (FP) not allocated
 			//    then retrieve from memory(FP);
 			// endif
-			_instructionPointer = getRegister(ReturnInstructionPointerIndex).get<Ordinal>();
+			_instructionPointer = getRegister(RIP).get<Ordinal>();
 		};
 		auto case1 = [this, standardRestore]() {
 			auto fp = getFramePointerAddress();

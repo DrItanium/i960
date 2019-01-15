@@ -137,7 +137,7 @@ namespace i960 {
 						break;
 					default: 
 						generateFault(OperationFaultSubtype::InvalidOpcode); 
-						break;
+                        return;
 				}
 			}
 			// opcode does not differentiate between mema and memb, another bit
@@ -165,7 +165,7 @@ namespace i960 {
 #undef Y
 				default: 
 					generateFault(OperationFaultSubtype::InvalidOpcode); 
-					break;
+                    return;
 			}
 		} else if (desc.isCtrl()) {
 			switch (desc) {
@@ -182,7 +182,7 @@ namespace i960 {
 #undef Y
 				default: 
 					generateFault(OperationFaultSubtype::InvalidOpcode); 
-					break;
+                    return;
 			}
 		} else if (desc.isCobr()) {
 			switch(desc) {
@@ -200,7 +200,7 @@ namespace i960 {
 #undef Y
 				default: 
 					generateFault(OperationFaultSubtype::InvalidOpcode); 
-					break;
+                    return;
 			}
 		} else {
 			generateFault(OperationFaultSubtype::InvalidOpcode); 
