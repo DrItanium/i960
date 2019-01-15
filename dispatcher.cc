@@ -46,8 +46,8 @@ namespace i960 {
 #define Y(kind, args) case Opcode:: kind : kind args ; break 
 #define Op3Arg(kind) Y(kind, (src1, src2, srcDest))
 #define Op2Arg(kind) Y(kind, (src1, srcDest))
-				Op2Arg(spanbit); Op2Arg(scanbit);  Op2Arg(opnot);
-				Op2Arg(chkbit);  Op2Arg(cmpo);     Op2Arg(cmpi);    
+				Op2Arg(spanbit);  Op2Arg(scanbit);  Op2Arg(opnot);
+				Op2Arg(chkbit);   Op2Arg(cmpo);     Op2Arg(cmpi);    
 				Op2Arg(concmpo);  Op2Arg(concmpi);
 
 				Op3Arg(notbit);  Op3Arg(clrbit);   Op3Arg(notor);   Op3Arg(opand);
@@ -64,6 +64,11 @@ namespace i960 {
 
 
 				Y(scanbyte, (src1, src2));
+                Y(cmpos, (src1, src2));
+                Y(cmpis, (src1, src2));
+                Y(cmpob, (src1, src2));
+                Y(cmpib, (src1, src2));
+                Y(bswap, (src1, src2));
 				Y(mov, (opSrc1, opSrcDest));
 				Y(movl, (opSrc1, opSrcDest));
 				Y(movt, (opSrc1, opSrcDest));
@@ -83,15 +88,10 @@ namespace i960 {
 #undef Op3Arg
 #undef Op2Arg
 #undef Y
-				case Opcode::bswap:
-					bswap(src1, src2);
-					break;
 				default: generateFault(OperationFaultSubtype::InvalidOpcode); break;
 			}
 		} else if (desc.isMem()) {
 			auto mem = inst._mem;
-			auto opSrcDest = mem.decodeSrcDest();
-			auto srcDest = getRegister(opSrcDest);
 			if (mem.isMemAFormat()) {
 				auto ma = mem._mema;
 				auto offset = ma._offset;
@@ -145,15 +145,15 @@ namespace i960 {
 			// does, so the actual arguments differ, not the set of actions
 			switch(desc) {
 #define Y(kind, a, b) case Opcode:: kind : kind ( a , b ) ; break;
-#define YISSD(kind) Y(kind, _temporary0, srcDest);
-#define YSDIS(kind) Y(kind, srcDest, _temporary0);
+#define YISSD(kind) Y(kind, _temporary0, getRegister(mem.decodeSrcDest()));
+#define YSDIS(kind) Y(kind, getRegister(mem.decodeSrcDest()), _temporary0);
 #define ZIS(kind) case Opcode:: kind : kind ( _temporary0 ) ; break;
 #define LDP(suffix) \
 				YISSD(ld ## suffix); \
 				YSDIS(st ## suffix);
 #define WLDP(suffix) \
-				Y(ld ## suffix, _temporary0, opSrcDest); \
-				Y(st ## suffix, opSrcDest, _temporary0 ); 
+				Y(ld ## suffix, _temporary0, mem.decodeSrcDest()); \
+				Y(st ## suffix, mem.decodeSrcDest(), _temporary0 ); 
 				LDP(ob);     LDP(os);   LDP(ib); LDP(is);
 				WLDP(l);     WLDP(t);   WLDP(q); 
 				YSDIS(st);   YISSD(ld); YISSD(lda); 
@@ -186,10 +186,8 @@ namespace i960 {
 					break;
 			}
 		} else if (desc.isCobr()) {
-			auto cobr = inst._cobr;
-			auto& src1 = selectRegister(cobr.decodeSrc1(), _temporary0);
 			switch(desc) {
-#define Y(kind) case Opcode:: kind : kind ( src1, getRegister(cobr.decodeSrc2()), cobr.decodeDisplacement()); break
+#define Y(kind) case Opcode:: kind : kind ( selectRegister(inst._cobr.decodeSrc1(), _temporary0), getRegister(inst._cobr.decodeSrc2()), inst._cobr.decodeDisplacement()); break
 #define X(kind) Y( cmpob ## kind ) 
 				Y(bbc); Y(bbs); X(e);
 				X(ge);  X(l);   X(ne);
@@ -197,7 +195,7 @@ namespace i960 {
 #undef X
 #define X(kind, __) \
 				Y(cmpib ## kind ); \
-				case Opcode:: test ## kind : test ## kind (src1); break;
+				case Opcode:: test ## kind : test ## kind (selectRegister(inst._cobr.decodeSrc1(), _temporary0)); break;
 #include "conditional_kinds.def"
 #undef X
 #undef Y
