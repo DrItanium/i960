@@ -624,9 +624,7 @@ X(cmpi, bno);
 	void Core::cmpi(SourceRegister src1, SourceRegister src2) noexcept { compare(src1.get<Integer>(), src2.get<Integer>()); }
 	void Core::cmpo(SourceRegister src1, SourceRegister src2) noexcept { compare(src1.get<Ordinal>(), src2.get<Ordinal>()); }
 	void Core::muli(SourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept {
-		auto s2 = src2.get<Integer>();
-		auto s1 = src1.get<Integer>();
-		dest.set(s2 * s1);
+		dest.set(src2.get<Integer>() * src1.get<Integer>());
 		if ((src2.mostSignificantBit() == src1.mostSignificantBit()) && (src2.mostSignificantBit() != dest.mostSignificantBit())) {
 			if (_ac.integerOverflowMask == 1) {
 				_ac.integerOverflowFlag = 1;
@@ -715,10 +713,8 @@ X(cmpi, bno);
 		}
 	}
 	void Core::modac(__DEFAULT_THREE_ARGS__) noexcept {
-		auto src = src2.get<Ordinal>();
-		auto mask = src1.get<Ordinal>();
 		auto tmp = _ac.value;
-		_ac.value = (src & mask) | (_ac.value & (~mask));
+		_ac.value = (src2.get<Ordinal>() & src1.get<Ordinal>()) | (_ac.value & (~src1.get<Ordinal>()));
 		dest.set<Ordinal>(tmp);
 	}
 	void Core::addc(__DEFAULT_THREE_ARGS__) noexcept {
@@ -898,26 +894,28 @@ X(cmpi, bno);
 		dest.set(src2.get<Ordinal>() | (~src1.get<Ordinal>()));
 	}
 	void Core::nand(__DEFAULT_THREE_ARGS__) noexcept {
-		auto s1 = src1.get<Ordinal>();
-		auto s2 = src2.get<Ordinal>();
 		// as shown in the manual
-		dest.set((~s2) | (~s1));
+		dest.set((~src2.get<Ordinal>()) | (~src1.get<Ordinal>()));
 	}
 	void Core::nor(__DEFAULT_THREE_ARGS__) noexcept {
-		auto s1 = src1.get<Ordinal>();
-		auto s2 = src2.get<Ordinal>();
-		dest.set((~s2) & (~s1));
+		dest.set((~src2.get<Ordinal>()) & (~src1.get<Ordinal>()));
 	}
 	void Core::shro(__DEFAULT_THREE_ARGS__) noexcept {
-		auto shift = src1.get<Ordinal>();
-		dest.set<Ordinal>((shift < 32u) ? src2.get<Ordinal>() >> shift : 0u);
+        if (auto shift = src1.get<Ordinal>(); shift < 32u) {
+            dest.set<Ordinal>(src2.get<Ordinal>() >> shift);
+        } else {
+            dest.set<Ordinal>(0u);
+        }
 	}
 	void Core::shri(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set(src2.get<Integer>() >> src1.get<Integer>());
 	}
 	void Core::shlo(__DEFAULT_THREE_ARGS__) noexcept {
-		auto shift = src1.get<Ordinal>();
-		dest.set<Ordinal>((shift < 32u) ? src2.get<Ordinal>() << shift : 0u);
+        if (auto shift = src1.get<Ordinal>(); shift < 32u) {
+            dest.set<Ordinal>(src2.get<Ordinal>() << shift);
+        } else {
+            dest.set<Ordinal>(0u);
+        }
 	}
 	void Core::shli(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set(src2.get<Integer>() << src1.get<Integer>());
@@ -925,7 +923,7 @@ X(cmpi, bno);
 	void Core::shrdi(SourceRegister len, SourceRegister src, DestinationRegister dest) noexcept {
 		auto result = src.get<Integer>() >> len.get<Integer>();
 		if (result < 0) {
-			result += 1;
+            ++result;
 		}
 		dest.set<Integer>(result);
 	}
@@ -933,18 +931,15 @@ X(cmpi, bno);
 		dest.set<Ordinal>(i960::rotate(src2.get<Ordinal>(), src1.get<Ordinal>()));
 	}
 	void Core::modify(SourceRegister mask, SourceRegister src, DestinationRegister srcDest) noexcept {
-		auto s = src.get<Ordinal>();
-		auto m = mask.get<Ordinal>();
-		srcDest.set<Ordinal>((s & m) | (srcDest.get<Ordinal>() & (~m)));
+		srcDest.set<Ordinal>((src.get<Ordinal>() & mask.get<Ordinal>()) | (srcDest.get<Ordinal>() & (~src.get<Ordinal>())));
 	}
 	template<Ordinal mask>
 	constexpr bool maskedEquals(Ordinal src1, Ordinal src2) noexcept {
 		return (src1 & mask) == (src2 & mask);
 	}
 	void Core::scanbyte(__TWO_SOURCE_REGS__) noexcept {
-		auto s1 = src1.get<Ordinal>();
-		auto s2 = src2.get<Ordinal>();
-		if (maskedEquals<0x000000FF>(s1, s2) ||
+		if (auto s1 = src1.get<Ordinal>(), s2 = src2.get<Ordinal>(); 
+                maskedEquals<0x000000FF>(s1, s2) ||
 				maskedEquals<0x0000FF00>(s1, s2) ||
 				maskedEquals<0x00FF0000>(s1, s2) ||
 				maskedEquals<0xFF000000>(s1, s2)) {
