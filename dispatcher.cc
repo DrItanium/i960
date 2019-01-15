@@ -185,9 +185,8 @@ namespace i960 {
 					break;
 			}
 		} else if (desc.isCobr()) {
-            auto& src1 = selectRegister(inst._cobr.decodeSrc1(), _temporary0);
 			switch(desc) {
-#define Y(kind) case Opcode:: kind : kind ( src1, getRegister(inst._cobr.decodeSrc2()), inst._cobr.decodeDisplacement()); break
+#define Y(kind) case Opcode:: kind : kind ( selectRegister(inst._cobr.decodeSrc1(), _temporary0), getRegister(inst._cobr.decodeSrc2()), inst._cobr.decodeDisplacement()); break
 #define X(kind) Y( cmpob ## kind ) 
 				Y(bbc); Y(bbs); X(e);
 				X(ge);  X(l);   X(ne);
@@ -195,7 +194,7 @@ namespace i960 {
 #undef X
 #define X(kind, __) \
 				Y(cmpib ## kind ); \
-				case Opcode:: test ## kind : test ## kind (src1); break;
+				case Opcode:: test ## kind : test ## kind (selectRegister(inst._cobr.decodeSrc1(), _temporary0)); break;
 #include "conditional_kinds.def"
 #undef X
 #undef Y
