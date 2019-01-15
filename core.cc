@@ -187,9 +187,6 @@ X(cmpi, bno);
 			return _globalRegisters[offset];
 		}
 	}
-	void Core::setRegister(ByteOrdinal index, const NormalRegister& other) noexcept {
-		setRegister(index, other.get<Ordinal>());
-	}
 	void Core::callx(const NormalRegister& value) noexcept {
 		static constexpr Ordinal boundaryMarker = 63u;
 		static constexpr Ordinal boundaryAlignment = 64u;

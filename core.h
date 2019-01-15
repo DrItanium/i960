@@ -169,7 +169,9 @@ namespace i960 {
             void setRegister(ByteOrdinal index, T value) noexcept {
                 getRegister(index).set<T>(value);
             }
-            void setRegister(ByteOrdinal index, SourceRegister other) noexcept;
+            inline void setRegister(ByteOrdinal index, SourceRegister other) noexcept {
+                setRegister(index, other.get<Ordinal>());
+            }
             NormalRegister& getRegister(ByteOrdinal index) noexcept;
 			LongRegister makeLongRegister(ByteOrdinal index) noexcept;
 			TripleRegister makeTripleRegister(ByteOrdinal index) noexcept;
@@ -292,7 +294,7 @@ namespace i960 {
 			template<typename T>
 			void concmpBase(SourceRegister src1, SourceRegister src2) noexcept {
 				if (_ac.conditionCodeBitSet<0b100>()) {
-					if (auto s1 = src1.get<T>(), s2 = src2.get<T>(); s1 <= s2) {
+                    if (src1.get<T>() <= src2.get<T>()) {
 						_ac.conditionCode = 0b010;
 					} else {
 						_ac.conditionCode = 0b001;
