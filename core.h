@@ -327,7 +327,7 @@ namespace i960 {
 				// performance improvements. Reduces the number of
 				// assignments but also makes modification easier in
 				// the future if necessary
-				_ac.conditionCode = [&src1, &src2]() noexcept {
+				_ac.conditionCode = [src1, src2]() noexcept {
 								if (src1 < src2) {
 									return 0b100;
 								} else if (src1 == src2) {
