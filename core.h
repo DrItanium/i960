@@ -61,23 +61,26 @@ namespace i960 {
 	};
 	template<typename T>
 	class FaultAssociation final {
-		public:
 		private:
 			FaultAssociation() = delete;
 			FaultAssociation(const FaultAssociation&) = delete;
 			FaultAssociation(FaultAssociation&&) = delete;
 			~FaultAssociation() = delete;
+            FaultAssociation& operator=(const FaultAssociation&) = delete;
+            FaultAssociation& operator=(FaultAssociation&&) = delete;
 	};
 #define X(type, parent) \
 	template<> \
 	class FaultAssociation< type > final { \
 		public: \
 			static constexpr auto ParentFaultType = FaultType:: parent ; \
-		private: \
+        private: \
 			FaultAssociation() = delete; \
 			FaultAssociation(const FaultAssociation&) = delete; \
 			FaultAssociation(FaultAssociation&&) = delete; \
 			~FaultAssociation() = delete; \
+            FaultAssociation& operator=(const FaultAssociation&) = delete; \
+            FaultAssociation& operator=(FaultAssociation&&) = delete; \
 	}
 	X(TraceFaultSubtype, Trace);
 	X(OperationFaultSubtype, Operation);
@@ -436,6 +439,9 @@ namespace i960 {
 			const CoreInformation& _deviceId;
 			// active by default but needs to be setup by processPrcb
 			bool unalignedFaultEnabled = true;
+            NormalRegister _temporary0;
+            NormalRegister _temporary1;
+            NormalRegister _temporary2;
     };
 
 }

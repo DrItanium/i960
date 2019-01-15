@@ -38,13 +38,10 @@ namespace i960 {
 			auto opSrc1 = reg.decodeSrc1();
 			auto opSrc2 = reg.decodeSrc2();
 			auto opSrcDest = reg.decodeSrcDest();
-			NormalRegister imm1;
-			NormalRegister imm2;
-			NormalRegister imm3;
-			NormalRegister& src1 = selectRegister(opSrc1, imm1);
-			NormalRegister& src2 = selectRegister(opSrc2, imm2);
+			NormalRegister& src1 = selectRegister(opSrc1, _temporary0);
+			NormalRegister& src2 = selectRegister(opSrc2, _temporary1);
 			// TODO It is impossible for m3 to be set when srcDest is used as a dest, error out before hand
-			NormalRegister& srcDest = selectRegister(opSrcDest, imm3);
+			NormalRegister& srcDest = selectRegister(opSrcDest, _temporary2);
 			switch(desc) {
 #define Y(kind, args) case Opcode:: kind : kind args ; break 
 #define Op3Arg(kind) Y(kind, (src1, src2, srcDest))
@@ -94,13 +91,12 @@ namespace i960 {
 		} else if (desc.isMem()) {
 			auto mem = inst._mem;
 			auto opSrcDest = mem.decodeSrcDest();
-			NormalRegister immediateStorage;
 			auto srcDest = getRegister(opSrcDest);
 			if (mem.isMemAFormat()) {
 				auto ma = mem._mema;
 				auto offset = ma._offset;
 				auto abase = getRegister(ma.decodeAbase());
-				immediateStorage.set<Ordinal>(ma.isOffsetAddressingMode() ?  offset : offset + abase.get<Ordinal>());
+				_temporary0.set<Ordinal>(ma.isOffsetAddressingMode() ?  offset : offset + abase.get<Ordinal>());
 			} else {
 				auto getFullDisplacement = [this]() {
 					auto addr = _instructionPointer + 4;
@@ -120,25 +116,25 @@ namespace i960 {
 				auto abase = getRegister(mb.decodeAbase());
 				switch (mb.getAddressingMode()) {
 					case E::Abase:
-						immediateStorage.move(abase);
+						_temporary0.move(abase);
 						break;
 					case E::IP_Plus_Displacement_Plus_8:
-						immediateStorage.set<Ordinal>(_instructionPointer + displacement + 8);
+						_temporary0.set<Ordinal>(_instructionPointer + displacement + 8);
 						break;
 					case E::Abase_Plus_Index_Times_2_Pow_Scale:
-						immediateStorage.set<Ordinal>(abase.get<Ordinal>() + index * scale);
+						_temporary0.set<Ordinal>(abase.get<Ordinal>() + index * scale);
 						break;
 					case E::Displacement:
-						immediateStorage.set(displacement);
+						_temporary0.set(displacement);
 						break;
 					case E::Abase_Plus_Displacement:
-						immediateStorage.set(displacement + abase.get<Ordinal>());
+						_temporary0.set(displacement + abase.get<Ordinal>());
 						break;
 					case E::Index_Times_2_Pow_Scale_Plus_Displacement:
-						immediateStorage.set(index * scale + displacement);
+						_temporary0.set(index * scale + displacement);
 						break;
 					case E::Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement:
-						immediateStorage.set(abase.get<Ordinal>() + index * scale + displacement);
+						_temporary0.set(abase.get<Ordinal>() + index * scale + displacement);
 						break;
 					default: 
 						generateFault(OperationFaultSubtype::InvalidOpcode); 
@@ -149,15 +145,15 @@ namespace i960 {
 			// does, so the actual arguments differ, not the set of actions
 			switch(desc) {
 #define Y(kind, a, b) case Opcode:: kind : kind ( a , b ) ; break;
-#define YISSD(kind) Y(kind, immediateStorage, srcDest);
-#define YSDIS(kind) Y(kind, srcDest, immediateStorage);
-#define ZIS(kind) case Opcode:: kind : kind ( immediateStorage ) ; break;
+#define YISSD(kind) Y(kind, _temporary0, srcDest);
+#define YSDIS(kind) Y(kind, srcDest, _temporary0);
+#define ZIS(kind) case Opcode:: kind : kind ( _temporary0 ) ; break;
 #define LDP(suffix) \
 				YISSD(ld ## suffix); \
 				YSDIS(st ## suffix);
 #define WLDP(suffix) \
-				Y(ld ## suffix, immediateStorage, opSrcDest); \
-				Y(st ## suffix, opSrcDest, immediateStorage ); 
+				Y(ld ## suffix, _temporary0, opSrcDest); \
+				Y(st ## suffix, opSrcDest, _temporary0 ); 
 				LDP(ob);     LDP(os);   LDP(ib); LDP(is);
 				WLDP(l);     WLDP(t);   WLDP(q); 
 				YSDIS(st);   YISSD(ld); YISSD(lda); 
@@ -173,12 +169,10 @@ namespace i960 {
 					break;
 			}
 		} else if (desc.isCtrl()) {
-			auto ctrl = inst._ctrl;
-			Integer displacement = ctrl.decodeDisplacement();
 			switch (desc) {
 #define Y(kind) \
 				case Opcode:: kind : \
-									 kind ( displacement ) ; \
+									 kind ( inst._ctrl.decodeDisplacement() ) ; \
 				break;
 				Y(b)
 					Y(call)
@@ -193,8 +187,7 @@ namespace i960 {
 			}
 		} else if (desc.isCobr()) {
 			auto cobr = inst._cobr;
-			NormalRegister immediateStorage;
-			auto& src1 = selectRegister(cobr.decodeSrc1(), immediateStorage);
+			auto& src1 = selectRegister(cobr.decodeSrc1(), _temporary0);
 			switch(desc) {
 #define Y(kind) case Opcode:: kind : kind ( src1, getRegister(cobr.decodeSrc2()), cobr.decodeDisplacement()); break
 #define X(kind) Y( cmpob ## kind ) 
