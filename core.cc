@@ -999,16 +999,12 @@ X(cmpi, bno);
 		}
 	}
     void Core::xnor(__DEFAULT_THREE_ARGS__) noexcept {
-		auto s1 = src1.get<Ordinal>();
-		auto s2 = src2.get<Ordinal>();
-		dest.set<Ordinal>(~(s2 | s1) | (s2 & s1));
+		dest.set<Ordinal>(~(src2.get<Ordinal>() | src1.get<Ordinal>()) | (src2.get<Ordinal>() & src1.get<Ordinal>()));
     }
     void Core::opxor(__DEFAULT_THREE_ARGS__) noexcept {
-		auto s1 = src1.get<Ordinal>();
-		auto s2 = src2.get<Ordinal>();
 		// there is an actual implementation within the manual so I'm going to
 		// use that instead of the xor operator.
-		dest.set<Ordinal>((s2 | s1) & ~(s2 & s1));
+		dest.set<Ordinal>((src2.get<Ordinal>() | src1.get<Ordinal>()) & ~(src2.get<Ordinal>() & src1.get<Ordinal>()));
     }
 	void Core::intdis() {
 		// TODO implement
@@ -1102,9 +1098,7 @@ X(cmpi, bno);
 	}
 	void Core::eshro(SourceRegister src1, ByteOrdinal src2Ind, DestinationRegister dest) noexcept {
 		// TODO perform byte ordinal check to make sure it is even
-		//LongRegister src2(getRegister(src2Ind), getRegister(src2Ind + 1));
-		LongRegister src2 = makeLongRegister(src2Ind);
-		dest.set<Ordinal>(src2.get<LongOrdinal>() >> (src1.get<Ordinal>() & 0b11111));
+		dest.set<Ordinal>(makeLongRegister(src2Ind).get<LongOrdinal>() >> (src1.get<Ordinal>() & 0b11111));
 	}
 	void Core::icctl(__DEFAULT_THREE_ARGS__) noexcept { 
 		// TODO implement
