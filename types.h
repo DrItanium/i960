@@ -807,22 +807,24 @@ X(Region14_15, 0xE000'0000, 0xFFFF'FFFF);
 
 	// memory map
 	namespace MemoryMap {
+        enum : Ordinal{
+                   NMIVector = 0x0000'0000,
+                   OptionalInterruptVectorsBegin = 0x0000'0004,
+                   OptionalInterruptVectorsEnd = 0x0000'003F,
+                   DataCacheUnreservedStart = 0x0000'0040,
+                   DataCacheUnreservedEnd = 0x0000'03FF,
+                   // internal data cache end
+                   // normal memory begin
+                   ExternalUnusedMemoryBegin = 0x0000'0400,
+                   ExternalUnusedMemoryEnd = 0xFEFF'FF2F,
+                   InitializationBootRecordBegin = 0xFEFF'FF30,
+                   InitializationBootRecordEnd = 0xFEFF'FF5F,
+                   ReservedMemoryBegin = 0xFEFF'FF60,
+                   ReservedMemoryEnd = 0xFEFF'FFFF,
+                   MemoryMappedRegisterSpaceBegin = 0xFF00'0000,
+                   MemoryMappedRegisterSpaceEnd = 0xFFFF'FFFF,
+        };
 		// internal data ram 1 kbyte is mapped into the memory space
-		constexpr Ordinal NMIVector = 0x0000'0000;
-		constexpr Ordinal OptionalInterruptVectorsBegin = 0x0000'0004;
-		constexpr Ordinal OptionalInterruptVectorsEnd = 0x0000'003F;
-		constexpr Ordinal DataCacheUnreservedStart = 0x0000'0040;
-		constexpr Ordinal DataCacheUnreservedEnd = 0x0000'03FF;
-		// internal data cache end
-		// normal memory begin
-		constexpr Ordinal ExternalUnusedMemoryBegin = 0x0000'0400;
-		constexpr Ordinal ExternalUnusedMemoryEnd = 0xFEFF'FF2F;
-		constexpr Ordinal InitializationBootRecordBegin = 0xFEFF'FF30;
-		constexpr Ordinal InitializationBootRecordEnd = 0xFEFF'FF5F;
-		constexpr Ordinal ReservedMemoryBegin = 0xFEFF'FF60;
-		constexpr Ordinal ReservedMemoryEnd = 0xFEFF'FFFF;
-		constexpr Ordinal MemoryMappedRegisterSpaceBegin = 0xFF00'0000;
-		constexpr Ordinal MemoryMappedRegisterSpaceEnd = 0xFFFF'FFFF;
 	} // end namespace MemoryMap
 
 	/**
