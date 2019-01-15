@@ -2,7 +2,6 @@
 #define I960_OPCODES_H__
 #include "types.h"
 namespace i960::Opcode {
-		constexpr bool hasZeroArguments(Ordinal opcode) noexcept;
 		struct Description final {
 			enum class Class : Ordinal {
 				Undefined,
@@ -56,6 +55,7 @@ namespace i960::Opcode {
 
 			constexpr Description(Ordinal opcode, Class type, const char* str, ArgumentLayout layout) noexcept : 
 				_opcode(opcode), _type(type), _str(str), _argCount(getArgumentCount(layout)), _layout(layout) { }
+            ~Description() = default;
 			constexpr auto getOpcode() const noexcept { return _opcode; }
 			constexpr auto getType() const noexcept { return _type; }
 			constexpr auto getString() const noexcept { return _str; }
@@ -99,7 +99,9 @@ namespace i960::Opcode {
 #undef o
 		};
 
-		const Description& getDescription(const Instruction& inst) noexcept;
+		inline const Description& getDescription(const Instruction& inst) noexcept {
+            return getDescription(inst.getOpcode());
+        }
 		const Description& getDescription(Ordinal opcode) noexcept;
 } // end namespace i960::Opcode
 #endif // end I960_OPCODES_H__

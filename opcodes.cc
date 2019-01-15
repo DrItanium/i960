@@ -2,9 +2,6 @@
 #include <map>
 
 namespace i960::Opcode {
-	const Description& getDescription(const Instruction& inst) noexcept {
-		return getDescription(inst.getOpcode());
-	}
 	const Description& getDescription(Ordinal opcode) noexcept {
 		static constexpr Description undefined (0xFFFF'FFFF, Description::Class::Undefined, "undefined", Description::ArgumentLayout::Undefined);
 		static std::map<Ordinal, Description> lookupTable = {
