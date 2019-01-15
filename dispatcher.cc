@@ -35,10 +35,9 @@ namespace i960 {
 			}
 		} else if (desc.isReg()) {
 			auto reg = inst._reg;
-			auto opSrc1 = reg.decodeSrc1();
 			auto opSrc2 = reg.decodeSrc2();
 			auto opSrcDest = reg.decodeSrcDest();
-			NormalRegister& src1 = selectRegister(opSrc1, _temporary0);
+			NormalRegister& src1 = selectRegister(reg.decodeSrc1(), _temporary0);
 			NormalRegister& src2 = selectRegister(opSrc2, _temporary1);
 			// TODO It is impossible for m3 to be set when srcDest is used as a dest, error out before hand
 			NormalRegister& srcDest = selectRegister(opSrcDest, _temporary2);
@@ -69,10 +68,10 @@ namespace i960 {
                 Y(cmpob, (src1, src2));
                 Y(cmpib, (src1, src2));
                 Y(bswap, (src1, src2));
-				Y(mov, (opSrc1, opSrcDest));
-				Y(movl, (opSrc1, opSrcDest));
-				Y(movt, (opSrc1, opSrcDest));
-				Y(movq, (opSrc1, opSrcDest));
+				Y(mov, (reg.decodeSrc1(), opSrcDest));
+				Y(movl, (reg.decodeSrc1(), opSrcDest));
+				Y(movt, (reg.decodeSrc1(), opSrcDest));
+				Y(movq, (reg.decodeSrc1(), opSrcDest));
 				Y(calls, (src1));
 				Y(eshro, (src1, opSrc2, srcDest));
 				Y(emul, (src1, src2, opSrcDest));
@@ -173,11 +172,11 @@ namespace i960 {
 #define Y(kind) \
 				case Opcode:: kind : \
 									 kind ( inst._ctrl.decodeDisplacement() ) ; \
-				break;
-				Y(b)
-					Y(call)
-					Y(bal)
-#define X(kind, __) Y(b ## kind) 
+				break
+                Y(b);
+                Y(call);
+                Y(bal);
+#define X(kind, __) Y(b ## kind);
 #include "conditional_kinds.def"
 #undef X
 #undef Y
@@ -186,8 +185,9 @@ namespace i960 {
 					break;
 			}
 		} else if (desc.isCobr()) {
+            auto& src1 = selectRegister(inst._cobr.decodeSrc1(), _temporary0);
 			switch(desc) {
-#define Y(kind) case Opcode:: kind : kind ( selectRegister(inst._cobr.decodeSrc1(), _temporary0), getRegister(inst._cobr.decodeSrc2()), inst._cobr.decodeDisplacement()); break
+#define Y(kind) case Opcode:: kind : kind ( src1, getRegister(inst._cobr.decodeSrc2()), inst._cobr.decodeDisplacement()); break
 #define X(kind) Y( cmpob ## kind ) 
 				Y(bbc); Y(bbs); X(e);
 				X(ge);  X(l);   X(ne);
@@ -195,7 +195,7 @@ namespace i960 {
 #undef X
 #define X(kind, __) \
 				Y(cmpib ## kind ); \
-				case Opcode:: test ## kind : test ## kind (selectRegister(inst._cobr.decodeSrc1(), _temporary0)); break;
+				case Opcode:: test ## kind : test ## kind (src1); break;
 #include "conditional_kinds.def"
 #undef X
 #undef Y
