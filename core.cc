@@ -241,14 +241,12 @@ X(cmpi, bno);
 		_ac.conditionCode = ((src.get<Ordinal>() & (1 << (pos.get<Ordinal>() & 0b11111))) == 0) ? 0b000 : 0b010;
 	}
 	void Core::alterbit(SourceRegister pos, SourceRegister src, DestinationRegister dest) noexcept {
-		auto s = src.get<Ordinal>();
-		auto p = pos.get<Ordinal>() & 0b11111;
-		if ((_ac.conditionCode & 0b010)  == 0) {
+		if (auto p = pos.get<Ordinal>() & 0b11111; (_ac.conditionCode & 0b010)  == 0) {
 			// if the condition bit is clear then we clear the given bit
-			dest.set<Ordinal>(s & (~(1 << p)));
+			dest.set<Ordinal>(src.get<Ordinal>() & (~(1 << p)));
 		} else {
 			// if the condition bit is set then we set the given bit
-			dest.set<Ordinal>(s | (1 << p));
+			dest.set<Ordinal>(src.get<Ordinal>() | (1 << p));
 		}
 	}
 	void Core::opand(__DEFAULT_THREE_ARGS__) noexcept {
@@ -258,21 +256,6 @@ X(cmpi, bno);
 		dest.set<Ordinal>(i960::andNot(src2.get<Ordinal>(), src1.get<Ordinal>()));
 	}
 
-	void DoubleRegister::move(const DoubleRegister& other) noexcept {
-		_lower.move(other._lower);
-		_upper.move(other._upper);
-	}
-	void TripleRegister::move(const TripleRegister& other) noexcept {
-		_lower.move(other._lower);
-		_mid.move(other._mid);
-		_upper.move(other._upper);
-	}
-	void QuadRegister::move(const QuadRegister& other) noexcept {
-		_lower.move(other._lower);
-		_mid.move(other._mid);
-		_upper.move(other._upper);
-		_highest.move(other._highest);
-	}
 
 	void Core::mov(const Operand& src, const Operand& dest) noexcept { 
 		if (DestinationRegister d = getRegister(dest); src.isRegister()) {

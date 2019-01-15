@@ -140,7 +140,6 @@ namespace i960 {
                     }
                 }
             void set(Ordinal lower, Ordinal upper) noexcept;
-            void move(const DoubleRegister& other) noexcept;
             Ordinal getLowerHalf() const noexcept { return _lower.get<Ordinal>(); }
             Ordinal getUpperHalf() const noexcept { return _upper.get<Ordinal>(); }
 
@@ -156,7 +155,6 @@ namespace i960 {
             TripleRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& upper) : _lower(lower), _mid(mid), _upper(upper) { }
             ~TripleRegister() = default;
             void set(Ordinal lower, Ordinal mid, Ordinal upper) noexcept;
-            void move(const TripleRegister& other) noexcept;
             Ordinal getLowerPart() const noexcept { return _lower.get<Ordinal>(); }
             Ordinal getMiddlePart() const noexcept { return _mid.get<Ordinal>(); }
             Ordinal getUpperPart() const noexcept { return _upper.get<Ordinal>(); }
@@ -170,7 +168,6 @@ namespace i960 {
             QuadRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& high, NormalRegister& highest) : _lower(lower), _mid(mid), _upper(high), _highest(highest) { }
             ~QuadRegister() = default;
             void set(Ordinal lower, Ordinal mid, Ordinal upper, Ordinal highest) noexcept;
-            void move(const QuadRegister& other) noexcept;
             Ordinal getLowestPart() const noexcept { return _lower.get<Ordinal>(); }
             Ordinal getLowerPart() const noexcept { return _mid.get<Ordinal>(); }
             Ordinal getHigherPart() const noexcept { return _upper.get<Ordinal>(); }
