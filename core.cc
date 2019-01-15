@@ -11,6 +11,8 @@
 #define __TWO_SOURCE_AND_INT_ARGS__ SourceRegister src1, SourceRegister src2, Integer targ
 #define __TWO_SOURCE_REGS__ SourceRegister src1, SourceRegister src2
 namespace i960 {
+    template<Ordinal index>
+    constexpr Ordinal RegisterIndex = index * sizeof(Ordinal);
 	constexpr bool notDivisibleBy(ByteOrdinal value, ByteOrdinal factor) noexcept {
 		return ((value % factor) != 0);
 	}
@@ -570,7 +572,7 @@ X(cmpi, bno);
 		} else {
 			LongRegister dest = makeLongRegister(srcDestIndex);
 			auto addr = src.get<Ordinal>();
-			dest.set(load(addr), load(addr + (1 * sizeof(Ordinal))));
+			dest.set(load(addr), load(addr + RegisterIndex<1>));
 			if ((getLowestThreeBits(addr) != 0) && unalignedFaultEnabled) {
 				generateFault(OperationFaultSubtype::Unaligned);
 			}
@@ -589,7 +591,7 @@ X(cmpi, bno);
 		} else {
 			TripleRegister dest = makeTripleRegister(srcDestIndex);
 			auto addr = src.get<Ordinal>();
-			dest.set(load(addr), load(addr + (1 * sizeof(Ordinal))), load(addr + (2 * sizeof(Ordinal))));
+			dest.set(load(addr), load(addr + RegisterIndex<1>), load(addr + RegisterIndex<2>));
 			if ((getLowestFourBits(addr) != 0) && unalignedFaultEnabled) {
 				generateFault(OperationFaultSubtype::Unaligned);
 			}
@@ -606,7 +608,7 @@ X(cmpi, bno);
 		} else {
 			QuadRegister dest = makeQuadRegister(index);
 			auto addr = src.get<Ordinal>();
-			dest.set(load(addr), load(addr + (1 * sizeof(Ordinal))), load(addr + (2 * sizeof(Ordinal))), load(addr + (3 * sizeof(Ordinal))));
+			dest.set(load(addr), load(addr + RegisterIndex<1>), load(addr + RegisterIndex<2>), load(addr + RegisterIndex<3>));
 			if ((getLowestFourBits(addr) != 0) && unalignedFaultEnabled) {
 				generateFault(OperationFaultSubtype::Unaligned);
 			}
@@ -645,26 +647,26 @@ X(cmpi, bno);
 	void Core::stl(Ordinal ind, SourceRegister dest) noexcept {
 		// TODO check for valid register
 		LongRegister src = makeLongRegister(ind);
-		store(dest.get<Ordinal>(), src.getLowerHalf());
-		store(dest.get<Ordinal>() + sizeof(Ordinal), src.getUpperHalf());
+		store(dest.get<Ordinal>() + RegisterIndex<0>, src.getLowerHalf());
+		store(dest.get<Ordinal>() + RegisterIndex<1>, src.getUpperHalf());
 	}
 
 	void Core::stt(Ordinal ind, SourceRegister dest) noexcept {
 		// TODO perform fault checks
 		TripleRegister src = makeTripleRegister(ind);
 		auto addr = dest.get<Ordinal>();
-		store(addr, src.getLowerPart());
-		store(addr + sizeof(Ordinal), src.getMiddlePart());
-		store(addr + (2 * sizeof(Ordinal)), src.getUpperPart());
+		store(addr + RegisterIndex<0>, src.getLowerPart());
+		store(addr + RegisterIndex<1>, src.getMiddlePart());
+        store(addr + RegisterIndex<2>, src.getUpperPart());
 	}
 
 	void Core::stq(Ordinal ind, SourceRegister dest) noexcept {
 		QuadRegister src = makeQuadRegister(ind);
 		auto addr = dest.get<Ordinal>();
-		store(addr, src.getLowestPart());
-		store(addr + sizeof(Ordinal), src.getLowerPart());
-		store(addr + (2 * sizeof(Ordinal)), src.getHigherPart());
-		store(addr + (3 * sizeof(Ordinal)), src.getHighestPart());
+		store(addr + RegisterIndex<0>, src.getLowestPart());
+		store(addr + RegisterIndex<1>, src.getLowerPart());
+		store(addr + RegisterIndex<2>, src.getHigherPart());
+		store(addr + RegisterIndex<3>, src.getHighestPart());
 	}
 	void Core::syncf() noexcept {
 		// this does nothing for the time being because this implementation does not execute instructions 
