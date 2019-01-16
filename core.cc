@@ -87,6 +87,15 @@ X(cmpi, bno);
 	void Core::allocateNewLocalRegisterSet() noexcept {
 		// this function does nothing at this point as we are always saving locals to ram
 	}
+    void Core::allocateNewFrame() noexcept {
+        // TODO implement
+    }
+    void Core::saveFrame() noexcept {
+        // TODO implement
+    }
+    Ordinal Core::getSupervisorStackPointerBase() noexcept {
+        return getSystemProcedureTableBaseAddress() + 12;
+    }
 	void Core::setFramePointer(Ordinal value) noexcept {
 		_globalRegisters[FP.getOffset()].set(value);
 	}
