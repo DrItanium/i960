@@ -341,23 +341,25 @@ namespace i960 {
 								}
 				}();
             }
-			template<Ordinal mask>
+			template<ConditionCode code>
 			bool genericCondCheck() noexcept {
-				return ((mask & _ac.conditionCode) != 0) || (mask == _ac.conditionCode);
+                return _ac.conditionCodeBitSet<Ordinal(code)>() || _ac.conditionCodeIs<Ordinal(code)>();
 			}
-			template<Ordinal mask>
+			template<ConditionCode mask>
 			void baseSelect(__DEFAULT_THREE_ARGS__) noexcept {
-
-				SourceRegister sel = genericCondCheck<mask>() ? src2 : src1;
-				dest.set<Ordinal>(sel.get<Ordinal>());
+                if (genericCondCheck<mask>()) {
+                    dest.set<Ordinal>(src2.get<Ordinal>());
+                } else {
+                    dest.set<Ordinal>(src1.get<Ordinal>());
+                }
 			}
-			template<Ordinal mask>
+			template<ConditionCode mask>
 			void addoBase(__DEFAULT_THREE_ARGS__) noexcept {
 				if (genericCondCheck<mask>()) {
 					addo(src1, src2, dest);
 				}
 			}
-			template<Ordinal mask>
+			template<ConditionCode mask>
 			void addiBase(__DEFAULT_THREE_ARGS__) noexcept {
 				if (genericCondCheck<mask>()) {
 					dest.set<Integer>(src1.get<Integer>() + src2.get<Integer>());
@@ -372,13 +374,13 @@ namespace i960 {
 					}
 				}
 			}
-			template<Ordinal mask>
+			template<ConditionCode mask>
 			void suboBase(__DEFAULT_THREE_ARGS__) noexcept {
 				if (genericCondCheck<mask>()) {
 					subo(src1, src2, dest);
 				}
 			}
-			template<Ordinal mask>
+			template<ConditionCode mask>
 			void subiBase(__DEFAULT_THREE_ARGS__) noexcept {
 				if (genericCondCheck<mask>()) {
 					dest.set<Integer>(src2.get<Integer>() - src1.get<Integer>());

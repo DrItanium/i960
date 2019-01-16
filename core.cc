@@ -19,38 +19,13 @@ namespace i960 {
 #define X(kind, action) \
 	void Core:: test ## kind (DestinationRegister dest) noexcept { testGeneric<TestTypes:: action>(dest); } \
 	void Core:: b ## kind (Integer addr) noexcept { branchIfGeneric<ConditionCode:: action > ( addr ) ; } \
-    void Core:: fault ## kind () noexcept { genericFault< ConditionCode:: action > ( ) ; }
+    void Core:: fault ## kind () noexcept { genericFault< ConditionCode:: action > ( ) ; } \
+    void Core:: sel ## kind (__DEFAULT_THREE_ARGS__) noexcept { baseSelect<ConditionCode:: action>(src1, src2, dest); } \
+    void Core:: subo ## kind (__DEFAULT_THREE_ARGS__) noexcept { suboBase<ConditionCode:: action>(src1, src2, dest); } \
+    void Core:: subi ## kind (__DEFAULT_THREE_ARGS__) noexcept { subiBase<ConditionCode:: action>(src1, src2, dest); } \
+    void Core:: addo ## kind (__DEFAULT_THREE_ARGS__) noexcept { addoBase<ConditionCode:: action>(src1, src2, dest); } \
+    void Core:: addi ## kind (__DEFAULT_THREE_ARGS__) noexcept { addiBase<ConditionCode:: action>(src1, src2, dest); } 
 #include "conditional_kinds.def"
-#undef X
-#define X(kind, mask) \
-	void Core:: sel ## kind (__DEFAULT_THREE_ARGS__) noexcept { \
-		baseSelect<mask>(src1, src2, dest); \
-	}
-	X(no, 0b000);
-	X(g, 0b001);
-	X(e, 0b010);
-	X(ge, 0b011);
-	X(l, 0b100);
-	X(ne, 0b101);
-	X(le, 0b110);
-	X(o, 0b111);
-#undef X
-#define X(base, kind, code) \
-	void Core:: base ## kind ( __DEFAULT_THREE_ARGS__ ) noexcept { \
-		base ## Base <code> ( src1, src2, dest ) ; \
-	}
-#define Y(base) \
-	X(base, no, 0b000); \
-	X(base, g, 0b001); \
-	X(base, e, 0b010); \
-	X(base, ge, 0b011); \
-	X(base, l, 0b100); \
-	X(base, ne, 0b101); \
-	X(base, le, 0b110); \
-	X(base, o, 0b111);
-	Y(subo); Y(subi);
-	Y(addo); Y(addi);
-#undef Y
 #undef X
 #define X(cmpop, bop) \
 	void Core:: cmpop ## bop ( __TWO_SOURCE_AND_INT_ARGS__ ) noexcept { \
