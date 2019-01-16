@@ -344,12 +344,13 @@ X(cmpi, bno);
 		_instructionPointer &= clearLowestTwoBitsMask;
 	}
 	void Core::bal(Integer displacement) noexcept {
+        // this is taken from the i960mc manual since the one in the i960jx manual
+        // contradicts itself. 
 		_globalRegisters[14].set<Ordinal>(_instructionPointer + 4);
 		b(displacement);
 	}
 
 	void Core::balx(__DEFAULT_TWO_ARGS__,Core::InstructionLength length) noexcept {
-		// TODO support 4 or 8 byte versions
 		dest.set<Ordinal>(_instructionPointer + static_cast<Ordinal>(length));
 		_instructionPointer = src.get<Ordinal>();
 	}
