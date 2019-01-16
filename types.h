@@ -310,34 +310,36 @@ namespace i960 {
                 return tmp;
             }
         }
+        constexpr ArithmeticControls(Ordinal rawValue = 0) noexcept : value(rawValue) { }
+        ~ArithmeticControls() { value = 0; }
 
         // NOTE that both of these methods could return true in some cases
         // I think that the safest solution is to actually raise a fault if both
         // are true or both are false.
 
 		template<Ordinal mask>
-		bool conditionCodeIs() const noexcept {
+		constexpr bool conditionCodeIs() const noexcept {
 			return conditionCode == mask;
 		}
 		template<Ordinal mask>
-		bool conditionCodeBitSet() const noexcept {
+		constexpr bool conditionCodeBitSet() const noexcept {
 			return (conditionCode & mask) != 0;
 		}
-		bool shouldCarryOut() const noexcept {
+		constexpr bool shouldCarryOut() const noexcept {
 			// 0b01X where X is don't care
 			return conditionCode == 0b010 || conditionCode == 0b011;
 		}
-		bool markedAsOverflow() const noexcept {
+		constexpr bool markedAsOverflow() const noexcept {
 			// 0b0X1 where X is don't care
 			return conditionCode == 0b001 || conditionCode == 0b011;
 		}
-        Ordinal getConditionCode() const noexcept {
+        constexpr Ordinal getConditionCode() const noexcept {
             return conditionCode;
         }
-        bool carrySet() const noexcept {
+        constexpr bool carrySet() const noexcept {
             return (conditionCode & 0b010) != 0;
         }
-        Ordinal getCarryValue() const noexcept {
+        constexpr Ordinal getCarryValue() const noexcept {
             return carrySet() ? 1 : 0;
         }
 
@@ -413,28 +415,28 @@ namespace i960 {
             Ordinal _source2 : 5;
             Ordinal _src_dest : 5;
             Ordinal _opcode : 8;
-            Ordinal getOpcode() const noexcept {
+            constexpr Ordinal getOpcode() const noexcept {
                 return (_opcode << 4) | _opcode2;
             }
 			void encodeSrc1(const Operand& operand) noexcept {
 				_source1 = operand.getValue();
 				_m1 = operand.isLiteral() ? 1 : 0;
 			}
-			auto decodeSrc1() const noexcept {
+			constexpr auto decodeSrc1() const noexcept {
 				return Operand(_m1, _source1);
 			}
 			void encodeSrc2(const Operand& operand) noexcept {
 				_source2 = operand.getValue();
 				_m2 = operand.isLiteral() ? 1 : 0;
 			}
-			auto decodeSrc2() const noexcept {
+			constexpr auto decodeSrc2() const noexcept {
 				return Operand(_m2, _source2);
 			}
 			void encodeSrcDest(const Operand& operand) noexcept {
 				_src_dest = operand.getValue();
 				_m3 = operand.isLiteral() ? 1 : 0;
 			}
-			auto decodeSrcDest() const noexcept {
+			constexpr auto decodeSrcDest() const noexcept {
 				return Operand(_m3, _src_dest);
 			}
         };
@@ -446,12 +448,12 @@ namespace i960 {
             Ordinal _source2 : 5; 
             Ordinal _source1 : 5;
             Ordinal _opcode : 8;
-            auto src1IsLiteral() const noexcept { return _m1 != 0; }
+            constexpr auto src1IsLiteral() const noexcept { return _m1 != 0; }
 			void encodeSrc1(const Operand& operand) noexcept {
 				_source1 = operand.getValue();
 				_m1 = operand.isLiteral() ? 1 : 0;
 			}
-			auto decodeSrc1() const noexcept {
+			constexpr auto decodeSrc1() const noexcept {
 				return Operand(_m1, _source1); 
 			}
 			void encodeSrc2(const Operand& operand) noexcept {
@@ -459,10 +461,10 @@ namespace i960 {
 				// value as is.
 				_source2 = operand.getValue();
 			}
-			auto decodeSrc2() const noexcept {
+			constexpr auto decodeSrc2() const noexcept {
 				return Operand(0, _source2);
 			}
-			auto decodeDisplacement() const noexcept {
+			constexpr auto decodeDisplacement() const noexcept {
 				return _displacement;
 			}
         };
@@ -473,7 +475,7 @@ namespace i960 {
 			void encodeDisplacement(Ordinal value) noexcept {
 				_displacement = value;
 			}
-			auto decodeDisplacement() const noexcept {
+			constexpr auto decodeDisplacement() const noexcept {
 				return _displacement;
 			}
         };
@@ -489,16 +491,16 @@ namespace i960 {
                 Ordinal _abase : 5;
                 Ordinal _src_dest : 5;
                 Ordinal _opcode : 8;
-                AddressingModes getAddressingMode() const noexcept {
+                constexpr AddressingModes getAddressingMode() const noexcept {
                     return static_cast<AddressingModes>(_md);
                 }
-				bool isOffsetAddressingMode() const noexcept {
+				constexpr bool isOffsetAddressingMode() const noexcept {
 					return getAddressingMode() == AddressingModes::Offset;
 				}
-				auto decodeSrcDest() const noexcept {
+				constexpr auto decodeSrcDest() const noexcept {
 					return Operand(0, _src_dest);
 				}
-				auto decodeAbase() const noexcept {
+				constexpr auto decodeAbase() const noexcept {
 					return Operand(0, _abase);
 				}
             };
@@ -520,10 +522,10 @@ namespace i960 {
                 Ordinal _abase : 5;
                 Ordinal _src_dest : 5;
                 Ordinal _opcode : 8;
-                AddressingModes getAddressingMode() const noexcept {
+                constexpr AddressingModes getAddressingMode() const noexcept {
                     return static_cast<AddressingModes>(_mode);
                 }
-                bool has32bitDisplacement() const noexcept {
+                constexpr bool has32bitDisplacement() const noexcept {
                     switch (getAddressingMode()) {
                         case AddressingModes::Abase:
                         case AddressingModes::Abase_Plus_Index_Times_2_Pow_Scale:
@@ -550,28 +552,28 @@ namespace i960 {
                             return 0; 
                     }
                 }
-				auto decodeSrcDest() const noexcept {
+				constexpr auto decodeSrcDest() const noexcept {
 					return Operand(0, _src_dest);
 				}
-				auto decodeAbase() const noexcept {
+				constexpr auto decodeAbase() const noexcept {
 					return Operand(0, _abase);
 				}
             };
-			auto decodeSrcDest() const noexcept {
+			constexpr auto decodeSrcDest() const noexcept {
 				if (isMemAFormat()) {
 					return _mema.decodeSrcDest();
 				} else {
 					return _memb.decodeSrcDest();
 				}
 			}
-			Ordinal getOpcode() const noexcept {
+			constexpr Ordinal getOpcode() const noexcept {
 				if (isMemAFormat()) {
 					return _mema._opcode;
 				} else {
 					return _memb._opcode;
 				}
 			}
-            bool isMemAFormat() const noexcept {
+            constexpr bool isMemAFormat() const noexcept {
                 return _mema._unused == 0;
             }
             MEMAFormat _mema;
@@ -580,28 +582,28 @@ namespace i960 {
 
         static_assert(sizeof(MemFormat) == sizeof(Ordinal), "MemFormat must be the size of an ordinal!");
 
-        Instruction(Ordinal raw = 0) : _raw(raw) { }
-        Ordinal getBaseOpcode() const noexcept {
+        constexpr Instruction(Ordinal raw = 0) : _raw(raw) { }
+        constexpr Ordinal getBaseOpcode() const noexcept {
             return (0xFF000000 & _raw) >> 24;
         }
-        Ordinal getOpcode() const noexcept {
+        constexpr Ordinal getOpcode() const noexcept {
             if (isRegFormat()) {
                 return _reg.getOpcode();
             } else {
                 return getBaseOpcode();
             }
         }
-        bool isControlFormat() const noexcept {
+        constexpr bool isControlFormat() const noexcept {
             return getBaseOpcode() < 0x20;
         }
-        bool isCompareAndBranchFormat() const noexcept {
+        constexpr bool isCompareAndBranchFormat() const noexcept {
             auto opcode = getBaseOpcode();
             return opcode >= 0x20 && opcode < 0x40;
         }
-        bool isMemFormat() const noexcept {
+        constexpr bool isMemFormat() const noexcept {
             return getBaseOpcode() >= 0x80;
         }
-        bool isRegFormat() const noexcept {
+        constexpr bool isRegFormat() const noexcept {
             // this is a little strange since the opcode is actually 12-bits
             // instead of 8 bits. Only use the 8bits anyway
             auto opcode = getBaseOpcode();

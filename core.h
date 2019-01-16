@@ -310,9 +310,9 @@ namespace i960 {
             template<ConditionCode cc>
             bool conditionCodeIs() const noexcept {
                 if constexpr (cc == ConditionCode::False) {
-                    return _ac.conditionCode == 0;
+                    return _ac.conditionCodeIs<Ordinal(cc)>();
                 } else {
-                    return (_ac.conditionCode & static_cast<Ordinal>(cc)) != 0;
+                    return _ac.conditionCodeBitSet<Ordinal(cc)>();
                 }
             }
             template<TestTypes t>
