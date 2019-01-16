@@ -45,8 +45,9 @@ namespace i960 {
            Ordinal address : 30;
        };
        Ordinal raw;
-       bool isLocal() const noexcept { return type == 0; }
-       bool isSupervisor() const noexcept { return type == 0b10; }
+       constexpr ProcedureEntry(Ordinal _raw = 0) : raw(_raw) { }
+       constexpr bool isLocal() const noexcept { return type == 0; }
+       constexpr bool isSupervisor() const noexcept { return type == 0b10; }
     } __attribute__((packed));
     static_assert(sizeof(ProcedureEntry) == sizeof(Ordinal), "Procedure entry must be of the correct size!");
     union ProcessControls {
@@ -63,16 +64,17 @@ namespace i960 {
             Ordinal unused3 : 11;
         };
         Ordinal value;
+        constexpr ProcessControls(Ordinal raw = 0) : value(raw) { }
 		void clear() noexcept {
 			value = 0;
 		}
-		bool traceEnabled() const noexcept {
+		constexpr bool traceEnabled() const noexcept {
 			return traceEnable != 0;
 		}
-		bool inUserMode() const noexcept {
+		constexpr bool inUserMode() const noexcept {
 			return executionMode == 0;
 		}
-		bool inSupervisorMode() const noexcept {
+		constexpr bool inSupervisorMode() const noexcept {
 			return executionMode != 0;
 		}
 		void enterSupervisorMode() noexcept {
@@ -81,19 +83,19 @@ namespace i960 {
 		void enterUserMode() noexcept {
 			executionMode = 0;
 		}
-		bool traceFaultIsPending() const noexcept {
+		constexpr bool traceFaultIsPending() const noexcept {
 			return traceFaultPending != 0;
 		}
-		bool traceFaultIsNotPending() const noexcept {
+		constexpr bool traceFaultIsNotPending() const noexcept {
 			return traceFaultPending == 0;
 		}
-		bool isExecuting() const noexcept {
+		constexpr bool isExecuting() const noexcept {
 			return state == 0;
 		}
-		bool isInterrupted() const noexcept {
+		constexpr bool isInterrupted() const noexcept {
 			return state != 0;
 		}
-		Ordinal getProcessPriority() const noexcept {
+		constexpr Ordinal getProcessPriority() const noexcept {
 			return priority;
 		}
     } __attribute__((packed));
@@ -120,7 +122,8 @@ namespace i960 {
             Ordinal unused2 : 4;
         };
         Ordinal value;
-		bool traceMarked() const noexcept {
+        constexpr TraceControls(Ordinal raw = 0) : value(raw) { }
+		constexpr bool traceMarked() const noexcept {
 			return markTraceMode != 0;
 		}
 		void clear() noexcept {
@@ -133,8 +136,7 @@ namespace i960 {
             template<typename T>
 			static constexpr bool LegalConversion = false;
         public:
-            NormalRegister(Ordinal value) : ordinal(value) { }
-            NormalRegister() : NormalRegister(0u) { }
+            constexpr NormalRegister(Ordinal value = 0) : ordinal(value) { }
             ~NormalRegister() { ordinal = 0; }
 
             PreviousFramePointer pfp;
@@ -149,7 +151,7 @@ namespace i960 {
 			ShortInteger shortInt;
 
             template<typename T>
-            T get() const noexcept {
+            constexpr T get() const noexcept {
                 using K = std::decay_t<T>;
                 if constexpr(std::is_same_v<K, Ordinal>) {
                     return ordinal;
@@ -193,13 +195,13 @@ namespace i960 {
                 }
             }
             void move(const NormalRegister& other) noexcept { set<Ordinal>(other.get<Ordinal>()); }
-			ByteOrdinal mostSignificantBit() const noexcept {
+			constexpr ByteOrdinal mostSignificantBit() const noexcept {
 				return (ordinal & 0x80000000);
 			}
-			bool mostSignificantBitSet() const noexcept {
+			constexpr bool mostSignificantBitSet() const noexcept {
 				return mostSignificantBit() == 1;
 			}
-			bool mostSignificantBitClear() const noexcept {
+			constexpr bool mostSignificantBitClear() const noexcept {
 				return mostSignificantBit() == 0;
 			}
     };
@@ -710,10 +712,10 @@ X(Region14_15, 0xE000'0000, 0xFFFF'FFFF);
 			Ordinal _unused1 : 8;
 		};
 		Ordinal _value;
-		bool busWidthIs8bit() const noexcept { return _busWidth == 0b00; }
-		bool busWidthIs16bit() const noexcept { return _busWidth == 0b01; }
-		bool busWidthIs32bit() const noexcept { return _busWidth == 0b10; }
-		bool busWidthIsUndefined() const noexcept { return _busWidth == 0b11; }
+		constexpr bool busWidthIs8bit() const noexcept { return _busWidth == 0b00; }
+		constexpr bool busWidthIs16bit() const noexcept { return _busWidth == 0b01; }
+		constexpr bool busWidthIs32bit() const noexcept { return _busWidth == 0b10; }
+		constexpr bool busWidthIsUndefined() const noexcept { return _busWidth == 0b11; }
 	} __attribute__((packed));
 	union BCONRegister final {
 		struct {
@@ -722,9 +724,9 @@ X(Region14_15, 0xE000'0000, 0xFFFF'FFFF);
 			Ordinal _supervisorInternalRAMProtection : 1;
 		};
 		Ordinal _value;
-		bool pmconEntriesValid() const noexcept { return _configurationEntriesInControlTableValid != 0; }
-		bool internalDataRAMProtectedFromUserModeWrites() const noexcept { return _internalRAMProtection != 0; }
-		bool first64BytesProtectedFromSupervisorModeWrites() const noexcept { return _supervisorInternalRAMProtection != 0; }
+		constexpr bool pmconEntriesValid() const noexcept { return _configurationEntriesInControlTableValid != 0; }
+		constexpr bool internalDataRAMProtectedFromUserModeWrites() const noexcept { return _internalRAMProtection != 0; }
+		constexpr bool first64BytesProtectedFromSupervisorModeWrites() const noexcept { return _supervisorInternalRAMProtection != 0; }
 	} __attribute__((packed));
 	union LogicalMemoryTemplateStartingAddressRegister final {
 		struct {
@@ -739,9 +741,9 @@ X(Region14_15, 0xE000'0000, 0xFFFF'FFFF);
 			Ordinal _templateStartingAddress : 20;
 		};
 		Ordinal _value;
-		bool littleEndianByteOrder() const noexcept { return _byteOrder == 0; }
-		bool bigEndianByteOrder() const noexcept { return _byteOrder != 0; }
-		bool dataCacheEnabled() const noexcept { return _dataCacheEnable != 0; }
+		constexpr bool littleEndianByteOrder() const noexcept { return _byteOrder == 0; }
+		constexpr bool bigEndianByteOrder() const noexcept { return _byteOrder != 0; }
+		constexpr bool dataCacheEnabled() const noexcept { return _dataCacheEnable != 0; }
 		Ordinal getTemplateStartingAddress() const noexcept { return _templateStartingAddress; }
 	} __attribute__((packed));
 	union LogicalMemoryTemplateMaskRegister final {
@@ -751,8 +753,8 @@ X(Region14_15, 0xE000'0000, 0xFFFF'FFFF);
 			Ordinal _templateAddressMask : 20;
 		};
 		Ordinal _value;
-		bool logicalMemoryTemplateEnabled() const noexcept { return _logicalMemoryTemplateEnabled; }
-		Ordinal getTemplateAddressMask() const noexcept { return _templateAddressMask; }
+		constexpr bool logicalMemoryTemplateEnabled() const noexcept { return _logicalMemoryTemplateEnabled; }
+		constexpr Ordinal getTemplateAddressMask() const noexcept { return _templateAddressMask; }
 	} __attribute__((packed));
 	union DefaultLogicalMemoryConfigurationRegister final {
 		struct {
@@ -760,9 +762,9 @@ X(Region14_15, 0xE000'0000, 0xFFFF'FFFF);
 			Ordinal _dataCacheEnable : 1;
 		};
 		Ordinal _value;
-		bool littleEndianByteOrder() const noexcept { return _byteOrder == 0; }
-		bool bigEndianByteOrder() const noexcept { return _byteOrder != 0; }
-		bool dataCacheEnabled() const noexcept { return _dataCacheEnable != 0; }
+		constexpr bool littleEndianByteOrder() const noexcept { return _byteOrder == 0; }
+		constexpr bool bigEndianByteOrder() const noexcept { return _byteOrder != 0; }
+		constexpr bool dataCacheEnabled() const noexcept { return _dataCacheEnable != 0; }
 	} __attribute__((packed));
     /**
      * Also known as the PRCB, it is a data structure in memory which the cpu uses to track
