@@ -427,6 +427,9 @@ namespace i960 {
             void allocateNewFrame() noexcept;
             void saveLocalRegisters() noexcept;
             void allocateNewLocalRegisterSet() noexcept;
+            void freeCurrentRegisterSet() noexcept;
+            bool registerSetNotAllocated(const Operand& fp) noexcept;
+            void retrieveFromMemory(const Operand& fp) noexcept;
         private:
             RegisterWindow _globalRegisters;
             // The hardware implementations use register sets, however

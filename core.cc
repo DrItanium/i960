@@ -713,92 +713,76 @@ X(cmpi, bno);
 		// combine the most significant bit of the 
 		_ac.conditionCode = (dest.mostSignificantBit() << 1) + (overflowHappened ? 1 : 0);
 	}
+    void Core::freeCurrentRegisterSet() noexcept {
+        // TODO implement
+    }
+    bool Core::registerSetNotAllocated(const Operand& fp) noexcept {
+        // TODO implement
+        return true;
+    }
+    void Core::retrieveFromMemory(const Operand& fp) noexcept {
+        // TODO implement
+    }
 	void Core::ret() noexcept {
-		// TODO implement
-		auto pfp = getPFP();
-		auto standardRestore = [this, &pfp]() {
-			setRegister(FP, pfp);
-			// TODO implement this logic
-			// free current register set
-			// if register_set (FP) not allocated
-			//    then retrieve from memory(FP);
-			// endif
-			_instructionPointer = getRegister(RIP).get<Ordinal>();
-		};
-		auto case1 = [this, standardRestore]() {
-			auto fp = getFramePointerAddress();
-			auto x = load(fp - 16);
-			auto y = load(fp - 12);
-			standardRestore();
-			_ac.value = y;
-			if (_pc.executionMode != 0) {
-				_pc.value = x;
-			}
-		};
-		auto case2 = [this, standardRestore]() {
-			if (_pc.executionMode == 0) {
-				standardRestore();
-			} else {
-				_pc.traceEnable = 0;
-				_pc.executionMode = 0;
-				standardRestore();
-			}
-		};
-		auto case3 = [this, standardRestore]() {
-			if (_pc.executionMode == 0) {
-				standardRestore();
-			} else {
-				_pc.traceEnable = 1;
-				_pc.executionMode = 0;
-				standardRestore();
-			}
-		};
-		auto case4 = [this, standardRestore]() {
-			if (_pc.executionMode != 0) {
-				// free current register set
-				// check pending interrupts
-				// if continue here, no interrupt to do
-				// enter idle state
-				throw "Unimplemented!";
-			} else {
-				standardRestore();
-			}
-		};
-		auto case5 = [this, standardRestore]() {
-			auto fp = getFramePointerAddress();
-			auto x = load(fp - 16);
-			auto y = load(fp - 12);
-			standardRestore();
-			_ac.value = y;
-			if (_pc.executionMode != 0) {
-				_pc.value = x;
-				// TODO check pending interrupts
-			}
-		};
-		switch(pfp.returnCode) {
-			case 0b000:
-				standardRestore();
-				break;
-			case 0b001:
-				case1();
-				break;
-			case 0b010:
-				case2();
-				break;
-			case 0b011:
-				case3();
-				break;
-			case 0b110:
-				case4();
-				break;
-			case 0b111:
-				case5();
-				break;
-			case 0b100:
-			case 0b101:
-			default:
-				throw "Undefined operation";
-		}
+        syncf();
+        auto pfp = getPFP();
+        if (pfp.prereturnTrace && _pc.traceEnable && _tc.prereturnTraceMode) {
+            pfp.prereturnTrace = 0;
+            generateFault(TraceFaultSubtype::PreReturn);
+            return;
+        }
+        auto getIPFP = [this]() {
+            setRegister(FP, getRegister(PFP).ordinal);
+            freeCurrentRegisterSet();
+            if (registerSetNotAllocated(FP)) {
+                retrieveFromMemory(FP);
+            }
+            _instructionPointer = getRegister(RIP).ordinal;
+        };
+        switch (pfp.returnCode) {
+            case 0b000: // local return
+                // get_FP_and_IP();
+                break;
+            case 0b001: // fault return
+                [this, getIPFP]() {
+                    auto tempa = load(getRegister(FP).ordinal - 16);
+                    auto tempb = load(getRegister(FP).ordinal - 12);
+                    getIPFP();
+                    _ac.value = tempb;
+                    if (_pc.inSupervisorMode()) {
+                        _pc.value = tempa;
+                    }
+                }();
+                break;
+            case 0b010: // supervisor return, trace on return disabled
+                [this,getIPFP]() {
+                    if (!_pc.inSupervisorMode()) {
+                        getIPFP();
+                    } else {
+                        _pc.traceEnable = 0;
+                        _pc.enterUserMode();
+                        getIPFP();
+                    }
+                }();
+                break;
+            case 0b100: // reserved - unpredictable behavior
+            case 0b101: // reserved - unpredictable behavior
+            case 0b110: // reserved - unpredictable behavior
+                generateFault(OperationFaultSubtype::Unimplemented);
+                break;
+            case 0b111: // interrupt return
+                [this, getIPFP]() {
+                    auto tempa = load(getRegister(FP).ordinal - 16);
+                    auto tempb = load(getRegister(FP).ordinal - 12);
+                    getIPFP();
+                    _ac.value = tempb;
+                    if (_pc.inSupervisorMode()) {
+                        _pc.value = tempa;
+                        // TODO check for pending interrupts
+                    }
+                }();
+                break;
+        }
 	}
 	void Core::faulte() noexcept {
         if (conditionCodeIs<ConditionCode::Equal>()) {
