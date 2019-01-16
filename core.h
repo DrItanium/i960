@@ -294,7 +294,6 @@ namespace i960 {
             void cmpob(SourceRegister src1, SourceRegister src2) noexcept;
             void cmpib(SourceRegister src1, SourceRegister src2) noexcept;
 			void bswap(SourceRegister src1, DestinationRegister src2) noexcept;
-			void baseSelect(bool condition, __DEFAULT_THREE_ARGS__) noexcept;
 		private:
 			// templated bodies
 			template<typename T>
@@ -308,7 +307,7 @@ namespace i960 {
 				}
 			}
             template<ConditionCode cc>
-            bool conditionCodeIs() const noexcept {
+            constexpr bool conditionCodeIs() const noexcept {
                 if constexpr (cc == ConditionCode::False) {
                     return _ac.conditionCodeIs<Ordinal(cc)>();
                 } else {
@@ -342,7 +341,7 @@ namespace i960 {
 				}();
             }
 			template<ConditionCode code>
-			bool genericCondCheck() noexcept {
+			constexpr bool genericCondCheck() noexcept {
                 return _ac.conditionCodeBitSet<Ordinal(code)>() || _ac.conditionCodeIs<Ordinal(code)>();
 			}
 			template<ConditionCode mask>
