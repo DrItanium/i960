@@ -325,7 +325,7 @@ namespace i960 {
 		}
 #define X(title, mask) \
 		bool conditionIs ## title () const noexcept { \
-			return conditionCodeIs<0b010>(); \
+			return conditionCodeIs<mask>(); \
 		}
 		X(True, 0b010);
 		X(False, 0b000);
