@@ -359,16 +359,7 @@ namespace i960 {
         NotOrdered = Unordered,
         True = Equal,
     };
-    enum class TestTypes : Ordinal {
-        Unordered = 0b000,
-        Greater = 0b001,
-        Equal = 0b010,
-        GreaterOrEqual = 0b011,
-        Less = 0b100,
-        NotEqual = 0b101, 
-        LessOrEqual = 0b110,
-        Ordered = 0b111,
-    };
+    using TestTypes = ConditionCode;
 	/**
 	 * Describes a register or literal in a single type. Internally
 	 * the operand is a 6 bit number where bits [0,4] represent the value
