@@ -307,10 +307,6 @@ namespace i960 {
 					}
 				}
 			}
-            template<TestTypes t>
-            void testGeneric(DestinationRegister dest) noexcept {
-                dest.set<Ordinal>((_ac.conditionCode & (Ordinal(t))) != 0 ? 1 : 0);
-            }
             template<ConditionCode cc>
             bool conditionCodeIs() const noexcept {
                 if constexpr (cc == ConditionCode::False) {
@@ -319,16 +315,14 @@ namespace i960 {
                     return (_ac.conditionCode & static_cast<Ordinal>(cc)) != 0;
                 }
             }
+            template<TestTypes t>
+            void testGeneric(DestinationRegister dest) noexcept {
+                dest.set<Ordinal>(conditionCodeIs<t>() ? 1u : 0u);
+            }
             template<ConditionCode cc>
             void branchIfGeneric(Integer addr) noexcept {
-                if constexpr (cc == ConditionCode::Unordered) {
-                    if (_ac.conditionCode == 0) {
-                        b(addr);
-                    }
-                } else {
-                    if (((Ordinal(cc)) & _ac.conditionCode) != 0) {
-                        b(addr);
-                    }
+                if (conditionCodeIs<cc>()) {
+                    b(addr);
                 }
             }
             template<typename T>
