@@ -91,6 +91,7 @@ namespace i960 {
 			}
 		} else if (desc.isMem()) {
 			auto mem = inst._mem;
+            InstructionLength length = InstructionLength::Single;
 			if (mem.isMemAFormat()) {
 				auto ma = mem._mema;
 				auto offset = ma._offset;
@@ -111,7 +112,11 @@ namespace i960 {
 				using E = K::AddressingModes;
 				auto index = mb._index;
 				auto scale = mb.getScaleFactor();
-				auto displacement = mb.has32bitDisplacement() ? getFullDisplacement() : 0;
+                auto displacement = 0u;
+                if (mb.has32bitDisplacement()) {
+                    displacement = getFullDisplacement();
+                    length = InstructionLength::Double;
+                }
 				auto abase = getRegister(mb.decodeAbase());
 				switch (mb.getAddressingMode()) {
 					case E::Abase:
@@ -143,6 +148,10 @@ namespace i960 {
 			// opcode does not differentiate between mema and memb, another bit
 			// does, so the actual arguments differ, not the set of actions
 			switch(desc) {
+                case Opcode::balx:
+                    balx(_temporary0, getRegister(mem.decodeSrcDest()), length);
+                    break;
+
 #define Y(kind, a, b) case Opcode:: kind : kind ( a , b ) ; break;
 #define YISSD(kind) Y(kind, _temporary0, getRegister(mem.decodeSrcDest()));
 #define YSDIS(kind) Y(kind, getRegister(mem.decodeSrcDest()), _temporary0);
@@ -156,7 +165,7 @@ namespace i960 {
 				LDP(ob);     LDP(os);   LDP(ib); LDP(is);
 				WLDP(l);     WLDP(t);   WLDP(q); 
 				YSDIS(st);   YISSD(ld); YISSD(lda); 
-				YISSD(balx); ZIS(bx);   ZIS(callx);
+				ZIS(bx);   ZIS(callx);
 #undef ZIS
 #undef YISSD
 #undef YSDIS 

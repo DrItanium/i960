@@ -197,7 +197,11 @@ namespace i960 {
             void b(Integer displacement) noexcept;
             void bx(SourceRegister targ) noexcept; // TODO check these two instructions out for more variants
             void bal(Integer displacement) noexcept;
-            void balx(__DEFAULT_TWO_ARGS__) noexcept; // TODO check these two instructions out for more variants
+            enum class InstructionLength {
+                Single = 4,
+                Double = 8,
+            };
+            void balx(__DEFAULT_TWO_ARGS__, InstructionLength length) noexcept; // TODO check these two instructions out for more variants
             void bbc(SourceRegister pos, SourceRegister src, Integer targ) noexcept; 
             void bbs(SourceRegister pos, SourceRegister src, Integer targ) noexcept;
             // compare and branch instructions as well

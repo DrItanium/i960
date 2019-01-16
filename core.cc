@@ -348,9 +348,9 @@ X(cmpi, bno);
 		b(displacement);
 	}
 
-	void Core::balx(__DEFAULT_TWO_ARGS__) noexcept {
+	void Core::balx(__DEFAULT_TWO_ARGS__,Core::InstructionLength length) noexcept {
 		// TODO support 4 or 8 byte versions
-		dest.set<Ordinal>(_instructionPointer + 4);
+		dest.set<Ordinal>(_instructionPointer + static_cast<Ordinal>(length));
 		_instructionPointer = src.get<Ordinal>();
 	}
 	constexpr Ordinal computeCheckBitMask(Ordinal value) noexcept {
