@@ -323,21 +323,6 @@ namespace i960 {
 		bool conditionCodeBitSet() const noexcept {
 			return (conditionCode & mask) != 0;
 		}
-#define X(title, mask) \
-		bool conditionIs ## title () const noexcept { \
-			return conditionCodeIs<mask>(); \
-		}
-		X(True, 0b010);
-		X(False, 0b000);
-		X(Unordered, 0b000);
-		X(Greater, 0b001);
-		X(Equal, 0b010);
-		X(GreaterOrEqual, 0b011);
-		X(Less, 0b100);
-		X(NotEqual, 0b101);
-		X(LessOrEqual, 0b110);
-		X(Ordered, 0b111);
-#undef X
 		bool shouldCarryOut() const noexcept {
 			// 0b01X where X is don't care
 			return conditionCode == 0b010 || conditionCode == 0b011;
@@ -371,6 +356,7 @@ namespace i960 {
         LessOrEqual = 0b110,
         GreaterOrEqual = 0b011,
         Unordered = False,
+        NotOrdered = Unordered,
         True = Equal,
     };
     enum class TestTypes : Ordinal {

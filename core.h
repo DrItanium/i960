@@ -313,7 +313,11 @@ namespace i960 {
             }
             template<ConditionCode cc>
             bool conditionCodeIs() const noexcept {
-                return (_ac.conditionCode & static_cast<Ordinal>(cc)) != 0;
+                if constexpr (cc == ConditionCode::False) {
+                    return _ac.conditionCode == 0;
+                } else {
+                    return (_ac.conditionCode & static_cast<Ordinal>(cc)) != 0;
+                }
             }
             template<ConditionCode cc>
             void branchIfGeneric(Integer addr) noexcept {
@@ -396,6 +400,12 @@ namespace i960 {
 				}
 			}
 		private:
+            template<ConditionCode code>
+            void genericFault() noexcept {
+                if (conditionCodeIs<code>()) {
+                    generateFault(ConstraintFaultSubtype::Range);
+                }
+            }
 			// auto generated routines
 #define X(kind, __) \
             void b ## kind (Integer) noexcept; \

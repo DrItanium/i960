@@ -18,7 +18,8 @@ namespace i960 {
 	}
 #define X(kind, action) \
 	void Core:: test ## kind (DestinationRegister dest) noexcept { testGeneric<TestTypes:: action>(dest); } \
-	void Core:: b ## kind (Integer addr) noexcept { branchIfGeneric<ConditionCode:: action > ( addr ) ; } 
+	void Core:: b ## kind (Integer addr) noexcept { branchIfGeneric<ConditionCode:: action > ( addr ) ; } \
+    void Core:: fault ## kind () noexcept { genericFault< ConditionCode:: action > ( ) ; }
 #include "conditional_kinds.def"
 #undef X
 #define X(kind, mask) \
@@ -782,46 +783,6 @@ X(cmpi, bno);
                     }
                 }();
                 break;
-        }
-	}
-	void Core::faulte() noexcept {
-        if (conditionCodeIs<ConditionCode::Equal>()) {
-			generateFault(ConstraintFaultSubtype::Range);
-        }
-	}
-	void Core::faultne() noexcept {
-        if (conditionCodeIs<ConditionCode::NotEqual>()) {
-			generateFault(ConstraintFaultSubtype::Range);
-        }
-	}
-	void Core::faultl() noexcept {
-        if (conditionCodeIs<ConditionCode::Less>()) {
-			generateFault(ConstraintFaultSubtype::Range);
-        }
-	}
-	void Core::faultle() noexcept {
-        if (conditionCodeIs<ConditionCode::LessOrEqual>()) {
-			generateFault(ConstraintFaultSubtype::Range);
-        }
-	}
-	void Core::faultg() noexcept {
-        if (conditionCodeIs<ConditionCode::Greater>()) {
-			generateFault(ConstraintFaultSubtype::Range);
-        }
-	}
-	void Core::faultge() noexcept {
-        if (conditionCodeIs<ConditionCode::GreaterOrEqual>()) {
-			generateFault(ConstraintFaultSubtype::Range);
-        }
-	}
-	void Core::faulto() noexcept {
-        if (conditionCodeIs<ConditionCode::Ordered>()) {
-			generateFault(ConstraintFaultSubtype::Range);
-        }
-	}
-	void Core::faultno() noexcept {
-        if (_ac.conditionCode == 0) {
-			generateFault(ConstraintFaultSubtype::Range);
         }
 	}
 	void Core::stob(__TWO_SOURCE_REGS__) noexcept {
