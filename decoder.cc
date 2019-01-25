@@ -50,8 +50,22 @@ void decode(const i960::Opcode::Description& desc, const i960::Instruction::COBR
         std::cout << ", " << src2 << ", " << inst.decodeDisplacement();
     }
 }
+void decode(const i960::Opcode::Description& desc, const i960::Instruction::MemFormat::MEMBFormat& inst) {
+    std::cout << " memb format";
+}
 void decode(const i960::Opcode::Description& desc, const i960::Instruction::MemFormat& inst) {
-    // TODO dispatch into mema and memb formats
+    if (inst.isMemAFormat()) {
+        auto ma = inst._mema;
+        i960::Operand srcDest(inst.decodeSrcDest());
+        std::cout << " ";
+        std::cout << ma._offset ;
+        if (!ma.isOffsetAddressingMode()) {
+            std::cout << "(" << i960::Operand(ma.decodeAbase()) << ")";
+        }
+        std::cout << ", " << srcDest;
+    } else {
+        decode(desc, inst._memb);
+    }
 }
 void decode(i960::Ordinal value) noexcept {
     i960::Instruction inst(value);
