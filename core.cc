@@ -1058,7 +1058,7 @@ X(cmpi, bno);
 	}
 	void Core::generateFault(ByteOrdinal faultType, ByteOrdinal faultSubtype) {
 		// get the fault table base address
-		auto faultTableBaseAddress = getFaultTableBaseAddress();
+	//	auto faultTableBaseAddress = getFaultTableBaseAddress();
 	}
 	Ordinal Core::getFaultTableBaseAddress() noexcept {
 		return load(_prcbAddress + 0x00);
@@ -1127,7 +1127,7 @@ X(cmpi, bno);
 		}
 		if (checksum != 0) {
 			constexpr Ordinal failMsg = 0xFEFF'FF64; // fail bus confidence test
-			auto dummy = load(failMsg); // do load with address = failMsg
+			//auto dummy = load(failMsg); // do load with address = failMsg
 			// loop forever with FAIL pin true (hardware does this)
 			// for (;;);
 		} else {
