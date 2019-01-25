@@ -41,7 +41,7 @@ sim.o: operations.h types.h opcodes.def opcodes.h conditional_kinds.def sim.cc
 core.o: types.h memiface.h core.h operations.h opcodes.def opcodes.h conditional_kinds.def core.cc
 dispatcher.o: types.h core.h opcodes.def opcodes.h conditional_kinds.def dispatcher.cc 
 opcodes.o: types.h opcodes.def opcodes.h opcodes.cc
-decoder.o: types.h operations.h opcodes.def opcodes.h conditional_kinds.def decoder.cc
+decoder.o: types.h opcodes.def opcodes.h decoder.cc
 
 
 .PHONY: options

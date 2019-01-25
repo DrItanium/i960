@@ -2,7 +2,6 @@
 #include <cstddef>
 #include <memory>
 #include "types.h"
-#include "operations.h"
 #include "opcodes.h"
 #include <string>
 #include <sstream>

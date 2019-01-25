@@ -94,15 +94,6 @@ namespace i960 {
 		return Ordinal((src << length) | (src >> ((-length) & 31u)));
 	}
 	
-	template<TestTypes t>
-	Ordinal test(const ArithmeticControls& ac) noexcept {
-		constexpr auto mask = Ordinal(t) & 0b111;
-		if constexpr (mask == Ordinal(TestTypes::Unordered)) {
-			return ac.conditionCode == 0 ? 1 : 0;
-		} else {
-			return (mask & ac.conditionCode) != 0 ? 1 : 0;
-		}
-	}
 } // end namespace i960 
 
 #endif // end I960_OPS_H__
