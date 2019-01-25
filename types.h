@@ -344,9 +344,7 @@ namespace i960 {
         constexpr Ordinal getCarryValue() const noexcept {
             return carrySet() ? 1 : 0;
         }
-
-
-    };
+    } __attribute__((packed));
 
     constexpr Ordinal LargestAddress = 0xFFFF'FFFF;
     constexpr Ordinal LowestAddress = 0;
