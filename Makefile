@@ -1,7 +1,7 @@
 include config.mk
 
-I960JX_OBJS := core.o dispatcher.o opcodes.o
-I960JX_SIM_OBJS := sim.o $(I960JX_OBJS)
+I960JX_OBJS := opcodes.o
+I960JX_SIM_OBJS := sim.o core.o dispatcher.o $(I960JX_OBJS)
 I960JX_DEC_OBJS := decoder.o $(I960JX_OBJS)
 
 I960JX_SIM_PROG := sim960jx

@@ -69,17 +69,18 @@ namespace i960 {
 		return orOp(notOp(a), notOp(b));
 	}
 
-
+    constexpr Ordinal oneShiftLeft(Ordinal position) noexcept {
+        return 1u << (0b11111 & position);
+    }
     constexpr Ordinal clearBit(Ordinal value, Ordinal position) noexcept {
-        Ordinal mask = ~(1 << (0b11111 & position));
-        return value & mask;
+        return value & ~oneShiftLeft(position);
     }
     constexpr Ordinal setBit(Ordinal value, Ordinal position) noexcept {
         // if the bit is not set then set it
-        return value | Ordinal(1u << (0b11111 & position));
+        return value | oneShiftLeft(position);
     }
     constexpr Ordinal notBit(Ordinal value, Ordinal position) noexcept {
-        auto mask = Ordinal(1 << (0b11111 & position));
+        auto mask = oneShiftLeft(position);
         if ((value & mask) == 0) {
             return setBit(value, position);
         } else {
