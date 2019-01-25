@@ -17,7 +17,6 @@ namespace i960 {
 			}
 		};
 		if (auto desc = Opcode::getDescription(inst); desc.isUndefined()) {
-			// TODO raise fault
 			generateFault(OperationFaultSubtype::InvalidOpcode);
 		} else if (desc.hasZeroArguments()) {
 			// these operations require no further decoding effort so short
@@ -87,7 +86,9 @@ namespace i960 {
 #undef Op3Arg
 #undef Op2Arg
 #undef Y
-				default: generateFault(OperationFaultSubtype::InvalidOpcode); break;
+				default: 
+                    generateFault(OperationFaultSubtype::InvalidOpcode); 
+                    break;
 			}
 		} else if (desc.isMem()) {
 			auto mem = inst._mem;
@@ -108,8 +109,7 @@ namespace i960 {
 					return conv._int;
 				};
 				auto mb = mem._memb;
-				using K = std::decay_t<decltype(mb)>;
-				using E = K::AddressingModes;
+				using E = std::decay_t<decltype(mb)>::AddressingModes;
 				auto index = mb._index;
 				auto scale = mb.getScaleFactor();
                 auto displacement = 0u;
@@ -117,8 +117,7 @@ namespace i960 {
                     displacement = getFullDisplacement();
                     length = InstructionLength::Double;
                 }
-				auto abase = getRegister(mb.decodeAbase());
-				switch (mb.getAddressingMode()) {
+				switch (auto abase = getRegister(mb.decodeAbase()); mb.getAddressingMode()) {
 					case E::Abase:
 						_temporary0.move(abase);
 						break;
@@ -178,10 +177,7 @@ namespace i960 {
 			}
 		} else if (desc.isCtrl()) {
 			switch (desc) {
-#define Y(kind) \
-				case Opcode:: kind : \
-									 kind ( inst._ctrl.decodeDisplacement() ) ; \
-				break
+#define Y(kind) case Opcode:: kind : kind ( inst._ctrl.decodeDisplacement() ) ; break
                 Y(b);
                 Y(call);
                 Y(bal);
