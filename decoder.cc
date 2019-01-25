@@ -8,9 +8,8 @@
 
 void decode(i960::Ordinal value) noexcept {
     i960::Instruction inst(value);
-    i960::Operand op(inst.getOpcode());
-    auto name = i960::Opcode::getDescription(op);
-    std::cout << name.getString() << std::endl;
+    auto name = i960::Opcode::getDescription(inst.getOpcode());
+    std::cout << std::hex << value << ": " << name.getString() << "(" << std::hex << "0x" << inst.getOpcode() << ")" << std::endl;
 }
 int main(int argc, char* argv[]) {
 	int errorCode = 0;
