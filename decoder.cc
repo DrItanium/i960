@@ -40,8 +40,15 @@ void decode(const i960::Opcode::Description& desc, const i960::Instruction::REGF
     }
 }
 void decode(const i960::Opcode::Description& desc, const i960::Instruction::CTRLFormat& inst) {
+    std::cout << " " << inst._ctrl.decodeDisplacement();
 }
 void decode(const i960::Opcode::Description& desc, const i960::Instruction::COBRFormat& inst) {
+    i960::Operand src1(inst.decodeSrc1());
+        std::cout << " " << src1;
+    if (!desc.hasOneArgument()) {
+        i960::Operand src2(inst.decodeSrc1());
+        std::cout << ", " << src2 << ", " << inst.decodeDisplacement();
+    }
 }
 void decode(const i960::Opcode::Description& desc, const i960::Instruction::MemFormat& inst) {
     // TODO dispatch into mema and memb formats
