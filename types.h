@@ -492,12 +492,17 @@ namespace i960 {
                     Offset = 0,
                     Abase_Plus_Offset = 1,
                 };
-                Ordinal _offset : 12;
-                Ordinal _unused : 1;
-                Ordinal _md : 1;
-                Ordinal _abase : 5;
-                Ordinal _src_dest : 5;
-                Ordinal _opcode : 8;
+                union {
+                    struct {
+                        Ordinal _offset : 12;
+                        Ordinal _unused : 1;
+                        Ordinal _md : 1;
+                        Ordinal _abase : 5;
+                        Ordinal _src_dest : 5;
+                        Ordinal _opcode : 8;
+                    };
+                    Ordinal _raw;
+                };
                 constexpr AddressingModes getAddressingMode() const noexcept {
                     return static_cast<AddressingModes>(_md);
                 }
@@ -522,13 +527,18 @@ namespace i960 {
                     Index_Times_2_Pow_Scale_Plus_Displacement = 0b1110,
                     Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement = 0b1111,
                 };
-                Ordinal _index : 5;
-                Ordinal _unused : 2;
-                Ordinal _scale : 3;
-                Ordinal _mode : 4;
-                Ordinal _abase : 5;
-                Ordinal _src_dest : 5;
-                Ordinal _opcode : 8;
+                union {
+                    struct {
+                        Ordinal _index : 5;
+                        Ordinal _unused : 2;
+                        Ordinal _scale : 3;
+                        Ordinal _mode : 4;
+                        Ordinal _abase : 5;
+                        Ordinal _src_dest : 5;
+                        Ordinal _opcode : 8;
+                    };
+                    Ordinal _raw; // for decoding purposes
+                };
                 constexpr AddressingModes getAddressingMode() const noexcept {
                     return static_cast<AddressingModes>(_mode);
                 }
