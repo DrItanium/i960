@@ -1,5 +1,7 @@
+#include "types.h"
 #include "opcodes.h"
 #include <map>
+#include <iostream>
 
 namespace i960::Opcode {
 	const Description& getDescription(Ordinal opcode) noexcept {
@@ -24,4 +26,21 @@ namespace i960::Opcode {
 			return undefined;
 		}
 	}
+} // end namespace i960::Opcode
+
+namespace i960 {
+    std::ostream& operator<<(std::ostream& stream, const Operand& op) {
+        if (op.isLiteral()) {
+            stream << op.getValue();
+        } else {
+            stream << [op]() {
+                if (op.isGlobalRegister()) {
+                    return 'g';
+                } else {
+                    return 'r';
+                }
+            }() << op.getOffset();
+        }
+        return stream;
+    }
 } // end namespace i960
