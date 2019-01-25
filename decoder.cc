@@ -5,7 +5,7 @@
 #include "operations.h"
 #include "opcodes.h"
 #include <string>
-void decode(const i960::Opcode::Description& desc, const decltype(i960::Instruction::_reg)& inst) {
+void decode(const i960::Opcode::Description& desc, const i960::Instruction::REGFormat& inst) {
     if (desc.hasZeroArguments()) {
         return;
     }
@@ -39,22 +39,28 @@ void decode(const i960::Opcode::Description& desc, const decltype(i960::Instruct
         std::cout << " could not decode rest!";
     }
 }
-void decode(const i960::Opcode::Description& desc, const i960::Instruction& inst) noexcept {
-    if (inst.isRegFormat()) {
-        decode(desc, inst._reg);
-    } else if (inst.isControlFormat()) {
-    } else if (inst.isCompareAndBranchFormat()) { 
-    } else if (inst.isMemFormat()) {
-    } else {
-        std::cout << " unknown instruction class... unable to decode further!";
-    }
-
+void decode(const i960::Opcode::Description& desc, const i960::Instruction::CTRLFormat& inst) {
+}
+void decode(const i960::Opcode::Description& desc, const i960::Instruction::COBRFormat& inst) {
+}
+void decode(const i960::Opcode::Description& desc, const i960::Instruction::MemFormat& inst) {
+    // TODO dispatch into mema and memb formats
 }
 void decode(i960::Ordinal value) noexcept {
     i960::Instruction inst(value);
     auto desc = i960::Opcode::getDescription(inst.getOpcode());
     std::cout << std::hex << "0x" << value << ": " << desc.getString();
-    decode(desc, inst);
+    if (inst.isRegFormat()) {
+        decode(desc, inst._reg);
+    } else if (inst.isControlFormat()) {
+        decode(desc, inst._ctrl);
+    } else if (inst.isCompareAndBranchFormat()) { 
+        decode(desc, inst._cobr);
+    } else if (inst.isMemFormat()) {
+        decode(desc, inst._mem);
+    } else {
+        std::cout << " unknown instruction class... unable to decode further!";
+    }
     std::cout << std::endl;
 }
 int main(int argc, char* argv[]) {
