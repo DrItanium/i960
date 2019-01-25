@@ -33,7 +33,7 @@ void decode(const i960::Opcode::Description& desc, const i960::Instruction::REGF
                 break;
         }
     } else if (desc.hasThreeArguments()) {
-        std::cout << src1 << ", " << src2 << ", " << srcDest;
+        std::cout << ", " << src2 << ", " << srcDest;
     } else {
         // we need to state that the instruction is seemingly malformed
         std::cout << " could not decode rest!";
@@ -70,12 +70,15 @@ void decode(i960::Ordinal value) noexcept {
     }
     std::cout << std::endl;
 }
-int main(int argc, char* argv[]) {
+int main() {
 	int errorCode = 0;
-    do {
+    while(std::cin.good()) {
+
         i960::Ordinal value = 0;
         std::cin >> std::hex >> value;
-        decode(value);
-    } while(std::cin.good());
+        if (std::cin.good()) {
+            decode(value);
+        }
+    }
 	return errorCode;
 }

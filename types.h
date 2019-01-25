@@ -388,6 +388,10 @@ namespace i960 {
 			constexpr Operand next() const noexcept {
 				return Operand((_raw & typeMask) != 0, getValue() + 1);
 			}
+            constexpr bool operator ==(const Operand& other) const noexcept {
+                return ((this->_raw & typeMask) == (other._raw & typeMask)) &&
+                       (getValue() == other.getValue());
+            }
 		private:
 			Ordinal _raw;
 	};
