@@ -23,14 +23,16 @@ namespace i960 {
 			// circuit them :D
 			switch (desc) {
 #define Y(kind) case Opcode:: kind :  kind () ; break;
+#define X(kind, __) Y(fault ## kind );
 				Y(mark);  Y(fmark); Y(flushreg); 
 				Y(syncf); Y(ret);   Y(inten);
 				Y(intdis);
-#define X(kind, __) Y(fault ## kind );
 #include "conditional_kinds.def"
 #undef X
 #undef Y
-				default: generateFault(OperationFaultSubtype::InvalidOpcode); break;
+                default: 
+                    generateFault(OperationFaultSubtype::InvalidOpcode); 
+                    break;
 			}
 		} else if (desc.isReg()) {
 			auto reg = inst._reg;
@@ -95,9 +97,7 @@ namespace i960 {
             InstructionLength length = InstructionLength::Single;
 			if (mem.isMemAFormat()) {
 				auto ma = mem._mema;
-				auto offset = ma._offset;
-				auto abase = getRegister(ma.decodeAbase());
-				_temporary0.set<Ordinal>(ma.isOffsetAddressingMode() ?  offset : offset + abase.get<Ordinal>());
+				_temporary0.set<Ordinal>(ma._offset + ma.isOffsetAddressingMode() ?  0 : getRegister(ma.decodeAbase()).get<Ordinal>());
 			} else {
 				auto getFullDisplacement = [this]() {
 					auto addr = _instructionPointer + 4;
