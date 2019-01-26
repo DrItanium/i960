@@ -1,7 +1,6 @@
 #include "types.h"
 #include "opcodes.h"
 #include <map>
-#include <iostream>
 
 namespace i960::Opcode {
 	const Description& getDescription(Ordinal opcode) noexcept {
