@@ -7,6 +7,7 @@
 #include "QuadRegister.h"
 #include "opcodes.h"
 #include "Operand.h"
+#include "InternalDataRam.h"
 #include <limits>
 #include <cmath>
 #define __DEFAULT_THREE_ARGS__ SourceRegister src1, SourceRegister src2, DestinationRegister dest

@@ -16,6 +16,7 @@
 #include "memiface.h"
 #include "Operand.h"
 #include "Instruction.h"
+#include "InternalDataRam.h"
 #include <cmath>
 #include <math.h>
 #include <variant>
