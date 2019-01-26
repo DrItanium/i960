@@ -22,6 +22,13 @@ namespace i960 {
 	constexpr bool notDivisibleBy(ByteOrdinal value, ByteOrdinal factor) noexcept {
 		return ((value % factor) != 0);
 	}
+    constexpr Ordinal computeNextFrameStart(Ordinal currentAddress) noexcept {
+        // add 1 to the masked out value to make sure we don't overrun anything
+        return (currentAddress & ~(Ordinal(0b11111))) + 1; // next 64 byte frame start
+    }
+    constexpr Ordinal computeStackFrameStart(Ordinal framePointerAddress) noexcept {
+        return framePointerAddress + 64;
+    }
 #define X(kind, action) \
 	void Core:: test ## kind (DestinationRegister dest) noexcept { testGeneric<TestTypes:: action>(dest); } \
 	void Core:: b ## kind (Integer addr) noexcept { branchIfGeneric<ConditionCode:: action > ( addr ) ; } \

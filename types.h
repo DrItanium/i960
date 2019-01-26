@@ -32,13 +32,6 @@ namespace i960 {
     using TestTypes = ConditionCode;
 	
 
-    constexpr Ordinal computeNextFrameStart(Ordinal currentAddress) noexcept {
-        // add 1 to the masked out value to make sure we don't overrun anything
-        return (currentAddress & ~(Ordinal(0b11111))) + 1; // next 64 byte frame start
-    }
-    constexpr Ordinal computeStackFrameStart(Ordinal framePointerAddress) noexcept {
-        return framePointerAddress + 64;
-    }
 
 
     // memory map
