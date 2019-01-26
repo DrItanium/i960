@@ -29,8 +29,5 @@ namespace i960 {
 		void enterSupervisorMode() noexcept;
 		void enterUserMode() noexcept;
     } __attribute__((packed));
-
-
-
 } // end namespace i960
 #endif // end I960_PROCESS_CONTROLS_H__

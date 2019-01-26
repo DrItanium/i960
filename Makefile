@@ -1,7 +1,11 @@
 include config.mk
 
 I960JX_OBJS := opcodes.o types.o
-I960JX_SIM_OBJS := sim.o core.o dispatcher.o $(I960JX_OBJS)
+I960JX_SIM_OBJS := sim.o \
+	core.o \
+	dispatcher.o \
+	ProcessControls.o \
+	$(I960JX_OBJS)
 I960JX_DEC_OBJS := decoder.o $(I960JX_OBJS)
 
 I960JX_SIM_PROG := sim960jx
@@ -38,6 +42,8 @@ clean:
 	@rm -f ${OBJS} ${PROGS}
 
 # generated via g++ -MM -std=c++17 *.cc *.h
+
+ProcessControls.o: ProcessControls.cc ProcessControls.h types.h
 core.o: core.cc types.h core.h NormalRegister.h ProcessControls.h \
  DoubleRegister.h TripleRegister.h QuadRegister.h ArithmeticControls.h \
  memiface.h conditional_kinds.def operations.h opcodes.h opcodes.def
@@ -68,6 +74,5 @@ memiface.o: memiface.h types.h
 opcodes.o: opcodes.h types.h opcodes.def
 operations.o: operations.h types.h
 types.o: types.h
-
 
 .PHONY: options
