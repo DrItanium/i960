@@ -1,5 +1,6 @@
 #ifndef I960_ARITHMETIC_CONTROLS_H__
 #define I960_ARITHMETIC_CONTROLS_H__
+
 #include "types.h"
 namespace i960 {
     union ArithmeticControls {

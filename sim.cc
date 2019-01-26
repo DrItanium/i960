@@ -2,6 +2,8 @@
 #include <cstddef>
 #include <memory>
 #include "types.h"
+#include "NormalRegister.h"
+#include "ArithmeticControls.h"
 #include "operations.h"
 #include "opcodes.h"
 #include <string>
