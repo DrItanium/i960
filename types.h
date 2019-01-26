@@ -4,6 +4,8 @@
 #include <memory>
 namespace i960 {
 
+    template<typename T>
+    constexpr static bool LegalConversion = false;
     using ByteOrdinal = std::uint8_t;
     using ShortOrdinal = std::uint16_t;
     using Ordinal = std::uint32_t;
@@ -13,22 +15,6 @@ namespace i960 {
     using ShortInteger = std::int16_t;
     using Integer = std::int32_t;
     using LongInteger = std::int64_t;
-
-    constexpr bool isIntegerOverflow(Ordinal value) noexcept {
-        return value > 0x7FFF'FFFF;
-    }
-    constexpr bool shouldSetCarryBit(LongOrdinal a) noexcept {
-        return (a & 0xFFFF'FFFF'0000'0000) != 0;
-    }
-    constexpr bool shouldSetCarryBit(ShortOrdinal a) noexcept {
-        return (a & 0xFF00) != 0;
-    }
-    constexpr bool shouldSetCarryBit(Ordinal a) noexcept {
-        return (a & 0xFFFF'0000) != 0;
-    }
-    constexpr bool shouldSetCarryBit(ByteOrdinal a) noexcept {
-        return (a & 0xF0) != 0;
-    }
 
     union PreviousFramePointer {
         struct {
@@ -65,9 +51,6 @@ namespace i960 {
         };
         Ordinal value;
         constexpr ProcessControls(Ordinal raw = 0) : value(raw) { }
-		void clear() noexcept {
-			value = 0;
-		}
 		constexpr bool traceEnabled() const noexcept {
 			return traceEnable != 0;
 		}
@@ -76,12 +59,6 @@ namespace i960 {
 		}
 		constexpr bool inSupervisorMode() const noexcept {
 			return executionMode != 0;
-		}
-		void enterSupervisorMode() noexcept {
-			executionMode = 1;
-		}
-		void enterUserMode() noexcept {
-			executionMode = 0;
 		}
 		constexpr bool traceFaultIsPending() const noexcept {
 			return traceFaultPending != 0;
@@ -98,6 +75,9 @@ namespace i960 {
 		constexpr Ordinal getProcessPriority() const noexcept {
 			return priority;
 		}
+		void clear() noexcept;
+		void enterSupervisorMode() noexcept;
+		void enterUserMode() noexcept;
     } __attribute__((packed));
 
 
@@ -123,21 +103,14 @@ namespace i960 {
         };
         Ordinal value;
         constexpr TraceControls(Ordinal raw = 0) : value(raw) { }
-		constexpr bool traceMarked() const noexcept {
-			return markTraceMode != 0;
-		}
-		void clear() noexcept {
-			value = 0;
-		}
+		constexpr bool traceMarked() const noexcept { return markTraceMode != 0; }
+        void clear() noexcept;
     } __attribute__((packed));
 	static_assert(sizeof(TraceControls) == sizeof(Ordinal), "TraceControls must be the size of an ordinal!");
     union NormalRegister {
-        private:
-            template<typename T>
-			static constexpr bool LegalConversion = false;
         public:
             constexpr NormalRegister(Ordinal value = 0) : ordinal(value) { }
-            ~NormalRegister() { ordinal = 0; }
+            ~NormalRegister(); 
 
             PreviousFramePointer pfp;
             ProcedureEntry pe;
@@ -194,7 +167,7 @@ namespace i960 {
                     static_assert(LegalConversion<K>, "Illegal type requested");
                 }
             }
-            void move(const NormalRegister& other) noexcept { set<Ordinal>(other.get<Ordinal>()); }
+            void move(const NormalRegister& other) noexcept;
 			constexpr ByteOrdinal mostSignificantBit() const noexcept {
 				return (ordinal & 0x80000000);
 			}
@@ -208,9 +181,6 @@ namespace i960 {
 	static_assert(sizeof(NormalRegister) == sizeof(Ordinal), "NormalRegister must be 32-bits wide!");
 
     class DoubleRegister {
-        private:
-            template<typename T>
-            static constexpr bool LegalConversion = false;
         public:
             DoubleRegister(NormalRegister& lower, NormalRegister& upper) : _lower(lower), _upper(upper) { }
             ~DoubleRegister() = default;
@@ -242,9 +212,6 @@ namespace i960 {
             NormalRegister& _upper;
     };
     class TripleRegister {
-        private:
-            template<typename T>
-            static constexpr bool LegalConversion = false;
         public:
             TripleRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& upper) : _lower(lower), _mid(mid), _upper(upper) { }
             ~TripleRegister() = default;
@@ -300,18 +267,8 @@ namespace i960 {
 			Ordinal reserved3 : 16;
         };
         Ordinal value;
-		void clear() noexcept {
-			value = 0;
-		}
-        Ordinal modify(Ordinal mask, Ordinal value) noexcept {
-            if (mask == 0) {
-                return value;
-            } else {
-                auto tmp = value;
-                value = (value & mask) | (value & ~(mask));
-                return tmp;
-            }
-        }
+        void clear() noexcept;
+        Ordinal modify(Ordinal mask, Ordinal value) noexcept;
         constexpr ArithmeticControls(Ordinal rawValue = 0) noexcept : value(rawValue) { }
         ~ArithmeticControls() { value = 0; }
 
@@ -706,20 +663,28 @@ namespace i960 {
 		Region14_15,
 	};
 	using PMCONRegisterRange = std::tuple<Ordinal, Ordinal>;
-	template<PMCONRegisterKind kind>
-	constexpr auto PMCONMemoryRange = false;
-#define X(kind, start, end) \
-	template<> \
-	constexpr PMCONRegisterRange PMCONMemoryRange<PMCONRegisterKind:: kind > = std::make_tuple( start, end )
-X(Region0_1,   0x0000'0000, 0x1FFF'FFFF);
-X(Region2_3,   0x2000'0000, 0x3FFF'FFFF);
-X(Region4_5,   0x4000'0000, 0x5FFF'FFFF);
-X(Region6_7,   0x6000'0000, 0x7FFF'FFFF);
-X(Region8_9,   0x8000'0000, 0x9FFF'FFFF);
-X(Region10_11, 0xA000'0000, 0xBFFF'FFFF);
-X(Region12_13, 0xC000'0000, 0xDFFF'FFFF);
-X(Region14_15, 0xE000'0000, 0xFFFF'FFFF);
-#undef X
+    template<PMCONRegisterKind kind>
+    constexpr PMCONRegisterRange getRegisterRange() noexcept {
+        if constexpr (kind == PMCONRegisterKind::Region0_1) {
+            return std::make_tuple(0x0000'0000, 0x1FFF'FFFF);
+        } else if constexpr (kind == PMCONRegisterKind::Region2_3) {
+            return std::make_tuple(0x2000'0000, 0x3FFF'FFFF);
+        } else if constexpr (kind == PMCONRegisterKind::Region4_5) {
+            return std::make_tuple(0x4000'0000, 0x5FFF'FFFF);
+        } else if constexpr (kind == PMCONRegisterKind::Region6_7) {
+            return std::make_tuple(0x6000'0000, 0x7FFF'FFFF);
+        } else if constexpr (kind == PMCONRegisterKind::Region8_9) {
+            return std::make_tuple(0x8000'0000, 0x9FFF'FFFF);
+        } else if constexpr (kind == PMCONRegisterKind::Region10_11) {
+            return std::make_tuple(0xA000'0000, 0xBFFF'FFFF);
+        } else if constexpr (kind == PMCONRegisterKind::Region12_13) {
+            return std::make_tuple(0xC000'0000, 0xDFFF'FFFF);
+        } else if constexpr (kind == PMCONRegisterKind::Region14_15) {
+            return std::make_tuple(0xE000'0000, 0xFFFF'FFFF);
+        } else {
+            static_assert(LegalConversion<PMCONRegisterKind>, "Illegal pmcon register kind provided!");
+        }
+    }
 	union PMCONRegister final {
 		struct {
 			Ordinal _unused0 : 22;
@@ -759,7 +724,7 @@ X(Region14_15, 0xE000'0000, 0xFFFF'FFFF);
 		constexpr bool littleEndianByteOrder() const noexcept { return _byteOrder == 0; }
 		constexpr bool bigEndianByteOrder() const noexcept { return _byteOrder != 0; }
 		constexpr bool dataCacheEnabled() const noexcept { return _dataCacheEnable != 0; }
-		Ordinal getTemplateStartingAddress() const noexcept { return _templateStartingAddress; }
+		constexpr Ordinal getTemplateStartingAddress() const noexcept { return _templateStartingAddress; }
 	} __attribute__((packed));
 	union LogicalMemoryTemplateMaskRegister final {
 		struct {
@@ -807,27 +772,24 @@ X(Region14_15, 0xE000'0000, 0xFFFF'FFFF);
         Ordinal systemErrorFaultRecord[11];
     } __attribute__((packed));
 
-	// memory map
-	namespace MemoryMap {
-        enum : Ordinal{
-                   NMIVector = 0x0000'0000,
-                   OptionalInterruptVectorsBegin = 0x0000'0004,
-                   OptionalInterruptVectorsEnd = 0x0000'003F,
-                   DataCacheUnreservedStart = 0x0000'0040,
-                   DataCacheUnreservedEnd = 0x0000'03FF,
-                   // internal data cache end
-                   // normal memory begin
-                   ExternalUnusedMemoryBegin = 0x0000'0400,
-                   ExternalUnusedMemoryEnd = 0xFEFF'FF2F,
-                   InitializationBootRecordBegin = 0xFEFF'FF30,
-                   InitializationBootRecordEnd = 0xFEFF'FF5F,
-                   ReservedMemoryBegin = 0xFEFF'FF60,
-                   ReservedMemoryEnd = 0xFEFF'FFFF,
-                   MemoryMappedRegisterSpaceBegin = 0xFF00'0000,
-                   MemoryMappedRegisterSpaceEnd = 0xFFFF'FFFF,
-        };
-		// internal data ram 1 kbyte is mapped into the memory space
-	} // end namespace MemoryMap
+    // memory map
+    enum class MemoryMap : Ordinal {
+        NMIVector = 0x0000'0000,
+        OptionalInterruptVectorsBegin = 0x0000'0004,
+        OptionalInterruptVectorsEnd = 0x0000'003F,
+        DataCacheUnreservedStart = 0x0000'0040,
+        DataCacheUnreservedEnd = 0x0000'03FF,
+        // internal data cache end
+        // normal memory begin
+        ExternalUnusedMemoryBegin = 0x0000'0400,
+        ExternalUnusedMemoryEnd = 0xFEFF'FF2F,
+        InitializationBootRecordBegin = 0xFEFF'FF30,
+        InitializationBootRecordEnd = 0xFEFF'FF5F,
+        ReservedMemoryBegin = 0xFEFF'FF60,
+        ReservedMemoryEnd = 0xFEFF'FFFF,
+        MemoryMappedRegisterSpaceBegin = 0xFF00'0000,
+        MemoryMappedRegisterSpaceEnd = 0xFFFF'FFFF,
+    };
 
 	/**
 	 * A block of 1024 bytes which is readable and writable but not
