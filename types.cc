@@ -31,11 +31,6 @@ void DoubleRegister::set(Ordinal lower, Ordinal upper) noexcept {
     _upper.set<Ordinal>(upper);
 }
 
-void TripleRegister::set(Ordinal l, Ordinal m, Ordinal u) noexcept {
-    _lower.set<Ordinal>(l);
-    _mid.set<Ordinal>(m);
-    _upper.set<Ordinal>(u);
-}
 
 
 

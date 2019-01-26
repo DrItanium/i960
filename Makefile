@@ -7,6 +7,7 @@ I960JX_SIM_OBJS := sim960jx.o \
 	ProcessControls.o \
 	NormalRegister.o \
 	QuadRegister.o \
+	TripleRegister.o \
 	$(I960JX_OBJS)
 I960JX_DEC_OBJS := decode960jx.o \
 	$(I960JX_OBJS)
@@ -58,6 +59,8 @@ Operand.o: Operand.cc Operand.h types.h
 ProcessControls.o: ProcessControls.cc ProcessControls.h types.h
 QuadRegister.o: QuadRegister.cc types.h QuadRegister.h NormalRegister.h \
  ProcessControls.h
+TripleRegister.o: TripleRegister.cc types.h TripleRegister.h \
+ NormalRegister.h ProcessControls.h
 core.o: core.cc types.h core.h NormalRegister.h ProcessControls.h \
  DoubleRegister.h TripleRegister.h QuadRegister.h ArithmeticControls.h \
  memiface.h Operand.h Instruction.h InternalDataRam.h \
