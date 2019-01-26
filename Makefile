@@ -88,7 +88,9 @@ Instruction.o: Instruction.h types.h Operand.h
 InternalDataRam.o: InternalDataRam.h types.h
 NormalRegister.o: NormalRegister.h types.h ProcessControls.h
 Operand.o: Operand.h types.h
+PMCONRegister.o: PMCONRegister.h types.h
 ProcessControls.o: ProcessControls.h types.h
+ProcessorControlBlock.o: ProcessorControlBlock.h types.h
 QuadRegister.o: QuadRegister.h types.h NormalRegister.h ProcessControls.h
 Records.o: Records.h types.h ProcessControls.h ArithmeticControls.h
 TripleRegister.o: TripleRegister.h types.h NormalRegister.h \
