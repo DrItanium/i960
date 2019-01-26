@@ -1,9 +1,6 @@
 #include "types.h"
 #include <iostream>
 #include "ArithmeticControls.h"
-#include "DoubleRegister.h"
-#include "TripleRegister.h"
-#include "QuadRegister.h"
 
 namespace i960 {
 
@@ -26,10 +23,6 @@ Ordinal ArithmeticControls::modify(Ordinal mask, Ordinal value) noexcept {
 
 
 
-void DoubleRegister::set(Ordinal lower, Ordinal upper) noexcept {
-    _lower.set<Ordinal>(lower);
-    _upper.set<Ordinal>(upper);
-}
 
 
 
