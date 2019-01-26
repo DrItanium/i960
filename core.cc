@@ -2,6 +2,9 @@
 #include "core.h"
 #include "operations.h"
 #include "NormalRegister.h"
+#include "DoubleRegister.h"
+#include "TripleRegister.h"
+#include "QuadRegister.h"
 #include "opcodes.h"
 #include <limits>
 #include <cmath>

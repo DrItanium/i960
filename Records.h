@@ -2,6 +2,7 @@
 #define I960_RECORDS_H__
 #include "types.h"
 #include "ProcessControls.h"
+#include "ArithmeticControls.h"
 namespace i960 {
     /**
      * Describes the intermediate processor state from a fault or interrupt 

@@ -7,6 +7,12 @@
 #define __GEN_DEFAULT_THREE_ARG_SIGS__(name) void name (__DEFAULT_THREE_ARGS__) noexcept
 #define __TWO_SOURCE_REGS__ SourceRegister src, SourceRegister dest
 #include "types.h"
+#include "NormalRegister.h"
+#include "DoubleRegister.h"
+#include "TripleRegister.h"
+#include "QuadRegister.h"
+#include "ArithmeticControls.h"
+#include "ProcessControls.h"
 #include "memiface.h"
 #include <cmath>
 #include <math.h>

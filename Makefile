@@ -37,13 +37,37 @@ clean:
 	@echo Cleaning...
 	@rm -f ${OBJS} ${PROGS}
 
-sim.o: operations.h types.h opcodes.def opcodes.h conditional_kinds.def sim.cc
-core.o: types.h memiface.h core.h operations.h opcodes.def opcodes.h conditional_kinds.def core.cc
-dispatcher.o: types.h core.h opcodes.def opcodes.h conditional_kinds.def dispatcher.cc 
-opcodes.o: types.h opcodes.def opcodes.h opcodes.cc
-decoder.o: types.h opcodes.def opcodes.h decoder.cc
-types.o: types.h types.cc
-
+# generated via g++ -MM -std=c++17 *.cc *.h
+core.o: core.cc types.h core.h NormalRegister.h ProcessControls.h \
+ DoubleRegister.h TripleRegister.h QuadRegister.h ArithmeticControls.h \
+ memiface.h conditional_kinds.def operations.h opcodes.h opcodes.def
+decoder.o: decoder.cc types.h opcodes.h opcodes.def
+dispatcher.o: dispatcher.cc types.h core.h NormalRegister.h \
+ ProcessControls.h DoubleRegister.h TripleRegister.h QuadRegister.h \
+ ArithmeticControls.h memiface.h conditional_kinds.def opcodes.h \
+ opcodes.def
+opcodes.o: opcodes.cc types.h opcodes.h opcodes.def
+sim.o: sim.cc types.h NormalRegister.h ProcessControls.h \
+ ArithmeticControls.h operations.h opcodes.h opcodes.def
+types.o: types.cc types.h ArithmeticControls.h DoubleRegister.h \
+ NormalRegister.h ProcessControls.h TripleRegister.h QuadRegister.h
+ArithmeticControls.o: ArithmeticControls.h types.h
+DoubleRegister.o: DoubleRegister.h types.h NormalRegister.h \
+ ProcessControls.h
+NormalRegister.o: NormalRegister.h types.h ProcessControls.h
+ProcessControls.o: ProcessControls.h types.h
+QuadRegister.o: QuadRegister.h types.h NormalRegister.h ProcessControls.h
+Records.o: Records.h types.h ProcessControls.h ArithmeticControls.h
+TripleRegister.o: TripleRegister.h types.h NormalRegister.h \
+ ProcessControls.h
+bus.o: bus.h
+core.o: core.h types.h NormalRegister.h ProcessControls.h \
+ DoubleRegister.h TripleRegister.h QuadRegister.h ArithmeticControls.h \
+ memiface.h conditional_kinds.def
+memiface.o: memiface.h types.h
+opcodes.o: opcodes.h types.h opcodes.def
+operations.o: operations.h types.h
+types.o: types.h
 
 
 .PHONY: options
