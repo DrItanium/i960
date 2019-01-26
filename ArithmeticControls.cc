@@ -1,5 +1,4 @@
 #include "types.h"
-#include <iostream>
 #include "ArithmeticControls.h"
 
 namespace i960 {
