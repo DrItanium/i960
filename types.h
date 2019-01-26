@@ -270,7 +270,7 @@ namespace i960 {
         void clear() noexcept;
         Ordinal modify(Ordinal mask, Ordinal value) noexcept;
         constexpr ArithmeticControls(Ordinal rawValue = 0) noexcept : value(rawValue) { }
-        ~ArithmeticControls() { value = 0; }
+        ~ArithmeticControls(); 
 
         // NOTE that both of these methods could return true in some cases
         // I think that the safest solution is to actually raise a fault if both
@@ -303,8 +303,6 @@ namespace i960 {
         }
     } __attribute__((packed));
 
-    constexpr Ordinal LargestAddress = 0xFFFF'FFFF;
-    constexpr Ordinal LowestAddress = 0;
     enum class ConditionCode : Ordinal {
         False = 0b000,
         Greater = 0b001,
