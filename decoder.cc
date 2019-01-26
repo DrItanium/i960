@@ -3,6 +3,7 @@
 #include <memory>
 #include "types.h"
 #include "opcodes.h"
+#include "Instruction.h"
 #include <string>
 #include <sstream>
 void decode(std::ostream& out, const i960::Opcode::Description& desc, const i960::Instruction::REGFormat& inst) {

@@ -14,6 +14,8 @@
 #include "ArithmeticControls.h"
 #include "ProcessControls.h"
 #include "memiface.h"
+#include "Operand.h"
+#include "Instruction.h"
 #include <cmath>
 #include <math.h>
 #include <variant>

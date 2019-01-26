@@ -1,6 +1,7 @@
 #ifndef I960_OPCODES_H__
 #define I960_OPCODES_H__
 #include "types.h"
+#include "Instruction.h"
 namespace i960::Opcode {
 		struct Description final {
 			enum class Class : Ordinal {
