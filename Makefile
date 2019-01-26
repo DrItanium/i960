@@ -6,6 +6,7 @@ I960JX_SIM_OBJS := sim.o \
 	dispatcher.o \
 	ProcessControls.o \
 	NormalRegister.o \
+	QuadRegister.o \
 	$(I960JX_OBJS)
 I960JX_DEC_OBJS := decoder.o \
 	$(I960JX_OBJS)
