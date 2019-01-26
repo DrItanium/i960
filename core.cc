@@ -1,6 +1,7 @@
 #include "types.h"
 #include "core.h"
 #include "operations.h"
+#include "NormalRegister.h"
 #include "opcodes.h"
 #include <limits>
 #include <cmath>

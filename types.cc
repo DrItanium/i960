@@ -1,5 +1,9 @@
 #include "types.h"
 #include <iostream>
+#include "ArithmeticControls.h"
+#include "DoubleRegister.h"
+#include "TripleRegister.h"
+#include "QuadRegister.h"
 
 namespace i960 {
 
