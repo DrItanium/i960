@@ -5,8 +5,10 @@ I960JX_SIM_OBJS := sim.o \
 	core.o \
 	dispatcher.o \
 	ProcessControls.o \
+	NormalRegister.o \
 	$(I960JX_OBJS)
-I960JX_DEC_OBJS := decoder.o $(I960JX_OBJS)
+I960JX_DEC_OBJS := decoder.o \
+	$(I960JX_OBJS)
 
 I960JX_SIM_PROG := sim960jx
 I960JX_DEC_PROG := decode960jx
@@ -43,6 +45,9 @@ clean:
 
 # generated via g++ -MM -std=c++17 *.cc *.h
 
+
+NormalRegister.o: NormalRegister.cc NormalRegister.h types.h \
+ ProcessControls.h
 ProcessControls.o: ProcessControls.cc ProcessControls.h types.h
 core.o: core.cc types.h core.h NormalRegister.h ProcessControls.h \
  DoubleRegister.h TripleRegister.h QuadRegister.h ArithmeticControls.h \
@@ -74,5 +79,4 @@ memiface.o: memiface.h types.h
 opcodes.o: opcodes.h types.h opcodes.def
 operations.o: operations.h types.h
 types.o: types.h
-
 .PHONY: options

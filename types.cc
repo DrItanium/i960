@@ -8,13 +8,6 @@
 namespace i960 {
 
 
-void TraceControls::clear() noexcept {
-    value = 0;
-}
-
-void NormalRegister::move(const NormalRegister& other) noexcept {
-    set<Ordinal>(other.get<Ordinal>());
-}
 
 void ArithmeticControls::clear() noexcept {
     value = 0;
@@ -31,9 +24,6 @@ Ordinal ArithmeticControls::modify(Ordinal mask, Ordinal value) noexcept {
     }
 }
 
-NormalRegister::~NormalRegister() {
-    ordinal = 0;
-}
 
 
 void DoubleRegister::set(Ordinal lower, Ordinal upper) noexcept {
