@@ -38,12 +38,6 @@ void TripleRegister::set(Ordinal l, Ordinal m, Ordinal u) noexcept {
 }
 
 
-void QuadRegister::set(Ordinal l, Ordinal m, Ordinal u, Ordinal h) noexcept {
-    _lower.set(l);
-    _mid.set(m);
-    _upper.set(u);
-    _highest.set(h);
-}
 
 ArithmeticControls::~ArithmeticControls() {
     value = 0;
