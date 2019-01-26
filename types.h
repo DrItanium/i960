@@ -5,7 +5,7 @@
 namespace i960 {
 
     template<typename T>
-    constexpr static bool LegalConversion = false;
+    constexpr bool LegalConversion = false;
     using ByteOrdinal = std::uint8_t;
     using ShortOrdinal = std::uint16_t;
     using Ordinal = std::uint32_t;
@@ -51,30 +51,14 @@ namespace i960 {
         };
         Ordinal value;
         constexpr ProcessControls(Ordinal raw = 0) : value(raw) { }
-		constexpr bool traceEnabled() const noexcept {
-			return traceEnable != 0;
-		}
-		constexpr bool inUserMode() const noexcept {
-			return executionMode == 0;
-		}
-		constexpr bool inSupervisorMode() const noexcept {
-			return executionMode != 0;
-		}
-		constexpr bool traceFaultIsPending() const noexcept {
-			return traceFaultPending != 0;
-		}
-		constexpr bool traceFaultIsNotPending() const noexcept {
-			return traceFaultPending == 0;
-		}
-		constexpr bool isExecuting() const noexcept {
-			return state == 0;
-		}
-		constexpr bool isInterrupted() const noexcept {
-			return state != 0;
-		}
-		constexpr Ordinal getProcessPriority() const noexcept {
-			return priority;
-		}
+		constexpr bool traceEnabled() const noexcept            { return traceEnable != 0; }
+		constexpr bool inUserMode() const noexcept              { return executionMode == 0; }
+		constexpr bool inSupervisorMode() const noexcept        { return executionMode != 0; }
+		constexpr bool traceFaultIsPending() const noexcept     { return traceFaultPending != 0; }
+		constexpr bool traceFaultIsNotPending() const noexcept  { return traceFaultPending == 0; }
+		constexpr bool isExecuting() const noexcept             { return state == 0; }
+		constexpr bool isInterrupted() const noexcept           { return state != 0; }
+		constexpr Ordinal getProcessPriority() const noexcept   { return priority; }
 		void clear() noexcept;
 		void enterSupervisorMode() noexcept;
 		void enterUserMode() noexcept;
@@ -168,15 +152,9 @@ namespace i960 {
                 }
             }
             void move(const NormalRegister& other) noexcept;
-			constexpr ByteOrdinal mostSignificantBit() const noexcept {
-				return (ordinal & 0x80000000);
-			}
-			constexpr bool mostSignificantBitSet() const noexcept {
-				return mostSignificantBit() == 1;
-			}
-			constexpr bool mostSignificantBitClear() const noexcept {
-				return mostSignificantBit() == 0;
-			}
+			constexpr ByteOrdinal mostSignificantBit() const noexcept { return (ordinal & 0x80000000); }
+			constexpr bool mostSignificantBitSet() const noexcept     { return mostSignificantBit() == 1; }
+			constexpr bool mostSignificantBitClear() const noexcept   { return !mostSignificantBitSet(); }
     };
 	static_assert(sizeof(NormalRegister) == sizeof(Ordinal), "NormalRegister must be 32-bits wide!");
 
@@ -216,9 +194,9 @@ namespace i960 {
             TripleRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& upper) : _lower(lower), _mid(mid), _upper(upper) { }
             ~TripleRegister() = default;
             void set(Ordinal lower, Ordinal mid, Ordinal upper) noexcept;
-            Ordinal getLowerPart() const noexcept { return _lower.get<Ordinal>(); }
+            Ordinal getLowerPart() const noexcept  { return _lower.get<Ordinal>(); }
             Ordinal getMiddlePart() const noexcept { return _mid.get<Ordinal>(); }
-            Ordinal getUpperPart() const noexcept { return _upper.get<Ordinal>(); }
+            Ordinal getUpperPart() const noexcept  { return _upper.get<Ordinal>(); }
         private:
             NormalRegister& _lower;
             NormalRegister& _mid;
@@ -229,9 +207,9 @@ namespace i960 {
             QuadRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& high, NormalRegister& highest) : _lower(lower), _mid(mid), _upper(high), _highest(highest) { }
             ~QuadRegister() = default;
             void set(Ordinal lower, Ordinal mid, Ordinal upper, Ordinal highest) noexcept;
-            Ordinal getLowestPart() const noexcept { return _lower.get<Ordinal>(); }
-            Ordinal getLowerPart() const noexcept { return _mid.get<Ordinal>(); }
-            Ordinal getHigherPart() const noexcept { return _upper.get<Ordinal>(); }
+            Ordinal getLowestPart() const noexcept  { return _lower.get<Ordinal>(); }
+            Ordinal getLowerPart() const noexcept   { return _mid.get<Ordinal>(); }
+            Ordinal getHigherPart() const noexcept  { return _upper.get<Ordinal>(); }
             Ordinal getHighestPart() const noexcept { return _highest.get<Ordinal>(); }
         private:
             NormalRegister& _lower;
@@ -524,12 +502,8 @@ namespace i960 {
                             return 0; 
                     }
                 }
-				constexpr auto decodeSrcDest() const noexcept {
-					return Operand(0, _src_dest);
-				}
-				constexpr auto decodeAbase() const noexcept {
-					return Operand(0, _abase);
-				}
+				constexpr auto decodeSrcDest() const noexcept { return Operand(0, _src_dest); }
+				constexpr auto decodeAbase() const noexcept   { return Operand(0, _abase); }
             };
 			constexpr auto decodeSrcDest() const noexcept {
 				if (isMemAFormat()) {
@@ -660,9 +634,9 @@ namespace i960 {
 		Region12_13,
 		Region14_15,
 	};
-	using PMCONRegisterRange = std::tuple<Ordinal, Ordinal>;
+	using PMCONRegisterRange_t = std::tuple<Ordinal, Ordinal>;
     template<PMCONRegisterKind kind>
-    constexpr PMCONRegisterRange getRegisterRange() noexcept {
+    constexpr PMCONRegisterRange_t getRegisterRange() noexcept {
         if constexpr (kind == PMCONRegisterKind::Region0_1) {
             return std::make_tuple(0x0000'0000, 0x1FFF'FFFF);
         } else if constexpr (kind == PMCONRegisterKind::Region2_3) {
@@ -683,6 +657,8 @@ namespace i960 {
             static_assert(LegalConversion<PMCONRegisterKind>, "Illegal pmcon register kind provided!");
         }
     }
+    template<PMCONRegisterKind kind>
+    constexpr PMCONRegisterRange_t PMCONRegisterRange = getRegisterRange<kind>();
 	union PMCONRegister final {
 		struct {
 			Ordinal _unused0 : 22;
