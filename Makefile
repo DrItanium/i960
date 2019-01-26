@@ -1,14 +1,14 @@
 include config.mk
 
 I960JX_OBJS := opcodes.o types.o Operand.o
-I960JX_SIM_OBJS := sim.o \
+I960JX_SIM_OBJS := sim960jx.o \
 	core.o \
 	dispatcher.o \
 	ProcessControls.o \
 	NormalRegister.o \
 	QuadRegister.o \
 	$(I960JX_OBJS)
-I960JX_DEC_OBJS := decoder.o \
+I960JX_DEC_OBJS := decode960jx.o \
 	$(I960JX_OBJS)
 
 I960JX_SIM_PROG := sim960jx
@@ -51,6 +51,7 @@ clean:
 # generated via g++ -MM -std=c++17 *.cc *.h
 
 
+
 NormalRegister.o: NormalRegister.cc NormalRegister.h types.h \
  ProcessControls.h
 Operand.o: Operand.cc Operand.h types.h
@@ -61,7 +62,7 @@ core.o: core.cc types.h core.h NormalRegister.h ProcessControls.h \
  DoubleRegister.h TripleRegister.h QuadRegister.h ArithmeticControls.h \
  memiface.h Operand.h Instruction.h InternalDataRam.h \
  conditional_kinds.def operations.h opcodes.h opcodes.def
-decoder.o: decoder.cc types.h opcodes.h Instruction.h Operand.h \
+decode960jx.o: decode960jx.cc types.h opcodes.h Instruction.h Operand.h \
  opcodes.def
 dispatcher.o: dispatcher.cc types.h core.h NormalRegister.h \
  ProcessControls.h DoubleRegister.h TripleRegister.h QuadRegister.h \
@@ -69,7 +70,7 @@ dispatcher.o: dispatcher.cc types.h core.h NormalRegister.h \
  InternalDataRam.h conditional_kinds.def opcodes.h opcodes.def
 opcodes.o: opcodes.cc types.h opcodes.h Instruction.h Operand.h \
  opcodes.def
-sim.o: sim.cc types.h NormalRegister.h ProcessControls.h \
+sim960jx.o: sim960jx.cc types.h NormalRegister.h ProcessControls.h \
  ArithmeticControls.h Operand.h operations.h opcodes.h Instruction.h \
  opcodes.def
 types.o: types.cc types.h ArithmeticControls.h DoubleRegister.h \
@@ -95,4 +96,3 @@ memiface.o: memiface.h types.h
 opcodes.o: opcodes.h types.h Instruction.h Operand.h opcodes.def
 operations.o: operations.h types.h
 types.o: types.h
-
