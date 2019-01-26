@@ -17,6 +17,7 @@
 #include "Operand.h"
 #include "Instruction.h"
 #include "InternalDataRam.h"
+#include "ConditionCode.h"
 #include <cmath>
 #include <math.h>
 #include <variant>

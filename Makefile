@@ -68,24 +68,27 @@ TripleRegister.o: TripleRegister.cc types.h TripleRegister.h \
  NormalRegister.h ProcessControls.h
 core.o: core.cc types.h core.h NormalRegister.h ProcessControls.h \
  DoubleRegister.h TripleRegister.h QuadRegister.h ArithmeticControls.h \
- memiface.h Operand.h Instruction.h InternalDataRam.h \
+ memiface.h Operand.h Instruction.h InternalDataRam.h ConditionCode.h \
  conditional_kinds.def operations.h opcodes.h opcodes.def
 decode960jx.o: decode960jx.cc types.h opcodes.h Instruction.h Operand.h \
  opcodes.def
 dispatcher.o: dispatcher.cc types.h core.h NormalRegister.h \
  ProcessControls.h DoubleRegister.h TripleRegister.h QuadRegister.h \
  ArithmeticControls.h memiface.h Operand.h Instruction.h \
- InternalDataRam.h conditional_kinds.def opcodes.h opcodes.def
+ InternalDataRam.h ConditionCode.h conditional_kinds.def opcodes.h \
+ opcodes.def
 opcodes.o: opcodes.cc types.h opcodes.h Instruction.h Operand.h \
  opcodes.def
 sim960jx.o: sim960jx.cc types.h NormalRegister.h ProcessControls.h \
  ArithmeticControls.h Operand.h operations.h opcodes.h Instruction.h \
  opcodes.def
 ArithmeticControls.o: ArithmeticControls.h types.h
+ConditionCode.o: ConditionCode.h types.h
 DoubleRegister.o: DoubleRegister.h types.h NormalRegister.h \
  ProcessControls.h
 Instruction.o: Instruction.h types.h Operand.h
 InternalDataRam.o: InternalDataRam.h types.h
+MemoryMap.o: MemoryMap.h types.h
 NormalRegister.o: NormalRegister.h types.h ProcessControls.h
 Operand.o: Operand.h types.h
 PMCONRegister.o: PMCONRegister.h types.h
@@ -98,7 +101,7 @@ TripleRegister.o: TripleRegister.h types.h NormalRegister.h \
 bus.o: bus.h
 core.o: core.h types.h NormalRegister.h ProcessControls.h \
  DoubleRegister.h TripleRegister.h QuadRegister.h ArithmeticControls.h \
- memiface.h Operand.h Instruction.h InternalDataRam.h \
+ memiface.h Operand.h Instruction.h InternalDataRam.h ConditionCode.h \
  conditional_kinds.def
 memiface.o: memiface.h types.h
 opcodes.o: opcodes.h types.h Instruction.h Operand.h opcodes.def
