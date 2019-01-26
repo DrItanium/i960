@@ -1,6 +1,6 @@
 include config.mk
 
-I960JX_OBJS := opcodes.o types.o Operand.o
+I960JX_OBJS := opcodes.o Operand.o
 I960JX_SIM_OBJS := sim960jx.o \
 	core.o \
 	dispatcher.o \
@@ -9,6 +9,7 @@ I960JX_SIM_OBJS := sim960jx.o \
 	QuadRegister.o \
 	TripleRegister.o \
 	DoubleRegister.o \
+	ArithmeticControls.o \
 	$(I960JX_OBJS)
 I960JX_DEC_OBJS := decode960jx.o \
 	$(I960JX_OBJS)
@@ -54,6 +55,9 @@ clean:
 
 
 
+ArithmeticControls.o: ArithmeticControls.cc types.h ArithmeticControls.h
+DoubleRegister.o: DoubleRegister.cc types.h DoubleRegister.h \
+ NormalRegister.h ProcessControls.h
 NormalRegister.o: NormalRegister.cc NormalRegister.h types.h \
  ProcessControls.h
 Operand.o: Operand.cc Operand.h types.h
@@ -77,8 +81,6 @@ opcodes.o: opcodes.cc types.h opcodes.h Instruction.h Operand.h \
 sim960jx.o: sim960jx.cc types.h NormalRegister.h ProcessControls.h \
  ArithmeticControls.h Operand.h operations.h opcodes.h Instruction.h \
  opcodes.def
-types.o: types.cc types.h ArithmeticControls.h DoubleRegister.h \
- NormalRegister.h ProcessControls.h TripleRegister.h QuadRegister.h
 ArithmeticControls.o: ArithmeticControls.h types.h
 DoubleRegister.o: DoubleRegister.h types.h NormalRegister.h \
  ProcessControls.h
