@@ -23,7 +23,7 @@ std::ostream& operator<<(std::ostream& stream, const Operand& op) {
                 } else {
                     return 'r';
                 }
-            }() << op.getOffset();
+            }() << std::dec << op.getOffset();
         }
     }
     stream.flags(f);
