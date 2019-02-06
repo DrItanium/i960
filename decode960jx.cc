@@ -130,6 +130,7 @@ std::string decode(i960::Ordinal value) noexcept {
 int main() {
 	int errorCode = 0;
     while(std::cin.good()) {
+        std::cout << "> ";
         i960::Ordinal value = 0;
         std::cin >> std::hex >> value;
         if (std::cin.good()) {
