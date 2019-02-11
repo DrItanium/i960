@@ -187,7 +187,7 @@ namespace i960 {
 
         static_assert(sizeof(MemFormat) == sizeof(Ordinal), "MemFormat must be the size of an ordinal!");
 
-        constexpr Instruction(Ordinal raw = 0) : _raw(raw) { }
+        constexpr Instruction(Ordinal raw = 0, Ordinal second = 0) : _raw(raw), _second(second) { }
         constexpr Ordinal getBaseOpcode() const noexcept {
             return (0xFF000000 & _raw) >> 24;
         }
@@ -214,14 +214,20 @@ namespace i960 {
             auto opcode = getBaseOpcode();
             return opcode >= 0x58 && opcode < 0x80;
         }
+        constexpr bool twoOrdinalInstruction() const noexcept {
+            return isMemFormat() && !_mem.isMemAFormat() && _mem._memb.has32bitDisplacement();
+        }
         REGFormat _reg;
         COBRFormat _cobr;
         CTRLFormat _ctrl;
         MemFormat _mem;
-        Ordinal _raw;
+        struct {
+            Ordinal _raw;
+            Ordinal _second;
+        };
 
     } __attribute__((packed));
-    static_assert(sizeof(Instruction) == sizeof(Ordinal), "Instruction must be the size of an ordinal!");
+    static_assert(sizeof(Instruction) == (sizeof(Ordinal) * 2), "Instruction must be the size of an ordinal!");
 
 } // end namespace i960
 #endif // end I960_INSTRUCTION_H__

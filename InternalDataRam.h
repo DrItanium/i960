@@ -81,6 +81,9 @@ namespace i960 {
 				auto realAddress = (address >> 2) & LegalMaskValue;
 				return _words[realAddress];
 			}
+            LongOrdinal readDouble(Ordinal address) const noexcept {
+                return (LongOrdinal(read(address+1)) << 32) | LongOrdinal(read(address));
+            }
 			constexpr Ordinal totalByteCapacity() const noexcept { return TotalByteCapacity; }
 		private:
 			Ordinal _words[TotalUnreservedWords + TotalReservedWords];

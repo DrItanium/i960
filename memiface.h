@@ -8,7 +8,9 @@ namespace i960 {
 	class MemoryInterface {
 		public:
 			virtual void store(Ordinal address, Ordinal value, bool atomic) = 0;
+            virtual void storeDouble(Ordinal address, LongOrdinal value, bool atomic) = 0;
 			virtual Ordinal load(Ordinal address, bool atomic) const = 0;
+            virtual LongOrdinal loadDouble(Ordinal address, bool atomic) const = 0;
 	};
 }
 #endif // end I960_MEMORY_INTERFACE_H__

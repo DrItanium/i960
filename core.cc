@@ -170,6 +170,14 @@ X(cmpi, bno);
 			return _mem.load(address, atomic);
 		}
 	}
+    LongOrdinal Core::loadDouble(Ordinal address, bool atomic) noexcept {
+        if (address <= _internalDataRam.LargestAddress<0>) {
+            return _internalDataRam.readDouble(address & clearLowestTwoBitsMask);
+        } else {
+            return _mem.loadDouble(address, atomic);
+        }
+        // do a double load or load two entries
+    }
 	void Core::store(Ordinal address, Ordinal value, bool atomic) noexcept {
 		if (address <= _internalDataRam.LargestAddress<0>) {
 			_internalDataRam.write(address & clearLowestTwoBitsMask, value);
@@ -1141,6 +1149,26 @@ X(cmpi, bno);
 	void Core::processPrcb() {
 		// TODO implement according to the manual
 	}
+    bool Core::cycle() {
+        // read from 
+        dispatch(readInstruction());
+        return true;
+    }
+    Instruction Core::readInstruction() {
+        // we need to pull the lower half, and then check and see if it is actually a double byte design
+        auto address = _instructionPointer & (~0b11);
+        Instruction basic(load(address));
+        if (basic.twoOrdinalInstruction()) {
+            // load the second value
+            basic._second = load(address + 0b100);
+            // advance the instruction pointer by two
+            _instructionPointer += 0b1000;
+        } else {
+            // advance the instruction pointer by one
+            _instructionPointer += 0b100;
+        }
+        return basic;
+    }
 #undef __DEFAULT_TWO_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
 #undef __DEFAULT_THREE_ARGS__

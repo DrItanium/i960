@@ -175,6 +175,7 @@ namespace i960 {
              */
             void call(Integer displacement) noexcept;
             Ordinal load(Ordinal address, bool atomic = false) noexcept;
+            LongOrdinal loadDouble(Ordinal address, bool atomic = false) noexcept;
             void store(Ordinal address, Ordinal value, bool atomic = false) noexcept;
 
             template<typename T>
@@ -437,6 +438,8 @@ namespace i960 {
 #undef X 
 		private:
 			void dispatch(const Instruction& decodedInstruction) noexcept;
+            bool cycle();
+            Instruction readInstruction();
         private:
             void saveFrame() noexcept;
             void allocateNewFrame() noexcept;
