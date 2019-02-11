@@ -129,7 +129,10 @@ namespace i960 {
                         Ordinal _src_dest : 5;
                         Ordinal _opcode : 8;
                     };
-                    Ordinal _raw; // for decoding purposes
+                    struct {
+                        Ordinal _raw; // for decoding purposes
+                        Ordinal _second;
+                    };
                 };
                 constexpr AddressingModes getAddressingMode() const noexcept {
                     return static_cast<AddressingModes>(_mode);
@@ -163,6 +166,7 @@ namespace i960 {
                 }
 				constexpr auto decodeSrcDest() const noexcept { return Operand(0, _src_dest); }
 				constexpr auto decodeAbase() const noexcept   { return Operand(0, _abase); }
+                constexpr auto get32bitDisplacement() const noexcept { return _second; }
             };
 			constexpr auto decodeSrcDest() const noexcept {
 				if (isMemAFormat()) {
@@ -185,7 +189,7 @@ namespace i960 {
             MEMBFormat _memb;
         };
 
-        static_assert(sizeof(MemFormat) == sizeof(Ordinal), "MemFormat must be the size of an ordinal!");
+        static_assert(sizeof(MemFormat) == (sizeof(Ordinal) * 2), "MemFormat must be the size of two ordinals!");
 
         constexpr Instruction(Ordinal raw = 0, Ordinal second = 0) : _raw(raw), _second(second) { }
         constexpr Ordinal getBaseOpcode() const noexcept {
@@ -214,7 +218,7 @@ namespace i960 {
             auto opcode = getBaseOpcode();
             return opcode >= 0x58 && opcode < 0x80;
         }
-        constexpr bool twoOrdinalInstruction() const noexcept {
+        constexpr bool isTwoOrdinalInstruction() const noexcept {
             return isMemFormat() && !_mem.isMemAFormat() && _mem._memb.has32bitDisplacement();
         }
         REGFormat _reg;

@@ -99,22 +99,13 @@ namespace i960 {
 				auto ma = mem._mema;
 				_temporary0.set<Ordinal>(ma._offset + ma.isOffsetAddressingMode() ?  0 : getRegister(ma.decodeAbase()).get<Ordinal>());
 			} else {
-				auto getFullDisplacement = [this]() {
-					auto addr = _instructionPointer + 4;
-					union {
-						Ordinal _ord;
-						Integer _int;
-					} conv;
-					conv._ord = load(addr);
-					return conv._int;
-				};
 				auto mb = mem._memb;
 				using E = std::decay_t<decltype(mb)>::AddressingModes;
 				auto index = mb._index;
 				auto scale = mb.getScaleFactor();
                 auto displacement = 0u;
                 if (mb.has32bitDisplacement()) {
-                    displacement = getFullDisplacement();
+                    displacement = mb.get32bitDisplacement();
                     length = InstructionLength::Double;
                 }
 				switch (auto abase = getRegister(mb.decodeAbase()); mb.getAddressingMode()) {

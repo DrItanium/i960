@@ -1158,7 +1158,7 @@ X(cmpi, bno);
         // we need to pull the lower half, and then check and see if it is actually a double byte design
         auto address = _instructionPointer & (~0b11);
         Instruction basic(load(address));
-        if (basic.twoOrdinalInstruction()) {
+        if (basic.isTwoOrdinalInstruction()) {
             // load the second value
             basic._second = load(address + 0b100);
             // advance the instruction pointer by two
