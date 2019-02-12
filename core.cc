@@ -1147,10 +1147,67 @@ X(cmpi, bno);
 		setRegister(0_gr, _deviceId.getDeviceId());
 	}
 	void Core::processPrcb() {
-		// TODO implement according to the manual
+        // Taken from the manual
+        // PRCB_mmr = prcb_ptr;
+        // reset_state(data_ram); // It is unpredictable whether the data ram keeps its prior contents
+        // fault_table = memory[PRCB_mmr];
+        // ctrl_table = memory[PRCB_mmr + 0x4];
+        // ac = memory[PRCB_mmr + 0x8];
+        // fault_config = memory[PRCB_mmr + 0xc];
+        // if (1 & (fault_config >> 30)) {
+        //  generate_fault_on_unaligned_access = false;
+        // } else {
+        //  generate_fault_on_unaligned_access = true;
+        // }
+        // /** Load Interrupt table and cache nmi vector entry in data RAM **/
+        // Reset_block_NMI;
+        // interrupt_table = memory[PRCB_mmr + 0x10];
+        // memory[0] = memory[interrupt_table + (248*4) + 4];
+        //
+        // /** process system procedure table **/
+        // sysproc = memory[PRCB_mmr + 0x14];
+        // temp = memory[sysproc + 0xc];
+        // SSP_mmr = (~0x3) & temp;
+        // SSP.te = 1 & temp;
+        //
+        // /** initialize isp, fp, sp, and pfp **/
+        // ISM_mmr = memory[PRCB_mmr+0x1c];
+        // FP = ISP_mmr;
+        // SP = FP + 64;
+        // PFP = FP;
+        //
+        // /** initialize instruction cache **/
+        // iccw = memory[PRCB_mmr+0x20];
+        // if (1 & (iccw >> 16)) {
+        //  enable(I_cache);
+        // }
+        //
+        // /** Configure Local Register Cache **/
+        // programmed_limit = (7 & memory[PRCB_mmr + 0x24] >> 8) );
+        // config_reg_cache(programmed_limit);
+        //
+        // /** load_control_table. Note breakpoints and BPCON are excluded here **/
+        // load_control_table(ctrl_table + 0x10, ctrl_table + 0x58);
+        // load_control_table(ctrl_table + 0x68, ctrl_table + 0x6c);
+        // IBP0 = 0x0;
+        // IBP1 = 0x0;
+        // DAB0 = 0x0;
+        // DAB1 = 0x0;
+        //
+        // /** initialize timers **/
+        // TMR0.tc = 0;
+        // TMR1.tc = 0;
+        // TMR0.enable = 0;
+        // TMR1.enable = 0;
+        // TMR0.sup = 0;
+        // TMR1.sup = 0;
+        // TMR0.reload = 0;
+        // TMR1.reload = 0;
+        // TMR0.csel = 0;
+        // TMR1.csel = 0;
+        // return;
 	}
     bool Core::cycle() {
-        // read from 
         dispatch(readInstruction());
         return true;
     }
