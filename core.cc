@@ -110,8 +110,11 @@ X(cmpi, bno);
 		setRegister(SP, tmp + 64);
 	}
 	constexpr Ordinal clearLowestTwoBitsMask = ~0b11;
+    constexpr Ordinal computeAlignedAddress(Ordinal value) noexcept {
+        return value & clearLowestTwoBitsMask;
+    }
 	constexpr Ordinal getProcedureAddress(Ordinal value) noexcept {
-		return value & clearLowestTwoBitsMask;
+        return computeAlignedAddress(value);
 	}
 	constexpr Ordinal getProcedureKind(Ordinal value) noexcept {
 		return value & 0b11;
@@ -165,22 +168,21 @@ X(cmpi, bno);
 
 	Ordinal Core::load(Ordinal address, bool atomic) noexcept {
 		if (address <= _internalDataRam.LargestAddress<0>) {
-			return _internalDataRam.read(address & clearLowestTwoBitsMask);
+			return _internalDataRam.read(computeAlignedAddress(address));
 		} else {
 			return _mem.load(address, atomic);
 		}
 	}
     LongOrdinal Core::loadDouble(Ordinal address, bool atomic) noexcept {
         if (address <= _internalDataRam.LargestAddress<0>) {
-            return _internalDataRam.readDouble(address & clearLowestTwoBitsMask);
+            return _internalDataRam.readDouble(computeAlignedAddress(address));
         } else {
             return _mem.loadDouble(address, atomic);
         }
-        // do a double load or load two entries
     }
 	void Core::store(Ordinal address, Ordinal value, bool atomic) noexcept {
 		if (address <= _internalDataRam.LargestAddress<0>) {
-			_internalDataRam.write(address & clearLowestTwoBitsMask, value);
+			_internalDataRam.write(computeAlignedAddress(address), value);
 		} else {
 			_mem.store(address, value, atomic);
 		}
@@ -328,17 +330,18 @@ X(cmpi, bno);
 		}
 	}
 	void Core::b(Integer displacement) noexcept {
+        static constexpr auto checkMask = 0x7F'FFFC;
 		union {
 			Integer _value : 24;
 		} conv;
 		conv._value = displacement;
-		conv._value = conv._value > 0x7F'FFFC ? 0x7F'FFFC : conv._value;
+		conv._value = conv._value > checkMask ? checkMask : conv._value;
 		_instructionPointer += conv._value;
-		_instructionPointer &= clearLowestTwoBitsMask; // make sure the least significant two bits are clear
+        _instructionPointer = computeAlignedAddress(_instructionPointer); // make sure the least significant two bits are clear
 	}
 	void Core::bx(SourceRegister src) noexcept {
 		_instructionPointer = src.get<Ordinal>();
-		_instructionPointer &= clearLowestTwoBitsMask;
+        _instructionPointer = computeAlignedAddress(_instructionPointer); // make sure the least significant two bits are clear
 	}
 	void Core::bal(Integer displacement) noexcept {
         // this is taken from the i960mc manual since the one in the i960jx manual
@@ -402,12 +405,12 @@ X(cmpi, bno);
 	void Core::extract(SourceRegister bitpos, SourceRegister len, DestinationRegister srcDest) noexcept {
 		srcDest.set<Ordinal>(decode(bitpos.get<Ordinal>(), len.get<Ordinal>(), srcDest.get<Ordinal>()));
 	}
-
+    constexpr Ordinal largestOrdinal = 0xFFFF'FFFF;
 	/**
 	 * Find the most significant set bit
 	 */
 	void Core::scanbit(SourceRegister src, DestinationRegister dest) noexcept {
-		dest.set<Ordinal>(0xFFFF'FFFF);
+        dest.set(largestOrdinal);
 		_ac.conditionCode = 0b000;
 		for (Integer i = 31; i >= 0; --i) {
 			if (auto k = 1 << i; (src.get<Ordinal>() & k) != 0) {
@@ -421,7 +424,7 @@ X(cmpi, bno);
 	 * Find the most significant clear bit
 	 */
 	void Core::spanbit(SourceRegister src, DestinationRegister dest) noexcept {
-		dest.set<Ordinal>(0xFFFF'FFFF);
+        dest.set(largestOrdinal);
 		_ac.conditionCode = 0b000;
 		for (Integer i = 31; i >= 0; --i) {
 			if (auto k = (1 << i); (src.get<Ordinal>() & k) == 0) {
@@ -1213,7 +1216,7 @@ X(cmpi, bno);
     }
     Instruction Core::readInstruction() {
         // we need to pull the lower half, and then check and see if it is actually a double byte design
-        auto address = _instructionPointer & (~0b11);
+        auto address = computeAlignedAddress(_instructionPointer);
         Instruction basic(load(address));
         if (basic.isTwoOrdinalInstruction()) {
             // load the second value
