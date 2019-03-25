@@ -9,6 +9,60 @@ namespace i960 {
      * occurring during processor execution
      */
     using ResumptionRecord = ByteOrdinal[16];
+    enum class FaultRecordKind : ByteOrdinal
+    {
+        Override = 0,
+        Parallel = Override,
+        Trace = 1,
+        Operation,
+        Arithmetic,
+        FloatingPoint,
+        Constraint,
+        VirtualMemory,
+        Protection,
+        Machine,
+        Structural,
+        Type,
+        Reserved,
+        Process,
+        Descriptor,
+        Event,
+    };
+    constexpr auto isLegalValue(FaultRecordKind kind) noexcept {
+        return convert(kind) < 0x10;
+    }
+    constexpr auto convert(FaultRecordKind kind) noexcept {
+        return static_cast<ByteOrdinal>(kind);
+    }
+    constexpr FaultRecordKind toFaultRecordKind(ByteOrdinal value) noexcept {
+        return static_cast<FaultRecordKind>(value);
+    }
+    constexpr auto isPreciseFault(FaultRecordKind kind) noexcept {
+        switch (kind) {
+            case FaultRecordKind::Trace:
+            case FaultRecordKind::VirtualMemory:
+            case FaultRecordKind::Protection:
+            case FaultRecordKind::Descriptor:
+                return true;
+            default:
+                return false;
+        }
+    }
+    constexpr auto isImpreciseFault(FaultRecordKind kind) noexcept {
+        switch (kind) {
+            case FaultRecordKind::Trace:
+            case FaultRecordKind::VirtualMemory:
+            case FaultRecordKind::Protection:
+            case FaultRecordKind::Descriptor:
+            case FaultRecordKind::Override:
+            case FaultRecordKind::Parallel:
+            case FaultRecordKind::Reserved:
+                return false;
+            default:
+                return true;
+
+        }
+    }
     struct FaultRecord {
         ProcessControls pc;
         ArithmeticControls ac;
@@ -22,40 +76,73 @@ namespace i960 {
             };
         } fault;
         Ordinal faultingInstructionAddr;
-        bool isOverrideFault() const noexcept { return fault.type == 0; }
-        bool isParallelFault() const noexcept { return fault.type == 0; }
-        bool isTraceFault() const noexcept { return fault.type == 1; }
-        bool isOperationFault() const noexcept { return fault.type == 2; }
-        bool isArithmeticFault() const noexcept { return fault.type == 3; }
-        bool isConstraintFault() const noexcept { return fault.type == 5; }
-        bool isProtectionFault() const noexcept { return fault.type == 7; }
-        bool isTypeFault() const noexcept { return fault.type == 10; }
-        bool isInstructionTraceFault() const noexcept { return isTraceFault() && ((fault.subtype & (1<<1)) != 0); }
-        bool isBranchTraceFault() const noexcept { return isTraceFault() && ((fault.subtype & (1<<2)) != 0); }
-        bool isCallTraceFault() const noexcept { return isTraceFault() && ((fault.subtype & (1<<3)) != 0); }
-        bool isReturnTraceFault() const noexcept { return isTraceFault() && ((fault.subtype & (1<<4)) != 0); }
-        bool isPrereturnTraceFault() const noexcept { return isTraceFault() && ((fault.subtype & (1<<5)) != 0); }
-        bool isSupervisorTraceFault() const noexcept { return isTraceFault() && ((fault.subtype & (1<<6)) != 0); }
-        bool isMarkTraceFault() const noexcept { return isTraceFault() && ((fault.subtype & (1<<7)) != 0); }
-        bool isInvalidOpcodeFault() const noexcept { return isOperationFault() && (fault.subtype == 1); }
-        bool isUnimplementedFault() const noexcept { return isOperationFault() && (fault.subtype == 2); }
-        bool isUnalignedFault() const noexcept { return isOperationFault() && (fault.subtype == 3); }
-        bool isInvalidOperandFault() const noexcept { return isOperationFault() && (fault.subtype == 4); }
-        bool isIntegerOverflowFault() const noexcept { return isArithmeticFault() && (fault.subtype == 1); }
-        bool isZeroDivideFault() const noexcept { return isArithmeticFault() && (fault.subtype == 2); }
-        bool isRangeConstraintFault() const noexcept { return isConstraintFault() && (fault.subtype == 1); }
-        bool isProtectionLengthFault() const noexcept { return isProtectionFault() && ((fault.subtype & (1<<1)) != 0); }
-        bool isTypeMismatchFault() const noexcept { return isTypeFault() && (fault.subtype == 1); }
-        bool isPreciseFault() const noexcept {
-            return isProtectionFault() ||
-                   isTraceFault();
+        bool subtypeBitIsSet(int shift) const noexcept { return (fault.subtype & (1 << shift)) != 0; }
+        bool subtypeValueIs(ByteOrdinal code) const noexcept { return fault.subtype == code; }
+        bool isOfKind(FaultRecordKind kind) const noexcept { return convert(kind) == fault.type; }
+#define X(kind) bool is ## kind () const noexcept { return isOfKind(FaultRecordKind:: kind ) ; }
+        X(Override);
+        X(Parallel);
+        X(Trace);
+        bool isInstructionTrace() const noexcept { return isTrace() && subtypeBitIsSet(1); }
+        bool isBranchTrace() const noexcept { return isTrace() && subtypeBitIsSet(2); }
+        bool isCallTrace() const noexcept { return isTrace() && subtypeBitIsSet(3); }
+        bool isReturnTrace() const noexcept { return isTrace() && subtypeBitIsSet(4); }
+        bool isPrereturnTrace() const noexcept { return isTrace() && subtypeBitIsSet(5); }
+        bool isSupervisorTrace() const noexcept { return isTrace() && subtypeBitIsSet(6); }
+        bool isMarkTrace() const noexcept { return isTrace() && subtypeBitIsSet(7); }
+        X(Operation);
+        bool isInvalidOpcode() const noexcept { return isOperation() && subtypeValueIs(1); }
+        bool isUnimplemented() const noexcept { return isOperation() && subtypeValueIs(2); }
+        bool isUnaligned() const noexcept { return isOperation() && subtypeValueIs(3); }
+        bool isInvalidOperand() const noexcept { return isOperation() && subtypeValueIs(4); }
+        X(Arithmetic);
+        bool isIntegerOverflow() const noexcept { return isArithmetic() && subtypeValueIs(1); }
+        bool isZeroDivide() const noexcept { return isArithmetic() && subtypeValueIs(2); }
+        X(FloatingPoint);
+#define Y(subkind, shift) \
+        bool isFloatingPoint ## subkind () const noexcept { \
+            return isFloatingPoint() && \
+            subtypeBitIsSet( shift ) ; \
         }
-        bool isImpreciseFault() const noexcept {
-            return isParallelFault() ||
-                   isOperationFault() ||
-                   isConstraintFault() ||
-                   isArithmeticFault() ||
-                   isTypeFault();
+        Y(Overflow, 0);
+        Y(Underflow, 1);
+        Y(InvalidOperation, 2);
+        Y(ZeroDivide, 3);
+        Y(Inexact, 4);
+        Y(ReservedEncoding, 5);
+#undef Y
+        X(Constraint);
+        bool isRangeConstraint() const noexcept { return isConstraint() && subtypeValueIs(1); }
+        bool isPrivileged() const noexcept { return isConstraint() && subtypeValueIs(2); }
+        X(VirtualMemory);
+        bool isInvalidSegmentTableEntry() const noexcept { return isVirtualMemory() && subtypeValueIs(1); }
+        bool isInvalidPageTableDirEntry() const noexcept { return isVirtualMemory() && subtypeValueIs(2); }
+        bool isInvalidPageTableEntry() const noexcept { return isVirtualMemory() && subtypeValueIs(3); }
+        X(Protection);
+        bool isProtectionLength() const noexcept { return isProtection() && subtypeBitIsSet(1); }
+        bool isProtectionPageRights() const noexcept { return isProtection() && subtypeBitIsSet(2); }
+        X(Machine);
+        bool isBadAccess() const noexcept { return isMachine() && subtypeValueIs(1); }
+        X(Structural);
+        bool isControlStructural() const noexcept { return isStructural() && subtypeValueIs(1); } 
+        bool isDispatchStructural() const noexcept { return isStructural() && subtypeValueIs(2); } 
+        bool isIACStructural() const noexcept { return isStructural() && subtypeValueIs(3); } 
+        X(Type);
+        bool isTypeMismatch() const noexcept { return isType() && subtypeValueIs(1); }
+        bool isTypeContents() const noexcept { return isType() && subtypeValueIs(2); }
+        X(Reserved);
+        X(Process);
+        bool isTimeSlice() const noexcept { return isProcess() && subtypeValueIs(1); }
+        X(Descriptor);
+        bool isInvalidDescriptor() const noexcept { return isDescriptor() && subtypeValueIs(1); } 
+        X(Event);
+        bool isNoticeEvent() const noexcept { return isEvent() && subtypeValueIs(1); }
+#undef X
+        bool isPrecise() const noexcept {
+            return isPreciseFault(toFaultRecordKind(fault.type););
+        }
+        bool isImprecise() const noexcept {
+            return isImpreciseFault(toFaultRecordKind(fault.type)); 
         }
 
     } __attribute__((packed));
@@ -97,25 +184,12 @@ namespace i960 {
     } __attribute__((packed));
 
     struct FaultTable {
-        enum class Index {
-            Override = 0,
-            Parallel = Override,
-            Trace = 1,
-            Operation = 2, 
-            Arithmetic = 3,
-            Constraint = 5,
-            Protection = 7,
-            Type = 10,
-        };
         FaultTableEntry entries[32];
-        FaultTableEntry& getOverrideFaultEntry() noexcept { return entries[Index::Override]; }
-        FaultTableEntry& getParallelFaultEntry() noexcept { return entries[Index::Parallel]; }
-        FaultTableEntry& getTraceFaultEntry() noexcept { return entries[Index::Trace]; }
-        FaultTableEntry& getOperationFaultEntry() noexcept { return entries[Index::Operation]; }
-        FaultTableEntry& getArithmeticFaultEntry() noexcept { return entries[Index::Arithmetic]; }
-        FaultTableEntry& getConstraintFaultEntry() noexcept { return entries[Index::Constraint]; }
-        FaultTableEntry& getProtectionFaultEntry() noexcept { return entries[Index::Protection]; }
-        FaultTableEntry& getTypeFaultEntry() noexcept { return entries[Index::Type]; }
+        template<FaultRecordKind kind>
+        FaultTableEntry& getEntry() noexcept {
+            static_assert(isLegalValue(kind), "Illegal value passed to getEntry");
+            return entries[convert(kind)];
+        }
     } __attribute__((packed));
 
 } // end namespace i960
