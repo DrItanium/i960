@@ -221,18 +221,48 @@ namespace i960 {
             private:
                 Ordinal _raw;
         } __attribute__((packed));
+        class IllegalInterruptVector : std::exception final {
+            public:
+                explicit IllegalInterruptVector(ByteOrdinal index) : _index(index) { }
+                ~IllegalInterruptVector() = default;
+                std::string what() {
+                    std::stringstream ss;
+                    ss << "Illegal interrupt vector index " << _index;
+                    auto str = ss.str();
+                    return str;
+                }
+            private:
+                ByteOrdinal _index;
+        };
         Ordinal pendingPriorities;
         Ordinal pendingInterrupts[8];
         VectorEntry interruptProcedures[248];
-        std::optional<VectorEntry> getInterruptProcedureAddress(ByteOrdinal index) const noexcept
+        VectorEntry& getVectorEntry(ByteOrdinal index)
         {
             if (index < 8) {
                 // vector numbers below 8 are unsupported
-                return std::optional<Ordinal>(); 
+                throw IllegalInterruptVector(index);
             } else {
-                return std::optional<Ordinal>(interruptProcedures[index - 8]);
+                return interruptProcedures[index - 8];
             }
         }
+        VectorEntry& getNMI() noexcept { return getVectorEntry(248); }
+        bool vectorIsReserved(ByteOrdinal index) const noexcept {
+            switch(index) {
+                case 244:
+                case 245:
+                case 246:
+                case 247:
+                case 249:
+                case 250:
+                case 251:
+                    return true;
+                default:
+                    return false;
+
+            }
+        }
+        std::optional<VectorEntry> getNMI() 
     } __attribute__((packed));
 
 } // end namespace i960
