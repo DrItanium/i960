@@ -3,6 +3,7 @@
 #include "types.h"
 #include "ProcessControls.h"
 #include "ArithmeticControls.h"
+#include <optional>
 namespace i960 {
     /**
      * Describes the intermediate processor state from a fault or interrupt 
@@ -147,6 +148,13 @@ namespace i960 {
         bool isImprecise() const noexcept {
             return isImpreciseFault(toFaultRecordKind(fault.type)); 
         }
+        ByteOrdinal getNumberOfParallelFaults() const noexcept {
+            if (isParallel()) {
+                return fault.subtype;
+            } else {
+                return 0;
+            }
+        }
 
     } __attribute__((packed));
     struct FullFaultRecord {
@@ -165,25 +173,20 @@ namespace i960 {
         FaultRecord actual;
     } __attribute__((packed));
 
-    struct InterruptRecord {
-        ResumptionRecord record; // optional
-        ProcessControls pc;
-        ArithmeticControls ac;
-        union {
-            Ordinal value;
-            ByteOrdinal number;
-        } vector;
-        // I see 
-    } __attribute__((packed));
 
-    struct FaultTableEntry {
-        struct {
-            Ordinal entryType : 2;
-            Ordinal faultHandlerAddress : 30;
-        } __attribute__((packed));
-        Ordinal magicNumber;
-        bool isLocalCallEntry() const noexcept { return entryType == 0b00; }
-        bool isSystemCallEntry() const noexcept { return (entryType == 0b10) && (magicNumber == 0x0000'027F); }
+    class FaultTableEntry {
+        public:
+            Ordinal getAddress() const noexcept { return _rawFaultHandlerAddress & (~0b11); }
+            Ordinal getEntryType() const noexcept { return _rawFaultHandlerAddress & 0b11; }
+            bool isLocalCallEntry() const noexcept { return getEntryType() == 0b00; }
+            bool isSystemCallEntry() const noexcept { return (getEntryType() == 0b10) && (magicNumber == 0x0000'027F); }
+            Ordinal getMagicNumber() const noexcept { return _magicNumber; }
+            void setMagicNumber(Ordinal value) noexcept { _magicNumber = value; }
+            void setFaultHandlerAddress(Ordinal value) noexcept { _rawFaultHandlerAddress = value; }
+            Ordinal getFaultHandlerAddress() const noexcept { return _rawFaultHandlerAddress; }
+        private:
+            Ordinal _rawFaultHandlerAddress;
+            Ordinal _magicNumber;
     } __attribute__((packed));
 
     struct FaultTable {
@@ -192,6 +195,43 @@ namespace i960 {
         FaultTableEntry& getEntry() noexcept {
             static_assert(isLegalValue(kind), "Illegal value passed to getEntry");
             return entries[convert(kind)];
+        }
+    } __attribute__((packed));
+    // begin interrupt table stuff
+    struct InterruptRecord {
+        ResumptionRecord record; // optional
+        ProcessControls pc;
+        ArithmeticControls ac;
+        union {
+            Ordinal value;
+            ByteOrdinal number;
+        } vector;
+    } __attribute__((packed));
+
+    struct InterruptTable {
+        class VectorEntry {
+            public:
+                Ordinal getType() const noexcept { return _raw & 0b11; }
+                Ordinal getIP() const noexcept { return _raw & (~0b11); }
+                bool isNormalEntryType() const noexcept { return getType() == 0b00; }
+                bool isTargetInCacheType() const noexcept { return getType() == 0b10; }
+                bool isReservedType() const noexcept { return getType() == 0b01 || getType() == 0b11; }
+                Ordinal getRaw() const noexcept { return _raw; }
+                void setRaw(Ordinal value) noexcept { _raw = value; }
+            private:
+                Ordinal _raw;
+        } __attribute__((packed));
+        Ordinal pendingPriorities;
+        Ordinal pendingInterrupts[8];
+        VectorEntry interruptProcedures[248];
+        std::optional<VectorEntry> getInterruptProcedureAddress(ByteOrdinal index) const noexcept
+        {
+            if (index < 8) {
+                // vector numbers below 8 are unsupported
+                return std::optional<Ordinal>(); 
+            } else {
+                return std::optional<Ordinal>(interruptProcedures[index - 8]);
+            }
         }
     } __attribute__((packed));
 
