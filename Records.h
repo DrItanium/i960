@@ -10,18 +10,6 @@ namespace i960 {
      */
     using ResumptionRecord = ByteOrdinal[16];
     struct FaultRecord {
-        Ordinal reserved = 0;
-        Ordinal overrideFaultData[3];
-        Ordinal faultData[3];
-        union {
-            Ordinal value;
-            struct {
-                ByteOrdinal subtype;
-                ByteOrdinal reserved;
-                ByteOrdinal type;
-                ByteOrdinal flags;
-            };
-        } override;
         ProcessControls pc;
         ArithmeticControls ac;
         union {
@@ -34,6 +22,21 @@ namespace i960 {
             };
         } fault;
         Ordinal faultingInstructionAddr;
+    } __attribute__((packed));
+    struct FullFaultRecord {
+        Ordinal reserved = 0;
+        Ordinal overrideFaultData[3];
+        Ordinal faultData[3];
+        union {
+            Ordinal value;
+            struct {
+                ByteOrdinal subtype;
+                ByteOrdinal reserved;
+                ByteOrdinal type;
+                ByteOrdinal flags;
+            };
+        } override;
+        FaultRecord actual;
     } __attribute__((packed));
 
     struct InterruptRecord {
