@@ -76,6 +76,7 @@ namespace i960 {
             };
         } fault;
         Ordinal faultingInstructionAddr;
+        bool flagBitIsSet(int shift) const noexcept { return (fault.flags & (1 << shift)) != 0; }
         bool subtypeBitIsSet(int shift) const noexcept { return (fault.subtype & (1 << shift)) != 0; }
         bool subtypeValueIs(ByteOrdinal code) const noexcept { return fault.subtype == code; }
         bool isOfKind(FaultRecordKind kind) const noexcept { return convert(kind) == fault.type; }
@@ -138,6 +139,8 @@ namespace i960 {
         X(Event);
         bool isNoticeEvent() const noexcept { return isEvent() && subtypeValueIs(1); }
 #undef X
+        bool isPageRightsFailedRead() const noexcept { return isProtectionPageRights() && !flagBitIsSet(0); }
+        bool isPageRightsFailedWrite() const noexcept { return isProtectionPageRights() && flagBitIsSet(1); }
         bool isPrecise() const noexcept {
             return isPreciseFault(toFaultRecordKind(fault.type););
         }
