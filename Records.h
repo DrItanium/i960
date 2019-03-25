@@ -22,6 +22,42 @@ namespace i960 {
             };
         } fault;
         Ordinal faultingInstructionAddr;
+        bool isOverrideFault() const noexcept { return fault.type == 0; }
+        bool isParallelFault() const noexcept { return fault.type == 0; }
+        bool isTraceFault() const noexcept { return fault.type == 1; }
+        bool isOperationFault() const noexcept { return fault.type == 2; }
+        bool isArithmeticFault() const noexcept { return fault.type == 3; }
+        bool isConstraintFault() const noexcept { return fault.type == 5; }
+        bool isProtectionFault() const noexcept { return fault.type == 7; }
+        bool isTypeFault() const noexcept { return fault.type == 10; }
+        bool isInstructionTraceFault() const noexcept { return isTraceFault() && ((fault.subtype & (1<<1)) != 0); }
+        bool isBranchTraceFault() const noexcept { return isTraceFault() && ((fault.subtype & (1<<2)) != 0); }
+        bool isCallTraceFault() const noexcept { return isTraceFault() && ((fault.subtype & (1<<3)) != 0); }
+        bool isReturnTraceFault() const noexcept { return isTraceFault() && ((fault.subtype & (1<<4)) != 0); }
+        bool isPrereturnTraceFault() const noexcept { return isTraceFault() && ((fault.subtype & (1<<5)) != 0); }
+        bool isSupervisorTraceFault() const noexcept { return isTraceFault() && ((fault.subtype & (1<<6)) != 0); }
+        bool isMarkTraceFault() const noexcept { return isTraceFault() && ((fault.subtype & (1<<7)) != 0); }
+        bool isInvalidOpcodeFault() const noexcept { return isOperationFault() && (fault.subtype == 1); }
+        bool isUnimplementedFault() const noexcept { return isOperationFault() && (fault.subtype == 2); }
+        bool isUnalignedFault() const noexcept { return isOperationFault() && (fault.subtype == 3); }
+        bool isInvalidOperandFault() const noexcept { return isOperationFault() && (fault.subtype == 4); }
+        bool isIntegerOverflowFault() const noexcept { return isArithmeticFault() && (fault.subtype == 1); }
+        bool isZeroDivideFault() const noexcept { return isArithmeticFault() && (fault.subtype == 2); }
+        bool isRangeConstraintFault() const noexcept { return isConstraintFault() && (fault.subtype == 1); }
+        bool isProtectionLengthFault() const noexcept { return isProtectionFault() && ((fault.subtype & (1<<1)) != 0); }
+        bool isTypeMismatchFault() const noexcept { return isTypeFault() && (fault.subtype == 1); }
+        bool isPreciseFault() const noexcept {
+            return isProtectionFault() ||
+                   isTraceFault();
+        }
+        bool isImpreciseFault() const noexcept {
+            return isParallelFault() ||
+                   isOperationFault() ||
+                   isConstraintFault() ||
+                   isArithmeticFault() ||
+                   isTypeFault();
+        }
+
     } __attribute__((packed));
     struct FullFaultRecord {
         Ordinal reserved = 0;
