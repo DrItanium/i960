@@ -18,6 +18,7 @@
 #include "Instruction.h"
 #include "InternalDataRam.h"
 #include "ConditionCode.h"
+#include "ProcessorControlBlock.h"
 #include <cmath>
 #include <math.h>
 #include <variant>
@@ -144,6 +145,8 @@ namespace i960 {
 
 	
     class Core {
+        public:
+            using ProcessorControlBlock = i960::ProcessorControlBlock<ProcessorSeries::Jx>;
         public:
 			Core(const CoreInformation& info, MemoryInterface& mem);
 			/**

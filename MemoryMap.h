@@ -27,6 +27,15 @@ namespace i960 {
         MemoryMappedRegisterSpaceEnd = 0xFFFF'FFFF,
     };
 
+    /// This structure only applies to CX,HX, and SX cpus
+    struct InitializationBootRecord
+    {
+        Ordinal busByte0, busByte1, busByte2, busByte3;
+        Ordinal firstInstruction;
+        Ordinal prcbPtr;
+        Integer checkSum[6];
+    };
+
 
 
 } // end namespace i960

@@ -17,7 +17,11 @@ namespace i960 {
     using LongInteger = std::int64_t;
     enum class ProcessorSeries
     {
-        Jx, Hx, Cx,
+        Jx,
+        Hx,
+        Cx,
+        Kx,
+        Sx,
     };
 } // end namespace i960
 #endif // end I960_TYPES_H__
