@@ -70,7 +70,7 @@ core.o: core.cc types.h core.h NormalRegister.h ProcessControls.h \
  DoubleRegister.h TripleRegister.h QuadRegister.h ArithmeticControls.h \
  memiface.h Operand.h Instruction.h InternalDataRam.h ConditionCode.h \
  conditional_kinds.def operations.h opcodes.h opcodes.def \
- ProcessorControlBlock.h
+ ProcessorControlBlock.h MemoryMap.h
 
 decode960jx.o: decode960jx.cc types.h opcodes.h Instruction.h Operand.h \
  opcodes.def

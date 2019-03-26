@@ -19,6 +19,8 @@
 #include "InternalDataRam.h"
 #include "ConditionCode.h"
 #include "ProcessorControlBlock.h"
+#include "MemoryMap.h"
+#include "InitializationBootRecord.h"
 #include <cmath>
 #include <math.h>
 #include <variant>

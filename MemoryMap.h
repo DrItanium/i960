@@ -2,13 +2,6 @@
 #define I960_MEMORY_MAP_H__
 #include "types.h"
 namespace i960 {
-    template<ProcessorSeries proc>
-    constexpr Ordinal InitializationBootRecordBegin = 0xFEFF'FF30;
-    template<> constexpr Ordinal InitializationBootRecordBegin<ProcessorSeries::Cx> = 0xFEFF'FF00;
-
-    template<ProcessorSeries proc>
-    constexpr Ordinal InitializationBootRecordEnd = InitializationBootRecordBegin<proc> + 48;
-
     enum class MemoryMap : Ordinal {
         NMIVector = 0x0000'0000,
         OptionalInterruptVectorsBegin = 0x0000'0004,
@@ -19,24 +12,13 @@ namespace i960 {
         // normal memory begin
         ExternalUnusedMemoryBegin = 0x0000'0400,
         ExternalUnusedMemoryEnd = 0xFEFF'FF2F,
-        InitializationBootRecordBegin = i960::InitializationBootRecordBegin<ProcessorSeries::Jx>,
-        InitializationBootRecordEnd = i960::InitializationBootRecordEnd<ProcessorSeries::Jx>,
+        InitializationBootRecordBegin = 0xFEFF'FF30;
+        InitializationBootRecordEnd = 0xFEFF'FF30 + 48;
         ReservedMemoryBegin = 0xFEFF'FF60,
         ReservedMemoryEnd = 0xFEFF'FFFF,
         MemoryMappedRegisterSpaceBegin = 0xFF00'0000,
         MemoryMappedRegisterSpaceEnd = 0xFFFF'FFFF,
     };
-
-    /// This structure only applies to CX,HX, and SX cpus
-    struct InitializationBootRecord
-    {
-        Ordinal busByte0, busByte1, busByte2, busByte3;
-        Ordinal firstInstruction;
-        Ordinal prcbPtr;
-        Integer checkSum[6];
-    };
-
-
 
 } // end namespace i960
 #endif // end I960_MEMORY_MAP_H__
