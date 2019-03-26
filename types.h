@@ -15,5 +15,9 @@ namespace i960 {
     using ShortInteger = std::int16_t;
     using Integer = std::int32_t;
     using LongInteger = std::int64_t;
+    enum class ProcessorSeries
+    {
+        Jx, Hx, Cx,
+    };
 } // end namespace i960
 #endif // end I960_TYPES_H__

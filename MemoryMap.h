@@ -2,6 +2,13 @@
 #define I960_MEMORY_MAP_H__
 #include "types.h"
 namespace i960 {
+    template<ProcessorSeries proc>
+    constexpr Ordinal InitializationBootRecordBegin = 0xFEFF'FF30;
+    template<> constexpr Ordinal InitializationBootRecordBegin<ProcessorSeries::Cx> = 0xFEFF'FF00;
+
+    template<ProcessorSeries proc>
+    constexpr Ordinal InitializationBootRecordEnd = InitializationBootRecordBegin<proc> + 48;
+
     enum class MemoryMap : Ordinal {
         NMIVector = 0x0000'0000,
         OptionalInterruptVectorsBegin = 0x0000'0004,
@@ -12,8 +19,8 @@ namespace i960 {
         // normal memory begin
         ExternalUnusedMemoryBegin = 0x0000'0400,
         ExternalUnusedMemoryEnd = 0xFEFF'FF2F,
-        InitializationBootRecordBegin = 0xFEFF'FF30,
-        InitializationBootRecordEnd = 0xFEFF'FF5F,
+        InitializationBootRecordBegin = i960::InitializationBootRecordBegin<ProcessorSeries::Jx>,
+        InitializationBootRecordEnd = i960::InitializationBootRecordEnd<ProcessorSeries::Jx>,
         ReservedMemoryBegin = 0xFEFF'FF60,
         ReservedMemoryEnd = 0xFEFF'FFFF,
         MemoryMappedRegisterSpaceBegin = 0xFF00'0000,
