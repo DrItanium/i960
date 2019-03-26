@@ -20,14 +20,24 @@ namespace i960 {
     template<> constexpr Ordinal InitialMemoryImageStartAddress<ProcessorSeries::Cx> = 0xFEFF'FF00;
 
     /// This structure only applies to CX, HX, and JX cpus
-    struct InitializationBootRecord
-    {
+    struct InitializationBootRecord {
         Ordinal busByte0, busByte1, busByte2, busByte3;
         Ordinal firstInstruction;
         Ordinal prcbPtr;
         Integer checkSum[6];
     };
-    static_assert(sizeof(InitializationBootRecord) == 48, "IBR is too large!");
+
+    static_assert(sizeof(InitializationBootRecord) == 12_words, "IBR is too large!");
+
+    struct KxSxStartupRecord {
+        Ordinal satPointer;
+        Ordinal prcbPointer;
+        Ordinal checkWord;
+        Ordinal instructionPointer;
+        Ordinal checkWords[4];
+    } __attribute__((packed));
+
+    static_assert(sizeof(KxSxStartupRecord) == 8_words, "KxSxStartupRecord is too large!");
 
     template<ProcessorSeries proc>
     struct StartupRecordType final {

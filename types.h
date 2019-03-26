@@ -15,6 +15,9 @@ namespace i960 {
     using ShortInteger = std::int16_t;
     using Integer = std::int32_t;
     using LongInteger = std::int64_t;
+    constexpr auto operator"" _words(unsigned long long count) noexcept {
+        return count * sizeof(Ordinal);
+    }
     enum class ProcessorSeries
     {
         Jx,
