@@ -11,7 +11,7 @@ namespace i960 {
 	struct InternalDataRam {
 		public:
 			// first 64 bytes are reserved for optional interrupt vectors and the nmi vector
-			constexpr static Ordinal MinimumSize = 4;
+			constexpr static Ordinal MinimumSize = 1_words;
 			constexpr static Ordinal TotalReservedBytes = 64;
 			constexpr static Ordinal TotalByteCapacity = numBytes;
 			static_assert(numBytes >= MinimumSize, "InternalDataRam must be at least 4 bytes in size");

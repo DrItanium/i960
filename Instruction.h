@@ -39,7 +39,7 @@ namespace i960 {
 				return Operand(_m3, _src_dest);
 			}
         };
-		static_assert(sizeof(REGFormat) == sizeof(Ordinal), "RegFormat sizes is does not equal Ordinal's size!");
+		static_assert(sizeof(REGFormat) == 1_words, "RegFormat sizes is does not equal Ordinal's size!");
         struct COBRFormat {
 			Ordinal _unused : 2;
             Ordinal _displacement : 11;
@@ -189,7 +189,7 @@ namespace i960 {
             MEMBFormat _memb;
         };
 
-        static_assert(sizeof(MemFormat) == (sizeof(Ordinal) * 2), "MemFormat must be the size of two ordinals!");
+        static_assert(sizeof(MemFormat) == 2_words, "MemFormat must be 2 words wide!");
 
         constexpr Instruction(Ordinal raw = 0, Ordinal second = 0) : _raw(raw), _second(second) { }
         constexpr Ordinal getBaseOpcode() const noexcept {
@@ -231,7 +231,7 @@ namespace i960 {
         };
 
     } __attribute__((packed));
-    static_assert(sizeof(Instruction) == (sizeof(Ordinal) * 2), "Instruction must be the size of an ordinal!");
+    static_assert(sizeof(Instruction) == 2_words, "Instruction must be 2 words wide!");
 
 } // end namespace i960
 #endif // end I960_INSTRUCTION_H__

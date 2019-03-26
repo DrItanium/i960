@@ -23,7 +23,7 @@ namespace i960 {
        constexpr bool isLocal() const noexcept { return type == 0; }
        constexpr bool isSupervisor() const noexcept { return type == 0b10; }
     } __attribute__((packed));
-    static_assert(sizeof(ProcedureEntry) == sizeof(Ordinal), "Procedure entry must be of the correct size!");
+    static_assert(sizeof(ProcedureEntry) == 1_words, "Procedure entry must be of the correct size!");
     union TraceControls {
         struct {
             Ordinal unused0 : 1;
@@ -48,7 +48,7 @@ namespace i960 {
 		constexpr bool traceMarked() const noexcept { return markTraceMode != 0; }
         void clear() noexcept;
     } __attribute__((packed));
-	static_assert(sizeof(TraceControls) == sizeof(Ordinal), "TraceControls must be the size of an ordinal!");
+	static_assert(sizeof(TraceControls) == 1_words, "TraceControls must be the size of an ordinal!");
     union NormalRegister {
         public:
             constexpr NormalRegister(Ordinal value = 0) : ordinal(value) { }
@@ -114,7 +114,7 @@ namespace i960 {
 			constexpr bool mostSignificantBitSet() const noexcept     { return mostSignificantBit() == 1; }
 			constexpr bool mostSignificantBitClear() const noexcept   { return !mostSignificantBitSet(); }
     };
-	static_assert(sizeof(NormalRegister) == sizeof(Ordinal), "NormalRegister must be 32-bits wide!");
+	static_assert(sizeof(NormalRegister) == 1_words, "NormalRegister must be 32-bits wide!");
 
 } // end namespace i960
 #endif // end I960_NORMAL_REGISTER_H__
