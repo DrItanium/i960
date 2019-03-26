@@ -35,7 +35,22 @@ namespace i960 {
         Ordinal checkWord;
         Ordinal instructionPointer;
         Ordinal checkWords[4];
+        Ordinal computeChecksum() const noexcept {
+            // The startup record uses the eight words as a checksum where words 3 and 5-8 
+            // are specially chosen such that the one's complement of the sum of these
+            // eight words plus 0xFFFF'FFFF equals 0
+            auto baseSum = satPointer + prcbPointer + checkWord + instructionPointer;
+            for (int i = 0; i < 4; ++i) {
+                baseSum += checkWords[i];
+            }
+            return ~baseSum;
+        }
+        bool checksumPassed() const noexcept {
+            return computeChecksum() == 0;
+        }
     } __attribute__((packed));
+
+
 
     static_assert(sizeof(KxSxStartupRecord) == 8_words, "KxSxStartupRecord is too large!");
 
