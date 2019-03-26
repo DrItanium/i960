@@ -104,7 +104,6 @@ namespace i960 {
     class Core {
         public:
             using ProcessorControlBlock = i960::ProcessorControlBlock<ProcessorSeries::Jx>;
-            using CoreInformation = i960::JxCoreInformation;
         public:
 			Core(const CoreInformation& info, MemoryInterface& mem);
 			/**
