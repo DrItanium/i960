@@ -52,9 +52,11 @@ namespace i960 {
             constexpr auto getGeneration() const noexcept           { return (_devId & 0x001E'0000) >> 17; }
             constexpr auto getModel() const noexcept                { return (_devId & 0x0001'F000) >> 12; }
             constexpr auto getManufacturer() const noexcept         { return (_devId & 0x0000'0FFE) >> 1; }
-            constexpr auto getSeries() const noexcept               { return series; }
+            constexpr auto getSeries() const noexcept               { return _series; }
             constexpr auto hasInstructionCache() const noexcept     { return _icacheSize != 0; }
             constexpr auto hasDataCache() const noexcept            { return _dcacheSize != 0; }
+            constexpr auto is5VoltCore() const noexcept             { return _voltage == CoreVoltageKind::V5_0; }
+            constexpr auto is3_3VoltCore() const noexcept           { return _voltage == CoreVoltageKind::V3_3; }
         private:
             ProcessorSeries _series;
             const char* _str;
@@ -72,7 +74,7 @@ namespace i960 {
     static_assert(cpu80960JF.getModel() == 0, "Bad model check!");
     static_assert(cpu80960JF.getProductType() == 0b1000100, "Bad product type check!");
     static_assert(cpu80960JF.getManufacturer() == 0b0000'0001'001, "Bad manufacturer check!");
-    static_assert(cpu80960JF.getVoltage() == CoreVoltage::V5_0, "Bad voltage value!");
+    static_assert(cpu80960JF.is5VoltCore(), "Bad voltage value!");
     static_assert(cpu80960JF.getSeries() == ProcessorSeries::Jx, "Bad processor series!");
 } // end namespace i960
 #endif // end I960_TYPES_H__
