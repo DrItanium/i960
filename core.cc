@@ -1118,7 +1118,7 @@ X(cmpi, bno);
 		// }
 		// _failPin = false;
 		_pc.value = 0x001F2002; 
-		constexpr Ordinal ibrPtr = 0xFEFF'FF30;
+        constexpr auto ibrPtr = StartupRecordAddress<targetSeries>;
 		// read pmcon14_15 image in ibr 
 		// _failPin = true;
 		// _imsk = 0;

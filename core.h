@@ -20,7 +20,7 @@
 #include "ConditionCode.h"
 #include "ProcessorControlBlock.h"
 #include "MemoryMap.h"
-#include "InitializationBootRecord.h"
+#include "StartupRecord.h"
 #include <cmath>
 #include <math.h>
 #include <variant>
@@ -105,7 +105,9 @@ namespace i960 {
 
     class Core {
         public:
-            using ProcessorControlBlock = i960::ProcessorControlBlock<ProcessorSeries::Jx>;
+            static constexpr auto targetSeries = ProcessorSeries::Jx;
+            using PRCB = i960::ProcessorControlBlock_t<targetSeries>;
+            using IBR = i960::StartupRecord_t<targetSeries>;
         public:
 			Core(const CoreInformation& info, MemoryInterface& mem);
 			/**

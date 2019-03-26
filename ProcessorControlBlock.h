@@ -60,6 +60,6 @@ namespace i960 {
 #undef X 
 
     template<ProcessorSeries proc>
-    using ProcessorControlBlock = typename ProcessorControlBlockType<proc>::ValueType;
+    using ProcessorControlBlock_t = typename ProcessorControlBlockType<proc>::ValueType;
 }
 #endif // end I960_PROCESSOR_CONTROL_BLOCK_H__
