@@ -15,11 +15,18 @@ namespace i960 {
     using ShortInteger = std::int16_t;
     using Integer = std::int32_t;
     using LongInteger = std::int64_t;
+	template<typename T>
+	constexpr auto byteCount(auto count) noexcept {
+		return count * sizeof(std::decay_t<T>);
+	}
     constexpr auto operator"" _words(unsigned long long count) noexcept {
-        return count * sizeof(Ordinal);
+		return byteCount<Ordinal>(count);
     }
-    enum class ProcessorSeries
-    {
+	constexpr auto operator"" _dwords(unsigned long long count) noexcept {
+		return byteCount<LongOrdinal>(count);
+	}
+
+    enum class ProcessorSeries {
         Jx,
         Hx,
         Cx,

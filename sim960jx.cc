@@ -8,7 +8,6 @@
 #include "opcodes.h"
 #include <string>
 
-constexpr i960::Ordinal mem1G = 0x3FFF'FFFF + 1;
 void bootupMessage(std::ostream& os) {
 	os << "Intel 80960JX Simulator" << std::endl;
 	os << std::endl; 
