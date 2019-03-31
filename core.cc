@@ -1,6 +1,5 @@
 #include "types.h"
 #include "core.h"
-#include "operations.h"
 #include "NormalRegister.h"
 #include "DoubleRegister.h"
 #include "TripleRegister.h"
@@ -19,6 +18,9 @@
 namespace i960 {
 	constexpr Ordinal xorOperation(Ordinal src2, Ordinal src1) noexcept {
 		return (src2 | src1) & ~(src2 & src1);
+	}
+	constexpr Ordinal oneShiftLeft(Ordinal position) noexcept {
+		return 1u << (0b11111 & position);
 	}
     template<Ordinal index>
     constexpr Ordinal RegisterIndex = index * sizeof(Ordinal);
@@ -850,10 +852,13 @@ X(cmpi, bno);
 		}
 		dest.set<Integer>(result);
 	}
+	constexpr Ordinal rotateOperation(Ordinal src, Ordinal length) noexcept {
+		return (src << length) | (src >> ((-length) & 31u));
+	}
 	void Core::rotate(__DEFAULT_THREE_ARGS__) noexcept {
 		auto src = src2.get<Ordinal>();
 		auto length = src1.get<Ordinal>();
-		dest.set((src << length) | (src >> ((-length) & 31u)));
+		dest.set(rotateOperation(src, length));
 	}
 	void Core::modify(SourceRegister mask, SourceRegister src, DestinationRegister srcDest) noexcept {
 		srcDest.set<Ordinal>((src.get<Ordinal>() & mask.get<Ordinal>()) | (srcDest.get<Ordinal>() & (~src.get<Ordinal>())));
@@ -917,9 +922,6 @@ X(cmpi, bno);
 		cmpi(src1, src2);
 		dest.set<Integer>(src2.get<Integer>() - 1);
 	}
-	//constexpr Ordinal oneShiftLeft(Ordinal position) noexcept {
-	//	return 1u << (0b11111 & position);
-	//}
 	void Core::clrbit(__DEFAULT_THREE_ARGS__) noexcept {
 		auto s2 = src2.get<Ordinal>();
 		auto s1 = src1.get<Ordinal>();
@@ -1030,8 +1032,8 @@ X(cmpi, bno);
 		// 	action: dst = (rotate_left(src, 8) & 0x00FF00FF) +
 		// 				  (rotate_left(src, 24) & 0xFF00FF00)
 		auto src = src1.get<Ordinal>();
-		auto rotl8 = i960::rotate(src, 8) & 0x00FF00FF; // rotate the upper 8 bits around to the bottom
-		auto rotl24 = i960::rotate(src, 24) & 0xFF00FF00;
+		auto rotl8 = rotateOperation(src, 8) & 0x00FF00FF; // rotate the upper 8 bits around to the bottom
+		auto rotl24 = rotateOperation(src, 24) & 0xFF00FF00;
 		src2.set<Ordinal>(rotl8 + rotl24);
 	}
 	void Core::cmpos(SourceRegister src1, SourceRegister src2) noexcept { 

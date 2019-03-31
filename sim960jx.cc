@@ -5,7 +5,6 @@
 #include "NormalRegister.h"
 #include "ArithmeticControls.h"
 #include "Operand.h"
-#include "operations.h"
 #include "opcodes.h"
 #include <string>
 
