@@ -3,7 +3,7 @@
 #include "types.h"
 #include "NormalRegister.h"
 namespace i960 {
-    class QuadRegister {
+    class QuadRegister final {
         public:
             QuadRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& high, NormalRegister& highest) : _lower(lower), _mid(mid), _upper(high), _highest(highest) { }
             ~QuadRegister() = default;
