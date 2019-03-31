@@ -5,7 +5,7 @@
 namespace i960 {
     class QuadRegister final {
         public:
-            QuadRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& high, NormalRegister& highest) : _lower(lower), _mid(mid), _upper(high), _highest(highest) { }
+            QuadRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& high, NormalRegister& highest) noexcept : _lower(lower), _mid(mid), _upper(high), _highest(highest) { }
             ~QuadRegister() = default;
             void set(Ordinal lower, Ordinal mid, Ordinal upper, Ordinal highest) noexcept;
             Ordinal getLowestPart() const noexcept  { return _lower.get<Ordinal>(); }

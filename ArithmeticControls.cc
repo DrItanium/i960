@@ -3,12 +3,9 @@
 
 namespace i960 {
 
-
-
 void ArithmeticControls::clear() noexcept {
     value = 0;
 }
-
 
 Ordinal ArithmeticControls::modify(Ordinal mask, Ordinal value) noexcept {
     if (mask == 0) {
@@ -19,12 +16,6 @@ Ordinal ArithmeticControls::modify(Ordinal mask, Ordinal value) noexcept {
         return tmp;
     }
 }
-
-
-
-
-
-
 
 ArithmeticControls::~ArithmeticControls() {
     value = 0;

@@ -5,7 +5,7 @@
 namespace i960 {
     class TripleRegister final {
         public:
-            TripleRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& upper) : _lower(lower), _mid(mid), _upper(upper) { }
+            TripleRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& upper) noexcept : _lower(lower), _mid(mid), _upper(upper) { }
             ~TripleRegister() = default;
             void set(Ordinal lower, Ordinal mid, Ordinal upper) noexcept;
             Ordinal getLowerPart() const noexcept  { return _lower.get<Ordinal>(); }

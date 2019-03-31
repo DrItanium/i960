@@ -5,7 +5,7 @@
 namespace i960 {
     class DoubleRegister final {
         public:
-            DoubleRegister(NormalRegister& lower, NormalRegister& upper) : _lower(lower), _upper(upper) { }
+            DoubleRegister(NormalRegister& lower, NormalRegister& upper) noexcept : _lower(lower), _upper(upper) { }
             ~DoubleRegister() = default;
             template<typename T>
             T get() const noexcept {
