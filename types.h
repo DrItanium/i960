@@ -16,7 +16,7 @@ namespace i960 {
     using Integer = std::int32_t;
     using LongInteger = std::int64_t;
 	template<typename T>
-	constexpr auto byteCount(auto count) noexcept {
+	constexpr auto byteCount(size_t count) noexcept {
 		return count * sizeof(std::decay_t<T>);
 	}
     constexpr auto operator"" _words(unsigned long long count) noexcept {
