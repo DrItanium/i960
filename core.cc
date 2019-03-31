@@ -17,6 +17,9 @@
 #define __TWO_SOURCE_AND_INT_ARGS__ SourceRegister src1, SourceRegister src2, Integer targ
 #define __TWO_SOURCE_REGS__ SourceRegister src1, SourceRegister src2
 namespace i960 {
+	constexpr Ordinal xorOperation(Ordinal src2, Ordinal src1) noexcept {
+		return (src2 | src1) & ~(src2 & src1);
+	}
     template<Ordinal index>
     constexpr Ordinal RegisterIndex = index * sizeof(Ordinal);
 	constexpr bool notDivisibleBy(ByteOrdinal value, ByteOrdinal factor) noexcept {
@@ -802,7 +805,7 @@ X(cmpi, bno);
 		dest.set<Ordinal>((~src2.get<Ordinal>()) & src1.get<Ordinal>());
 	}
 	void Core::notbit(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>(i960::notBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
+		dest.set(xorOperation(src2.get<Ordinal>(), oneShiftLeft(src1.get<Ordinal>())));
 	}
 	void Core::notor(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set<Ordinal>((~src2.get<Ordinal>()) | src1.get<Ordinal>());
@@ -848,7 +851,9 @@ X(cmpi, bno);
 		dest.set<Integer>(result);
 	}
 	void Core::rotate(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>(i960::rotate(src2.get<Ordinal>(), src1.get<Ordinal>()));
+		auto src = src2.get<Ordinal>();
+		auto length = src1.get<Ordinal>();
+		dest.set((src << length) | (src >> ((-length) & 31u)));
 	}
 	void Core::modify(SourceRegister mask, SourceRegister src, DestinationRegister srcDest) noexcept {
 		srcDest.set<Ordinal>((src.get<Ordinal>() & mask.get<Ordinal>()) | (srcDest.get<Ordinal>() & (~src.get<Ordinal>())));
@@ -922,7 +927,10 @@ X(cmpi, bno);
 		//dest.set<Ordinal>(i960::clearBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
 	}
 	void Core::setbit(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>(i960::setBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
+		auto s2 = src2.get<Ordinal>();
+		auto s1 = src1.get<Ordinal>();
+		dest.set(s2 | oneShiftLeft(s1));
+		//dest.set<Ordinal>(i960::setBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
 	}
 	void Core::emul(SourceRegister src1, SourceRegister src2, ByteOrdinal destIndex) noexcept {
 		// TODO perform double register validity check
@@ -954,7 +962,7 @@ X(cmpi, bno);
 		// use that instead of the xor operator.
 		auto s2 = src2.get<Ordinal>();
 		auto s1 = src1.get<Ordinal>();
-		dest.set((s2 | s1) & ~(s2 & s1));
+		dest.set(xorOperation(s2, s1));
     }
 	void Core::intdis() {
 		// TODO implement
