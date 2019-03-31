@@ -257,10 +257,12 @@ X(cmpi, bno);
 		}
 	}
 	void Core::opand(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>(i960::andOp<Ordinal>(src2.get<Ordinal>(), src1.get<Ordinal>()));
+		dest.set<Ordinal>(src2.get<Ordinal>() & src1.get<Ordinal>());
 	}
 	void Core::andnot(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>(i960::andNot(src2.get<Ordinal>(), src1.get<Ordinal>()));
+		auto s2 = src2.get<Ordinal>();
+		auto s1 = src1.get<Ordinal>();
+		dest.set(~s2 & s1);
 	}
 
 
@@ -910,8 +912,14 @@ X(cmpi, bno);
 		cmpi(src1, src2);
 		dest.set<Integer>(src2.get<Integer>() - 1);
 	}
+	//constexpr Ordinal oneShiftLeft(Ordinal position) noexcept {
+	//	return 1u << (0b11111 & position);
+	//}
 	void Core::clrbit(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>(i960::clearBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
+		auto s2 = src2.get<Ordinal>();
+		auto s1 = src1.get<Ordinal>();
+		dest.set(s2 & ~oneShiftLeft(s1));
+		//dest.set<Ordinal>(i960::clearBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
 	}
 	void Core::setbit(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set<Ordinal>(i960::setBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
@@ -937,12 +945,16 @@ X(cmpi, bno);
 		}
 	}
     void Core::xnor(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>(~(src2.get<Ordinal>() | src1.get<Ordinal>()) | (src2.get<Ordinal>() & src1.get<Ordinal>()));
+		auto s2 = src2.get<Ordinal>();
+		auto s1 = src1.get<Ordinal>();
+		dest.set<Ordinal>(~(s2 | s1) | (s2 & s1));
     }
     void Core::opxor(__DEFAULT_THREE_ARGS__) noexcept {
 		// there is an actual implementation within the manual so I'm going to
 		// use that instead of the xor operator.
-		dest.set<Ordinal>((src2.get<Ordinal>() | src1.get<Ordinal>()) & ~(src2.get<Ordinal>() & src1.get<Ordinal>()));
+		auto s2 = src2.get<Ordinal>();
+		auto s1 = src1.get<Ordinal>();
+		dest.set((s2 | s1) & ~(s2 & s1));
     }
 	void Core::intdis() {
 		// TODO implement
