@@ -43,7 +43,7 @@ namespace i960 {
             for (int i = 0; i < 4; ++i) {
                 baseSum += checkWords[i];
             }
-            return ~baseSum;
+            return (~baseSum) + 0xFFFF'FFFF;
         }
         bool checksumPassed() const noexcept {
             return computeChecksum() == 0;
