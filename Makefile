@@ -69,7 +69,7 @@ TripleRegister.o: TripleRegister.cc types.h TripleRegister.h \
 core.o: core.cc types.h core.h NormalRegister.h ProcessControls.h \
  DoubleRegister.h TripleRegister.h QuadRegister.h ArithmeticControls.h \
  memiface.h Operand.h Instruction.h InternalDataRam.h ConditionCode.h \
- conditional_kinds.def operations.h opcodes.h opcodes.def \
+ conditional_kinds.def opcodes.h opcodes.def \
  ProcessorControlBlock.h MemoryMap.h
 
 decode960jx.o: decode960jx.cc types.h opcodes.h Instruction.h Operand.h \
@@ -82,7 +82,7 @@ dispatcher.o: dispatcher.cc types.h core.h NormalRegister.h \
 opcodes.o: opcodes.cc types.h opcodes.h Instruction.h Operand.h \
  opcodes.def
 sim960jx.o: sim960jx.cc types.h NormalRegister.h ProcessControls.h \
- ArithmeticControls.h Operand.h operations.h opcodes.h Instruction.h \
+ ArithmeticControls.h Operand.h opcodes.h Instruction.h \
  opcodes.def
 ArithmeticControls.o: ArithmeticControls.h types.h
 ConditionCode.o: ConditionCode.h types.h

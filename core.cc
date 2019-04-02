@@ -1,6 +1,5 @@
 #include "types.h"
 #include "core.h"
-#include "operations.h"
 #include "NormalRegister.h"
 #include "DoubleRegister.h"
 #include "TripleRegister.h"
@@ -17,6 +16,12 @@
 #define __TWO_SOURCE_AND_INT_ARGS__ SourceRegister src1, SourceRegister src2, Integer targ
 #define __TWO_SOURCE_REGS__ SourceRegister src1, SourceRegister src2
 namespace i960 {
+	constexpr Ordinal xorOperation(Ordinal src2, Ordinal src1) noexcept {
+		return (src2 | src1) & ~(src2 & src1);
+	}
+	constexpr Ordinal oneShiftLeft(Ordinal position) noexcept {
+		return 1u << (0b11111 & position);
+	}
     template<Ordinal index>
     constexpr Ordinal RegisterIndex = index * sizeof(Ordinal);
 	constexpr bool notDivisibleBy(ByteOrdinal value, ByteOrdinal factor) noexcept {
@@ -257,10 +262,12 @@ X(cmpi, bno);
 		}
 	}
 	void Core::opand(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>(i960::andOp<Ordinal>(src2.get<Ordinal>(), src1.get<Ordinal>()));
+		dest.set<Ordinal>(src2.get<Ordinal>() & src1.get<Ordinal>());
 	}
 	void Core::andnot(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>(i960::andNot(src2.get<Ordinal>(), src1.get<Ordinal>()));
+		auto s2 = src2.get<Ordinal>();
+		auto s1 = src1.get<Ordinal>();
+		dest.set(~s2 & s1);
 	}
 
 
@@ -800,7 +807,7 @@ X(cmpi, bno);
 		dest.set<Ordinal>((~src2.get<Ordinal>()) & src1.get<Ordinal>());
 	}
 	void Core::notbit(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>(i960::notBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
+		dest.set(xorOperation(src2.get<Ordinal>(), oneShiftLeft(src1.get<Ordinal>())));
 	}
 	void Core::notor(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set<Ordinal>((~src2.get<Ordinal>()) | src1.get<Ordinal>());
@@ -845,8 +852,13 @@ X(cmpi, bno);
 		}
 		dest.set<Integer>(result);
 	}
+	constexpr Ordinal rotateOperation(Ordinal src, Ordinal length) noexcept {
+		return (src << length) | (src >> ((-length) & 31u));
+	}
 	void Core::rotate(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>(i960::rotate(src2.get<Ordinal>(), src1.get<Ordinal>()));
+		auto src = src2.get<Ordinal>();
+		auto length = src1.get<Ordinal>();
+		dest.set(rotateOperation(src, length));
 	}
 	void Core::modify(SourceRegister mask, SourceRegister src, DestinationRegister srcDest) noexcept {
 		srcDest.set<Ordinal>((src.get<Ordinal>() & mask.get<Ordinal>()) | (srcDest.get<Ordinal>() & (~src.get<Ordinal>())));
@@ -911,10 +923,16 @@ X(cmpi, bno);
 		dest.set<Integer>(src2.get<Integer>() - 1);
 	}
 	void Core::clrbit(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>(i960::clearBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
+		auto s2 = src2.get<Ordinal>();
+		auto s1 = src1.get<Ordinal>();
+		dest.set(s2 & ~oneShiftLeft(s1));
+		//dest.set<Ordinal>(i960::clearBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
 	}
 	void Core::setbit(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>(i960::setBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
+		auto s2 = src2.get<Ordinal>();
+		auto s1 = src1.get<Ordinal>();
+		dest.set(s2 | oneShiftLeft(s1));
+		//dest.set<Ordinal>(i960::setBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
 	}
 	void Core::emul(SourceRegister src1, SourceRegister src2, ByteOrdinal destIndex) noexcept {
 		// TODO perform double register validity check
@@ -937,12 +955,16 @@ X(cmpi, bno);
 		}
 	}
     void Core::xnor(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>(~(src2.get<Ordinal>() | src1.get<Ordinal>()) | (src2.get<Ordinal>() & src1.get<Ordinal>()));
+		auto s2 = src2.get<Ordinal>();
+		auto s1 = src1.get<Ordinal>();
+		dest.set<Ordinal>(~(s2 | s1) | (s2 & s1));
     }
     void Core::opxor(__DEFAULT_THREE_ARGS__) noexcept {
 		// there is an actual implementation within the manual so I'm going to
 		// use that instead of the xor operator.
-		dest.set<Ordinal>((src2.get<Ordinal>() | src1.get<Ordinal>()) & ~(src2.get<Ordinal>() & src1.get<Ordinal>()));
+		auto s2 = src2.get<Ordinal>();
+		auto s1 = src1.get<Ordinal>();
+		dest.set(xorOperation(s2, s1));
     }
 	void Core::intdis() {
 		// TODO implement
@@ -1010,8 +1032,8 @@ X(cmpi, bno);
 		// 	action: dst = (rotate_left(src, 8) & 0x00FF00FF) +
 		// 				  (rotate_left(src, 24) & 0xFF00FF00)
 		auto src = src1.get<Ordinal>();
-		auto rotl8 = i960::rotate(src, 8) & 0x00FF00FF; // rotate the upper 8 bits around to the bottom
-		auto rotl24 = i960::rotate(src, 24) & 0xFF00FF00;
+		auto rotl8 = rotateOperation(src, 8) & 0x00FF00FF; // rotate the upper 8 bits around to the bottom
+		auto rotl24 = rotateOperation(src, 24) & 0xFF00FF00;
 		src2.set<Ordinal>(rotl8 + rotl24);
 	}
 	void Core::cmpos(SourceRegister src1, SourceRegister src2) noexcept { 
