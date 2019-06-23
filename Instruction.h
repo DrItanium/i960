@@ -17,11 +17,9 @@ namespace i960 {
                 Ordinal _src_dest : 5;
                 Ordinal _opcode : 8;
             };
-            struct {
-                Ordinal _raw;
-            };
+            Ordinal _raw;
         };
-        explicit REGFormat(Ordinal value) : _raw(value) { }
+        explicit REGFormat(Ordinal value, Ordinal = 0) : _raw(value) { }
         constexpr Ordinal getOpcode() const noexcept {
             return (_opcode << 4) | _opcode2;
         }
@@ -46,15 +44,27 @@ namespace i960 {
         constexpr auto decodeSrcDest() const noexcept {
             return Operand(_m3, _src_dest);
         }
+        constexpr auto getRawValue() const noexcept {
+            return _raw;
+        }
     };
     static_assert(sizeof(REGFormat) == 1_words, "RegFormat sizes is does not equal Ordinal's size!");
     struct COBRFormat {
-        Ordinal _unused : 2;
-        Ordinal _displacement : 11;
-        Ordinal _m1 : 1;
-        Ordinal _source2 : 5; 
-        Ordinal _source1 : 5;
-        Ordinal _opcode : 8;
+        union {
+            struct {
+                Ordinal _unused : 2;
+                Ordinal _displacement : 11;
+                Ordinal _m1 : 1;
+                Ordinal _source2 : 5; 
+                Ordinal _source1 : 5;
+                Ordinal _opcode : 8;
+            };
+            Ordinal _raw;
+        };
+        explicit COBRFormat(Ordinal value, Ordinal = 0) : _raw(value) { }
+        constexpr auto getRawValue() const noexcept {
+            return _raw;
+        }
         constexpr auto src1IsLiteral() const noexcept { return _m1 != 0; }
         void encodeSrc1(const Operand& operand) noexcept {
             _source1 = operand.getValue();
@@ -76,14 +86,23 @@ namespace i960 {
         }
     };
     struct CTRLFormat {
-        Ordinal _unused : 2;
-        Ordinal _displacement : 22;
-        Ordinal _opcode : 8;
+        union {
+            struct {
+                Ordinal _unused : 2;
+                Ordinal _displacement : 22;
+                Ordinal _opcode : 8;
+            };
+            Ordinal _raw;
+        };
+        explicit CTRLFormat(Ordinal value, Ordinal = 0) : _raw(value) { }
         void encodeDisplacement(Ordinal value) noexcept {
             _displacement = value;
         }
         constexpr auto decodeDisplacement() const noexcept {
             return _displacement;
+        }
+        constexpr auto getRawValue() const noexcept {
+            return _raw;
         }
     };
     struct MemFormat {
@@ -103,6 +122,8 @@ namespace i960 {
                 };
                 Ordinal _raw;
             };
+            explicit MEMAFormat(Ordinal first, Ordinal = 0) : _raw(first) { }
+            constexpr auto getRawValue() const noexcept { return _raw; }
             constexpr AddressingModes getAddressingMode() const noexcept {
                 return static_cast<AddressingModes>(_md);
             }
@@ -142,7 +163,7 @@ namespace i960 {
                     Ordinal _second;
                 };
             };
-            MEMBFormat(Ordinal first, Ordinal second = 0) : _raw(first), _second(second) { }
+            explicit MEMBFormat(Ordinal first, Ordinal second = 0) : _raw(first), _second(second) { }
             constexpr AddressingModes getAddressingMode() const noexcept {
                 return static_cast<AddressingModes>(_mode);
             }
@@ -176,6 +197,7 @@ namespace i960 {
             constexpr auto decodeSrcDest() const noexcept { return Operand(0, _src_dest); }
             constexpr auto decodeAbase() const noexcept   { return Operand(0, _abase); }
             constexpr auto get32bitDisplacement() const noexcept { return _second; }
+            constexpr auto getRawValue() const noexcept { return _raw; }
         };
         constexpr auto decodeSrcDest() const noexcept {
             return std::visit([](auto&& value) { return value.decodeSrcDest(); }, _storage);
@@ -200,35 +222,41 @@ namespace i960 {
     class Instruction {
 
         public:
-            constexpr Instruction(Ordinal raw = 0, Ordinal second = 0) : _raw(raw), _second(second) {
-                // now we go through and perform a decode operation
+            using TypeContainer = std::variant<REGFormat, COBRFormat, CTRLFormat, MemFormat>;
+            static constexpr Ordinal getBaseOpcode(Ordinal value) noexcept {
+                return (0xFF000000 & value) >> 24;
             }
-            constexpr Ordinal getBaseOpcode() const noexcept {
-                return (0xFF000000 & _raw) >> 24;
-            }
-            constexpr Ordinal getOpcode() const noexcept {
-                if (isRegFormat()) {
-                    return _reg.getOpcode();
-                } else {
-                    return getBaseOpcode();
-                }
-            }
-            constexpr bool isControlFormat() const noexcept {
-                return getBaseOpcode() < 0x20;
-            }
-            constexpr bool isCompareAndBranchFormat() const noexcept {
-                auto opcode = getBaseOpcode();
+            static constexpr bool isCompareAndBranchFormat(Ordinal value) noexcept {
+                auto opcode getBaseOpcode(value);
                 return opcode >= 0x20 && opcode < 0x40;
             }
-            constexpr bool isMemFormat() const noexcept {
-                return getBaseOpcode() >= 0x80;
+            static constexpr bool isMemFormat(Ordinal value) noexcept {
+                return getBaseOpcode(value) >= 0x80;
             }
-            constexpr bool isRegFormat() const noexcept {
+            static constexpr bool isRegFormat(Ordinal value) noexcept {
                 // this is a little strange since the opcode is actually 12-bits
                 // instead of 8 bits. Only use the 8bits anyway
-                auto opcode = getBaseOpcode();
+                auto opcode = getBaseOpcode(value);
                 return opcode >= 0x58 && opcode < 0x80;
             }
+            static constexpr bool isControlFormat(Ordinal value) noexcept {
+                return getBaseOpcode(value) < 0x20;
+            }
+            static TypeContainer deduceKind(Ordinal first, Ordinal second) {
+                if (isMemFormat(first)) {
+                    return MemFormat(first, second);
+                } else if (isRegFormat(first)) {
+                    return REGFormat(first, second);
+                } else if (isCompareAndBranchFormat(first)) {
+                    return COBRFormat(first, second);
+                } else if (isControlFormat(first)) {
+                    return CTRLFormat(first, second);
+                } else {
+                    throw "Bad kind!";
+                }
+            }
+        public:
+            Instruction(Ordinal raw, Ordinal second = 0) : _storage(deduceKind(raw, second)) { }
             constexpr bool isTwoOrdinalInstruction() const noexcept {
                 return std::visit([this](auto&& value) {
                             if constexpr (std::is_same_v<std::decay_t<decltype(value)>, MemFormat>) {
@@ -238,10 +266,17 @@ namespace i960 {
                             }
                         }, _storage);
             }
+            constexpr Ordinal getOpcode() const noexcept {
+                return std::visit([this](auto&& value) {
+                            if constexpr (std::is_same_v<std::decay_t<decltype(value)>, REGFormat>) {
+                                return value.getOpcode();
+                            } else {
+                                return getBaseOpcode(value.getRawValue());
+                            }
+                        }, _storage);
+            }
         private:
             std::variant<REGFormat, COBRFormat, CTRLFormat, MemFormat> _storage;
-            Ordinal _raw;
-            Ordinal _second;
 
     };
     //static_assert(sizeof(Instruction) == 2_words, "Instruction must be 2 words wide!");
