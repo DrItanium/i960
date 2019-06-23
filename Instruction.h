@@ -105,136 +105,103 @@ namespace i960 {
             return _raw;
         }
     };
-    struct MemFormat {
-        struct MEMAFormat {
-            enum AddressingModes {
-                Offset = 0,
-                Abase_Plus_Offset = 1,
-            };
-            union {
-                struct {
-                    Ordinal _offset : 12;
-                    Ordinal _unused : 1;
-                    Ordinal _md : 1;
-                    Ordinal _abase : 5;
-                    Ordinal _src_dest : 5;
-                    Ordinal _opcode : 8;
-                };
-                Ordinal _raw;
-            };
-            explicit MEMAFormat(Ordinal first, Ordinal = 0) : _raw(first) { }
-            constexpr auto getRawValue() const noexcept { return _raw; }
-            constexpr AddressingModes getAddressingMode() const noexcept {
-                return static_cast<AddressingModes>(_md);
-            }
-            constexpr bool isOffsetAddressingMode() const noexcept {
-                return getAddressingMode() == AddressingModes::Offset;
-            }
-            constexpr auto decodeSrcDest() const noexcept {
-                return Operand(0, _src_dest);
-            }
-            constexpr auto decodeAbase() const noexcept {
-                return Operand(0, _abase);
-            }
+    struct MEMAFormat {
+        enum AddressingModes {
+            Offset = 0,
+            Abase_Plus_Offset = 1,
         };
-        struct MEMBFormat {
-            enum AddressingModes : uint8_t {
-                Abase = 0b0100,
-                IP_Plus_Displacement_Plus_8 = 0b0101,
-                Reserved = 0b0110,
-                Abase_Plus_Index_Times_2_Pow_Scale = 0b0111,
-                Displacement = 0b1100,
-                Abase_Plus_Displacement = 0b1101,
-                Index_Times_2_Pow_Scale_Plus_Displacement = 0b1110,
-                Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement = 0b1111,
+        union {
+            struct {
+                Ordinal _offset : 12;
+                Ordinal _unused : 1;
+                Ordinal _md : 1;
+                Ordinal _abase : 5;
+                Ordinal _src_dest : 5;
+                Ordinal _opcode : 8;
             };
-            union {
-                struct {
-                    Ordinal _index : 5;
-                    Ordinal _unused : 2;
-                    Ordinal _scale : 3;
-                    Ordinal _mode : 4;
-                    Ordinal _abase : 5;
-                    Ordinal _src_dest : 5;
-                    Ordinal _opcode : 8;
-                };
-                struct {
-                    Ordinal _raw; // for decoding purposes
-                    Ordinal _second;
-                };
-            };
-            explicit MEMBFormat(Ordinal first, Ordinal second = 0) : _raw(first), _second(second) { }
-            constexpr AddressingModes getAddressingMode() const noexcept {
-                return static_cast<AddressingModes>(_mode);
-            }
-            constexpr bool has32bitDisplacement() const noexcept {
-                switch (getAddressingMode()) {
-                    case AddressingModes::Abase:
-                    case AddressingModes::Abase_Plus_Index_Times_2_Pow_Scale:
-                    case AddressingModes::Reserved:
-                        return false;
-                    default:
-                        return true;
-                }
-            }
-            ByteOrdinal getScaleFactor() const noexcept {
-                switch (_scale) {
-                    case 0b000: 
-                        return 1;
-                    case 0b001:
-                        return 2;
-                    case 0b010:
-                        return 4;
-                    case 0b011:
-                        return 8;
-                    case 0b100: 
-                        return 16;
-                    default:
-                        // TODO raise an invalid opcode fault instead
-                        return 0; 
-                }
-            }
-            constexpr auto decodeSrcDest() const noexcept { return Operand(0, _src_dest); }
-            constexpr auto decodeAbase() const noexcept   { return Operand(0, _abase); }
-            constexpr auto get32bitDisplacement() const noexcept { return _second; }
-            constexpr auto getRawValue() const noexcept { return _raw; }
+            Ordinal _raw;
         };
-        static std::variant<MEMAFormat, MEMBFormat> deduceKind(Ordinal first, Ordinal second) noexcept {
-            if (MEMAFormat tmp(first, second); tmp._unused == 0) {
-                // we have a mema format instruction
-                return tmp;
-            } else {
-                return MEMBFormat(first, second);
-            }
+        explicit MEMAFormat(Ordinal first, Ordinal = 0) : _raw(first) { }
+        constexpr auto getRawValue() const noexcept { return _raw; }
+        constexpr AddressingModes getAddressingMode() const noexcept {
+            return static_cast<AddressingModes>(_md);
         }
-        explicit MemFormat(Ordinal first, Ordinal second = 0) : _storage(deduceKind(first, second)) { }
+        constexpr bool isOffsetAddressingMode() const noexcept {
+            return getAddressingMode() == AddressingModes::Offset;
+        }
         constexpr auto decodeSrcDest() const noexcept {
-            return std::visit([](auto&& value) { return value.decodeSrcDest(); }, _storage);
+            return Operand(0, _src_dest);
         }
-        constexpr Ordinal getOpcode() const noexcept {
-            return std::visit([](auto&& value) { return value._opcode; }, _storage);
+        constexpr auto decodeAbase() const noexcept {
+            return Operand(0, _abase);
         }
-        constexpr bool isMemAFormat() const noexcept {
-            return std::holds_alternative<MEMAFormat>(_storage);
+    };
+    struct MEMBFormat {
+        enum AddressingModes : uint8_t {
+            Abase = 0b0100,
+            IP_Plus_Displacement_Plus_8 = 0b0101,
+            Reserved = 0b0110,
+            Abase_Plus_Index_Times_2_Pow_Scale = 0b0111,
+            Displacement = 0b1100,
+            Abase_Plus_Displacement = 0b1101,
+            Index_Times_2_Pow_Scale_Plus_Displacement = 0b1110,
+            Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement = 0b1111,
+        };
+        union {
+            struct {
+                Ordinal _index : 5;
+                Ordinal _unused : 2;
+                Ordinal _scale : 3;
+                Ordinal _mode : 4;
+                Ordinal _abase : 5;
+                Ordinal _src_dest : 5;
+                Ordinal _opcode : 8;
+            };
+            struct {
+                Ordinal _raw; // for decoding purposes
+                Ordinal _second;
+            };
+        };
+        explicit MEMBFormat(Ordinal first, Ordinal second = 0) : _raw(first), _second(second) { }
+        constexpr AddressingModes getAddressingMode() const noexcept {
+            return static_cast<AddressingModes>(_mode);
         }
         constexpr bool has32bitDisplacement() const noexcept {
-            return std::visit([](auto&& value) {
-                        if constexpr (std::is_same_v<std::decay_t<decltype(value)>, MEMBFormat>) {
-                            return value.has32bitDisplacement(); 
-                        } else {
-                            return false;
-                        }
-                    }, _storage);
+            switch (getAddressingMode()) {
+                case AddressingModes::Abase:
+                case AddressingModes::Abase_Plus_Index_Times_2_Pow_Scale:
+                case AddressingModes::Reserved:
+                    return false;
+                default:
+                    return true;
+            }
         }
-        constexpr auto getRawValue() const noexcept {
-            return std::visit([](auto&& value) { return value.getRawValue(); }, _storage); 
+        ByteOrdinal getScaleFactor() const noexcept {
+            switch (_scale) {
+                case 0b000: 
+                    return 1;
+                case 0b001:
+                    return 2;
+                case 0b010:
+                    return 4;
+                case 0b011:
+                    return 8;
+                case 0b100: 
+                    return 16;
+                default:
+                    // TODO raise an invalid opcode fault instead
+                    return 0; 
+            }
         }
-        std::variant<MEMAFormat, MEMBFormat> _storage;
+        constexpr auto decodeSrcDest() const noexcept { return Operand(0, _src_dest); }
+        constexpr auto decodeAbase() const noexcept   { return Operand(0, _abase); }
+        constexpr auto get32bitDisplacement() const noexcept { return _second; }
+        constexpr auto getRawValue() const noexcept { return _raw; }
     };
     class Instruction {
 
         public:
-            using TypeContainer = std::variant<REGFormat, COBRFormat, CTRLFormat, MemFormat>;
+            using TypeContainer = std::variant<REGFormat, COBRFormat, CTRLFormat, MEMAFormat, MEMBFormat>;
             static constexpr Ordinal getBaseOpcode(Ordinal value) noexcept {
                 return (0xFF000000 & value) >> 24;
             }
@@ -256,7 +223,11 @@ namespace i960 {
             }
             static TypeContainer deduceKind(Ordinal first, Ordinal second) {
                 if (isMemFormat(first)) {
-                    return MemFormat(first, second);
+                    if (MEMAFormat tmp(first, second); tmp._unused == 0) {
+                        return tmp;
+                    } else {
+                        return MEMBFormat(first, second);
+                    }
                 } else if (isRegFormat(first)) {
                     return REGFormat(first, second);
                 } else if (isCompareAndBranchFormat(first)) {
@@ -278,28 +249,23 @@ namespace i960 {
                 return std::visit(v, _storage);
             }
             constexpr bool isTwoOrdinalInstruction() const noexcept {
-                return visit([this](auto&& value) {
-                            if constexpr (std::is_same_v<std::decay_t<decltype(value)>, MemFormat>) {
-                                return value.has32bitDisplacement();
-                            } else {
-                                return false;
-                            }
-                        });
+                return visit(overloaded{
+                            [](auto&&) { return false; },
+                            [](MEMBFormat&& value) { return value.has32bitDisplacement(); }
+                            });
             }
             constexpr Ordinal getOpcode() const noexcept {
-                return visit([this](auto&& value) {
-                            if constexpr (std::is_same_v<std::decay_t<decltype(value)>, REGFormat>) {
-                                return value.getOpcode();
-                            } else {
-                                return getBaseOpcode(value.getRawValue());
-                            }
+                return visit(overloaded{ 
+                            [](REGFormat&& value) { return value.getOpcode(); },
+                            [](auto&& value) { return getBaseOpcode(value.getRawValue()); }
                         });
+
             }
             constexpr auto getRawValue() const noexcept {
                 return visit([](auto&& value) { return value.getRawValue(); });
             }
         private:
-            std::variant<REGFormat, COBRFormat, CTRLFormat, MemFormat> _storage;
+            TypeContainer _storage;
 
     };
     //static_assert(sizeof(Instruction) == 2_words, "Instruction must be 2 words wide!");
