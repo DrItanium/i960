@@ -7,6 +7,61 @@
 #include <string>
 
 namespace i960 {
+    namespace Opcode {
+        struct UndefinedDescription final {
+		    static constexpr Description theDescription {0xFFFF'FFFF, Description::UndefinedClass(), "undefined", Description::UndefinedArgumentLayout()};
+        };
+#define o(name, code, arg, kind) \
+        struct name ## Description final { \
+            static constexpr i960::Opcode::Description theDescription { code , i960::Opcode::Description:: kind ## Class (), #name , i960::Opcode::Description:: arg ## ArgumentLayout () }; \
+            static constexpr decltype(auto) targetFunction = &Core:: name ;
+        }; 
+#define reg(name, code, arg) o(name, code, arg, Reg)
+#define cobr(name, code, arg) o(name, code, arg, Cobr) 
+#define mem(name, code, arg) o(name, code, arg, Mem) 
+#define ctrl(name, code, arg) o(name, code, arg, Ctrl)
+#include "opcodes.def"
+#undef reg
+#undef cobr
+#undef mem
+#undef ctrl
+#undef o
+        using TargetOpcode = std::variant<
+            UndefinedDescription
+#define o(name, code, arg, kind) \
+            , name ## Description 
+#define reg(name, code, arg) o(name, code, arg, Reg)
+#define cobr(name, code, arg) o(name, code, arg, Cobr) 
+#define mem(name, code, arg) o(name, code, arg, Mem) 
+#define ctrl(name, code, arg) o(name, code, arg, Ctrl)
+#include "opcodes.def"
+#undef reg
+#undef cobr
+#undef mem
+#undef ctrl
+#undef o
+            >;
+        TargetOpcode determineTargetOpcode(const Instruction& inst) noexcept {
+            return determineTargetOpcode(inst.getOpcode());
+        }
+        constexpr TargetOpcode determineTargetOpcode(Ordinal opcode) noexcept {
+            switch (opcode) {
+#define body(name, code, arg, kind) case code : return name ## Description () ;
+#define reg(name, code, arg)  body(name, code, arg, Reg)
+#define cobr(name, code, arg)  body(name, code, arg, Cobr)
+#define mem(name, code, arg)  body(name, code, arg, Mem)
+#define ctrl(name, code, arg)  body(name, code, arg, Ctrl)
+#include "opcodes.def"
+#undef reg
+#undef cobr
+#undef mem
+#undef ctrl
+#undef body
+                default:
+                    return UndefinedDescription();
+            }
+        }
+    }
 	void Core::dispatch(const Instruction& inst) noexcept {
 //		auto selectRegister = [this](const Operand& operand, NormalRegister& imm) -> NormalRegister& {
 //			if (operand.isLiteral()) {

@@ -113,61 +113,9 @@ namespace i960::Opcode {
 				Integer _argCount;
 				ArgumentLayout _layout;
 		};
-        struct UndefinedDescription final {
-		    static constexpr Description theDescription {0xFFFF'FFFF, Description::UndefinedClass(), "undefined", Description::UndefinedArgumentLayout()};
-        };
-#define o(name, code, arg, kind) \
-        struct name ## Description final { \
-            static constexpr Description theDescription { code , Description:: kind ## Class (), #name , Description:: arg ## ArgumentLayout () }; \
-        }; 
-#define reg(name, code, arg) o(name, code, arg, Reg)
-#define cobr(name, code, arg) o(name, code, arg, Cobr) 
-#define mem(name, code, arg) o(name, code, arg, Mem) 
-#define ctrl(name, code, arg) o(name, code, arg, Ctrl)
-#include "opcodes.def"
-#undef reg
-#undef cobr
-#undef mem
-#undef ctrl
-#undef o
-        using TargetOpcode = std::variant<
-        UndefinedDescription
-#define o(name, code, arg, kind) \
-            , name ## Description 
-#define reg(name, code, arg) o(name, code, arg, Reg)
-#define cobr(name, code, arg) o(name, code, arg, Cobr) 
-#define mem(name, code, arg) o(name, code, arg, Mem) 
-#define ctrl(name, code, arg) o(name, code, arg, Ctrl)
-#include "opcodes.def"
-#undef reg
-#undef cobr
-#undef mem
-#undef ctrl
-#undef o
-        >;
 		inline const Description& getDescription(const Instruction& inst) noexcept {
             return getDescription(inst.getOpcode());
         }
 		const Description& getDescription(Ordinal opcode) noexcept;
-        TargetOpcode determineTargetOpcode(const Instruction& inst) noexcept {
-            return determineTargetOpcode(inst.getOpcode());
-        }
-        constexpr TargetOpcode determineTargetOpcode(Ordinal opcode) noexcept {
-            switch (opcode) {
-#define body(name, code, arg, kind) case code : return name ## Description () ;
-#define reg(name, code, arg)  body(name, code, arg, Reg)
-#define cobr(name, code, arg)  body(name, code, arg, Cobr)
-#define mem(name, code, arg)  body(name, code, arg, Mem)
-#define ctrl(name, code, arg)  body(name, code, arg, Ctrl)
-#include "opcodes.def"
-#undef reg
-#undef cobr
-#undef mem
-#undef ctrl
-#undef body
-                default:
-                    return UndefinedDescription();
-            }
-        }
 } // end namespace i960::Opcode
 #endif // end I960_OPCODES_H__

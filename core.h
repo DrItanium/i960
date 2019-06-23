@@ -116,7 +116,7 @@ namespace i960 {
 			void reset();
 			void initializeProcessor();
 			void processPrcb();
-        private:
+        public:
 			Ordinal getFaultTableBaseAddress() noexcept;
 			Ordinal getControlTableBaseAddress() noexcept;
 			Ordinal getACRegisterInitialImage() noexcept;
@@ -269,7 +269,7 @@ namespace i960 {
             void cmpob(SourceRegister src1, SourceRegister src2) noexcept;
             void cmpib(SourceRegister src1, SourceRegister src2) noexcept;
 			void bswap(SourceRegister src1, DestinationRegister src2) noexcept;
-		private:
+        public:
 			// templated bodies
 			template<typename T>
 			void concmpBase(SourceRegister src1, SourceRegister src2) noexcept {
@@ -369,7 +369,7 @@ namespace i960 {
 					}
 				}
 			}
-		private:
+        public:
             template<ConditionCode code>
             void genericFault() noexcept {
                 if (conditionCodeIs<code>()) {
