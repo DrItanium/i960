@@ -199,6 +199,15 @@ namespace i960 {
             constexpr auto get32bitDisplacement() const noexcept { return _second; }
             constexpr auto getRawValue() const noexcept { return _raw; }
         };
+        static std::variant<MEMAFormat, MEMBFormat> deduceKind(Ordinal first, Ordinal second) noexcept {
+            if (MEMAFormat tmp(first, second); tmp._unused == 0) {
+                // we have a mema format instruction
+                return tmp;
+            } else {
+                return MEMBFormat(first, second);
+            }
+        }
+        explicit MemFormat(Ordinal first, Ordinal second = 0) : _storage(deduceKind(first, second)) { }
         constexpr auto decodeSrcDest() const noexcept {
             return std::visit([](auto&& value) { return value.decodeSrcDest(); }, _storage);
         }
@@ -217,6 +226,9 @@ namespace i960 {
                         }
                     }, _storage);
         }
+        constexpr auto getRawValue() const noexcept {
+            return std::visit([](auto&& value) { return value.getRawValue(); }, _storage); 
+        }
         std::variant<MEMAFormat, MEMBFormat> _storage;
     };
     class Instruction {
@@ -227,7 +239,7 @@ namespace i960 {
                 return (0xFF000000 & value) >> 24;
             }
             static constexpr bool isCompareAndBranchFormat(Ordinal value) noexcept {
-                auto opcode getBaseOpcode(value);
+                auto opcode = getBaseOpcode(value);
                 return opcode >= 0x20 && opcode < 0x40;
             }
             static constexpr bool isMemFormat(Ordinal value) noexcept {
@@ -274,6 +286,9 @@ namespace i960 {
                                 return getBaseOpcode(value.getRawValue());
                             }
                         }, _storage);
+            }
+            constexpr auto getRawValue() const noexcept {
+                return std::visit([](auto&& value) { return value.getRawValue(); }, _storage);
             }
         private:
             std::variant<REGFormat, COBRFormat, CTRLFormat, MemFormat> _storage;
