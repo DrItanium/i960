@@ -19,15 +19,6 @@ namespace i960::Opcode {
                 CobrClass,
                 MemClass,
                 CtrlClass>;
-#if 0
-			enum class Class : Ordinal {
-				Undefined,
-				Reg,
-				Cobr,
-				Mem,
-				Ctrl,
-			};
-#endif
 #define DefClass(name) \
             struct name ## ArgumentLayout final { };
             // zero arguments
@@ -49,28 +40,6 @@ namespace i960::Opcode {
             // not set
             DefClass(Undefined);
 #undef DefClass
-#if 0
-			enum class ArgumentLayout {
-				// 0 args
-				None,
-				// 1 arg
-				Disp,
-				Mem,
-				RegLit,
-				Reg,
-				// 2 args
-				Mem_Reg,
-				Reg_Mem,
-				RegLit_Reg,
-				RegLit_RegLit,
-				// 3 args
-				RegLit_RegLit_Reg,
-				Reg_RegLit_Reg,
-				RegLit_Reg_Disp,
-				// not set
-				Undefined,
-			};
-#endif 
             using ArgumentLayout = std::variant<
                 // not set
                 UndefinedArgumentLayout
@@ -144,6 +113,9 @@ namespace i960::Opcode {
 				Integer _argCount;
 				ArgumentLayout _layout;
 		};
+        struct UndefinedDescription final {
+		    static constexpr Description theDescription {0xFFFF'FFFF, Description::UndefinedClass(), "undefined", Description::UndefinedArgumentLayout()};
+        };
 #define o(name, code, arg, kind) \
         struct name ## Description final { \
             static constexpr Description theDescription { code , Description:: kind ## Class (), #name , Description:: arg ## ArgumentLayout () }; \
@@ -158,6 +130,21 @@ namespace i960::Opcode {
 #undef mem
 #undef ctrl
 #undef o
+        using TargetOpcode = std::variant<
+        UndefinedDescription
+#define o(name, code, arg, kind) \
+            , name ## Description 
+#define reg(name, code, arg) o(name, code, arg, Reg)
+#define cobr(name, code, arg) o(name, code, arg, Cobr) 
+#define mem(name, code, arg) o(name, code, arg, Mem) 
+#define ctrl(name, code, arg) o(name, code, arg, Ctrl)
+#include "opcodes.def"
+#undef reg
+#undef cobr
+#undef mem
+#undef ctrl
+#undef o
+        >;
 		inline const Description& getDescription(const Instruction& inst) noexcept {
             return getDescription(inst.getOpcode());
         }

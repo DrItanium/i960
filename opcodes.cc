@@ -4,7 +4,6 @@
 
 namespace i960::Opcode {
 	const Description& getDescription(Ordinal opcode) noexcept {
-		static constexpr Description undefined (0xFFFF'FFFF, Description::UndefinedClass(), "undefined", Description::UndefinedArgumentLayout());
 		static std::map<Ordinal, Description> lookupTable = {
 #define body(name, code, arg, kind) \
 			{ code , Description(code, Description:: kind ## Class () , #name , Description:: arg ## ArgumentLayout () ) },
@@ -22,7 +21,7 @@ namespace i960::Opcode {
 		if (auto pos = lookupTable.find(opcode); pos != lookupTable.end()) {
 			return pos->second;
 		} else {
-			return undefined;
+            return UndefinedDescription::theDescription;
 		}
 	}
 } // end namespace i960::Opcode
