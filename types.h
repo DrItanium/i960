@@ -6,6 +6,8 @@ namespace i960 {
 
     template<typename T>
     constexpr bool LegalConversion = false;
+    template<typename ... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+    template<typename ... Ts> overloaded(Ts...) -> overloaded<Ts...>;
     using ByteOrdinal = std::uint8_t;
     using ShortOrdinal = std::uint16_t;
     using Ordinal = std::uint32_t;
