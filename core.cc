@@ -1239,16 +1239,8 @@ X(cmpi, bno);
     Instruction Core::readInstruction() {
         // we need to pull the lower half, and then check and see if it is actually a double byte design
         auto address = computeAlignedAddress(_instructionPointer);
-        Instruction basic(load(address));
-        if (basic.isTwoOrdinalInstruction()) {
-            // load the second value
-            basic._second = load(address + 0b100);
-            // advance the instruction pointer by two
-            _instructionPointer += 0b1000;
-        } else {
-            // advance the instruction pointer by one
-            _instructionPointer += 0b100;
-        }
+        Instruction basic(load(address), load(address + 0b100));
+        _instructionPointer += (basic.isTwoOrdinalInstruction() ? 0b1000 : 0b100);
         return basic;
     }
 #undef __DEFAULT_TWO_ARGS__
