@@ -32,6 +32,7 @@ namespace i960 {
     using DestinationRegister = Register&;
     using LongSourceRegister = const LongRegister&;
     using LongDestinationRegister = LongRegister&;
+
     
     using RegisterWindow = NormalRegister[16];
 	enum class FaultType : ByteOrdinal {

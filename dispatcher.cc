@@ -7,14 +7,34 @@
 #include <string>
 
 namespace i960 {
+    template<typename ... Ts>
+    using CoreSignature = std::function<void(Core*, Ts...)>;
+    template<typename Args, typename ... Ts> 
+    struct ArgsToCoreSignature final {
+        ArgsToCoreSignature() = delete;
+        ~ArgsToCoreSignature() = delete;
+        ArgsToCoreSignature(const ArgsToCoreSignature&) = delete;
+        ArgsToCoreSignature(ArgsToCoreSignature&&) = delete;
+        ArgsToCoreSignature& operator=(const ArgsToCoreSignature&) = delete;
+        ArgsToCoreSignature& operator=(ArgsToCoreSignature&&) = delete;
+        using Signature = std::function<void(Core*, Ts...)>;
+    };
+
+// #define X(name, signature) \
+//     X(None, void(Core*));
+//     X(Mem, void(Core*, SourceRegister));
+//     X(RegLit_RegLit_Reg, void(Core*, SourceRegister, SourceRegister, DestinationRegister));
+// #undef X
     namespace Opcode {
+        template<typename ... Ts>
+        using GleanSignature = std::function<decltype(test(std::declval<Ts>()...))(Ts...)>;
         struct UndefinedDescription final {
 		    static constexpr Description theDescription {0xFFFF'FFFF, Description::UndefinedClass(), "undefined", Description::UndefinedArgumentLayout()};
         };
 #define o(name, code, arg, kind) \
         struct name ## Description final { \
             static constexpr i960::Opcode::Description theDescription { code , i960::Opcode::Description:: kind ## Class (), #name , i960::Opcode::Description:: arg ## ArgumentLayout () }; \
-            static constexpr decltype(auto) targetFunction = &Core:: name ;
+            static constexpr auto targetFunction = typename ArgsToCoreSignature<i960::Opcode::Description:: arg ## ArgumentLayout>::Signature ;
         }; 
 #define reg(name, code, arg) o(name, code, arg, Reg)
 #define cobr(name, code, arg) o(name, code, arg, Cobr) 
