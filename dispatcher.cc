@@ -7,45 +7,46 @@
 #include <string>
 
 namespace i960 {
-    template<typename ... Ts>
-    using CoreSignature = std::function<void(Core*, Ts...)>;
-    template<typename Args, typename ... Ts> 
-    struct ArgsToCoreSignature final {
-        ArgsToCoreSignature() = delete;
-        ~ArgsToCoreSignature() = delete;
-        ArgsToCoreSignature(const ArgsToCoreSignature&) = delete;
-        ArgsToCoreSignature(ArgsToCoreSignature&&) = delete;
-        ArgsToCoreSignature& operator=(const ArgsToCoreSignature&) = delete;
-        ArgsToCoreSignature& operator=(ArgsToCoreSignature&&) = delete;
-        using Signature = std::function<void(Core*, Ts...)>;
-    };
 
-// #define X(name, signature) \
-//     X(None, void(Core*));
-//     X(Mem, void(Core*, SourceRegister));
-//     X(RegLit_RegLit_Reg, void(Core*, SourceRegister, SourceRegister, DestinationRegister));
-// #undef X
+    template<typename ... Ts>
+    using CoreSignature = void(Core::*)(Ts...);
     namespace Opcode {
         template<typename ... Ts>
         using GleanSignature = std::function<decltype(test(std::declval<Ts>()...))(Ts...)>;
         struct UndefinedDescription final {
+            using TargetKind = std::nullptr_t;
 		    static constexpr Description theDescription {0xFFFF'FFFF, Description::UndefinedClass(), "undefined", Description::UndefinedArgumentLayout()};
         };
-#define o(name, code, arg, kind) \
+#define reg(name, code, arg) \
         struct name ## Description final { \
-            static constexpr i960::Opcode::Description theDescription { code , i960::Opcode::Description:: kind ## Class (), #name , i960::Opcode::Description:: arg ## ArgumentLayout () }; \
-            static constexpr auto targetFunction = typename ArgsToCoreSignature<i960::Opcode::Description:: arg ## ArgumentLayout>::Signature ;
+            using TargetKind = REGFormat; \
+            static constexpr i960::Opcode::Description theDescription { code , i960::Opcode::Description:: RegClass (), #name , i960::Opcode::Description:: arg ## ArgumentLayout () }; \
+            static constexpr i960::CoreSignature<TargetKind const&> Signature = &Core:: name ; \
         }; 
-#define reg(name, code, arg) o(name, code, arg, Reg)
-#define cobr(name, code, arg) o(name, code, arg, Cobr) 
-#define mem(name, code, arg) o(name, code, arg, Mem) 
-#define ctrl(name, code, arg) o(name, code, arg, Ctrl)
+
+#define cobr(name, code, arg) \
+        struct name ## Description final { \
+            using TargetKind = COBRFormat; \
+            static constexpr i960::Opcode::Description theDescription { code , i960::Opcode::Description:: CobrClass (), #name , i960::Opcode::Description:: arg ## ArgumentLayout () }; \
+            static constexpr i960::CoreSignature<TargetKind const&> Signature = &Core:: name ; \
+        }; 
+#define ctrl(name, code, arg) \
+        struct name ## Description final { \
+            using TargetKind = CTRLFormat; \
+            static constexpr i960::Opcode::Description theDescription { code , i960::Opcode::Description:: CtrlClass (), #name , i960::Opcode::Description:: arg ## ArgumentLayout () }; \
+            static constexpr i960::CoreSignature<TargetKind const&> Signature = &Core:: name; \
+        }; 
+#define mem(name, code, arg) \
+        struct name ## Description final { \
+            using TargetKind = std::variant<MEMAFormat, MEMBFormat>; \
+            static constexpr i960::Opcode::Description theDescription { code , i960::Opcode::Description:: MemClass (), #name , i960::Opcode::Description:: arg ## ArgumentLayout () }; \
+            static constexpr i960::CoreSignature<TargetKind const&> Signature = &Core:: name ; \
+        }; 
 #include "opcodes.def"
 #undef reg
 #undef cobr
 #undef mem
 #undef ctrl
-#undef o
         using TargetOpcode = std::variant<
             UndefinedDescription
 #define o(name, code, arg, kind) \
@@ -83,6 +84,16 @@ namespace i960 {
         }
     }
 	void Core::dispatch(const Instruction& inst) noexcept {
+        std::visit([this, &inst](auto&& value) {
+                    inst.visit([this, &value](auto&& code) { 
+                                if constexpr (std::is_same_v<typename std::decay_t<decltype(value)>::TargetKind, std::decay_t<decltype(code)> >) {
+                                    (this ->* value.Signature)(code); 
+                                } else {
+                                    throw "Illegal execution combination";
+                                }
+                            });
+                },
+                Opcode::determineTargetOpcode(inst));
 //		auto selectRegister = [this](const Operand& operand, NormalRegister& imm) -> NormalRegister& {
 //			if (operand.isLiteral()) {
 //				imm.set(operand.getValue());

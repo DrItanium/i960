@@ -158,6 +158,18 @@ namespace i960 {
             Ordinal getStackPointerAddress() const noexcept;
             void setFramePointer(Ordinal value) noexcept;
             Ordinal getFramePointerAddress() const noexcept;
+#define reg(name, code, arg) void name ( REGFormat const&) noexcept;
+#define cobr(name, code, arg) void name ( COBRFormat const&) noexcept;
+#define mem(name, code, arg) \
+            void name( std::variant<MEMAFormat, MEMBFormat> const&) noexcept;
+#define ctrl(name, code, arg) \
+            void name( CTRLFormat const&) noexcept;
+#include "opcodes.def"
+#undef reg
+#undef cobr
+#undef mem
+#undef ctrl
+#undef o
             // begin core architecture
             void callx(SourceRegister value) noexcept;
             void calls(SourceRegister value);
