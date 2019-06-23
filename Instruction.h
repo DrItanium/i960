@@ -269,26 +269,34 @@ namespace i960 {
             }
         public:
             Instruction(Ordinal raw, Ordinal second = 0) : _storage(deduceKind(raw, second)) { }
+            template<typename Visitor>
+            constexpr decltype(auto) visit(Visitor&& v) {
+                return std::visit(v, _storage);
+            }
+            template<typename Visitor>
+            constexpr decltype(auto) visit(Visitor&& v) const {
+                return std::visit(v, _storage);
+            }
             constexpr bool isTwoOrdinalInstruction() const noexcept {
-                return std::visit([this](auto&& value) {
+                return visit([this](auto&& value) {
                             if constexpr (std::is_same_v<std::decay_t<decltype(value)>, MemFormat>) {
                                 return value.has32bitDisplacement();
                             } else {
                                 return false;
                             }
-                        }, _storage);
+                        });
             }
             constexpr Ordinal getOpcode() const noexcept {
-                return std::visit([this](auto&& value) {
+                return visit([this](auto&& value) {
                             if constexpr (std::is_same_v<std::decay_t<decltype(value)>, REGFormat>) {
                                 return value.getOpcode();
                             } else {
                                 return getBaseOpcode(value.getRawValue());
                             }
-                        }, _storage);
+                        });
             }
             constexpr auto getRawValue() const noexcept {
-                return std::visit([](auto&& value) { return value.getRawValue(); }, _storage);
+                return visit([](auto&& value) { return value.getRawValue(); });
             }
         private:
             std::variant<REGFormat, COBRFormat, CTRLFormat, MemFormat> _storage;
