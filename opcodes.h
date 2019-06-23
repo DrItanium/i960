@@ -85,9 +85,16 @@ namespace i960::Opcode {
 				Integer _argCount;
 				ArgumentLayout _layout;
 		};
-		enum Id : Ordinal {
 #define o(name, code, arg, kind) \
-	name = code,
+        struct name ## Description final { \
+            name ## Description() = delete; \
+            ~ name ## Description () = delete; \
+            name ## Description(const name ## Description &) = delete; \
+            name ## Description(name ## Description &&) = delete; \
+            name ## Description& operator= (const name ## Description &) = delete; \
+            name ## Description& operator= (name ## Description &&) = delete; \
+            static constexpr Description theDescription { code , Description::Class:: kind, #name , Description::ArgumentLayout:: arg }; \
+        }; 
 #define reg(name, code, arg) o(name, code, arg, Reg)
 #define cobr(name, code, arg) o(name, code, arg, Cobr) 
 #define mem(name, code, arg) o(name, code, arg, Mem) 
@@ -98,8 +105,6 @@ namespace i960::Opcode {
 #undef mem
 #undef ctrl
 #undef o
-		};
-
 		inline const Description& getDescription(const Instruction& inst) noexcept {
             return getDescription(inst.getOpcode());
         }

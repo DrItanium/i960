@@ -7,7 +7,7 @@ namespace i960::Opcode {
 		static constexpr Description undefined (0xFFFF'FFFF, Description::Class::Undefined, "undefined", Description::ArgumentLayout::Undefined);
 		static std::map<Ordinal, Description> lookupTable = {
 #define body(name, code, arg, kind) \
-			{ code , Description(code, Description::Class:: kind, #name , Description::ArgumentLayout:: arg ) },
+			{ code , name ## Description :: theDescription },
 #define reg(name, code, arg)  body(name, code, arg, Reg)
 #define cobr(name, code, arg)  body(name, code, arg, Cobr)
 #define mem(name, code, arg)  body(name, code, arg, Mem)
