@@ -2,8 +2,24 @@
 #define I960_OPCODES_H__
 #include "types.h"
 #include "Instruction.h"
+#include <variant>
 namespace i960::Opcode {
 		struct Description final {
+#define DefClass(name) \
+            struct name ## Class final { }
+            DefClass(Undefined);
+            DefClass(Reg);
+            DefClass(Cobr);
+            DefClass(Mem);
+            DefClass(Ctrl);
+#undef DefClass
+            using Class = std::variant<
+                UndefinedClass,
+                RegClass,
+                CobrClass,
+                MemClass,
+                CtrlClass>;
+#if 0
 			enum class Class : Ordinal {
 				Undefined,
 				Reg,
@@ -11,6 +27,29 @@ namespace i960::Opcode {
 				Mem,
 				Ctrl,
 			};
+#endif
+#define DefClass(name) \
+            struct name ## ArgumentLayout final { };
+            // zero arguments
+            DefClass(None);
+            // 1 arg
+            DefClass(Disp);
+            DefClass(Mem);
+            DefClass(RegLit);
+            DefClass(Reg);
+            // 2 args
+            DefClass(Mem_Reg);
+            DefClass(Reg_Mem);
+            DefClass(RegLit_Reg);
+            DefClass(RegLit_RegLit);
+            // 3 args
+            DefClass(RegLit_RegLit_Reg);
+            DefClass(Reg_RegLit_Reg);
+            DefClass(RegLit_Reg_Disp);
+            // not set
+            DefClass(Undefined);
+#undef DefClass
+#if 0
 			enum class ArgumentLayout {
 				// 0 args
 				None,
@@ -31,27 +70,48 @@ namespace i960::Opcode {
 				// not set
 				Undefined,
 			};
+#endif 
+            using ArgumentLayout = std::variant<
+                // not set
+                UndefinedArgumentLayout
+#define DefClass(name) \
+                , name ## ArgumentLayout
+            // zero arguments
+            DefClass(None)
+            // 1 arg
+            DefClass(Disp)
+            DefClass(Mem)
+            DefClass(RegLit)
+            DefClass(Reg)
+            // 2 args
+            DefClass(Mem_Reg)
+            DefClass(Reg_Mem)
+            DefClass(RegLit_Reg)
+            DefClass(RegLit_RegLit)
+            // 3 args
+            DefClass(RegLit_RegLit_Reg)
+            DefClass(Reg_RegLit_Reg)
+            DefClass(RegLit_Reg_Disp)
+#undef DefClass
+            >;
 			static constexpr Integer getArgumentCount(ArgumentLayout layout) noexcept {
-				switch (layout) {
-					case ArgumentLayout::None:
-						return 0;
-					case ArgumentLayout::Disp:
-					case ArgumentLayout::Mem:
-					case ArgumentLayout::Reg:
-					case ArgumentLayout::RegLit:
-						return 1;
-					case ArgumentLayout::Mem_Reg:
-					case ArgumentLayout::Reg_Mem:
-					case ArgumentLayout::RegLit_Reg:
-					case ArgumentLayout::RegLit_RegLit:
-						return 2;
-					case ArgumentLayout::RegLit_Reg_Disp:
-					case ArgumentLayout::RegLit_RegLit_Reg:
-					case ArgumentLayout::Reg_RegLit_Reg:
-						return 3;
-					default:
-						return -1;
-				}
+                return std::visit(overloaded {
+                            [](auto&&) { return -1; },
+#define X(name, count) [](name ## ArgumentLayout &&) { return count ; }
+                            X(None, 0),
+                            X(Disp, 1),
+                            X(Mem, 1),
+                            X(RegLit, 1),
+                            X(Reg, 1),
+                            X(Mem_Reg, 2),
+                            X(Reg_Mem, 2),
+                            X(RegLit_Reg, 2),
+                            X(RegLit_RegLit, 2),
+                            X(RegLit_RegLit_Reg, 3),
+                            X(Reg_RegLit_Reg, 3),
+                            X(RegLit_Reg_Disp, 3),
+#undef X
+                        }, layout);
 			}
 
 			constexpr Description(Ordinal opcode, Class type, const char* str, ArgumentLayout layout) noexcept : 
@@ -67,7 +127,9 @@ namespace i960::Opcode {
 			constexpr auto hasTwoArguments() const noexcept { return _argCount == 2; } 
 			constexpr auto hasThreeArguments() const noexcept { return _argCount == 3; } 
 			constexpr auto argumentCountUndefined() const noexcept { return _argCount == -1; }
-#define X(cl) constexpr bool is ## cl () const noexcept { return isOfClass<Class:: cl > () ; }
+#define X(cl) constexpr auto is ## cl () const noexcept { \
+    return std::visit([](auto&& value) { return std::is_same_v<std::decay_t<decltype(value)>, cl ## Class >; }, _type); \
+}
 			X(Reg);
 			X(Cobr);
 			X(Mem);
@@ -75,9 +137,6 @@ namespace i960::Opcode {
 			X(Undefined);
 #undef X
 			constexpr operator Ordinal() const noexcept { return _opcode; }
-			private:
-				template<Class t>
-				constexpr bool isOfClass() const noexcept { return _type == t; }
 			private:
 				Ordinal _opcode;
 				Class _type;
@@ -87,13 +146,7 @@ namespace i960::Opcode {
 		};
 #define o(name, code, arg, kind) \
         struct name ## Description final { \
-            name ## Description() = delete; \
-            ~ name ## Description () = delete; \
-            name ## Description(const name ## Description &) = delete; \
-            name ## Description(name ## Description &&) = delete; \
-            name ## Description& operator= (const name ## Description &) = delete; \
-            name ## Description& operator= (name ## Description &&) = delete; \
-            static constexpr Description theDescription { code , Description::Class:: kind, #name , Description::ArgumentLayout:: arg }; \
+            static constexpr Description theDescription { code , Description:: kind ## Class (), #name , Description:: arg ## ArgumentLayout () }; \
         }; 
 #define reg(name, code, arg) o(name, code, arg, Reg)
 #define cobr(name, code, arg) o(name, code, arg, Cobr) 
