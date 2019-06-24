@@ -111,8 +111,8 @@ namespace i960 {
 #include "conditional_kinds.def"
 #undef X
     // TODO It is impossible for m3 to be set when srcDest is used as a dest, error out before hand
-#define Y(op, kind) \
-    void Core:: op ## kind ( REGFormat const& fmt) noexcept { \
+#define Y(op) \
+    void Core:: op ( REGFormat const& fmt) noexcept { \
 		auto selectRegister = [this](const Operand& operand, NormalRegister& imm) -> NormalRegister& { \
 			if (operand.isLiteral()) { \
 				imm.set(operand.getValue()); \
@@ -126,14 +126,14 @@ namespace i960 {
         NormalRegister& src1 = selectRegister(fmt.decodeSrc1(), _temporary0); \
         NormalRegister& src2 = selectRegister(opSrc2, _temporary1); \
         NormalRegister& srcDest = selectRegister(opSrcDest, _temporary2); \
-        op ## kind (src1, src2, srcDest); \
+        op (src1, src2, srcDest); \
     }
 #define X(kind, __) \
-				Y(addo, kind); \
-				Y(addi, kind); \
-				Y(subo, kind); \
-				Y(subi, kind); \
-				Y(sel, kind); 
+				Y(addo ##  kind); \
+				Y(addi ##  kind); \
+				Y(subo ##  kind); \
+				Y(subi ##  kind); \
+				Y(sel ##  kind); 
 #include "conditional_kinds.def"
 #undef X
 	Y(notbit);  Y(clrbit);   Y(notor);   Y(opand);
@@ -148,6 +148,43 @@ namespace i960 {
 	Y(cmpdeci); Y(mulo);     Y(muli);    Y(remo);
 	Y(remi);    Y(divo);     Y(divi);    Y(dcctl);
 #undef Y
+#define Z(op) \
+    void Core:: op (REGFormat const& fmt) noexcept { \
+		auto selectRegister = [this](const Operand& operand, NormalRegister& imm) -> NormalRegister& { \
+			if (operand.isLiteral()) { \
+				imm.set(operand.getValue()); \
+				return imm; \
+			} else { \
+				return getRegister(operand); \
+			} \
+		}; \
+        auto opSrcDest = fmt.decodeSrcDest(); \
+        NormalRegister& src1 = selectRegister(fmt.decodeSrc1(), _temporary0); \
+        NormalRegister& srcDest = selectRegister(opSrcDest, _temporary2); \
+        op (src1, srcDest); \
+    }
+				Z(spanbit);  Z(scanbit);  Z(opnot);
+				Z(chkbit);   Z(cmpo);     Z(cmpi);    
+				Z(concmpo);  Z(concmpi);
+#undef Z
+#define X(op) \
+    void Core:: op ( REGFormat const& fmt) noexcept { \
+		auto selectRegister = [this](const Operand& operand, NormalRegister& imm) -> NormalRegister& { \
+			if (operand.isLiteral()) { \
+				imm.set(operand.getValue()); \
+				return imm; \
+			} else { \
+				return getRegister(operand); \
+			} \
+		}; \
+        auto opSrc2 = fmt.decodeSrc2(); \
+        NormalRegister& src1 = selectRegister(fmt.decodeSrc1(), _temporary0); \
+        NormalRegister& src2 = selectRegister(opSrc2, _temporary1); \
+        op (src1, src2); \
+    }
+                X(scanbyte); X(cmpos); X(cmpis);
+                X(cmpob);    X(cmpib); X(bswap);
+#undef X
 //		auto selectRegister = [this](const Operand& operand, NormalRegister& imm) -> NormalRegister& {
 //			if (operand.isLiteral()) {
 //				imm.set(operand.getValue());
@@ -168,29 +205,7 @@ namespace i960 {
 //#define Y(kind, args) case Opcode:: kind : kind args ; break 
 //#define Op3Arg(kind) Y(kind, (src1, src2, srcDest))
 //#define Op2Arg(kind) Y(kind, (src1, srcDest))
-//				Op2Arg(spanbit);  Op2Arg(scanbit);  Op2Arg(opnot);
-//				Op2Arg(chkbit);   Op2Arg(cmpo);     Op2Arg(cmpi);    
-//				Op2Arg(concmpo);  Op2Arg(concmpi);
 //
-//				Op3Arg(notbit);  Op3Arg(clrbit);   Op3Arg(notor);   Op3Arg(opand);
-//				Op3Arg(andnot);  Op3Arg(setbit);   Op3Arg(notand);  Op3Arg(opxor);
-//				Op3Arg(opor);    Op3Arg(nor);      Op3Arg(xnor);    Op3Arg(ornot);
-//				Op3Arg(nand);    Op3Arg(alterbit); Op3Arg(shro);    Op3Arg(shrdi);
-//				Op3Arg(shri);    Op3Arg(shlo);     Op3Arg(rotate);  Op3Arg(shli);
-//				Op3Arg(addc);    Op3Arg(subc);     Op3Arg(atmod);   Op3Arg(atadd);
-//				Op3Arg(modify);  Op3Arg(extract);  Op3Arg(modac);   Op3Arg(modtc);
-//				Op3Arg(modpc);   Op3Arg(addo);     Op3Arg(addi);    Op3Arg(subo);
-//				Op3Arg(subi);    Op3Arg(cmpinco);  Op3Arg(cmpinci); Op3Arg(cmpdeco);
-//				Op3Arg(cmpdeci); Op3Arg(mulo);     Op3Arg(muli);    Op3Arg(remo);
-//				Op3Arg(remi);    Op3Arg(divo);     Op3Arg(divi);    Op3Arg(dcctl);
-//
-//
-//				Y(scanbyte, (src1, src2));
-//                Y(cmpos, (src1, src2));
-//                Y(cmpis, (src1, src2));
-//                Y(cmpob, (src1, src2));
-//                Y(cmpib, (src1, src2));
-//                Y(bswap, (src1, src2));
 //				Y(mov, (reg.decodeSrc1(), opSrcDest));
 //				Y(movl, (reg.decodeSrc1(), opSrcDest));
 //				Y(movt, (reg.decodeSrc1(), opSrcDest));
