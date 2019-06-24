@@ -251,12 +251,12 @@ namespace i960 {
             constexpr bool isTwoOrdinalInstruction() const noexcept {
                 return visit(overloaded{
                             [](auto&&) { return false; },
-                            [](MEMBFormat&& value) { return value.has32bitDisplacement(); }
+                            [](const MEMBFormat& value) { return value.has32bitDisplacement(); }
                             });
             }
             constexpr Ordinal getOpcode() const noexcept {
                 return visit(overloaded{ 
-                            [](REGFormat&& value) { return value.getOpcode(); },
+                            [](const REGFormat& value) { return value.getOpcode(); },
                             [](auto&& value) { return getBaseOpcode(value.getRawValue()); }
                         });
 

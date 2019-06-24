@@ -41,6 +41,7 @@ bool testInstructionEncoding(std::ostream& os, const i960::Instruction& test, co
 	//os << "\tencoded format for mema: " << std::hex << test._mem._mema._offset << std::endl;
 	if (auto description = i960::Opcode::getDescription(test.getOpcode()); description.isUndefined()) {
 		os << "\tInstruction mnemonic: 'undefined'" << std::endl;
+        os << "\tOpcode is: 0x" << std::hex << test.getOpcode() << std::endl;
 		return false;
 	} else {
 		std::string tmp(description.getString());
