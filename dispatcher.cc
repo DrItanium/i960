@@ -200,7 +200,7 @@ namespace i960 {
     void Core::prepareRegisters(MEMAFormat const& ma) noexcept {
         _temporary0.set<Ordinal>(ma._offset + ma.isOffsetAddressingMode() ? 0 : getRegister(ma.decodeAbase()).get<Ordinal>());
     }
-    InstructionLength Core::prepareRegisters(MEMBFormat const& mb) noexcept {
+    Core::InstructionLength Core::prepareRegisters(MEMBFormat const& mb) noexcept {
         auto length = InstructionLength::Single;
         using E = std::decay_t<decltype(mb)>::AddressingModes;
         auto index = mb._index;
@@ -308,7 +308,7 @@ namespace i960 {
     }
     void Core::stis(MEMAFormat const& ma) noexcept {
         // single instruction length
-        prepareRegisters(pa);
+        prepareRegisters(ma);
         stis(getRegister(ma.decodeSrcDest()), _temporary0);
     }
     void Core::stis(MEMBFormat const& mb) noexcept {
