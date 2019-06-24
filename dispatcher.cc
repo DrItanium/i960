@@ -85,13 +85,18 @@ namespace i960 {
     }
 	void Core::dispatch(const Instruction& inst) noexcept {
         std::visit([this, &inst](auto&& value) {
+                using K = typename std::decay_t<decltype(value)>;
+                if constexpr (std::is_same_v<K, Opcode::UndefinedDescription>) {
                     inst.visit([this, &value](auto&& code) { 
-                                if constexpr (std::is_same_v<typename std::decay_t<decltype(value)>::TargetKind, std::decay_t<decltype(code)> >) {
+                                if constexpr (std::is_same_v<typename K::TargetKind, std::decay_t<decltype(code)> >) {
                                     (this ->* value.Signature)(code); 
                                 } else {
-                                    throw "Illegal execution combination";
+                                    throw "Illegal instruction combination!";
                                 }
                             });
+                } else {
+                    throw "Undefined operation!";
+                }
                 },
                 Opcode::determineTargetOpcode(inst));
 //		auto selectRegister = [this](const Operand& operand, NormalRegister& imm) -> NormalRegister& {

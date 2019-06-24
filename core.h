@@ -161,7 +161,11 @@ namespace i960 {
 #define reg(name, code, arg) void name ( REGFormat const&) noexcept;
 #define cobr(name, code, arg) void name ( COBRFormat const&) noexcept;
 #define mem(name, code, arg) \
-            void name( std::variant<MEMAFormat, MEMBFormat> const&) noexcept;
+            void name(MEMAFormat const&) noexcept; \
+            void name(MEMBFormat const&) noexcept; \
+            inline void name( std::variant<MEMAFormat, MEMBFormat> const& var) noexcept { \
+                std::visit([this](auto&& value) { name(value); }, var); \
+            }
 #define ctrl(name, code, arg) \
             void name( CTRLFormat const&) noexcept;
 #include "opcodes.def"
