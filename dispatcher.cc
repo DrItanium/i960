@@ -83,22 +83,63 @@ namespace i960 {
             }
         }
     }
+    void Core::bbc(COBRFormat const& fmt) noexcept {
+
+    }
+    void Core::opxor(REGFormat const& fmt) noexcept {
+
+    }
+    void Core::xnor(REGFormat const& fmt) noexcept {
+
+    }
+    void Core::sysctl(REGFormat const& fmt) noexcept {
+
+    }
+    void Core::mark(REGFormat const&) noexcept {
+        mark();
+    }
+    void Core::fmark(REGFormat const&) noexcept {
+        fmark();
+    }
+    void Core::flushreg(REGFormat const&) noexcept {
+        flushreg();
+    }
+    void Core::syncf(REGFormat const&) noexcept {
+        syncf();
+    }
+    void Core::ret(CTRLFormat const&) noexcept {
+        ret();
+    }
+    void Core::inten(REGFormat const&) noexcept {
+        inten();
+    }
+    void Core::intdis(REGFormat const&) noexcept {
+        intdis();
+    }
+#define X(kind, __) \
+    void Core:: fault ## kind (CTRLFormat const& ) noexcept { \
+        fault ## kind () ; \
+    }
+#include "conditional_kinds.def"
+#undef X
 	void Core::dispatch(const Instruction& inst) noexcept {
         std::visit([this, &inst](auto&& value) {
-                using K = typename std::decay_t<decltype(value)>;
-                if constexpr (!std::is_same_v<K, Opcode::UndefinedDescription>) {
-                    inst.visit([this, &value](auto&& code) { 
-                                if constexpr (std::is_same_v<typename K::TargetKind, std::decay_t<decltype(code)> >) {
-                                    (this ->* value.Signature)(code); 
-                                } else {
-                                    throw "Illegal instruction combination!";
-                                }
-                            });
-                } else {
-                    throw "Undefined operation!";
-                }
+                    using K = typename std::decay_t<decltype(value)>;
+                    if constexpr (!std::is_same_v<K, Opcode::UndefinedDescription>) {
+                        inst.visit([this, &value](auto&& code) { 
+                                    if constexpr (std::is_same_v<typename K::TargetKind, std::decay_t<decltype(code)> >) {
+                                        (this ->* value.Signature)(code); 
+                                    } else {
+                                        // bad bad bad things have happened!
+                                        throw "Illegal instruction combination!";
+                                    }
+                                });
+                    } else {
+                        generateFault(OperationFaultSubtype::InvalidOpcode); 
+                    }
                 },
                 Opcode::determineTargetOpcode(inst));
+    }
 //		auto selectRegister = [this](const Operand& operand, NormalRegister& imm) -> NormalRegister& {
 //			if (operand.isLiteral()) {
 //				imm.set(operand.getValue());
@@ -292,5 +333,4 @@ namespace i960 {
 //		} else {
 //			generateFault(OperationFaultSubtype::InvalidOpcode); 
 //		}
-	}
 } // end namespace i960

@@ -117,7 +117,24 @@ namespace i960 {
 			void reset();
 			void initializeProcessor();
 			void processPrcb();
-        public:
+
+#define reg(name, code, arg) void name ( REGFormat const&) noexcept;
+#define cobr(name, code, arg) void name ( COBRFormat const&) noexcept;
+#define mem(name, code, arg) \
+            void name(MEMAFormat const&) noexcept; \
+            void name(MEMBFormat const&) noexcept; \
+            inline void name( std::variant<MEMAFormat, MEMBFormat> const& var) noexcept { \
+                std::visit([this](auto&& value) { name(value); }, var); \
+            }
+#define ctrl(name, code, arg) \
+            void name( CTRLFormat const&) noexcept;
+#include "opcodes.def"
+#undef reg
+#undef cobr
+#undef mem
+#undef ctrl
+#undef o
+        private:
 			Ordinal getFaultTableBaseAddress() noexcept;
 			Ordinal getControlTableBaseAddress() noexcept;
 			Ordinal getACRegisterInitialImage() noexcept;
@@ -158,22 +175,7 @@ namespace i960 {
             Ordinal getStackPointerAddress() const noexcept;
             void setFramePointer(Ordinal value) noexcept;
             Ordinal getFramePointerAddress() const noexcept;
-#define reg(name, code, arg) void name ( REGFormat const&) noexcept;
-#define cobr(name, code, arg) void name ( COBRFormat const&) noexcept;
-#define mem(name, code, arg) \
-            void name(MEMAFormat const&) noexcept; \
-            void name(MEMBFormat const&) noexcept; \
-            inline void name( std::variant<MEMAFormat, MEMBFormat> const& var) noexcept { \
-                std::visit([this](auto&& value) { name(value); }, var); \
-            }
-#define ctrl(name, code, arg) \
-            void name( CTRLFormat const&) noexcept;
-#include "opcodes.def"
-#undef reg
-#undef cobr
-#undef mem
-#undef ctrl
-#undef o
+            std::tuple<SourceRegister, SourceRegister, DestinationRegister> unpack(REGFormat const&) noexcept;
             // begin core architecture
             void callx(SourceRegister value) noexcept;
             void calls(SourceRegister value);
@@ -189,11 +191,16 @@ namespace i960 {
             void b(Integer displacement) noexcept;
             void bx(SourceRegister targ) noexcept; // TODO check these two instructions out for more variants
             void bal(Integer displacement) noexcept;
-            enum class InstructionLength {
+            enum class InstructionLength : Ordinal {
                 Single = 4,
                 Double = 8,
             };
-            void balx(__DEFAULT_TWO_ARGS__, InstructionLength length) noexcept; // TODO check these two instructions out for more variants
+            template<InstructionLength len = InstructionLength::Single>
+            void balx(__DEFAULT_TWO_ARGS__, InstructionLength length) noexcept {
+                // TODO check these two instructions out for more variants
+                dest.set<Ordinal>(_instructionPointer + static_cast<Ordinal>(length));
+                _instructionPointer = src.get<Ordinal>();
+            }
             void bbc(SourceRegister pos, SourceRegister src, Integer targ) noexcept; 
             void bbs(SourceRegister pos, SourceRegister src, Integer targ) noexcept;
             // compare and branch instructions as well
@@ -286,7 +293,7 @@ namespace i960 {
             void cmpob(SourceRegister src1, SourceRegister src2) noexcept;
             void cmpib(SourceRegister src1, SourceRegister src2) noexcept;
 			void bswap(SourceRegister src1, DestinationRegister src2) noexcept;
-        public:
+        private:
 			// templated bodies
 			template<typename T>
 			void concmpBase(SourceRegister src1, SourceRegister src2) noexcept {
@@ -386,7 +393,7 @@ namespace i960 {
 					}
 				}
 			}
-        public:
+        private:
             template<ConditionCode code>
             void genericFault() noexcept {
                 if (conditionCodeIs<code>()) {
