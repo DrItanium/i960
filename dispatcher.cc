@@ -139,7 +139,14 @@ namespace i960 {
 	Y(subi);    Y(cmpinco);  Y(cmpinci); Y(cmpdeco);
 	Y(cmpdeci); Y(mulo);     Y(muli);    Y(remo);
 	Y(remi);    Y(divo);     Y(divi);    Y(dcctl);
+    Y(modi);    Y(sysctl);   Y(icctl); 
 #undef Y
+    void Core::halt(REGFormat const& reg) noexcept {
+        halt(selectRegister(reg.decodeSrc1(), _temporary0));
+    }
+    void Core::intctl(REGFormat const& reg) noexcept {
+        intctl(selectRegister(reg.decodeSrc1(), _temporary0), getRegister(reg.decodeSrcDest()));
+    }
 #define Z(op) \
     void Core:: op (REGFormat const& fmt) noexcept { \
         auto opSrcDest = fmt.decodeSrcDest(); \
@@ -404,38 +411,33 @@ namespace i960 {
         prepareRegisters(ma);
         callx(_temporary0);
     }
-//		} else if (desc.isCtrl()) {
-//			switch (desc) {
-//#define Y(kind) case Opcode:: kind : kind ( inst._ctrl.decodeDisplacement() ) ; break
-//                Y(b);
-//                Y(call);
-//                Y(bal);
-//#define X(kind, __) Y(b ## kind);
-//#include "conditional_kinds.def"
-//#undef X
-//#undef Y
-//				default: 
-//					generateFault(OperationFaultSubtype::InvalidOpcode); 
-//                    return;
-//			}
-//		} else if (desc.isCobr()) {
-//			switch(desc) {
-//#define Y(kind) case Opcode:: kind : kind ( selectRegister(inst._cobr.decodeSrc1(), _temporary0), getRegister(inst._cobr.decodeSrc2()), inst._cobr.decodeDisplacement()); break
-//#define X(kind) Y( cmpob ## kind ) 
-//				Y(bbc); Y(bbs); X(e);
-//				X(ge);  X(l);   X(ne);
-//				X(le);
-//#undef X
-//#define X(kind, __) \
-//				Y(cmpib ## kind ); \
-//				case Opcode:: test ## kind : test ## kind (selectRegister(inst._cobr.decodeSrc1(), _temporary0)); break;
-//#include "conditional_kinds.def"
-//#undef X
-//#undef Y
-//				default: 
-//					generateFault(OperationFaultSubtype::InvalidOpcode); 
-//                    return;
-//			}
+#define Y(op) \
+    void Core:: op ( CTRLFormat const& ctrl) noexcept { \
+        op ( ctrl.decodeDisplacement()); \
+    }
+    Y(b); Y(call); Y(bal);
+#define X(kind, __) Y( b ## kind );
+#include "conditional_kinds.def"
+#undef X
+#undef Y
+#define Y(op) \
+    void Core:: op ( COBRFormat const& cobr) noexcept { \
+        op ( selectRegister(cobr.decodeSrc1(), _temporary0), \
+                getRegister(cobr.decodeSrc2()), \
+                cobr.decodeDisplacement()); \
+    }
+    Y(bbc); Y(bbs);          
+#define X(op) Y(cmpob ## op)
+    X(e); X(ge); X(l); 
+    X(ne); X(le);
+#undef X
+#define X(op, __) Y(cmpib ## op); \
+        void Core:: test ## op (COBRFormat const& cobr) noexcept { \
+            test ## op ( selectRegister(cobr.decodeSrc1(), _temporary0)); \
+        }
+#include "conditional_kinds.def"
+#undef X
+#undef Y
 	void Core::dispatch(const Instruction& inst) noexcept {
         std::visit([this, &inst](auto&& value) {
                     using K = typename std::decay_t<decltype(value)>;
