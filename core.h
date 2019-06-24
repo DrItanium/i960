@@ -118,13 +118,17 @@ namespace i960 {
 			void initializeProcessor();
 			void processPrcb();
             using MemFormat = std::variant<MEMAFormat, MEMBFormat>;
+            enum class InstructionLength : Ordinal {
+                Single = 4,
+                Double = 8,
+            };
 #define reg(name, code, arg) void name ( REGFormat const&) noexcept;
 #define cobr(name, code, arg) void name ( COBRFormat const&) noexcept;
 #define mem(name, code, arg) \
-            void name(MEMAFormat const&) noexcept; \
-            void name(MEMBFormat const&) noexcept; \
+            void name(MEMAFormat const&, InstructionLength) noexcept; \
+            void name(MEMBFormat const&, InstructionLength) noexcept; \
             inline void name(MemFormat const& var) noexcept { \
-                std::visit([this](auto&& value) { name(value); }, var); \
+                std::visit([this](auto&& value) { name(value, prepareRegisters(value)); }, var); \
             }
 #define ctrl(name, code, arg) \
             void name( CTRLFormat const&) noexcept;
@@ -191,10 +195,6 @@ namespace i960 {
             void b(Integer displacement) noexcept;
             void bx(SourceRegister targ) noexcept; // TODO check these two instructions out for more variants
             void bal(Integer displacement) noexcept;
-            enum class InstructionLength : Ordinal {
-                Single = 4,
-                Double = 8,
-            };
             template<InstructionLength length = InstructionLength::Single>
             void balx(__DEFAULT_TWO_ARGS__) noexcept {
                 // TODO check these two instructions out for more variants
@@ -438,7 +438,7 @@ namespace i960 {
             void retrieveFromMemory(const Operand& fp) noexcept;
         private:
             NormalRegister& selectRegister(const Operand&, NormalRegister&);
-            void prepareRegisters(MEMAFormat const&) noexcept;
+            InstructionLength prepareRegisters(MEMAFormat const&) noexcept;
             InstructionLength prepareRegisters(MEMBFormat const&) noexcept;
         private:
             RegisterWindow _globalRegisters;

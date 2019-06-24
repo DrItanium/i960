@@ -204,8 +204,9 @@ namespace i960 {
             return getRegister(operand);
         }
     }
-    void Core::prepareRegisters(MEMAFormat const& ma) noexcept {
+    Core::InstructionLength Core::prepareRegisters(MEMAFormat const& ma) noexcept {
         _temporary0.set<Ordinal>(ma._offset + ma.isOffsetAddressingMode() ? 0 : getRegister(ma.decodeAbase()).get<Ordinal>());
+        return InstructionLength::Single;
     }
     Core::InstructionLength Core::prepareRegisters(MEMBFormat const& mb) noexcept {
         auto length = InstructionLength::Single;
@@ -245,170 +246,128 @@ namespace i960 {
         }
         return length;
     }
-    void Core::balx(MEMAFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::balx(MEMAFormat const& ma, InstructionLength) noexcept {
         balx<InstructionLength::Single>(_temporary0, getRegister(ma.decodeSrcDest()));
     }
-    void Core::balx(MEMBFormat const& mb) noexcept {
-        if (prepareRegisters(mb) == InstructionLength::Double) {
+    void Core::balx(MEMBFormat const& mb, InstructionLength len) noexcept {
+        if (len == InstructionLength::Double) {
             balx<InstructionLength::Double>(_temporary0, getRegister(mb.decodeSrcDest()));
         } else {
             balx<InstructionLength::Single>(_temporary0, getRegister(mb.decodeSrcDest()));
         }
     }
-    void Core::ldob(MEMAFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::ldob(MEMAFormat const& ma, InstructionLength) noexcept {
         ldob(_temporary0, getRegister(ma.decodeSrcDest()));
     }
-    void Core::ldob(MEMBFormat const& mb) noexcept {
-        prepareRegisters(mb);
+    void Core::ldob(MEMBFormat const& mb, InstructionLength) noexcept {
         ldob(_temporary0, getRegister(mb.decodeSrcDest()));
     }
-    void Core::stob(MEMAFormat const& ma) noexcept {
-        // single instruction length
-        prepareRegisters(ma);
+    void Core::stob(MEMAFormat const& ma, InstructionLength) noexcept {
         stob(getRegister(ma.decodeSrcDest()), _temporary0);
     }
-    void Core::stob(MEMBFormat const& mb) noexcept {
-        prepareRegisters(mb);
+    void Core::stob(MEMBFormat const& mb, InstructionLength) noexcept {
         stob(getRegister(mb.decodeSrcDest()), _temporary0);
     }
-    void Core::ldos(MEMAFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::ldos(MEMAFormat const& ma, InstructionLength) noexcept {
         ldos(_temporary0, getRegister(ma.decodeSrcDest()));
     }
-    void Core::ldos(MEMBFormat const& mb) noexcept {
-        prepareRegisters(mb);
+    void Core::ldos(MEMBFormat const& mb, InstructionLength) noexcept {
         ldos(_temporary0, getRegister(mb.decodeSrcDest()));
     }
-    void Core::stos(MEMAFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::stos(MEMAFormat const& ma, InstructionLength) noexcept {
         stos(getRegister(ma.decodeSrcDest()), _temporary0);
     }
-    void Core::stos(MEMBFormat const& mb) noexcept {
-        prepareRegisters(mb);
+    void Core::stos(MEMBFormat const& mb, InstructionLength) noexcept {
         stos(getRegister(mb.decodeSrcDest()), _temporary0);
     }
-    void Core::ldib(MEMAFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::ldib(MEMAFormat const& ma, InstructionLength) noexcept {
         ldib(_temporary0, getRegister(ma.decodeSrcDest()));
     }
-    void Core::ldib(MEMBFormat const& mb) noexcept {
-        prepareRegisters(mb);
+    void Core::ldib(MEMBFormat const& mb, InstructionLength) noexcept {
         ldib(_temporary0, getRegister(mb.decodeSrcDest()));
     }
-    void Core::stib(MEMAFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::stib(MEMAFormat const& ma, InstructionLength) noexcept {
         stib(getRegister(ma.decodeSrcDest()), _temporary0);
     }
-    void Core::stib(MEMBFormat const& mb) noexcept {
-        prepareRegisters(mb);
+    void Core::stib(MEMBFormat const& mb, InstructionLength) noexcept {
         stib(getRegister(mb.decodeSrcDest()), _temporary0);
     }
-    void Core::ldis(MEMAFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::ldis(MEMAFormat const& ma, InstructionLength) noexcept {
         ldis(_temporary0, getRegister(ma.decodeSrcDest()));
     }
-    void Core::ldis(MEMBFormat const& mb) noexcept {
-        prepareRegisters(mb);
+    void Core::ldis(MEMBFormat const& mb, InstructionLength) noexcept {
         ldis(_temporary0, getRegister(mb.decodeSrcDest()));
     }
-    void Core::stis(MEMAFormat const& ma) noexcept {
-        // single instruction length
-        prepareRegisters(ma);
+    void Core::stis(MEMAFormat const& ma, InstructionLength) noexcept {
         stis(getRegister(ma.decodeSrcDest()), _temporary0);
     }
-    void Core::stis(MEMBFormat const& mb) noexcept {
-        // single instruction length
-        prepareRegisters(mb);
+    void Core::stis(MEMBFormat const& mb, InstructionLength) noexcept {
         stis(getRegister(mb.decodeSrcDest()), _temporary0);
     }
-    void Core::ldl(MEMAFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::ldl(MEMAFormat const& ma, InstructionLength) noexcept {
         ldl(_temporary0, ma.decodeSrcDest());
     }
-    void Core::stl(MEMAFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::stl(MEMAFormat const& ma, InstructionLength) noexcept {
         stl(ma.decodeSrcDest(), _temporary0);
     }
-    void Core::ldl(MEMBFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::ldl(MEMBFormat const& ma, InstructionLength) noexcept {
         ldl(_temporary0, ma.decodeSrcDest());
     }
-    void Core::stl(MEMBFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::stl(MEMBFormat const& ma, InstructionLength) noexcept {
         stl(ma.decodeSrcDest(), _temporary0);
     }
-    void Core::ldt(MEMAFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::ldt(MEMAFormat const& ma, InstructionLength) noexcept {
         ldt(_temporary0, ma.decodeSrcDest());
     }
-    void Core::stt(MEMAFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::stt(MEMAFormat const& ma, InstructionLength) noexcept {
         stt(ma.decodeSrcDest(), _temporary0);
     }
-    void Core::ldt(MEMBFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::ldt(MEMBFormat const& ma, InstructionLength) noexcept {
         ldt(_temporary0, ma.decodeSrcDest());
     }
-    void Core::stt(MEMBFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::stt(MEMBFormat const& ma, InstructionLength) noexcept {
         stt(ma.decodeSrcDest(), _temporary0);
     }
-    void Core::ldq(MEMAFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::ldq(MEMAFormat const& ma, InstructionLength) noexcept {
         ldq(_temporary0, ma.decodeSrcDest());
     }
-    void Core::stq(MEMAFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::stq(MEMAFormat const& ma, InstructionLength) noexcept {
         stq(ma.decodeSrcDest(), _temporary0);
     }
-    void Core::ldq(MEMBFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::ldq(MEMBFormat const& ma, InstructionLength) noexcept {
         ldq(_temporary0, ma.decodeSrcDest());
     }
-    void Core::stq(MEMBFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::stq(MEMBFormat const& ma, InstructionLength) noexcept {
         stq(ma.decodeSrcDest(), _temporary0);
     }
-    void Core::st(MEMAFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::st(MEMAFormat const& ma, InstructionLength) noexcept {
         st(getRegister(ma.decodeSrcDest()), _temporary0);
     }
-    void Core::st(MEMBFormat const& mb) noexcept {
-        prepareRegisters(mb);
+    void Core::st(MEMBFormat const& mb, InstructionLength) noexcept {
         st(getRegister(mb.decodeSrcDest()), _temporary0);
     }
-    void Core::ld(MEMAFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::ld(MEMAFormat const& ma, InstructionLength) noexcept {
         ld(_temporary0, getRegister(ma.decodeSrcDest()));
     }
-    void Core::ld(MEMBFormat const& mb) noexcept {
-        prepareRegisters(mb);
+    void Core::ld(MEMBFormat const& mb, InstructionLength) noexcept {
         ld(_temporary0, getRegister( mb.decodeSrcDest()));
     }
-    void Core::lda(MEMAFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::lda(MEMAFormat const& ma, InstructionLength) noexcept {
         lda(_temporary0, getRegister(ma.decodeSrcDest()));
     }
-    void Core::lda(MEMBFormat const& mb) noexcept {
-        prepareRegisters(mb);
+    void Core::lda(MEMBFormat const& mb, InstructionLength) noexcept {
         lda(_temporary0, getRegister( mb.decodeSrcDest()));
     }
-    void Core::bx(MEMAFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::bx(MEMAFormat const&, InstructionLength) noexcept {
         bx(_temporary0);
     }
-    void Core::bx(MEMBFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::bx(MEMBFormat const&, InstructionLength) noexcept {
         bx(_temporary0);
     }
-    void Core::callx(MEMAFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::callx(MEMAFormat const&, InstructionLength) noexcept {
         callx(_temporary0);
     }
-    void Core::callx(MEMBFormat const& ma) noexcept {
-        prepareRegisters(ma);
+    void Core::callx(MEMBFormat const&, InstructionLength) noexcept {
         callx(_temporary0);
     }
 #define Y(op) \
