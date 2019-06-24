@@ -83,18 +83,6 @@ namespace i960 {
             }
         }
     }
-    void Core::bbc(COBRFormat const& fmt) noexcept {
-
-    }
-    void Core::opxor(REGFormat const& fmt) noexcept {
-
-    }
-    void Core::xnor(REGFormat const& fmt) noexcept {
-
-    }
-    void Core::sysctl(REGFormat const& fmt) noexcept {
-
-    }
     void Core::mark(REGFormat const&) noexcept {
         mark();
     }
@@ -122,24 +110,44 @@ namespace i960 {
     }
 #include "conditional_kinds.def"
 #undef X
-	void Core::dispatch(const Instruction& inst) noexcept {
-        std::visit([this, &inst](auto&& value) {
-                    using K = typename std::decay_t<decltype(value)>;
-                    if constexpr (!std::is_same_v<K, Opcode::UndefinedDescription>) {
-                        inst.visit([this, &value](auto&& code) { 
-                                    if constexpr (std::is_same_v<typename K::TargetKind, std::decay_t<decltype(code)> >) {
-                                        (this ->* value.Signature)(code); 
-                                    } else {
-                                        // bad bad bad things have happened!
-                                        throw "Illegal instruction combination!";
-                                    }
-                                });
-                    } else {
-                        generateFault(OperationFaultSubtype::InvalidOpcode); 
-                    }
-                },
-                Opcode::determineTargetOpcode(inst));
+    // TODO It is impossible for m3 to be set when srcDest is used as a dest, error out before hand
+#define Y(op, kind) \
+    void Core:: op ## kind ( REGFormat const& fmt) noexcept { \
+		auto selectRegister = [this](const Operand& operand, NormalRegister& imm) -> NormalRegister& { \
+			if (operand.isLiteral()) { \
+				imm.set(operand.getValue()); \
+				return imm; \
+			} else { \
+				return getRegister(operand); \
+			} \
+		}; \
+        auto opSrc2 = fmt.decodeSrc2(); \
+        auto opSrcDest = fmt.decodeSrcDest(); \
+        NormalRegister& src1 = selectRegister(fmt.decodeSrc1(), _temporary0); \
+        NormalRegister& src2 = selectRegister(opSrc2, _temporary1); \
+        NormalRegister& srcDest = selectRegister(opSrcDest, _temporary2); \
+        op ## kind (src1, src2, srcDest); \
     }
+#define X(kind, __) \
+				Y(addo, kind); \
+				Y(addi, kind); \
+				Y(subo, kind); \
+				Y(subi, kind); \
+				Y(sel, kind); 
+#include "conditional_kinds.def"
+#undef X
+	Y(notbit);  Y(clrbit);   Y(notor);   Y(opand);
+	Y(andnot);  Y(setbit);   Y(notand);  Y(opxor);
+	Y(opor);    Y(nor);      Y(xnor);    Y(ornot);
+	Y(nand);    Y(alterbit); Y(shro);    Y(shrdi);
+	Y(shri);    Y(shlo);     Y(rotate);  Y(shli);
+	Y(addc);    Y(subc);     Y(atmod);   Y(atadd);
+	Y(modify);  Y(extract);  Y(modac);   Y(modtc);
+	Y(modpc);   Y(addo);     Y(addi);    Y(subo);
+	Y(subi);    Y(cmpinco);  Y(cmpinci); Y(cmpdeco);
+	Y(cmpdeci); Y(mulo);     Y(muli);    Y(remo);
+	Y(remi);    Y(divo);     Y(divi);    Y(dcctl);
+#undef Y
 //		auto selectRegister = [this](const Operand& operand, NormalRegister& imm) -> NormalRegister& {
 //			if (operand.isLiteral()) {
 //				imm.set(operand.getValue());
@@ -148,24 +156,6 @@ namespace i960 {
 //				return getRegister(operand);
 //			}
 //		};
-//		if (auto desc = Opcode::getDescription(inst); desc.isUndefined()) {
-//			generateFault(OperationFaultSubtype::InvalidOpcode);
-//		} else if (desc.hasZeroArguments()) {
-//			// these operations require no further decoding effort so short
-//			// circuit them :D
-//			switch (desc) {
-//#define Y(kind) case Opcode:: kind :  kind () ; break;
-//#define X(kind, __) Y(fault ## kind );
-//				Y(mark);  Y(fmark); Y(flushreg); 
-//				Y(syncf); Y(ret);   Y(inten);
-//				Y(intdis);
-//#include "conditional_kinds.def"
-//#undef X
-//#undef Y
-//                default: 
-//                    generateFault(OperationFaultSubtype::InvalidOpcode); 
-//                    break;
-//			}
 //		} else if (desc.isReg()) {
 //			auto reg = inst._reg;
 //			auto opSrc2 = reg.decodeSrc2();
@@ -209,14 +199,6 @@ namespace i960 {
 //				Y(eshro, (src1, opSrc2, srcDest));
 //				Y(emul, (src1, src2, opSrcDest));
 //				Y(ediv, (src1, opSrc2, opSrcDest));
-//#define X(kind, __) \
-//				Op3Arg(addo ## kind); \
-//				Op3Arg(addi ## kind); \
-//				Op3Arg(subo ## kind); \
-//				Op3Arg(subi ## kind); \
-//				Op3Arg(sel ## kind); 
-//#include "conditional_kinds.def"
-//#undef X
 //#undef Op3Arg
 //#undef Op2Arg
 //#undef Y
@@ -333,4 +315,22 @@ namespace i960 {
 //		} else {
 //			generateFault(OperationFaultSubtype::InvalidOpcode); 
 //		}
+	void Core::dispatch(const Instruction& inst) noexcept {
+        std::visit([this, &inst](auto&& value) {
+                    using K = typename std::decay_t<decltype(value)>;
+                    if constexpr (!std::is_same_v<K, Opcode::UndefinedDescription>) {
+                        inst.visit([this, &value](auto&& code) { 
+                                    if constexpr (std::is_same_v<typename K::TargetKind, std::decay_t<decltype(code)> >) {
+                                        (this ->* value.Signature)(code); 
+                                    } else {
+                                        // bad bad bad things have happened!
+                                        throw "Illegal instruction combination!";
+                                    }
+                                });
+                    } else {
+                        generateFault(OperationFaultSubtype::InvalidOpcode); 
+                    }
+                },
+                Opcode::determineTargetOpcode(inst));
+    }
 } // end namespace i960
