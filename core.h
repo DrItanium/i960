@@ -117,13 +117,13 @@ namespace i960 {
 			void reset();
 			void initializeProcessor();
 			void processPrcb();
-
+            using MemFormat = std::variant<MEMAFormat, MEMBFormat>;
 #define reg(name, code, arg) void name ( REGFormat const&) noexcept;
 #define cobr(name, code, arg) void name ( COBRFormat const&) noexcept;
 #define mem(name, code, arg) \
             void name(MEMAFormat const&) noexcept; \
             void name(MEMBFormat const&) noexcept; \
-            inline void name( std::variant<MEMAFormat, MEMBFormat> const& var) noexcept { \
+            inline void name(MemFormat const& var) noexcept { \
                 std::visit([this](auto&& value) { name(value); }, var); \
             }
 #define ctrl(name, code, arg) \
@@ -195,8 +195,8 @@ namespace i960 {
                 Single = 4,
                 Double = 8,
             };
-            template<InstructionLength len = InstructionLength::Single>
-            void balx(__DEFAULT_TWO_ARGS__, InstructionLength length) noexcept {
+            template<InstructionLength length = InstructionLength::Single>
+            void balx(__DEFAULT_TWO_ARGS__) noexcept {
                 // TODO check these two instructions out for more variants
                 dest.set<Ordinal>(_instructionPointer + static_cast<Ordinal>(length));
                 _instructionPointer = src.get<Ordinal>();
