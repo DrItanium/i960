@@ -438,6 +438,8 @@ namespace i960 {
             void retrieveFromMemory(const Operand& fp) noexcept;
         private:
             NormalRegister& selectRegister(const Operand&, NormalRegister&);
+            void prepareRegisters(MEMAFormat const&) noexcept;
+            InstructionLength prepareRegisters(MEMBFormat const&) noexcept;
         private:
             RegisterWindow _globalRegisters;
             // The hardware implementations use register sets, however

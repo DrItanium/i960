@@ -197,13 +197,10 @@ namespace i960 {
             return getRegister(operand);
         }
     }
-    void Core::balx(MEMAFormat const& ma) noexcept {
-        // single instruction length
+    void Core::prepareRegisters(MEMAFormat const& ma) noexcept {
         _temporary0.set<Ordinal>(ma._offset + ma.isOffsetAddressingMode() ? 0 : getRegister(ma.decodeAbase()).get<Ordinal>());
-        balx<InstructionLength::Single>(_temporary0, getRegister(ma.decodeSrcDest()));
     }
-    void Core::balx(MEMBFormat const& mb) noexcept {
-        // single instruction length
+    InstructionLength Core::prepareRegisters(MEMBFormat const& mb) noexcept {
         auto length = InstructionLength::Single;
         using E = std::decay_t<decltype(mb)>::AddressingModes;
         auto index = mb._index;
@@ -237,379 +234,175 @@ namespace i960 {
                 break;
             default: 
                 generateFault(OperationFaultSubtype::InvalidOpcode); 
-                return;
+                return length;
         }
-        if (length == InstructionLength::Double) {
+        return length;
+    }
+    void Core::balx(MEMAFormat const& ma) noexcept {
+        prepareRegisters(ma);
+        balx<InstructionLength::Single>(_temporary0, getRegister(ma.decodeSrcDest()));
+    }
+    void Core::balx(MEMBFormat const& mb) noexcept {
+        if (prepareRegisters(mb) == InstructionLength::Double) {
             balx<InstructionLength::Double>(_temporary0, getRegister(mb.decodeSrcDest()));
         } else {
             balx<InstructionLength::Single>(_temporary0, getRegister(mb.decodeSrcDest()));
         }
     }
-//#define Y(kind, a, b) case Opcode:: kind : kind ( a , b ) ; break;
-//#define YISSD(kind) Y(kind, _temporary0, getRegister(mem.decodeSrcDest()));
-//#define YSDIS(kind) Y(kind, getRegister(mem.decodeSrcDest()), _temporary0);
-//#define ZIS(kind) case Opcode:: kind : kind ( _temporary0 ) ; break;
-//#define LDP(suffix) \
-//				YISSD(ld ## suffix); \
-//				YSDIS(st ## suffix);
-//#define WLDP(suffix) \
-//				Y(ld ## suffix, _temporary0, mem.decodeSrcDest()); \
-//				Y(st ## suffix, mem.decodeSrcDest(), _temporary0 ); 
-//				LDP(ob);     LDP(os);   LDP(ib); LDP(is);
-//				WLDP(l);     WLDP(t);   WLDP(q); 
-//				YSDIS(st);   YISSD(ld); YISSD(lda); 
-//				ZIS(bx);   ZIS(callx);
     void Core::ldob(MEMAFormat const& ma) noexcept {
-        // single instruction length
-        _temporary0.set<Ordinal>(ma._offset + ma.isOffsetAddressingMode() ? 0 : getRegister(ma.decodeAbase()).get<Ordinal>());
+        prepareRegisters(ma);
         ldob(_temporary0, getRegister(ma.decodeSrcDest()));
     }
     void Core::ldob(MEMBFormat const& mb) noexcept {
-        // single instruction length
-        auto length = InstructionLength::Single;
-        using E = std::decay_t<decltype(mb)>::AddressingModes;
-        auto index = mb._index;
-        auto scale = mb.getScaleFactor();
-        auto displacement = 0u;
-        if (mb.has32bitDisplacement()) {
-            displacement = mb.get32bitDisplacement();
-            length = InstructionLength::Double;
-        }
-        switch (auto abase = getRegister(mb.decodeAbase()); mb.getAddressingMode()) {
-            case E::Abase:
-                _temporary0.move(abase);
-                break;
-            case E::IP_Plus_Displacement_Plus_8:
-                _temporary0.set<Ordinal>(_instructionPointer + displacement + 8);
-                break;
-            case E::Abase_Plus_Index_Times_2_Pow_Scale:
-                _temporary0.set<Ordinal>(abase.get<Ordinal>() + index * scale);
-                break;
-            case E::Displacement:
-                _temporary0.set(displacement);
-                break;
-            case E::Abase_Plus_Displacement:
-                _temporary0.set(displacement + abase.get<Ordinal>());
-                break;
-            case E::Index_Times_2_Pow_Scale_Plus_Displacement:
-                _temporary0.set(index * scale + displacement);
-                break;
-            case E::Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement:
-                _temporary0.set(abase.get<Ordinal>() + index * scale + displacement);
-                break;
-            default: 
-                generateFault(OperationFaultSubtype::InvalidOpcode); 
-                return;
-        }
+        prepareRegisters(mb);
         ldob(_temporary0, getRegister(mb.decodeSrcDest()));
     }
     void Core::stob(MEMAFormat const& ma) noexcept {
         // single instruction length
-        _temporary0.set<Ordinal>(ma._offset + ma.isOffsetAddressingMode() ? 0 : getRegister(ma.decodeAbase()).get<Ordinal>());
+        prepareRegisters(ma);
         stob(getRegister(ma.decodeSrcDest()), _temporary0);
     }
-    void Core::ldob(MEMBFormat const& mb) noexcept {
-        // single instruction length
-        auto length = InstructionLength::Single;
-        using E = std::decay_t<decltype(mb)>::AddressingModes;
-        auto index = mb._index;
-        auto scale = mb.getScaleFactor();
-        auto displacement = 0u;
-        if (mb.has32bitDisplacement()) {
-            displacement = mb.get32bitDisplacement();
-            length = InstructionLength::Double;
-        }
-        switch (auto abase = getRegister(mb.decodeAbase()); mb.getAddressingMode()) {
-            case E::Abase:
-                _temporary0.move(abase);
-                break;
-            case E::IP_Plus_Displacement_Plus_8:
-                _temporary0.set<Ordinal>(_instructionPointer + displacement + 8);
-                break;
-            case E::Abase_Plus_Index_Times_2_Pow_Scale:
-                _temporary0.set<Ordinal>(abase.get<Ordinal>() + index * scale);
-                break;
-            case E::Displacement:
-                _temporary0.set(displacement);
-                break;
-            case E::Abase_Plus_Displacement:
-                _temporary0.set(displacement + abase.get<Ordinal>());
-                break;
-            case E::Index_Times_2_Pow_Scale_Plus_Displacement:
-                _temporary0.set(index * scale + displacement);
-                break;
-            case E::Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement:
-                _temporary0.set(abase.get<Ordinal>() + index * scale + displacement);
-                break;
-            default: 
-                generateFault(OperationFaultSubtype::InvalidOpcode); 
-                return;
-        }
+    void Core::stob(MEMBFormat const& mb) noexcept {
+        prepareRegisters(mb);
         stob(getRegister(mb.decodeSrcDest()), _temporary0);
     }
     void Core::ldos(MEMAFormat const& ma) noexcept {
-        // single instruction length
-        _temporary0.set<Ordinal>(ma._offset + ma.isOffsetAddressingMode() ? 0 : getRegister(ma.decodeAbase()).get<Ordinal>());
+        prepareRegisters(ma);
         ldos(_temporary0, getRegister(ma.decodeSrcDest()));
     }
     void Core::ldos(MEMBFormat const& mb) noexcept {
-        // single instruction length
-        auto length = InstructionLength::Single;
-        using E = std::decay_t<decltype(mb)>::AddressingModes;
-        auto index = mb._index;
-        auto scale = mb.getScaleFactor();
-        auto displacement = 0u;
-        if (mb.has32bitDisplacement()) {
-            displacement = mb.get32bitDisplacement();
-            length = InstructionLength::Double;
-        }
-        switch (auto abase = getRegister(mb.decodeAbase()); mb.getAddressingMode()) {
-            case E::Abase:
-                _temporary0.move(abase);
-                break;
-            case E::IP_Plus_Displacement_Plus_8:
-                _temporary0.set<Ordinal>(_instructionPointer + displacement + 8);
-                break;
-            case E::Abase_Plus_Index_Times_2_Pow_Scale:
-                _temporary0.set<Ordinal>(abase.get<Ordinal>() + index * scale);
-                break;
-            case E::Displacement:
-                _temporary0.set(displacement);
-                break;
-            case E::Abase_Plus_Displacement:
-                _temporary0.set(displacement + abase.get<Ordinal>());
-                break;
-            case E::Index_Times_2_Pow_Scale_Plus_Displacement:
-                _temporary0.set(index * scale + displacement);
-                break;
-            case E::Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement:
-                _temporary0.set(abase.get<Ordinal>() + index * scale + displacement);
-                break;
-            default: 
-                generateFault(OperationFaultSubtype::InvalidOpcode); 
-                return;
-        }
+        prepareRegisters(mb);
         ldos(_temporary0, getRegister(mb.decodeSrcDest()));
     }
     void Core::stos(MEMAFormat const& ma) noexcept {
-        // single instruction length
-        _temporary0.set<Ordinal>(ma._offset + ma.isOffsetAddressingMode() ? 0 : getRegister(ma.decodeAbase()).get<Ordinal>());
+        prepareRegisters(ma);
         stos(getRegister(ma.decodeSrcDest()), _temporary0);
     }
-    void Core::ldos(MEMBFormat const& mb) noexcept {
-        // single instruction length
-        auto length = InstructionLength::Single;
-        using E = std::decay_t<decltype(mb)>::AddressingModes;
-        auto index = mb._index;
-        auto scale = mb.getScaleFactor();
-        auto displacement = 0u;
-        if (mb.has32bitDisplacement()) {
-            displacement = mb.get32bitDisplacement();
-            length = InstructionLength::Double;
-        }
-        switch (auto abase = getRegister(mb.decodeAbase()); mb.getAddressingMode()) {
-            case E::Abase:
-                _temporary0.move(abase);
-                break;
-            case E::IP_Plus_Displacement_Plus_8:
-                _temporary0.set<Ordinal>(_instructionPointer + displacement + 8);
-                break;
-            case E::Abase_Plus_Index_Times_2_Pow_Scale:
-                _temporary0.set<Ordinal>(abase.get<Ordinal>() + index * scale);
-                break;
-            case E::Displacement:
-                _temporary0.set(displacement);
-                break;
-            case E::Abase_Plus_Displacement:
-                _temporary0.set(displacement + abase.get<Ordinal>());
-                break;
-            case E::Index_Times_2_Pow_Scale_Plus_Displacement:
-                _temporary0.set(index * scale + displacement);
-                break;
-            case E::Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement:
-                _temporary0.set(abase.get<Ordinal>() + index * scale + displacement);
-                break;
-            default: 
-                generateFault(OperationFaultSubtype::InvalidOpcode); 
-                return;
-        }
+    void Core::stos(MEMBFormat const& mb) noexcept {
+        prepareRegisters(mb);
         stos(getRegister(mb.decodeSrcDest()), _temporary0);
     }
     void Core::ldib(MEMAFormat const& ma) noexcept {
-        // single instruction length
-        _temporary0.set<Ordinal>(ma._offset + ma.isOffsetAddressingMode() ? 0 : getRegister(ma.decodeAbase()).get<Ordinal>());
+        prepareRegisters(ma);
         ldib(_temporary0, getRegister(ma.decodeSrcDest()));
     }
     void Core::ldib(MEMBFormat const& mb) noexcept {
-        // single instruction length
-        auto length = InstructionLength::Single;
-        using E = std::decay_t<decltype(mb)>::AddressingModes;
-        auto index = mb._index;
-        auto scale = mb.getScaleFactor();
-        auto displacement = 0u;
-        if (mb.has32bitDisplacement()) {
-            displacement = mb.get32bitDisplacement();
-            length = InstructionLength::Double;
-        }
-        switch (auto abase = getRegister(mb.decodeAbase()); mb.getAddressingMode()) {
-            case E::Abase:
-                _temporary0.move(abase);
-                break;
-            case E::IP_Plus_Displacement_Plus_8:
-                _temporary0.set<Ordinal>(_instructionPointer + displacement + 8);
-                break;
-            case E::Abase_Plus_Index_Times_2_Pow_Scale:
-                _temporary0.set<Ordinal>(abase.get<Ordinal>() + index * scale);
-                break;
-            case E::Displacement:
-                _temporary0.set(displacement);
-                break;
-            case E::Abase_Plus_Displacement:
-                _temporary0.set(displacement + abase.get<Ordinal>());
-                break;
-            case E::Index_Times_2_Pow_Scale_Plus_Displacement:
-                _temporary0.set(index * scale + displacement);
-                break;
-            case E::Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement:
-                _temporary0.set(abase.get<Ordinal>() + index * scale + displacement);
-                break;
-            default: 
-                generateFault(OperationFaultSubtype::InvalidOpcode); 
-                return;
-        }
+        prepareRegisters(mb);
         ldib(_temporary0, getRegister(mb.decodeSrcDest()));
     }
     void Core::stib(MEMAFormat const& ma) noexcept {
-        // single instruction length
-        _temporary0.set<Ordinal>(ma._offset + ma.isOffsetAddressingMode() ? 0 : getRegister(ma.decodeAbase()).get<Ordinal>());
+        prepareRegisters(ma);
         stib(getRegister(ma.decodeSrcDest()), _temporary0);
     }
-    void Core::ldib(MEMBFormat const& mb) noexcept {
-        // single instruction length
-        auto length = InstructionLength::Single;
-        using E = std::decay_t<decltype(mb)>::AddressingModes;
-        auto index = mb._index;
-        auto scale = mb.getScaleFactor();
-        auto displacement = 0u;
-        if (mb.has32bitDisplacement()) {
-            displacement = mb.get32bitDisplacement();
-            length = InstructionLength::Double;
-        }
-        switch (auto abase = getRegister(mb.decodeAbase()); mb.getAddressingMode()) {
-            case E::Abase:
-                _temporary0.move(abase);
-                break;
-            case E::IP_Plus_Displacement_Plus_8:
-                _temporary0.set<Ordinal>(_instructionPointer + displacement + 8);
-                break;
-            case E::Abase_Plus_Index_Times_2_Pow_Scale:
-                _temporary0.set<Ordinal>(abase.get<Ordinal>() + index * scale);
-                break;
-            case E::Displacement:
-                _temporary0.set(displacement);
-                break;
-            case E::Abase_Plus_Displacement:
-                _temporary0.set(displacement + abase.get<Ordinal>());
-                break;
-            case E::Index_Times_2_Pow_Scale_Plus_Displacement:
-                _temporary0.set(index * scale + displacement);
-                break;
-            case E::Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement:
-                _temporary0.set(abase.get<Ordinal>() + index * scale + displacement);
-                break;
-            default: 
-                generateFault(OperationFaultSubtype::InvalidOpcode); 
-                return;
-        }
+    void Core::stib(MEMBFormat const& mb) noexcept {
+        prepareRegisters(mb);
         stib(getRegister(mb.decodeSrcDest()), _temporary0);
     }
     void Core::ldis(MEMAFormat const& ma) noexcept {
-        // single instruction length
-        _temporary0.set<Ordinal>(ma._offset + ma.isOffsetAddressingMode() ? 0 : getRegister(ma.decodeAbase()).get<Ordinal>());
+        prepareRegisters(ma);
         ldis(_temporary0, getRegister(ma.decodeSrcDest()));
     }
     void Core::ldis(MEMBFormat const& mb) noexcept {
-        // single instruction length
-        auto length = InstructionLength::Single;
-        using E = std::decay_t<decltype(mb)>::AddressingModes;
-        auto index = mb._index;
-        auto scale = mb.getScaleFactor();
-        auto displacement = 0u;
-        if (mb.has32bitDisplacement()) {
-            displacement = mb.get32bitDisplacement();
-            length = InstructionLength::Double;
-        }
-        switch (auto abase = getRegister(mb.decodeAbase()); mb.getAddressingMode()) {
-            case E::Abase:
-                _temporary0.move(abase);
-                break;
-            case E::IP_Plus_Displacement_Plus_8:
-                _temporary0.set<Ordinal>(_instructionPointer + displacement + 8);
-                break;
-            case E::Abase_Plus_Index_Times_2_Pow_Scale:
-                _temporary0.set<Ordinal>(abase.get<Ordinal>() + index * scale);
-                break;
-            case E::Displacement:
-                _temporary0.set(displacement);
-                break;
-            case E::Abase_Plus_Displacement:
-                _temporary0.set(displacement + abase.get<Ordinal>());
-                break;
-            case E::Index_Times_2_Pow_Scale_Plus_Displacement:
-                _temporary0.set(index * scale + displacement);
-                break;
-            case E::Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement:
-                _temporary0.set(abase.get<Ordinal>() + index * scale + displacement);
-                break;
-            default: 
-                generateFault(OperationFaultSubtype::InvalidOpcode); 
-                return;
-        }
+        prepareRegisters(mb);
         ldis(_temporary0, getRegister(mb.decodeSrcDest()));
     }
     void Core::stis(MEMAFormat const& ma) noexcept {
         // single instruction length
-        _temporary0.set<Ordinal>(ma._offset + ma.isOffsetAddressingMode() ? 0 : getRegister(ma.decodeAbase()).get<Ordinal>());
+        prepareRegisters(pa);
         stis(getRegister(ma.decodeSrcDest()), _temporary0);
     }
-    void Core::ldis(MEMBFormat const& mb) noexcept {
+    void Core::stis(MEMBFormat const& mb) noexcept {
         // single instruction length
-        auto length = InstructionLength::Single;
-        using E = std::decay_t<decltype(mb)>::AddressingModes;
-        auto index = mb._index;
-        auto scale = mb.getScaleFactor();
-        auto displacement = 0u;
-        if (mb.has32bitDisplacement()) {
-            displacement = mb.get32bitDisplacement();
-            length = InstructionLength::Double;
-        }
-        switch (auto abase = getRegister(mb.decodeAbase()); mb.getAddressingMode()) {
-            case E::Abase:
-                _temporary0.move(abase);
-                break;
-            case E::IP_Plus_Displacement_Plus_8:
-                _temporary0.set<Ordinal>(_instructionPointer + displacement + 8);
-                break;
-            case E::Abase_Plus_Index_Times_2_Pow_Scale:
-                _temporary0.set<Ordinal>(abase.get<Ordinal>() + index * scale);
-                break;
-            case E::Displacement:
-                _temporary0.set(displacement);
-                break;
-            case E::Abase_Plus_Displacement:
-                _temporary0.set(displacement + abase.get<Ordinal>());
-                break;
-            case E::Index_Times_2_Pow_Scale_Plus_Displacement:
-                _temporary0.set(index * scale + displacement);
-                break;
-            case E::Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement:
-                _temporary0.set(abase.get<Ordinal>() + index * scale + displacement);
-                break;
-            default: 
-                generateFault(OperationFaultSubtype::InvalidOpcode); 
-                return;
-        }
+        prepareRegisters(mb);
         stis(getRegister(mb.decodeSrcDest()), _temporary0);
+    }
+    void Core::ldl(MEMAFormat const& ma) noexcept {
+        prepareRegisters(ma);
+        ldl(_temporary0, ma.decodeSrcDest());
+    }
+    void Core::stl(MEMAFormat const& ma) noexcept {
+        prepareRegisters(ma);
+        stl(ma.decodeSrcDest(), _temporary0);
+    }
+    void Core::ldl(MEMBFormat const& ma) noexcept {
+        prepareRegisters(ma);
+        ldl(_temporary0, ma.decodeSrcDest());
+    }
+    void Core::stl(MEMBFormat const& ma) noexcept {
+        prepareRegisters(ma);
+        stl(ma.decodeSrcDest(), _temporary0);
+    }
+    void Core::ldt(MEMAFormat const& ma) noexcept {
+        prepareRegisters(ma);
+        ldt(_temporary0, ma.decodeSrcDest());
+    }
+    void Core::stt(MEMAFormat const& ma) noexcept {
+        prepareRegisters(ma);
+        stt(ma.decodeSrcDest(), _temporary0);
+    }
+    void Core::ldt(MEMBFormat const& ma) noexcept {
+        prepareRegisters(ma);
+        ldt(_temporary0, ma.decodeSrcDest());
+    }
+    void Core::stt(MEMBFormat const& ma) noexcept {
+        prepareRegisters(ma);
+        stt(ma.decodeSrcDest(), _temporary0);
+    }
+    void Core::ldq(MEMAFormat const& ma) noexcept {
+        prepareRegisters(ma);
+        ldq(_temporary0, ma.decodeSrcDest());
+    }
+    void Core::stq(MEMAFormat const& ma) noexcept {
+        prepareRegisters(ma);
+        stq(ma.decodeSrcDest(), _temporary0);
+    }
+    void Core::ldq(MEMBFormat const& ma) noexcept {
+        prepareRegisters(ma);
+        ldq(_temporary0, ma.decodeSrcDest());
+    }
+    void Core::stq(MEMBFormat const& ma) noexcept {
+        prepareRegisters(ma);
+        stq(ma.decodeSrcDest(), _temporary0);
+    }
+    void Core::st(MEMAFormat const& ma) noexcept {
+        prepareRegisters(ma);
+        st(getRegister(ma.decodeSrcDest()), _temporary0);
+    }
+    void Core::st(MEMBFormat const& mb) noexcept {
+        prepareRegisters(mb);
+        st(getRegister(mb.decodeSrcDest()), _temporary0);
+    }
+    void Core::ld(MEMAFormat const& ma) noexcept {
+        prepareRegisters(ma);
+        ld(_temporary0, getRegister(ma.decodeSrcDest()));
+    }
+    void Core::ld(MEMBFormat const& mb) noexcept {
+        prepareRegisters(mb);
+        ld(_temporary0, getRegister( mb.decodeSrcDest()));
+    }
+    void Core::lda(MEMAFormat const& ma) noexcept {
+        prepareRegisters(ma);
+        lda(_temporary0, getRegister(ma.decodeSrcDest()));
+    }
+    void Core::lda(MEMBFormat const& mb) noexcept {
+        prepareRegisters(mb);
+        lda(_temporary0, getRegister( mb.decodeSrcDest()));
+    }
+    void Core::bx(MEMAFormat const& ma) noexcept {
+        prepareRegisters(ma);
+        bx(_temporary0);
+    }
+    void Core::bx(MEMBFormat const& ma) noexcept {
+        prepareRegisters(ma);
+        bx(_temporary0);
+    }
+    void Core::callx(MEMAFormat const& ma) noexcept {
+        prepareRegisters(ma);
+        callx(_temporary0);
+    }
+    void Core::callx(MEMBFormat const& ma) noexcept {
+        prepareRegisters(ma);
+        callx(_temporary0);
     }
 //		} else if (desc.isCtrl()) {
 //			switch (desc) {
