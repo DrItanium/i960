@@ -437,6 +437,8 @@ namespace i960 {
             bool registerSetNotAllocated(const Operand& fp) noexcept;
             void retrieveFromMemory(const Operand& fp) noexcept;
         private:
+            NormalRegister& selectRegister(const Operand&, NormalRegister&);
+        private:
             RegisterWindow _globalRegisters;
             // The hardware implementations use register sets, however
             // to start with, we should just follow the logic as is and 

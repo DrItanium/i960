@@ -113,14 +113,6 @@ namespace i960 {
     // TODO It is impossible for m3 to be set when srcDest is used as a dest, error out before hand
 #define Y(op) \
     void Core:: op ( REGFormat const& fmt) noexcept { \
-		auto selectRegister = [this](const Operand& operand, NormalRegister& imm) -> NormalRegister& { \
-			if (operand.isLiteral()) { \
-				imm.set(operand.getValue()); \
-				return imm; \
-			} else { \
-				return getRegister(operand); \
-			} \
-		}; \
         auto opSrc2 = fmt.decodeSrc2(); \
         auto opSrcDest = fmt.decodeSrcDest(); \
         NormalRegister& src1 = selectRegister(fmt.decodeSrc1(), _temporary0); \
@@ -150,14 +142,6 @@ namespace i960 {
 #undef Y
 #define Z(op) \
     void Core:: op (REGFormat const& fmt) noexcept { \
-		auto selectRegister = [this](const Operand& operand, NormalRegister& imm) -> NormalRegister& { \
-			if (operand.isLiteral()) { \
-				imm.set(operand.getValue()); \
-				return imm; \
-			} else { \
-				return getRegister(operand); \
-			} \
-		}; \
         auto opSrcDest = fmt.decodeSrcDest(); \
         NormalRegister& src1 = selectRegister(fmt.decodeSrc1(), _temporary0); \
         NormalRegister& srcDest = selectRegister(opSrcDest, _temporary2); \
@@ -169,14 +153,6 @@ namespace i960 {
 #undef Z
 #define X(op) \
     void Core:: op ( REGFormat const& fmt) noexcept { \
-		auto selectRegister = [this](const Operand& operand, NormalRegister& imm) -> NormalRegister& { \
-			if (operand.isLiteral()) { \
-				imm.set(operand.getValue()); \
-				return imm; \
-			} else { \
-				return getRegister(operand); \
-			} \
-		}; \
         auto opSrc2 = fmt.decodeSrc2(); \
         NormalRegister& src1 = selectRegister(fmt.decodeSrc1(), _temporary0); \
         NormalRegister& src2 = selectRegister(opSrc2, _temporary1); \
@@ -185,6 +161,42 @@ namespace i960 {
                 X(scanbyte); X(cmpos); X(cmpis);
                 X(cmpob);    X(cmpib); X(bswap);
 #undef X
+    void Core::mov(REGFormat const& reg) noexcept { mov(reg.decodeSrc1(), reg.decodeSrcDest()); }
+    void Core::movl(REGFormat const& reg) noexcept { movl(reg.decodeSrc1(), reg.decodeSrcDest()); }
+    void Core::movt(REGFormat const& reg) noexcept { movt(reg.decodeSrc1(), reg.decodeSrcDest()); }
+    void Core::movq(REGFormat const& reg) noexcept { movq(reg.decodeSrc1(), reg.decodeSrcDest()); }
+    void Core::calls(REGFormat const& reg) noexcept {
+        calls(selectRegister(reg.decodeSrc1(), _temporary0));
+    }
+    void Core::eshro(REGFormat const& reg) noexcept {
+		NormalRegister& src1 = selectRegister(reg.decodeSrc1(), _temporary0);
+		// TODO It is impossible for m3 to be set when srcDest is used as a dest, error out before hand
+		NormalRegister& srcDest = selectRegister(reg.decodeSrcDest(), _temporary2);
+        eshro(src1, reg.decodeSrc2(), srcDest);
+    }
+    void Core::ediv(REGFormat const& reg) noexcept {
+		auto opSrc2 = reg.decodeSrc2();
+		auto opSrcDest = reg.decodeSrcDest();
+		NormalRegister& src1 = selectRegister(reg.decodeSrc1(), _temporary0);
+		// TODO It is impossible for m3 to be set when srcDest is used as a dest, error out before hand
+        ediv(src1, opSrc2, opSrcDest);
+    }
+    void Core::emul(REGFormat const& reg) noexcept {
+		auto opSrc2 = reg.decodeSrc2();
+		auto opSrcDest = reg.decodeSrcDest();
+		NormalRegister& src1 = selectRegister(reg.decodeSrc1(), _temporary0);
+		NormalRegister& src2 = selectRegister(opSrc2, _temporary1);
+		// TODO It is impossible for m3 to be set when srcDest is used as a dest, error out before hand
+        emul(src1, src2, opSrcDest);
+    }
+    NormalRegister& Core::selectRegister(const Operand& operand, NormalRegister& imm) {
+        if (operand.isLiteral()) {
+            imm.set(operand.getValue());
+            return imm;
+        } else {
+            return getRegister(operand);
+        }
+    }
 //		auto selectRegister = [this](const Operand& operand, NormalRegister& imm) -> NormalRegister& {
 //			if (operand.isLiteral()) {
 //				imm.set(operand.getValue());
@@ -201,26 +213,6 @@ namespace i960 {
 //			NormalRegister& src2 = selectRegister(opSrc2, _temporary1);
 //			// TODO It is impossible for m3 to be set when srcDest is used as a dest, error out before hand
 //			NormalRegister& srcDest = selectRegister(opSrcDest, _temporary2);
-//			switch(desc) {
-//#define Y(kind, args) case Opcode:: kind : kind args ; break 
-//#define Op3Arg(kind) Y(kind, (src1, src2, srcDest))
-//#define Op2Arg(kind) Y(kind, (src1, srcDest))
-//
-//				Y(mov, (reg.decodeSrc1(), opSrcDest));
-//				Y(movl, (reg.decodeSrc1(), opSrcDest));
-//				Y(movt, (reg.decodeSrc1(), opSrcDest));
-//				Y(movq, (reg.decodeSrc1(), opSrcDest));
-//				Y(calls, (src1));
-//				Y(eshro, (src1, opSrc2, srcDest));
-//				Y(emul, (src1, src2, opSrcDest));
-//				Y(ediv, (src1, opSrc2, opSrcDest));
-//#undef Op3Arg
-//#undef Op2Arg
-//#undef Y
-//				default: 
-//                    generateFault(OperationFaultSubtype::InvalidOpcode); 
-//                    break;
-//			}
 //		} else if (desc.isMem()) {
 //			auto mem = inst._mem;
 //            InstructionLength length = InstructionLength::Single;
