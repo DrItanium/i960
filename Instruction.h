@@ -2,7 +2,77 @@
 #define I960_INSTRUCTION_H__
 #include "types.h"
 #include "Operand.h"
+#include <variant>
 namespace i960 {
+    using EncodedInstruction = Ordinal;
+    class DecodedInstruction {
+        public:
+            constexpr explicit DecodedInstruction(EncodedInstruction enc = 0) : _enc(enc) { }
+            ~DecodedInstruction() = default;
+            constexpr auto getRawValue() const noexcept { return _enc; }
+            constexpr Ordinal getStandardOpcode() const noexcept {
+                return (0xFF00'0000 & _enc) >> 24;
+            }
+            constexpr Ordinal getExtendedOpcode() const noexcept {
+                // according to the documents, reg format opcodes 
+                // are made up of 
+                // Opcode [0,3] -> bits [7,10]
+                // Opcode [4,11] -> bits [24, 31]
+                // thus we get a 12-bit opcode out of it
+                // (opcode 11-4), (src/dest), (src2), (mode), (opcode 3-0),
+                // (special flags), (src1)
+                constexpr Ordinal extendedMask = 0b11111111'00000'00000'000'1111'00'00000;
+                constexpr Ordinal lowerMask = 0b000'1111'00'00000;
+                auto upperPortion = getStandardOpcode() << 4;
+                auto lowerFour = (lowerMask & _enc) >> 7;
+                return upperPortion | lowerFour;
+            }
+            constexpr auto isREGFormat() const noexcept {
+                auto standardOpcode = getStandardOpcode();
+                return (standardOpcode >= 0x58) &&
+                       (standardOpcode < 0x80);
+            }
+            constexpr Ordinal getOpcode() const noexcept {
+                if (isREGFormat()) {
+                    return getExtendedOpcode();
+                } else {
+                    return getStandardOpcode();
+                }
+            }
+        private:
+            EncodedInstruction _enc;
+    };
+    class REGFormatInstruction {
+        public:
+            REGFormatInstruction(const DecodedInstruction& inst);
+            ~REGFormatInstruction() = default;
+            constexpr auto getOpcode() const noexcept { return _opcode; }
+            void setOpcode(Ordinal opcode) noexcept { _opcode = opcode; }
+            constexpr auto getSrc1() const noexcept { return _src1; }
+            void setSrc1(Operand src1) noexcept { _src1 = src1; }
+            constexpr auto getSrc2() const noexcept { return _src2; }
+            void setSrc2(Operand src2) noexcept { _src2 = src2; }
+            constexpr auto getSrcDest() const noexcept { return _srcDest; }
+            void setSrcDest(Operand src3) noexcept { _srcDest = src3; }
+            constexpr auto getM1() const noexcept { return _m1; }
+            constexpr auto getM2() const noexcept { return _m2; }
+            constexpr auto getM3() const noexcept { return _m3; }
+            void setM1(bool value) noexcept { _m1 = value; }
+            void setM2(bool value) noexcept { _m2 = value; }
+            void setM3(bool value) noexcept { _m3 = value; }
+            constexpr auto getSF1() const noexcept { return _sf1; }
+            constexpr auto getSF2() const noexcept { return _sf2; }
+            void setSF1(bool value) noexcept { _sf1 = value; }
+            void setSF2(bool value) noexcept { _sf2 = value; }
+            EncodedInstruction encode() const noexcept;
+        private:
+            Ordinal _opcode;
+            Operand _src1;
+            Operand _src2;
+            Operand _srcDest;
+            bool _m1, _m2, _m3;
+            bool _sf1, _sf2;
+    };
     union Instruction {
         struct REGFormat {
             Ordinal _source1 : 5;
