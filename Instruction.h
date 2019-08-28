@@ -73,6 +73,147 @@ namespace i960 {
             bool _m1, _m2, _m3;
             bool _sf1, _sf2;
     };
+    class COBRFormatInstruction {
+        public:
+            COBRFormatInstruction(const DecodedInstruction&);
+            ~COBRFormatInstruction() = default;
+            constexpr auto getOpcode() const noexcept { return _opcode; }
+            constexpr auto getSource1() const noexcept { return _source1; }
+            constexpr auto getSource2() const noexcept { return _source2; }
+            constexpr auto getM1() const noexcept { return _m1; }
+            constexpr auto getDisplacement() const noexcept { return _displacement; }
+            /// @todo implement setters and encode operations
+        private:
+            Ordinal _opcode;
+            Operand _source1;
+            Operand _source2;
+            bool _m1;
+            Ordinal _displacement;
+    };
+    class CTRLFormatInstruction {
+        public:
+            CTRLFormatInstruction(const DecodedInstruction&);
+            ~CTRLFormatInstruction() = default;
+            constexpr auto getOpcode() const noexcept { return _opcode; }
+            constexpr auto getDisplacement() const noexcept { return _displacement; }
+        private:
+            Ordinal _opcode;
+            Ordinal _displacement;
+    };
+
+#if 0
+        union MemFormat {
+            struct MEMAFormat {
+                enum AddressingModes {
+                    Offset = 0,
+                    Abase_Plus_Offset = 1,
+                };
+                union {
+                    struct {
+                        Ordinal _offset : 12;
+                        Ordinal _unused : 1;
+                        Ordinal _md : 1;
+                        Ordinal _abase : 5;
+                        Ordinal _src_dest : 5;
+                        Ordinal _opcode : 8;
+                    };
+                    Ordinal _raw;
+                };
+                constexpr AddressingModes getAddressingMode() const noexcept {
+                    return static_cast<AddressingModes>(_md);
+                }
+				constexpr bool isOffsetAddressingMode() const noexcept {
+					return getAddressingMode() == AddressingModes::Offset;
+				}
+				constexpr auto decodeSrcDest() const noexcept {
+					return Operand(0, _src_dest);
+				}
+				constexpr auto decodeAbase() const noexcept {
+					return Operand(0, _abase);
+				}
+            };
+            struct MEMBFormat {
+                enum AddressingModes {
+                    Abase = 0b0100,
+                    IP_Plus_Displacement_Plus_8 = 0b0101,
+                    Reserved = 0b0110,
+                    Abase_Plus_Index_Times_2_Pow_Scale = 0b0111,
+                    Displacement = 0b1100,
+                    Abase_Plus_Displacement = 0b1101,
+                    Index_Times_2_Pow_Scale_Plus_Displacement = 0b1110,
+                    Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement = 0b1111,
+                };
+                union {
+                    struct {
+                        Ordinal _index : 5;
+                        Ordinal _unused : 2;
+                        Ordinal _scale : 3;
+                        Ordinal _mode : 4;
+                        Ordinal _abase : 5;
+                        Ordinal _src_dest : 5;
+                        Ordinal _opcode : 8;
+                    };
+                    struct {
+                        Ordinal _raw; // for decoding purposes
+                        Ordinal _second;
+                    };
+                };
+                constexpr AddressingModes getAddressingMode() const noexcept {
+                    return static_cast<AddressingModes>(_mode);
+                }
+                constexpr bool has32bitDisplacement() const noexcept {
+                    switch (getAddressingMode()) {
+                        case AddressingModes::Abase:
+                        case AddressingModes::Abase_Plus_Index_Times_2_Pow_Scale:
+                        case AddressingModes::Reserved:
+                            return false;
+                        default:
+                            return true;
+                    }
+                }
+                ByteOrdinal getScaleFactor() const noexcept {
+                    switch (_scale) {
+                        case 0b000: 
+                            return 1;
+                        case 0b001:
+                            return 2;
+                        case 0b010:
+                            return 4;
+                        case 0b011:
+                            return 8;
+                        case 0b100: 
+                            return 16;
+                        default:
+                            // TODO raise an invalid opcode fault instead
+                            return 0; 
+                    }
+                }
+				constexpr auto decodeSrcDest() const noexcept { return Operand(0, _src_dest); }
+				constexpr auto decodeAbase() const noexcept   { return Operand(0, _abase); }
+                constexpr auto get32bitDisplacement() const noexcept { return _second; }
+            };
+			constexpr auto decodeSrcDest() const noexcept {
+				if (isMemAFormat()) {
+					return _mema.decodeSrcDest();
+				} else {
+					return _memb.decodeSrcDest();
+				}
+			}
+			constexpr Ordinal getOpcode() const noexcept {
+				if (isMemAFormat()) {
+					return _mema._opcode;
+				} else {
+					return _memb._opcode;
+				}
+			}
+            constexpr bool isMemAFormat() const noexcept {
+                return _mema._unused == 0;
+            }
+            MEMAFormat _mema;
+            MEMBFormat _memb;
+        };
+#endif
+
     union Instruction {
         struct REGFormat {
             Ordinal _source1 : 5;
