@@ -7,11 +7,30 @@ namespace i960 {
     using EncodedInstruction = Ordinal;
     class DecodedInstruction {
         public:
-            constexpr explicit DecodedInstruction(EncodedInstruction enc = 0) : _enc(enc) { }
+            /**
+             * Construct a 64-bit opcode, the second EncodedInstruction may not
+             * be used depending on the instruction.
+             * @param first The first 32-bits
+             * @param second The second 32-bits (not used in all cases)
+             */
+            constexpr DecodedInstruction(EncodedInstruction first, EncodedInstruction second) : _enc(enc), _second(second) { }
+            /**
+             * Construct a 32-bit only opcode as though it is a 64-bit opcode
+             * (upper 32-bits are set to zero)
+             * @param first the lower 32-bits
+             */
+            constexpr explicit DecodedInstruction(EncodedInstruction first) : DecodedInstruction(first, 0) { }
             ~DecodedInstruction() = default;
-            constexpr auto getRawValue() const noexcept { return _enc; }
+            constexpr auto getLowerHalf() const noexcept { return _enc; }
+            constexpr auto getUpperHalf() const noexcept { return _second; }
+            /**
+             * Extract the 8-bit opcode as a 12-bit opcode to make it common to
+             * REG format instructions; The lower 4 bits will be zero unless it
+             * is a reg format instruction.
+             * @return the 12-bit opcode
+             */
             constexpr Ordinal getStandardOpcode() const noexcept {
-                return (0xFF00'0000 & _enc) >> 24;
+                return ((0xFF00'0000 & _enc) >> 20) & 0xFF0;
             }
             constexpr Ordinal getExtendedOpcode() const noexcept {
                 // according to the documents, reg format opcodes 
@@ -21,16 +40,15 @@ namespace i960 {
                 // thus we get a 12-bit opcode out of it
                 // (opcode 11-4), (src/dest), (src2), (mode), (opcode 3-0),
                 // (special flags), (src1)
-                constexpr Ordinal extendedMask = 0b11111111'00000'00000'000'1111'00'00000;
                 constexpr Ordinal lowerMask = 0b000'1111'00'00000;
-                auto upperPortion = getStandardOpcode() << 4;
-                auto lowerFour = (lowerMask & _enc) >> 7;
+                auto upperPortion = getStandardOpcode();
+                auto lowerFour = ((lowerMask & _enc) >> 7) & 0xF;
                 return upperPortion | lowerFour;
             }
             constexpr auto isREGFormat() const noexcept {
                 auto standardOpcode = getStandardOpcode();
-                return (standardOpcode >= 0x58) &&
-                       (standardOpcode < 0x80);
+                return (standardOpcode >= 0x580) &&
+                       (standardOpcode < 0x800);
             }
             constexpr Ordinal getOpcode() const noexcept {
                 if (isREGFormat()) {
@@ -41,6 +59,8 @@ namespace i960 {
             }
         private:
             EncodedInstruction _enc;
+            EncodedInstruction _second;
+
     };
     class REGFormatInstruction {
         public:
