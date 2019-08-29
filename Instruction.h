@@ -4,22 +4,25 @@
 #include "Operand.h"
 #include <variant>
 namespace i960 {
-    using EncodedInstruction = Ordinal;
+    using RawEncodedInstruction = Ordinal;
+    using RawDoubleEncodedInstruction = LongOrdinal;
+    using EncodedInstruction = std::variant<RawEncodedInstruction, RawDoubleEncodedInstruction>;
     class DecodedInstruction {
         public:
             /**
-             * Construct a 64-bit opcode, the second EncodedInstruction may not
+             * Construct a 64-bit opcode, the second RawEncodedInstruction may not
              * be used depending on the instruction.
              * @param first The first 32-bits
              * @param second The second 32-bits (not used in all cases)
              */
-            constexpr DecodedInstruction(EncodedInstruction first, EncodedInstruction second) : _enc(enc), _second(second) { }
+            constexpr DecodedInstruction(RawEncodedInstruction first, RawEncodedInstruction second) : _enc(enc), _second(second) { }
             /**
              * Construct a 32-bit only opcode as though it is a 64-bit opcode
              * (upper 32-bits are set to zero)
              * @param first the lower 32-bits
              */
-            constexpr explicit DecodedInstruction(EncodedInstruction first) : DecodedInstruction(first, 0) { }
+            constexpr explicit DecodedInstruction(RawEncodedInstruction first) : DecodedInstruction(first, 0) { }
+            constexpr explicit DecodedInstruction(RawDoubleEncodedInstruction value) : DecodedInstruction(RawEncodedInstruction(value), RawEncodedInstruction(value >> 32)) { }
             ~DecodedInstruction() = default;
             constexpr auto getLowerHalf() const noexcept { return _enc; }
             constexpr auto getUpperHalf() const noexcept { return _second; }
@@ -50,6 +53,17 @@ namespace i960 {
                 return (standardOpcode >= 0x580) &&
                        (standardOpcode < 0x800);
             }
+            constexpr auto isCOBRFormat() const noexcept {
+                auto standardOpcode = getStandardOpcode();
+                return (standardOpcode >= 0x200) &&
+                       (standardOpcode < 0x400);
+            }
+            constexpr auto isCTRLFormat() const noexcept {
+                return getStandardOpcode() < 0x200;
+            }
+            constexpr auto isMemFormat() const noexcept {
+                return (getStandardOpcode() >= 0x800);
+            }
             constexpr Ordinal getOpcode() const noexcept {
                 if (isREGFormat()) {
                     return getExtendedOpcode();
@@ -58,16 +72,24 @@ namespace i960 {
                 }
             }
         private:
-            EncodedInstruction _enc;
-            EncodedInstruction _second;
+            RawEncodedInstruction _enc;
+            RawEncodedInstruction _second;
 
     };
-    class REGFormatInstruction {
+    class GenericFormatInstruction {
+        public:
+            GenericFormatInstruction(const DecodedInstruction& inst) : _opcode(inst.getOpcode()) { }
+            virtual ~GenericFormatInstruction() = default;
+            constexpr auto getOpcode() const noexcept { return _opcode; }
+            inline void setOpcode(Ordinal opcode) const noexcept { _opcode = opcode; }
+            virtual EncodedInstruction encode() const noexcept = 0;
+        private:
+            Ordinal _opcode;
+    }
+    class REGFormatInstruction : public GenericFormatInstruction {
         public:
             REGFormatInstruction(const DecodedInstruction& inst);
-            ~REGFormatInstruction() = default;
-            constexpr auto getOpcode() const noexcept { return _opcode; }
-            void setOpcode(Ordinal opcode) noexcept { _opcode = opcode; }
+            virtual ~REGFormatInstruction() = default;
             constexpr auto getSrc1() const noexcept { return _src1; }
             void setSrc1(Operand src1) noexcept { _src1 = src1; }
             constexpr auto getSrc2() const noexcept { return _src2; }
@@ -84,42 +106,89 @@ namespace i960 {
             constexpr auto getSF2() const noexcept { return _sf2; }
             void setSF1(bool value) noexcept { _sf1 = value; }
             void setSF2(bool value) noexcept { _sf2 = value; }
-            EncodedInstruction encode() const noexcept;
+            virtual EncodedInstruction encode() const noexcept;
         private:
-            Ordinal _opcode;
             Operand _src1;
             Operand _src2;
             Operand _srcDest;
             bool _m1, _m2, _m3;
             bool _sf1, _sf2;
     };
-    class COBRFormatInstruction {
+    class COBRFormatInstruction : public GenericFormatInstruction {
         public:
             COBRFormatInstruction(const DecodedInstruction&);
-            ~COBRFormatInstruction() = default;
-            constexpr auto getOpcode() const noexcept { return _opcode; }
+            virtual ~COBRFormatInstruction() = default;
             constexpr auto getSource1() const noexcept { return _source1; }
             constexpr auto getSource2() const noexcept { return _source2; }
             constexpr auto getM1() const noexcept { return _m1; }
             constexpr auto getDisplacement() const noexcept { return _displacement; }
+            constexpr auto getT() const noexcept { return _t; }
+            constexpr auto getS2() const noexcept { return _s2; }
             /// @todo implement setters and encode operations
+            virtual EncodedInstruction encode() const noexcept;
         private:
-            Ordinal _opcode;
             Operand _source1;
             Operand _source2;
             bool _m1;
-            Ordinal _displacement;
+            Ordinal _displacement : 10;
+            bool _t;
+            bool _s2;
     };
-    class CTRLFormatInstruction {
+    class CTRLFormatInstruction : public GenericFormatInstruction {
         public:
             CTRLFormatInstruction(const DecodedInstruction&);
-            ~CTRLFormatInstruction() = default;
-            constexpr auto getOpcode() const noexcept { return _opcode; }
+            virtual ~CTRLFormatInstruction() = default;
             constexpr auto getDisplacement() const noexcept { return _displacement; }
+            constexpr auto getT() const noexcept { return _t; }
+            virtual EncodedInstruction encode() const noexcept override;
         private:
-            Ordinal _opcode;
             Ordinal _displacement;
+            bool _t;
     };
+    /**
+     * Generic super type for MEM class instructions
+     */
+    class MEMFormatInstruction : public GenericFormatInstruction {
+        public:
+            MEMFormatInstruction(const DecodedInstruction&);
+            virtual ~MEMFormatInstruction() = default;
+            constexpr auto getSrcDest() const noexcept { return _srcDest; }
+            constexpr auto getAbase() const noexcept { return _abase; }
+            constexpr auto getMode() const noexcept { return _mode; }
+            void setMode(ByteOrdinal mode) noexcept { _mode = mode; }
+            virtual EncodedInstruction encode() const noexcept final;
+        protected:
+            virtual EncodedInstruction encodeRest() const noexcept = 0;
+        private:
+            Opcode _srcDest;
+            ByteOrdinal _abase;
+            ByteOrdinal _mode;
+    };
+    class MEMAFormatInstruction : public MEMFormatInstruction {
+        public:
+            MEMAFormatInstruction(const DecodedInstruction&);
+            virtual ~MEMAFormatInstruction() = default;
+            constexpr auto getOffset() const noexcept { return _offset; }
+            void setOffset(Ordinal offset) const noexcept { _offset = offset; }
+            virtual void setMode(Ordinal value) noexcept override { return setUpperMode(value); }
+            virtual Ordinal getMode() const noexcept override { return getUpperMode(); }
+        protected:
+            virtual EncodedInstruction encodeRest() const noexcept override;
+        private:
+            Ordinal _offset : 12;
+    };
+    class MEMBFormatInstruction : public MEMFormatInstruction {
+        public:
+            MEMBFormatInstruction(const DecodedInstruction&);
+            virtual ~MEMBFormatInstruction() = default;
+            constexpr auto getLowerMode() const noexcept { return _lowerMode; }
+            void setLowerMode(ByteOrdinal lm) const noexcept { _lowerMode = lm; }
+            virtual Ordinal getMode() const noexcept override;
+            void setMode(Ordinal value) noexcept override; 
+        private:
+            ByteOrdinal _lowerMode; 
+
+    }
 
 #if 0
         union MemFormat {
