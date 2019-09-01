@@ -71,6 +71,7 @@ namespace i960 {
                     return getStandardOpcode();
                 }
             }
+
         private:
             RawEncodedInstruction _enc;
             RawEncodedInstruction _second;
@@ -130,7 +131,7 @@ namespace i960 {
             Operand _source1;
             Operand _source2;
             bool _m1;
-            Ordinal _displacement : 10;
+            Ordinal _displacement;
             bool _t;
             bool _s2;
     };
@@ -150,7 +151,7 @@ namespace i960 {
      */
     class MEMFormatInstruction : public GenericFormatInstruction {
         public:
-            MEMFormatInstruction(const DecodedInstruction&);
+            MEMFormatInstruction(const DecodedInstruction&, byte mode);
             virtual ~MEMFormatInstruction() = default;
             constexpr auto getSrcDest() const noexcept { return _srcDest; }
             constexpr auto getAbase() const noexcept { return _abase; }
@@ -162,6 +163,7 @@ namespace i960 {
         private:
             Opcode _srcDest;
             ByteOrdinal _abase;
+            /// @todo convert this to be part of the code structure instead of wasting space
             ByteOrdinal _mode;
     };
     class MEMAFormatInstruction : public MEMFormatInstruction {
@@ -175,7 +177,7 @@ namespace i960 {
         protected:
             virtual EncodedInstruction encodeRest() const noexcept override;
         private:
-            Ordinal _offset : 12;
+            Ordinal _offset;
     };
     class MEMBFormatInstruction : public MEMFormatInstruction {
         public:
