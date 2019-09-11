@@ -157,85 +157,48 @@ namespace i960 {
     class MEMFormatInstruction : public GenericFormatInstruction {
         public:
             using Base = GenericFormatInstruction;
-            static constexpr Ordinal srcDestMask = 0x00F80000;
-            static constexpr Ordinal srcDestShift = 19;
-            static constexpr Ordinal abaseMask   = 0x0007C000;
-            static constexpr Ordinal abaseShift = 14;
-            // upper two bits of the mode are shared between types, thus we should do the 
-            // mask of 0x3C and make a four bit type code in all cases
-            static constexpr Ordinal modeMask = 0x3C00;
-            static constexpr Ordinal modeShift = 8;
+            enum class AddressingModes : ByteOrdinal {
+                // MEMA Effective Address kinds
+                Offset = 0b00'0000,
+                Abase_Plus_Offset = 0b10'0000,
+                // MEMB Effective Address kinds
+                Abase = 0b010000,
+                IP_Plus_Displacement_Plus_8 = 0b010100,
+                Reserved = 0b011000,
+                Abase_Plus_Index_Times_2_Pow_Scale = 0b011100,
+                Displacement = 0b110000,
+                Abase_Plus_Displacement = 0b110100,
+                Index_Times_2_Pow_Scale_Plus_Displacement = 0b111000,
+                Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement = 0b111100,
+                Bad = 0xFF,
+            };
         public:
             MEMFormatInstruction(const DecodedInstruction& inst);
             ~MEMFormatInstruction() override = default;
             constexpr auto getSrcDest() const noexcept { return _srcDest; }
             constexpr auto getAbase() const noexcept { return _abase; }
-            constexpr auto getMode() const noexcept { return _mode; }
+            constexpr auto getRawMode() const noexcept { return _mode; }
             EncodedInstruction encode() const noexcept override {
                 /// @todo fix this
                 return 0u;
             }
+            constexpr auto getOffset() const noexcept { return _offset; }
+            constexpr auto getScale() const noexcept { return _scale; }
+            constexpr auto getIndex() const noexcept { return _index; }
         private:
             Operand _srcDest;
             ByteOrdinal _abase;
             ByteOrdinal _mode;
-    };
-    class MEMAFormatInstruction : public MEMFormatInstruction {
-        public:
-            using Base = MEMFormatInstruction;
-            static constexpr Ordinal offsetMask = 0xFFF;
-        public:
-            MEMAFormatInstruction(const DecodedInstruction&);
-            ~MEMAFormatInstruction() override = default;
-            constexpr auto getOffset() const noexcept { return _offset; }
-            void setOffset(Ordinal offset) noexcept { _offset = offset; }
-        private:
+            // MEMA Specific Fields 
             Ordinal _offset : 12;
-    };
-    class MEMBFormatInstruction : public MEMFormatInstruction {
-        public:
-            using Base = MEMFormatInstruction;
-        public:
-            MEMBFormatInstruction(const DecodedInstruction&);
-            ~MEMBFormatInstruction() override = default;
-            constexpr auto getScale() const noexcept { return _scale; }
-            constexpr auto getIndex() const noexcept { return _index; }
-        private:
+            // MEMB Specific Fields
             ByteOrdinal _scale;
             ByteOrdinal _index;
+            Ordinal _displacement;
     };
 
 #if 0
         union MemFormat {
-            struct MEMAFormat {
-                enum AddressingModes {
-                    Offset = 0,
-                    Abase_Plus_Offset = 1,
-                };
-                union {
-                    struct {
-                        Ordinal _offset : 12;
-                        Ordinal _unused : 1;
-                        Ordinal _md : 1;
-                        Ordinal _abase : 5;
-                        Ordinal _src_dest : 5;
-                        Ordinal _opcode : 8;
-                    };
-                    Ordinal _raw;
-                };
-                constexpr AddressingModes getAddressingMode() const noexcept {
-                    return static_cast<AddressingModes>(_md);
-                }
-				constexpr bool isOffsetAddressingMode() const noexcept {
-					return getAddressingMode() == AddressingModes::Offset;
-				}
-				constexpr auto decodeSrcDest() const noexcept {
-					return Operand(0, _src_dest);
-				}
-				constexpr auto decodeAbase() const noexcept {
-					return Operand(0, _abase);
-				}
-            };
             struct MEMBFormat {
                 enum AddressingModes {
                     Abase = 0b0100,
