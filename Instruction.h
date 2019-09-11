@@ -183,12 +183,12 @@ namespace i960 {
     class MEMAFormatInstruction : public MEMFormatInstruction {
         public:
             using Base = MEMFormatInstruction;
+            static constexpr Ordinal offsetMask = 0xFFF;
         public:
             MEMAFormatInstruction(const DecodedInstruction&);
             ~MEMAFormatInstruction() override = default;
             constexpr auto getOffset() const noexcept { return _offset; }
             void setOffset(Ordinal offset) noexcept { _offset = offset; }
-
         private:
             Ordinal _offset : 12;
     };

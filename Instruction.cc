@@ -14,9 +14,11 @@ namespace i960 {
             return shiftedValue & memAModeMask;
         }
     }
-    MEMFormatInstruction::MEMFormatInstruction(const DecodedInstruction& inst) :
-                Base(inst), 
-                _srcDest((inst.getLowerHalf() & srcDestMask) >> 19),
-                _abase((inst.getLowerHalf() & abaseMask) >> 14),
-                _mode(decodeMask(inst.getLowerHalf())) { }
+    MEMFormatInstruction::MEMFormatInstruction(const DecodedInstruction& inst) : Base(inst), 
+    _srcDest((inst.getLowerHalf() & srcDestMask) >> 19),
+    _abase((inst.getLowerHalf() & abaseMask) >> 14),
+    _mode(decodeMask(inst.getLowerHalf())) { }
+
+    MEMAFormatInstruction::MEMAFormatInstruction(const DecodedInstruction& inst) : Base(inst), 
+    _offset(inst.getLowerHalf() & offsetMask) { }
 } // end namespace i960
