@@ -164,7 +164,6 @@ namespace i960 {
                 // MEMB Effective Address kinds
                 Abase = 0b010000,
                 IP_Plus_Displacement_Plus_8 = 0b010100,
-                Reserved = 0b011000,
                 Abase_Plus_Index_Times_2_Pow_Scale = 0b011100,
                 Displacement = 0b110000,
                 Abase_Plus_Displacement = 0b110100,
@@ -178,13 +177,28 @@ namespace i960 {
             constexpr auto getSrcDest() const noexcept { return _srcDest; }
             constexpr auto getAbase() const noexcept { return _abase; }
             constexpr auto getRawMode() const noexcept { return _mode; }
-            EncodedInstruction encode() const noexcept override {
-                /// @todo fix this
-                return 0u;
-            }
+            constexpr auto getMode() const noexcept { 
+                auto mode = static_cast<AddressingModes>(_mode);
+                switch (mode) {
+                    case AddressingModes::Offset:
+                    case AddressingModes::Abase_Plus_Offset:
+                    case AddressingModes::Abase:
+                    case AddressingModes::IP_Plus_Displacement_Plus_8:
+                    case AddressingModes::Abase_Plus_Index_Times_2_Pow_Scale:
+                    case AddressingModes::Displacement:
+                    case AddressingModes::Abase_Plus_Displacement:
+                    case AddressingModes::Index_Times_2_Pow_Scale_Plus_Displacement:
+                    case AddressingModes::Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement:
+                        return mode;
+                    default:
+                        // Disallow modes that are not explicitly defined by the enumeration.
+                        return AddressingModes::Bad;
+                }
+            EncodedInstruction encode() const noexcept override;
             constexpr auto getOffset() const noexcept { return _offset; }
             constexpr auto getScale() const noexcept { return _scale; }
             constexpr auto getIndex() const noexcept { return _index; }
+            constexpr auto getDisplacement() const noexcept { return _displacement; }
         private:
             Operand _srcDest;
             ByteOrdinal _abase;
@@ -196,90 +210,6 @@ namespace i960 {
             ByteOrdinal _index;
             Ordinal _displacement;
     };
-
-#if 0
-        union MemFormat {
-            struct MEMBFormat {
-                enum AddressingModes {
-                    Abase = 0b0100,
-                    IP_Plus_Displacement_Plus_8 = 0b0101,
-                    Reserved = 0b0110,
-                    Abase_Plus_Index_Times_2_Pow_Scale = 0b0111,
-                    Displacement = 0b1100,
-                    Abase_Plus_Displacement = 0b1101,
-                    Index_Times_2_Pow_Scale_Plus_Displacement = 0b1110,
-                    Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement = 0b1111,
-                };
-                union {
-                    struct {
-                        Ordinal _index : 5;
-                        Ordinal _unused : 2;
-                        Ordinal _scale : 3;
-                        Ordinal _mode : 4;
-                        Ordinal _abase : 5;
-                        Ordinal _src_dest : 5;
-                        Ordinal _opcode : 8;
-                    };
-                    struct {
-                        Ordinal _raw; // for decoding purposes
-                        Ordinal _second;
-                    };
-                };
-                constexpr AddressingModes getAddressingMode() const noexcept {
-                    return static_cast<AddressingModes>(_mode);
-                }
-                constexpr bool has32bitDisplacement() const noexcept {
-                    switch (getAddressingMode()) {
-                        case AddressingModes::Abase:
-                        case AddressingModes::Abase_Plus_Index_Times_2_Pow_Scale:
-                        case AddressingModes::Reserved:
-                            return false;
-                        default:
-                            return true;
-                    }
-                }
-                ByteOrdinal getScaleFactor() const noexcept {
-                    switch (_scale) {
-                        case 0b000: 
-                            return 1;
-                        case 0b001:
-                            return 2;
-                        case 0b010:
-                            return 4;
-                        case 0b011:
-                            return 8;
-                        case 0b100: 
-                            return 16;
-                        default:
-                            // TODO raise an invalid opcode fault instead
-                            return 0; 
-                    }
-                }
-				constexpr auto decodeSrcDest() const noexcept { return Operand(0, _src_dest); }
-				constexpr auto decodeAbase() const noexcept   { return Operand(0, _abase); }
-                constexpr auto get32bitDisplacement() const noexcept { return _second; }
-            };
-			constexpr auto decodeSrcDest() const noexcept {
-				if (isMemAFormat()) {
-					return _mema.decodeSrcDest();
-				} else {
-					return _memb.decodeSrcDest();
-				}
-			}
-			constexpr Ordinal getOpcode() const noexcept {
-				if (isMemAFormat()) {
-					return _mema._opcode;
-				} else {
-					return _memb._opcode;
-				}
-			}
-            constexpr bool isMemAFormat() const noexcept {
-                return _mema._unused == 0;
-            }
-            MEMAFormat _mema;
-            MEMBFormat _memb;
-        };
-#endif
 
     union Instruction {
         struct REGFormat {

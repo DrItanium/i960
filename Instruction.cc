@@ -34,4 +34,9 @@ namespace i960 {
     _index((inst.getLowerHalf() & MEMBindexMask)),
     _displacement(inst.getUpperHalf()) { }
 
+    EncodedInstruction
+    MEMFormatInstruction::encode() const noexcept {
+        /// @todo implement
+        return 0u;
+    }
 } // end namespace i960
