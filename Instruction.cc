@@ -39,4 +39,21 @@ namespace i960 {
         /// @todo implement
         return 0u;
     }
+
+
+    CTRLFormatInstruction::CTRLFormatInstruction(const DecodedInstruction& inst) : Base(inst), 
+    _displacement((inst.getLowerHalf() & 0x00FFFFFC) >> 2),
+    _t((0b10 & inst.getLowerHalf()) != 0) {
+        if ((inst.getLowerHalf() & 1) != 0) {
+            /// @todo throw an exception
+        }
+    }
+
+    EncodedInstruction
+    CTRLFormatInstruction::encode() const noexcept {
+        /// @todo implement
+        return 0u;
+    }
+
+
 } // end namespace i960
