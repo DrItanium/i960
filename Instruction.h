@@ -15,7 +15,7 @@ namespace i960 {
              * @param first The first 32-bits
              * @param second The second 32-bits (not used in all cases)
              */
-            constexpr DecodedInstruction(RawEncodedInstruction first, RawEncodedInstruction second) : _enc(enc), _second(second) { }
+            constexpr DecodedInstruction(RawEncodedInstruction first, RawEncodedInstruction second) : _enc(first), _second(second) { }
             /**
              * Construct a 32-bit only opcode as though it is a 64-bit opcode
              * (upper 32-bits are set to zero)
@@ -81,11 +81,11 @@ namespace i960 {
             GenericFormatInstruction(const DecodedInstruction& inst) : _opcode(inst.getOpcode()) { }
             virtual ~GenericFormatInstruction() = default;
             constexpr auto getOpcode() const noexcept { return _opcode; }
-            inline void setOpcode(Ordinal opcode) const noexcept { _opcode = opcode; }
+            inline void setOpcode(Ordinal opcode) noexcept { _opcode = opcode; }
             virtual EncodedInstruction encode() const noexcept = 0;
         private:
             Ordinal _opcode;
-    }
+    };
     class REGFormatInstruction : public GenericFormatInstruction {
         public:
             using Base = GenericFormatInstruction;
@@ -154,53 +154,58 @@ namespace i960 {
     /**
      * Generic super type for MEM class instructions
      */
+    template<Ordinal ModeMask, Ordinal ModeShift>
     class MEMFormatInstruction : public GenericFormatInstruction {
         public:
             using Base = GenericFormatInstruction;
+            static constexpr Ordinal srcDestMask = 0x00F80000;
+            static constexpr Ordinal srcDestShift = 19;
+            static constexpr Ordinal abaseMask   = 0x0007C000;
+            static constexpr Ordinal abaseShift = 14;
+            static constexpr Ordinal modeMask = ModeMask;
+            static constexpr Ordinal modeShift = ModeShift;
         public:
-            MEMFormatInstruction(const DecodedInstruction&);
+            MEMFormatInstruction(const DecodedInstruction& inst) : 
+                Base(inst), 
+                _srcDest((inst.getLowerHalf() & srcDestMask) >> 19),
+                _abase((inst.getLowerHalf() & abaseMask) >> 14),
+                _mode((inst.getLowerHalf() & modeMask) >> modeShift) { }
             ~MEMFormatInstruction() override = default;
             constexpr auto getSrcDest() const noexcept { return _srcDest; }
             constexpr auto getAbase() const noexcept { return _abase; }
             constexpr auto getMode() const noexcept { return _mode; }
-            void setMode(ByteOrdinal mode) noexcept { _mode = mode; }
-            EncodedInstruction encode() const noexcept override final;
-        protected:
-            virtual EncodedInstruction encodeRest() const noexcept = 0;
+            EncodedInstruction encode() const noexcept override {
+                /// @todo fix this
+                return 0u;
+            }
         private:
-            Opcode _srcDest;
+            Operand _srcDest;
             ByteOrdinal _abase;
             ByteOrdinal _mode;
     };
-    class MEMAFormatInstruction : public MEMFormatInstruction {
+    class MEMAFormatInstruction : public MEMFormatInstruction<0x0002000, 13> {
         public:
             using Base = MEMFormatInstruction;
         public:
             MEMAFormatInstruction(const DecodedInstruction&);
             ~MEMAFormatInstruction() override = default;
             constexpr auto getOffset() const noexcept { return _offset; }
-            void setOffset(Ordinal offset) const noexcept { _offset = offset; }
-            void setMode(Ordinal value) noexcept override { return setUpperMode(value); }
-            Ordinal getMode() const noexcept override { return getUpperMode(); }
-        protected:
-            virtual EncodedInstruction encodeRest() const noexcept override;
+            void setOffset(Ordinal offset) noexcept { _offset = offset; }
         private:
             Ordinal _offset : 12;
     };
-    class MEMBFormatInstruction : public MEMFormatInstruction {
+    class MEMBFormatInstruction : public MEMFormatInstruction<0x3C00, 10> {
         public:
             using Base = MEMFormatInstruction;
         public:
             MEMBFormatInstruction(const DecodedInstruction&);
             ~MEMBFormatInstruction() override = default;
-            constexpr auto getLowerMode() const noexcept { return _lowerMode; }
-            void setLowerMode(ByteOrdinal lm) const noexcept { _lowerMode = lm; }
-            Ordinal getMode() const noexcept override;
-            void setMode(Ordinal value) noexcept override; 
+            constexpr auto getScale() const noexcept { return _scale; }
+            constexpr auto getIndex() const noexcept { return _index; }
         private:
-            ByteOrdinal _lowerMode; 
-
-    }
+            ByteOrdinal _scale;
+            ByteOrdinal _index;
+    };
 
 #if 0
         union MemFormat {
