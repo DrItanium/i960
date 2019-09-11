@@ -15,6 +15,9 @@ namespace i960 {
     using ShortInteger = std::int16_t;
     using Integer = std::int32_t;
     using LongInteger = std::int64_t;
+
+    using HalfInteger = ShortInteger;
+    using HalfOrdinal = ShortOrdinal;
 	template<typename T>
 	constexpr auto byteCount(size_t count) noexcept {
 		return count * sizeof(std::decay_t<T>);

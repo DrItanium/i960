@@ -27,15 +27,16 @@ namespace i960 {
             constexpr auto getLowerHalf() const noexcept { return _enc; }
             constexpr auto getUpperHalf() const noexcept { return _second; }
             /**
-             * Extract the 8-bit opcode as a 12-bit opcode to make it common to
+             * Extract the 8-bit opcode as a 16-bit opcode to make it common to
              * REG format instructions; The lower 4 bits will be zero unless it
-             * is a reg format instruction.
-             * @return the 12-bit opcode
+             * is a reg format instruction; The upper most four bits will also 
+             * be zero
+             * @return the 16-bit opcode
              */
-            constexpr Ordinal getStandardOpcode() const noexcept {
-                return ((0xFF00'0000 & _enc) >> 20) & 0xFF0;
+            constexpr HalfOrdinal getStandardOpcode() const noexcept {
+                return ((_enc >> 20) & 0x0FF0);
             }
-            constexpr Ordinal getExtendedOpcode() const noexcept {
+            constexpr HalfOrdinal getExtendedOpcode() const noexcept {
                 // according to the documents, reg format opcodes 
                 // are made up of 
                 // Opcode [0,3] -> bits [7,10]
@@ -43,10 +44,9 @@ namespace i960 {
                 // thus we get a 12-bit opcode out of it
                 // (opcode 11-4), (src/dest), (src2), (mode), (opcode 3-0),
                 // (special flags), (src1)
-                constexpr Ordinal lowerMask = 0b000'1111'00'00000;
-                auto upperPortion = getStandardOpcode();
-                auto lowerFour = ((lowerMask & _enc) >> 7) & 0xF;
-                return upperPortion | lowerFour;
+                //  we want to shift the lower four bits to become the lowest four bits
+                //  so 58:0 becomes 0x0580 and 58:C -> 0x058C
+                return getStandardOpcode() | ((_enc >> 7) & 0xF);
             }
             constexpr auto isREGFormat() const noexcept {
                 auto standardOpcode = getStandardOpcode();
