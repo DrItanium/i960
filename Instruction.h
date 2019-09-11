@@ -157,6 +157,15 @@ namespace i960 {
     class MEMFormatInstruction : public GenericFormatInstruction {
         public:
             using Base = GenericFormatInstruction;
+            /** 
+             * A 6-bit code that describes what addressing mode to perform. The
+             * common upper two bits are used internally to construct the raw mode
+             * value correctly. The lower four bits are actually specific to MEMB type
+             * instructions with the lowest two bits made up of bits 6,5 in a MEMB
+             * instruction as a sanity check (according to the manuals they should always
+             * be zero). In reality the mode should be a 4-bit code but expanding to 6-bits
+             * solves quite a few problems.
+             */
             enum class AddressingModes : ByteOrdinal {
                 // MEMA Effective Address kinds
                 Offset = 0b00'0000,
