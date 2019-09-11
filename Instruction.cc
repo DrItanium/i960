@@ -7,7 +7,7 @@ namespace i960 {
         constexpr auto memAModeMask = 0b1100;
         constexpr auto mask = 0x3C00;
         constexpr auto shift = 8;
-        if (auto shiftedValue = (value & modeMask) >> modeShift; shiftedValue & toggleBit) {
+        if (auto shiftedValue = (value & mask) >> shift; shiftedValue & toggleBit) {
             // MEMB type operation
             return shiftedValue;
         } else {
@@ -18,5 +18,5 @@ namespace i960 {
                 Base(inst), 
                 _srcDest((inst.getLowerHalf() & srcDestMask) >> 19),
                 _abase((inst.getLowerHalf() & abaseMask) >> 14),
-                _mode(decodeMask(inst.getLowerHalf()) { }
+                _mode(decodeMask(inst.getLowerHalf())) { }
 } // end namespace i960
