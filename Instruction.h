@@ -154,7 +154,6 @@ namespace i960 {
     /**
      * Generic super type for MEM class instructions
      */
-    template<Ordinal ModeMask, Ordinal ModeShift>
     class MEMFormatInstruction : public GenericFormatInstruction {
         public:
             using Base = GenericFormatInstruction;
@@ -162,14 +161,12 @@ namespace i960 {
             static constexpr Ordinal srcDestShift = 19;
             static constexpr Ordinal abaseMask   = 0x0007C000;
             static constexpr Ordinal abaseShift = 14;
-            static constexpr Ordinal modeMask = ModeMask;
-            static constexpr Ordinal modeShift = ModeShift;
+            // upper two bits of the mode are shared between types, thus we should do the 
+            // mask of 0x3C and make a four bit type code in all cases
+            static constexpr Ordinal modeMask = 0x3C00;
+            static constexpr Ordinal modeShift = 8;
         public:
-            MEMFormatInstruction(const DecodedInstruction& inst) : 
-                Base(inst), 
-                _srcDest((inst.getLowerHalf() & srcDestMask) >> 19),
-                _abase((inst.getLowerHalf() & abaseMask) >> 14),
-                _mode((inst.getLowerHalf() & modeMask) >> modeShift) { }
+            MEMFormatInstruction(const DecodedInstruction& inst);
             ~MEMFormatInstruction() override = default;
             constexpr auto getSrcDest() const noexcept { return _srcDest; }
             constexpr auto getAbase() const noexcept { return _abase; }
@@ -183,7 +180,7 @@ namespace i960 {
             ByteOrdinal _abase;
             ByteOrdinal _mode;
     };
-    class MEMAFormatInstruction : public MEMFormatInstruction<0x0002000, 13> {
+    class MEMAFormatInstruction : public MEMFormatInstruction {
         public:
             using Base = MEMFormatInstruction;
         public:
@@ -191,10 +188,11 @@ namespace i960 {
             ~MEMAFormatInstruction() override = default;
             constexpr auto getOffset() const noexcept { return _offset; }
             void setOffset(Ordinal offset) noexcept { _offset = offset; }
+
         private:
             Ordinal _offset : 12;
     };
-    class MEMBFormatInstruction : public MEMFormatInstruction<0x3C00, 10> {
+    class MEMBFormatInstruction : public MEMFormatInstruction {
         public:
             using Base = MEMFormatInstruction;
         public:
