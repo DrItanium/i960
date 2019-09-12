@@ -61,12 +61,27 @@ namespace i960 {
     _source1((MEMsrcDestMask & inst.getLowerHalf()) >> MEMsrcDestShift),
     _source2((MEMabaseMask & inst.getLowerHalf()) >> MEMabaseShift),
     _displacement((0b1111'1111'1100 & inst.getLowerHalf()) >> 2),
-    _flags(computeCOBRFlags(inst.getLowerHalf())) { }
+    _flags(computeCOBRFlags(inst.getLowerHalf())),
+    _bitpos((MEMsrcDestMask & inst.getLowerHalf()) >> MEMsrcDestShift) 
+    { }
 
     EncodedInstruction
     COBRFormatInstruction::encode() const noexcept {
         /// @todo implement
         return 0u;
     }
+    constexpr ByteOrdinal computeREGFlags(Ordinal value) noexcept {
+        auto lowerTwo = (0b1100000 & value) >> 5;
+        auto upperThree = (0b111'0000'00'00000 & value) >> 8;
+        return static_cast<ByteOrdinal>(lowerTwo | upperThree);
+    }
+
+    REGFormatInstruction::REGFormatInstruction(const DecodedInstruction& inst) : Base(inst),
+    _srcDest((MEMsrcDestMask & inst.getLowerHalf()) >> MEMsrcDestShift),
+    _src2((MEMabaseMask & inst.getLowerHalf()) >> MEMabaseShift),
+    _src1((MEMBindexMask & inst.getLowerHalf())),
+    _flags(computeREGFlags(inst.getLowerHalf())),
+    _bitpos((MEMBindexMask & inst.getLowerHalf())) { }
+
 
 } // end namespace i960

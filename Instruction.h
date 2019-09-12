@@ -4,6 +4,7 @@
 #include "Operand.h"
 #include <variant>
 namespace i960 {
+    /// @todo implement a flags class that makes extracting bits pretty easy
     using RawEncodedInstruction = Ordinal;
     using RawDoubleEncodedInstruction = LongOrdinal;
     using EncodedInstruction = std::variant<RawEncodedInstruction, RawDoubleEncodedInstruction>;
@@ -64,7 +65,7 @@ namespace i960 {
             constexpr auto isMemFormat() const noexcept {
                 return (getStandardOpcode() >= 0x800);
             }
-            constexpr Ordinal getOpcode() const noexcept {
+            constexpr auto getOpcode() const noexcept {
                 if (isREGFormat()) {
                     return getExtendedOpcode();
                 } else {
@@ -84,7 +85,7 @@ namespace i960 {
             inline void setOpcode(Ordinal opcode) noexcept { _opcode = opcode; }
             virtual EncodedInstruction encode() const noexcept = 0;
         private:
-            Ordinal _opcode;
+            HalfOrdinal _opcode;
     };
     class REGFormatInstruction : public GenericFormatInstruction {
         public:
@@ -93,28 +94,32 @@ namespace i960 {
             REGFormatInstruction(const DecodedInstruction& inst);
             ~REGFormatInstruction() override = default;
             constexpr auto getSrc1() const noexcept { return _src1; }
-            void setSrc1(Operand src1) noexcept { _src1 = src1; }
             constexpr auto getSrc2() const noexcept { return _src2; }
-            void setSrc2(Operand src2) noexcept { _src2 = src2; }
             constexpr auto getSrcDest() const noexcept { return _srcDest; }
-            void setSrcDest(Operand src3) noexcept { _srcDest = src3; }
-            constexpr auto getM1() const noexcept { return _m1; }
-            constexpr auto getM2() const noexcept { return _m2; }
-            constexpr auto getM3() const noexcept { return _m3; }
-            void setM1(bool value) noexcept { _m1 = value; }
-            void setM2(bool value) noexcept { _m2 = value; }
-            void setM3(bool value) noexcept { _m3 = value; }
-            constexpr auto getSF1() const noexcept { return _sf1; }
-            constexpr auto getSF2() const noexcept { return _sf2; }
-            void setSF1(bool value) noexcept { _sf1 = value; }
-            void setSF2(bool value) noexcept { _sf2 = value; }
+            constexpr auto getBitPos() const noexcept { return _bitpos; }
+            constexpr bool getM1()  const noexcept { return _flags & 0b10000; }
+            constexpr bool getM2()  const noexcept { return _flags & 0b01000; }
+            constexpr bool getM3()  const noexcept { return _flags & 0b00100; }
+            constexpr bool getSF1() const noexcept { return _flags & 0b00010; }
+            constexpr bool getSF2() const noexcept { return _flags & 0b00001; }
+            /// @todo implement set
             EncodedInstruction encode() const noexcept override;
         private:
-            Operand _src1;
-            Operand _src2;
             Operand _srcDest;
-            bool _m1, _m2, _m3;
-            bool _sf1, _sf2;
+            Operand _src2;
+            Operand _src1;
+            /**
+             * Comprised of the following flags:
+             * @code
+             * bool _m1; // bit 4
+             * bool _m2; // bit 3
+             * bool _m3; // bit 2
+             * bool _s2; // bit 1
+             * bool _s1; // bit 0
+             * @endcode
+             */
+            ByteOrdinal _flags;
+            ByteOrdinal _bitpos;
     };
     class COBRFormatInstruction : public GenericFormatInstruction {
         public:
@@ -125,9 +130,10 @@ namespace i960 {
             constexpr auto getSource1() const noexcept { return _source1; }
             constexpr auto getSource2() const noexcept { return _source2; }
             constexpr auto getDisplacement() const noexcept { return _displacement; }
-            constexpr auto getM1() const noexcept { return (_flags & 0b100) != 0; }
-            constexpr auto getT() const noexcept { return (_flags & 0b010) != 0; }
-            constexpr auto getS2() const noexcept { return (_flags & 1) != 0 ; }
+            constexpr bool getM1() const noexcept { return _flags & 0b100; }
+            constexpr bool getT()  const noexcept { return _flags & 0b010; }
+            constexpr bool getS2() const noexcept { return _flags & 0b001; }
+            constexpr auto getBitPos() const noexcept { return _bitpos; }
             EncodedInstruction encode() const noexcept override;
         private:
             Operand _source1;
@@ -140,6 +146,7 @@ namespace i960 {
             /// bool _s2; // bit 0
             /// @endcode
             ByteOrdinal _flags;
+            ByteOrdinal _bitpos;
     };
     class CTRLFormatInstruction : public GenericFormatInstruction {
         public:
