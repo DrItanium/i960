@@ -17,7 +17,6 @@ namespace i960 {
     }
     constexpr Ordinal MEMAoffsetMask = 0xFFF;
     constexpr Ordinal MEMBscaleMask = 0x380;
-    constexpr Ordinal MEMBindexMask = 0x1F;
     constexpr ByteOrdinal decodeMask(Ordinal value) noexcept {
         // upper two bits of the mode are shared between types, thus we should do the 
         // mask of 0x3C and make a four bit type code in all cases. However, we also
@@ -46,7 +45,8 @@ namespace i960 {
         return decode<Ordinal, Operand, Mask, Shift>(input);
     }
     constexpr auto decodeSrc1(Ordinal input) noexcept {
-        return decode<Ordinal, ByteOrdinal, 0x1F>(input);
+        constexpr Ordinal Mask = 0x1F;
+        return decode<Ordinal, ByteOrdinal, Mask>(input);
     }
     MEMFormatInstruction::MEMFormatInstruction(const DecodedInstruction& inst) : Base(inst), 
     _srcDest(decodeSrcDest(inst.getLowerHalf())),
