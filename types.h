@@ -89,5 +89,13 @@ namespace i960 {
     static_assert(cpu80960JF.getManufacturer() == 0b0000'0001'001, "Bad manufacturer check!");
     static_assert(cpu80960JF.is5VoltCore(), "Bad voltage value!");
     static_assert(cpu80960JF.getSeries() == ProcessorSeries::Jx, "Bad processor series!");
+    template<typename T, typename R, T mask, T shift = static_cast<T>(0)>
+    constexpr R decode(T value) noexcept {
+        return static_cast<R>((value & mask) >> shift);
+    }
+    template<typename T, typename R, T mask, T shift>
+    constexpr T encode(T value, R input) noexcept {
+        return ((value & (~mask)) | ((static_cast<T>(input) << shift) & mask));
+    }
 } // end namespace i960
 #endif // end I960_TYPES_H__
