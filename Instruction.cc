@@ -39,13 +39,13 @@ namespace i960 {
             return shiftedValue & memAModeMask;
         }
     }
-    constexpr auto getSrcDest(Ordinal input) noexcept {
+    constexpr auto decodeSrcDest(Ordinal input) noexcept {
         constexpr Ordinal Mask = 0x00F80000;
         constexpr Ordinal Shift = 19;
         return (input & Mask) >> Shift;
     }
     MEMFormatInstruction::MEMFormatInstruction(const DecodedInstruction& inst) : Base(inst), 
-    _srcDest(getSrcDest(inst.getLowerHalf())),
+    _srcDest(decodeSrcDest(inst.getLowerHalf())),
     _abase((inst.getLowerHalf() & MEMabaseMask) >> 14),
     _mode(decodeMask(inst.getLowerHalf())),
     _offset(inst.getLowerHalf() & MEMAoffsetMask),
