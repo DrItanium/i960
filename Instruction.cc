@@ -151,4 +151,19 @@ namespace i960 {
         return encodeREGFlags(instruction, _flags);
     }
 
+    SelectedInstruction
+    DecodedInstruction::select() {
+        if (isREGFormat()) {
+            return REGFormatInstruction(*this);
+        } else if (isMEMFormat()) {
+            return MEMFormatInstruction(*this);
+        } else if (isCOBRFormat()) {
+            return COBRFormatInstruction(*this);
+        } else if (isCTRLFormat()) {
+            return CTRLFormatInstruction(*this);
+        } else {
+            throw "Bad type";
+        }
+    }
+
 } // end namespace i960

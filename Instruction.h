@@ -8,6 +8,11 @@ namespace i960 {
     using RawEncodedInstruction = Ordinal;
     using RawDoubleEncodedInstruction = LongOrdinal;
     using EncodedInstruction = std::variant<RawEncodedInstruction, RawDoubleEncodedInstruction>;
+    class REGFormatInstruction;
+    class MEMFormatInstruction;
+    class COBRFormatInstruction;
+    class CTRLFormatInstruction;
+    using SelectedInstruction = std::variant<REGFormatInstruction, MEMFormatInstruction, COBRFormatInstruction, CTRLFormatInstruction>;
     class DecodedInstruction {
         public:
             /**
@@ -62,7 +67,7 @@ namespace i960 {
             constexpr auto isCTRLFormat() const noexcept {
                 return getStandardOpcode() < 0x200;
             }
-            constexpr auto isMemFormat() const noexcept {
+            constexpr auto isMEMFormat() const noexcept {
                 return (getStandardOpcode() >= 0x800);
             }
             constexpr auto getOpcode() const noexcept {
@@ -72,6 +77,8 @@ namespace i960 {
                     return getStandardOpcode();
                 }
             }
+
+            SelectedInstruction select();
 
         private:
             RawEncodedInstruction _enc;
