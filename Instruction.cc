@@ -39,11 +39,23 @@ namespace i960 {
         constexpr Ordinal Shift = 19;
         return decode<Ordinal, Operand, Mask, Shift>(input);
     }
+    constexpr Ordinal encodeSrcDest(Ordinal value, Operand input) noexcept {
+        constexpr Ordinal Mask = 0x00F80000;
+        constexpr Ordinal Shift = 19;
+        return encode<Ordinal, ByteOrdinal, Mask, Shift>(value, input.getValue());
+    }
+    static_assert(encodeSrcDest(0, 1_lr) == 0x00080000);
     constexpr auto decodeSrc2(Ordinal input) noexcept {
         constexpr Ordinal Mask = 0x000C7000;
         constexpr Ordinal Shift = 14;
         return decode<Ordinal, Operand, Mask, Shift>(input);
     }
+    constexpr auto encodeSrc2(Ordinal value, Operand input) noexcept {
+        constexpr Ordinal Mask = 0x000C7000;
+        constexpr Ordinal Shift = 14;
+        return encode<Ordinal, ByteOrdinal, Mask, Shift>(value, input.getValue());
+    }
+    static_assert(encodeSrc2(0, 1_lr) == (0x00080000 >> 5));
     constexpr auto decodeSrc1(Ordinal input) noexcept {
         constexpr Ordinal Mask = 0x1F;
         return decode<Ordinal, ByteOrdinal, Mask>(input);
@@ -83,19 +95,25 @@ namespace i960 {
         return decode<Ordinal, ByteOrdinal, 0b1'0000'0000'0000, 10>(value) |
                decode<Ordinal, ByteOrdinal, 0b11>(value);
     }
+    constexpr Ordinal encodeCOBRFlags(Ordinal value, ByteOrdinal input) noexcept {
+        return encode<Ordinal, ByteOrdinal, 0b1'0000'0000'0000, 10>(value, input) |
+               encode<Ordinal, ByteOrdinal, 0b11, 0>(value, input);
+    }
+    static_assert(encodeCOBRFlags(0, 0b111) == 0b1'0000'0000'0011);
     COBRFormatInstruction::COBRFormatInstruction(const DecodedInstruction& inst) : Base(inst),
     _source1(decodeSrcDest(inst.getLowerHalf())),
     _source2(decodeSrc2(inst.getLowerHalf())),
     _displacement(decode<Ordinal, Ordinal, 0b1111'1111'1100, 2>(inst.getLowerHalf())),
-    _flags(computeCOBRFlags(inst.getLowerHalf())),
-    _bitpos(decodeSrcDest(inst.getLowerHalf()))
+    _flags(computeCOBRFlags(inst.getLowerHalf()))
     { }
 
     EncodedInstruction
     COBRFormatInstruction::constructEncoding() const noexcept {
-
-        /// @todo implement
-        return 0u;
+        auto instruction = encodeMajorOpcode(0, getOpcode());
+        instruction = encodeSrcDest(instruction, _source1);
+        instruction = encodeSrc2(instruction, _source2);
+        instruction = encode<Ordinal, Ordinal, 0b1111'1111'1100, 2>(instruction, _displacement);
+        return encodeCOBRFlags(instruction, _flags);
     }
     constexpr ByteOrdinal computeREGFlags(Ordinal value) noexcept {
         auto lowerTwo = decode<Ordinal, ByteOrdinal, 0b11'00000, 5>(value);
@@ -107,8 +125,7 @@ namespace i960 {
     _srcDest(decodeSrcDest(inst.getLowerHalf())),
     _src2(decodeSrc2(inst.getLowerHalf())),
     _src1(decodeSrc1(inst.getLowerHalf())),
-    _flags(computeREGFlags(inst.getLowerHalf())),
-    _bitpos(decodeSrc1(inst.getLowerHalf())) { }
+    _flags(computeREGFlags(inst.getLowerHalf())) { }
 
     EncodedInstruction
     REGFormatInstruction::constructEncoding() const noexcept {

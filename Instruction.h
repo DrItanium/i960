@@ -97,7 +97,7 @@ namespace i960 {
             constexpr auto getSrc1() const noexcept { return _src1; }
             constexpr auto getSrc2() const noexcept { return _src2; }
             constexpr auto getSrcDest() const noexcept { return _srcDest; }
-            constexpr auto getBitPos() const noexcept { return _bitpos; }
+            constexpr auto getBitPos() const noexcept { return _src1.getValue(); }
             constexpr bool getM1()  const noexcept { return _flags & 0b10000; }
             constexpr bool getM2()  const noexcept { return _flags & 0b01000; }
             constexpr bool getM3()  const noexcept { return _flags & 0b00100; }
@@ -134,7 +134,7 @@ namespace i960 {
             constexpr bool getM1() const noexcept { return _flags & 0b100; }
             constexpr bool getT()  const noexcept { return _flags & 0b010; }
             constexpr bool getS2() const noexcept { return _flags & 0b001; }
-            constexpr auto getBitPos() const noexcept { return _bitpos; }
+            constexpr auto getBitPos() const noexcept { return _source1.getValue(); }
             EncodedInstruction constructEncoding() const noexcept override;
         private:
             Operand _source1;
@@ -147,7 +147,6 @@ namespace i960 {
             /// bool _s2; // bit 0
             /// @endcode
             ByteOrdinal _flags;
-            ByteOrdinal _bitpos;
     };
     class CTRLFormatInstruction : public GenericFormatInstruction {
         public:
