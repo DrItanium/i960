@@ -15,10 +15,6 @@ namespace i960 {
         constexpr Ordinal minorOpcodeMask = 0b1111'00'00000;
         return (input & (~minorOpcodeMask)) | ((getMinorOpcode(opcode) << 7) & minorOpcodeMask);
     }
-    constexpr Ordinal MEMsrcDestMask = 0x00F80000;
-    constexpr Ordinal MEMsrcDestShift = 19;
-    constexpr Ordinal MEMabaseMask   = 0x0007C000;
-    constexpr Ordinal MEMabaseShift = 14;
     constexpr Ordinal MEMAoffsetMask = 0xFFF;
     constexpr Ordinal MEMBscaleMask = 0x380;
     constexpr Ordinal MEMBindexMask = 0x1F;
@@ -44,9 +40,14 @@ namespace i960 {
         constexpr Ordinal Shift = 19;
         return (input & Mask) >> Shift;
     }
+    constexpr auto decodeSrc2(Ordinal input) noexcept {
+        constexpr Ordinal Mask = 0x000C7000;
+        constexpr Ordinal Shift = 14;
+        return (input & Mask) >> Shift;
+    }
     MEMFormatInstruction::MEMFormatInstruction(const DecodedInstruction& inst) : Base(inst), 
     _srcDest(decodeSrcDest(inst.getLowerHalf())),
-    _abase((inst.getLowerHalf() & MEMabaseMask) >> 14),
+    _abase(decodeSrc2(inst.getLowerHalf())),
     _mode(decodeMask(inst.getLowerHalf())),
     _offset(inst.getLowerHalf() & MEMAoffsetMask),
     _scale((inst.getLowerHalf() & MEMBscaleMask) >> 7),
@@ -78,10 +79,10 @@ namespace i960 {
     }
     COBRFormatInstruction::COBRFormatInstruction(const DecodedInstruction& inst) : Base(inst),
     _source1(decodeSrcDest(inst.getLowerHalf())),
-    _source2((MEMabaseMask & inst.getLowerHalf()) >> MEMabaseShift),
+    _source2(decodeSrc2(inst.getLowerHalf())),
     _displacement((0b1111'1111'1100 & inst.getLowerHalf()) >> 2),
     _flags(computeCOBRFlags(inst.getLowerHalf())),
-    _bitpos((MEMsrcDestMask & inst.getLowerHalf()) >> MEMsrcDestShift) 
+    _bitpos(decodeSrcDest(inst.getLowerHalf()))
     { }
 
     EncodedInstruction
@@ -97,7 +98,7 @@ namespace i960 {
 
     REGFormatInstruction::REGFormatInstruction(const DecodedInstruction& inst) : Base(inst),
     _srcDest(decodeSrcDest(inst.getLowerHalf())),
-    _src2((MEMabaseMask & inst.getLowerHalf()) >> MEMabaseShift),
+    _src2(decodeSrc2(inst.getLowerHalf())),
     _src1((MEMBindexMask & inst.getLowerHalf())),
     _flags(computeREGFlags(inst.getLowerHalf())),
     _bitpos((MEMBindexMask & inst.getLowerHalf())) { }
