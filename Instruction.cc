@@ -4,7 +4,7 @@ namespace i960 {
     constexpr Ordinal getMajorOpcode(HalfOrdinal ordinal) noexcept {
         return decode<HalfOrdinal, Ordinal, 0x0FF0, 4>(ordinal);
     }
-    constexpr Ordinal encodeOpcode(Ordinal input, HalfOrdinal opcode) noexcept {
+    constexpr Ordinal encodeMajorOpcode(Ordinal input, HalfOrdinal opcode) noexcept {
         constexpr Ordinal majorOpcodeMask = 0xFF000000;
         return encode<Ordinal, HalfOrdinal, majorOpcodeMask, 24>(input, getMajorOpcode(opcode));
     }
@@ -58,7 +58,7 @@ namespace i960 {
     _displacement(inst.getUpperHalf()) { }
 
     EncodedInstruction
-    MEMFormatInstruction::encode() const noexcept {
+    MEMFormatInstruction::constructEncoding() const noexcept {
         /// @todo implement
         return 0u;
     }
@@ -73,9 +73,11 @@ namespace i960 {
     }
 
     EncodedInstruction
-    CTRLFormatInstruction::encode() const noexcept {
-        /// @todo implement
-        return 0u;
+    CTRLFormatInstruction::constructEncoding() const noexcept {
+        // mask out the least significant bit to follow the ctrl format
+        return encode<Ordinal, Ordinal, 0x00FFFFFC, 2>(
+                encode<Ordinal, bool, 0b10, 1>(encodeMajorOpcode(0, getOpcode()), _t),
+                _displacement) & 0xFFFF'FFFE;
     }
     constexpr ByteOrdinal computeCOBRFlags(Ordinal value) noexcept {
         return decode<Ordinal, ByteOrdinal, 0b1'0000'0000'0000, 10>(value) |
@@ -90,7 +92,8 @@ namespace i960 {
     { }
 
     EncodedInstruction
-    COBRFormatInstruction::encode() const noexcept {
+    COBRFormatInstruction::constructEncoding() const noexcept {
+
         /// @todo implement
         return 0u;
     }
@@ -108,7 +111,7 @@ namespace i960 {
     _bitpos(decodeSrc1(inst.getLowerHalf())) { }
 
     EncodedInstruction
-    REGFormatInstruction::encode() const noexcept {
+    REGFormatInstruction::constructEncoding() const noexcept {
         /// @todo implement
         return 0u;
     }

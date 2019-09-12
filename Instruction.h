@@ -84,7 +84,7 @@ namespace i960 {
             virtual ~GenericFormatInstruction() = default;
             constexpr auto getOpcode() const noexcept { return _opcode; }
             inline void setOpcode(Ordinal opcode) noexcept { _opcode = opcode; }
-            virtual EncodedInstruction encode() const noexcept = 0;
+            virtual EncodedInstruction constructEncoding() const noexcept = 0;
         private:
             HalfOrdinal _opcode;
     };
@@ -104,7 +104,7 @@ namespace i960 {
             constexpr bool getSF1() const noexcept { return _flags & 0b00010; }
             constexpr bool getSF2() const noexcept { return _flags & 0b00001; }
             /// @todo implement set
-            EncodedInstruction encode() const noexcept override;
+            EncodedInstruction constructEncoding() const noexcept override;
         private:
             Operand _srcDest;
             Operand _src2;
@@ -135,7 +135,7 @@ namespace i960 {
             constexpr bool getT()  const noexcept { return _flags & 0b010; }
             constexpr bool getS2() const noexcept { return _flags & 0b001; }
             constexpr auto getBitPos() const noexcept { return _bitpos; }
-            EncodedInstruction encode() const noexcept override;
+            EncodedInstruction constructEncoding() const noexcept override;
         private:
             Operand _source1;
             Operand _source2;
@@ -157,7 +157,7 @@ namespace i960 {
             ~CTRLFormatInstruction() override = default;
             constexpr auto getDisplacement() const noexcept { return _displacement; }
             constexpr auto getT() const noexcept { return _t; }
-            EncodedInstruction encode() const noexcept override;
+            EncodedInstruction constructEncoding() const noexcept override;
         private:
             Ordinal _displacement;
             bool _t;
@@ -215,7 +215,7 @@ namespace i960 {
                         return AddressingModes::Bad;
                 }
             }
-            EncodedInstruction encode() const noexcept override;
+            EncodedInstruction constructEncoding() const noexcept override;
             constexpr auto getOffset() const noexcept { return _offset; }
             constexpr auto getScale() const noexcept { return _scale; }
             constexpr auto getIndex() const noexcept { return _index; }
