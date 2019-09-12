@@ -133,10 +133,14 @@ namespace i960 {
         private:
             Operand _source1;
             Operand _source2;
-            bool _m1;
             Ordinal _displacement : 10;
-            bool _t;
-            bool _s2;
+            /// These are the flags found within _flags
+            /// @code
+            /// bool _m1; // bit 2
+            /// bool _t;  // bit 1
+            /// bool _s2; // bit 0
+            /// @endcode
+            ByteOrdinal _flags;
     };
     class CTRLFormatInstruction : public GenericFormatInstruction {
         public:

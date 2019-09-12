@@ -54,6 +54,19 @@ namespace i960 {
         /// @todo implement
         return 0u;
     }
+    constexpr ByteOrdinal computeCOBRFlags(Ordinal value) noexcept {
+        return static_cast<ByteOrdinal>(((0b1'0000'0000'0000 & value) >> 10) | (0b11 & value));
+    }
+    COBRFormatInstruction::COBRFormatInstruction(const DecodedInstruction& inst) : Base(inst),
+    _source1((MEMsrcDestMask & inst.getLowerHalf()) >> MEMsrcDestShift),
+    _source2((MEMabaseMask & inst.getLowerHalf()) >> MEMabaseShift),
+    _displacement((0b1111'1111'1100 & inst.getLowerHalf()) >> 2),
+    _flags(computeCOBRFlags(inst.getLowerHalf())) { }
 
+    EncodedInstruction
+    COBRFormatInstruction::encode() const noexcept {
+        /// @todo implement
+        return 0u;
+    }
 
 } // end namespace i960
