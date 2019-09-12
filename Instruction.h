@@ -124,11 +124,10 @@ namespace i960 {
             ~COBRFormatInstruction() override = default;
             constexpr auto getSource1() const noexcept { return _source1; }
             constexpr auto getSource2() const noexcept { return _source2; }
-            constexpr auto getM1() const noexcept { return _m1; }
             constexpr auto getDisplacement() const noexcept { return _displacement; }
-            constexpr auto getT() const noexcept { return _t; }
-            constexpr auto getS2() const noexcept { return _s2; }
-            /// @todo implement setters and encode operations
+            constexpr auto getM1() const noexcept { return (_flags & 0b100) != 0; }
+            constexpr auto getT() const noexcept { return (_flags & 0b010) != 0; }
+            constexpr auto getS2() const noexcept { return (_flags & 1) != 0 ; }
             EncodedInstruction encode() const noexcept override;
         private:
             Operand _source1;
@@ -207,6 +206,7 @@ namespace i960 {
                         // Disallow modes that are not explicitly defined by the enumeration.
                         return AddressingModes::Bad;
                 }
+            }
             EncodedInstruction encode() const noexcept override;
             constexpr auto getOffset() const noexcept { return _offset; }
             constexpr auto getScale() const noexcept { return _scale; }
