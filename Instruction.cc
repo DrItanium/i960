@@ -1,6 +1,20 @@
 #include "Instruction.h"
 
 namespace i960 {
+    constexpr Ordinal getMajorOpcode(HalfOrdinal ordinal) noexcept {
+        return (0x0FF0 & ordinal) >> 4;
+    }
+    constexpr Ordinal encodeOpcode(Ordinal input, HalfOrdinal opcode) noexcept {
+        constexpr Ordinal majorOpcodeMask = 0xFF000000;
+        return (input & (~majorOpcodeMask)) | ((getMajorOpcode(opcode) << 24) & majorOpcodeMask);
+    }
+    constexpr Ordinal getMinorOpcode(HalfOrdinal ordinal) noexcept {
+        return (0x000F & ordinal);
+    }
+    constexpr Ordinal encodeMinorOpcode(Ordinal input, HalfOrdinal opcode) noexcept {
+        constexpr Ordinal minorOpcodeMask = 0b1111'00'00000;
+        return (input & (~minorOpcodeMask)) | ((getMinorOpcode(opcode) << 7) & minorOpcodeMask);
+    }
     constexpr Ordinal MEMsrcDestMask = 0x00F80000;
     constexpr Ordinal MEMsrcDestShift = 19;
     constexpr Ordinal MEMabaseMask   = 0x0007C000;
@@ -88,5 +102,6 @@ namespace i960 {
         /// @todo implement
         return 0u;
     }
+
 
 } // end namespace i960
