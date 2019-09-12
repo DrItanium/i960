@@ -8,6 +8,9 @@ namespace i960 {
         constexpr Ordinal majorOpcodeMask = 0xFF000000;
         return encode<Ordinal, HalfOrdinal, majorOpcodeMask, 24>(input, getMajorOpcode(opcode));
     }
+    constexpr Ordinal encodeMajorOpcode(HalfOrdinal opcode) noexcept {
+        return encodeMajorOpcode(0, opcode);
+    }
     constexpr Ordinal getMinorOpcode(HalfOrdinal ordinal) noexcept {
         return decode<Ordinal, Ordinal, 0x000F>(ordinal);
     }
@@ -20,21 +23,32 @@ namespace i960 {
     }
     constexpr Ordinal MEMAoffsetMask = 0xFFF;
     constexpr Ordinal MEMBscaleMask = 0x380;
+    template<typename T>
+    constexpr bool isMEMBFormat(T value) noexcept {
+        constexpr auto toggleBit = 0b010000;
+        return value & toggleBit;
+    }
     constexpr ByteOrdinal decodeMask(Ordinal value) noexcept {
         // upper two bits of the mode are shared between types, thus we should do the 
         // mask of 0x3C and make a four bit type code in all cases. However, we also
         // have a 2-bit unused field inside of MEMB that we should use for sanity checking
-        constexpr auto toggleBit = 0b010000;
         constexpr auto memAModeMask = 0b110000;
         constexpr auto memBExtraMask = 0x30;
         constexpr auto mask = 0x3C00;
         constexpr auto shift = 6;
-        if (auto shiftedValue = decode<Ordinal, ByteOrdinal, mask, shift>(value); shiftedValue & toggleBit) {
+        if (auto shiftedValue = decode<Ordinal, ByteOrdinal, mask, shift>(value); isMEMBFormat(shiftedValue)) {
             // MEMB
             return shiftedValue | (value | memBExtraMask);
         } else {
             // MEMA
             return shiftedValue & memAModeMask;
+        }
+    }
+    constexpr Ordinal encodeMode(Ordinal value, ByteOrdinal mode) noexcept {
+        if (isMEMBFormat(mode)) {
+
+        } else {
+
         }
     }
     constexpr auto decodeSrcDest(Ordinal input) noexcept {
@@ -80,6 +94,9 @@ namespace i960 {
 
     EncodedInstruction
     MEMFormatInstruction::constructEncoding() const noexcept {
+        auto instruction = encodeMajorOpcode(getOpcode());
+        instruction = encodeSrcDest(instruction, _srcDest);
+        instruction = encodeSrc2(instruction, _abase);
         /// @todo implement
         return 0u;
     }
