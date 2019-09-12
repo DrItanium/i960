@@ -97,5 +97,38 @@ namespace i960 {
     constexpr T encode(T value, R input) noexcept {
         return ((value & (~mask)) | ((static_cast<T>(input) << shift) & mask));
     }
+    class Flags8 final {
+        public:
+            explicit constexpr Flags8(ByteOrdinal value ) noexcept : _storage(value) { }
+            constexpr Flags8() noexcept : Flags8(0) { }
+            constexpr auto getBackingStore() const noexcept { return _storage; }
+            template<Ordinal index>
+            constexpr bool get() const noexcept {
+                static_assert(index < 8, "Illegal flag position");
+                return _storage &  (1 << index);
+            }
+            template<Ordinal index>
+            constexpr void clear() noexcept {
+                static_assert(index < 8, "Illegal flag position");
+                constexpr auto mask = 1 << index;
+                _storage &= ~(mask);
+            }
+            template<Ordinal index>
+            constexpr void set() noexcept {
+                static_assert(index < 8, "Illegal flag position");
+                constexpr auto mask = 1 << index;
+                _storage |= mask;
+            }
+            template<Ordinal index>
+            constexpr void set(bool value) noexcept {
+                if (value) {
+                    set<index>();
+                } else {
+                    clear<index>();
+                }
+            }
+        private:
+            ByteOrdinal _storage;
+    };
 } // end namespace i960
 #endif // end I960_TYPES_H__
