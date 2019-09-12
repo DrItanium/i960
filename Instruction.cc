@@ -83,5 +83,10 @@ namespace i960 {
     _flags(computeREGFlags(inst.getLowerHalf())),
     _bitpos((MEMBindexMask & inst.getLowerHalf())) { }
 
+    EncodedInstruction
+    REGFormatInstruction::encode() const noexcept {
+        /// @todo implement
+        return 0u;
+    }
 
 } // end namespace i960
