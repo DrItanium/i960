@@ -15,6 +15,9 @@ namespace i960 {
         constexpr Ordinal minorOpcodeMask = 0b1111'00'00000;
         return encode<Ordinal, HalfOrdinal, minorOpcodeMask, 7>(input, getMinorOpcode(opcode));
     }
+    constexpr Ordinal encodeFullOpcode(Ordinal input, HalfOrdinal opcode) noexcept {
+        return encodeMajorOpcode(encodeMinorOpcode(input, opcode), opcode);
+    }
     constexpr Ordinal MEMAoffsetMask = 0xFFF;
     constexpr Ordinal MEMBscaleMask = 0x380;
     constexpr ByteOrdinal decodeMask(Ordinal value) noexcept {
@@ -56,10 +59,16 @@ namespace i960 {
         return encode<Ordinal, ByteOrdinal, Mask, Shift>(value, input.getValue());
     }
     static_assert(encodeSrc2(0, 1_lr) == (0x00080000 >> 5));
+
     constexpr auto decodeSrc1(Ordinal input) noexcept {
         constexpr Ordinal Mask = 0x1F;
         return decode<Ordinal, ByteOrdinal, Mask>(input);
     }
+    constexpr auto encodeSrc1(Ordinal value, Operand input) noexcept {
+        constexpr Ordinal Mask = 0x1F;
+        return encode<Ordinal, ByteOrdinal, Mask, 0>(value, input.getValue());
+    }
+    static_assert(encodeSrc1(0, 1_lr) == 1);
     MEMFormatInstruction::MEMFormatInstruction(const DecodedInstruction& inst) : Base(inst), 
     _srcDest(decodeSrcDest(inst.getLowerHalf())),
     _abase(decodeSrc2(inst.getLowerHalf())),
@@ -121,6 +130,12 @@ namespace i960 {
         return lowerTwo | upperThree;
     }
 
+    constexpr Ordinal encodeREGFlags(Ordinal value, ByteOrdinal input) noexcept {
+        auto lowerTwo = encode<Ordinal, ByteOrdinal, 0b11'00000, 5>(value, input);
+        auto upperThree = encode<Ordinal, ByteOrdinal, 0b111'0000'00'00000, 8>(value, input);
+        return lowerTwo | upperThree;
+    }
+
     REGFormatInstruction::REGFormatInstruction(const DecodedInstruction& inst) : Base(inst),
     _srcDest(decodeSrcDest(inst.getLowerHalf())),
     _src2(decodeSrc2(inst.getLowerHalf())),
@@ -129,8 +144,11 @@ namespace i960 {
 
     EncodedInstruction
     REGFormatInstruction::constructEncoding() const noexcept {
-        /// @todo implement
-        return 0u;
+        auto instruction = encodeFullOpcode(0, getOpcode());
+        instruction = encodeSrcDest(instruction, _srcDest);
+        instruction = encodeSrc2(instruction, _src2);
+        instruction = encodeSrc1(instruction, _src1);
+        return encodeREGFlags(instruction, _flags);
     }
 
 } // end namespace i960
