@@ -95,7 +95,7 @@ namespace i960 {
             virtual ~GenericFormatInstruction() = default;
             constexpr auto getOpcode() const noexcept { return _opcode; }
             inline void setOpcode(OpcodeValue opcode) noexcept { _opcode = opcode; }
-            virtual EncodedInstruction constructEncoding() const noexcept = 0;
+            virtual EncodedInstruction encode() const noexcept = 0;
         private:
             OpcodeValue _opcode;
     };
@@ -115,7 +115,7 @@ namespace i960 {
             constexpr bool getSF1() const noexcept { return _flags & 0b00010; }
             constexpr bool getSF2() const noexcept { return _flags & 0b00001; }
             /// @todo implement set
-            EncodedInstruction constructEncoding() const noexcept override;
+            EncodedInstruction encode() const noexcept override;
         private:
             Operand _srcDest;
             Operand _src2;
@@ -139,14 +139,14 @@ namespace i960 {
         public:
             COBRFormatInstruction(const Instruction&);
             ~COBRFormatInstruction() override = default;
-            constexpr auto getSource1() const noexcept { return _source1; }
-            constexpr auto getSource2() const noexcept { return _source2; }
+            constexpr auto getSrc1() const noexcept { return _source1; }
+            constexpr auto getSrc2() const noexcept { return _source2; }
             constexpr auto getDisplacement() const noexcept { return _displacement; }
             constexpr bool getM1() const noexcept { return _flags & 0b100; }
             constexpr bool getT()  const noexcept { return _flags & 0b010; }
             constexpr bool getS2() const noexcept { return _flags & 0b001; }
             constexpr auto getBitPos() const noexcept { return _source1.getValue(); }
-            EncodedInstruction constructEncoding() const noexcept override;
+            EncodedInstruction encode() const noexcept override;
         private:
             Operand _source1;
             Operand _source2;
@@ -167,7 +167,7 @@ namespace i960 {
             ~CTRLFormatInstruction() override = default;
             constexpr auto getDisplacement() const noexcept { return _displacement; }
             constexpr auto getT() const noexcept { return _t; }
-            EncodedInstruction constructEncoding() const noexcept override;
+            EncodedInstruction encode() const noexcept override;
         private:
             Integer _displacement : 22;
             bool _t;
@@ -226,7 +226,7 @@ namespace i960 {
                 }
             }
             constexpr auto isOffsetAddressingMode() const noexcept { return getMode() == AddressingModes::Offset; }
-            EncodedInstruction constructEncoding() const noexcept override;
+            EncodedInstruction encode() const noexcept override;
             constexpr auto getOffset() const noexcept { return _offset; }
             constexpr auto getScale() const noexcept { return _scale; }
             constexpr auto getIndex() const noexcept { return _index; }

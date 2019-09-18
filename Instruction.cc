@@ -81,7 +81,7 @@ namespace i960 {
     _displacement(inst.getUpperHalf()) { }
 
     EncodedInstruction
-    MEMFormatInstruction::constructEncoding() const noexcept {
+    MEMFormatInstruction::encode() const noexcept {
         auto instruction = encodeMajorOpcode(getOpcode());
         instruction = encodeSrcDest(instruction, _srcDest);
         instruction = encodeSrc2(instruction, _abase);
@@ -99,10 +99,10 @@ namespace i960 {
     }
 
     EncodedInstruction
-    CTRLFormatInstruction::constructEncoding() const noexcept {
+    CTRLFormatInstruction::encode() const noexcept {
         // mask out the least significant bit to follow the ctrl format
-        return encode<Ordinal, Ordinal, 0x00FFFFFC, 2>(
-                encode<Ordinal, bool, 0b10, 1>(encodeMajorOpcode(0, getOpcode()), _t),
+        return i960::encode<Ordinal, Ordinal, 0x00FFFFFC, 2>(
+                i960::encode<Ordinal, bool, 0b10, 1>(encodeMajorOpcode(0, getOpcode()), _t),
                 _displacement) & 0xFFFF'FFFE;
     }
     constexpr ByteOrdinal computeCOBRFlags(Ordinal value) noexcept {
@@ -122,11 +122,11 @@ namespace i960 {
     { }
 
     EncodedInstruction
-    COBRFormatInstruction::constructEncoding() const noexcept {
+    COBRFormatInstruction::encode() const noexcept {
         auto instruction = encodeMajorOpcode(0, getOpcode());
         instruction = encodeSrcDest(instruction, _source1);
         instruction = encodeSrc2(instruction, _source2);
-        instruction = encode<Ordinal, Ordinal, 0b1111'1111'1100, 2>(instruction, _displacement);
+        instruction = i960::encode<Ordinal, Ordinal, 0b1111'1111'1100, 2>(instruction, _displacement);
         return encodeCOBRFlags(instruction, _flags);
     }
     constexpr ByteOrdinal computeREGFlags(Ordinal value) noexcept {
@@ -148,7 +148,7 @@ namespace i960 {
     _flags(computeREGFlags(inst.getLowerHalf())) { }
 
     EncodedInstruction
-    REGFormatInstruction::constructEncoding() const noexcept {
+    REGFormatInstruction::encode() const noexcept {
         auto instruction = encodeFullOpcode(0, getOpcode());
         instruction = encodeSrcDest(instruction, _srcDest);
         instruction = encodeSrc2(instruction, _src2);
