@@ -28,6 +28,10 @@ namespace i960 {
         constexpr auto toggleBit = 0b010000;
         return value & toggleBit;
     }
+    template<typename T>
+    constexpr bool isMEMAFormat(T value) noexcept {
+        return !isMEMBFormat(value);
+    }
     constexpr ByteOrdinal decodeMask(Ordinal value) noexcept {
         // upper two bits of the mode are shared between types, thus we should do the 
         // mask of 0x3C and make a four bit type code in all cases. However, we also
@@ -44,11 +48,15 @@ namespace i960 {
             return shiftedValue & memAModeMask;
         }
     }
+    constexpr Ordinal encodeMode(ByteOrdinal mode) noexcept {
+    }
     constexpr Ordinal encodeMode(Ordinal value, ByteOrdinal mode) noexcept {
-        if (isMEMBFormat(mode)) {
-
+        if (auto maskedOutValue = static_cast<Ordinal>(mode); isMEMBFormat(mode)) {
+            // we really only have four bits to deal with in this case
+            maskedOutValue = ((maskedOutValue >> 2) << 10) & 0b1111'000'00'00000;
         } else {
-
+            // we must process the upper two bits
+            maskedOutValue = ((maskedOutValue >> 4) << 12) &  0b11'000000'000000;
         }
     }
     constexpr auto decodeSrcDest(Ordinal input) noexcept {

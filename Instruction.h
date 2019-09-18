@@ -226,8 +226,6 @@ namespace i960 {
             constexpr auto getScale() const noexcept { return _scale; }
             constexpr auto getIndex() const noexcept { return _index; }
             constexpr auto getDisplacement() const noexcept { return _displacement; }
-            constexpr bool isMEMAFormat() const noexcept { 
-                return
         private:
             Operand _srcDest;
             ByteOrdinal _abase;
