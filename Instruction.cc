@@ -91,7 +91,7 @@ namespace i960 {
 
 
     CTRLFormatInstruction::CTRLFormatInstruction(const Instruction& inst) : Base(inst), 
-    _displacement(decode<Ordinal, Ordinal, 0x00FFFFFC, 2>(inst.getLowerHalf())),
+    _displacement(decode<Ordinal, Integer, 0x00FFFFFC, 2>(inst.getLowerHalf())),
     _t(decode<Ordinal, bool, 0b10>(inst.getLowerHalf())) {
         if ((inst.getLowerHalf() & 1) != 0) {
             /// @todo throw an exception

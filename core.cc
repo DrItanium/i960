@@ -1239,7 +1239,10 @@ X(cmpi, bno);
     Instruction Core::readInstruction() {
         // we need to pull the lower half, and then check and see if it is actually a double byte design
         auto address = computeAlignedAddress(_instructionPointer);
-        Instruction basic(load(address));
+        // load two instructions at a time but we will increment by the number
+        // of arguments used
+        Instruction basic(load(address), load(address + 0b100));
+#if 0
         if (basic.isTwoOrdinalInstruction()) {
             // load the second value
             basic._second = load(address + 0b100);
@@ -1249,6 +1252,9 @@ X(cmpi, bno);
             // advance the instruction pointer by one
             _instructionPointer += 0b100;
         }
+#endif
+        /// @todo implement code to identify how many words of the loaded instruction are actually used and increment ip by that
+        
         return basic;
     }
 #undef __DEFAULT_TWO_ARGS__

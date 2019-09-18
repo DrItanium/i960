@@ -169,7 +169,7 @@ namespace i960 {
             constexpr auto getT() const noexcept { return _t; }
             EncodedInstruction constructEncoding() const noexcept override;
         private:
-            Ordinal _displacement;
+            Integer _displacement : 22;
             bool _t;
     };
     /**
@@ -262,5 +262,18 @@ namespace i960 {
     constexpr Ordinal encodeFullOpcode(Ordinal input, HalfOrdinal opcode) noexcept {
         return encodeMajorOpcode(encodeMinorOpcode(input, opcode), opcode);
     }
+#define X(name, code, kind) \
+        class kind ## name ## Operation final { };
+#define reg(name, code, __) X(name, code, REG)
+#define mem(name, code, __) X(name, code, MEM)
+#define cobr(name, code, __) X(name, code, COBR)
+#define ctrl(name, code, __) X(name, code, CTRL)
+#include "opcodes.def"
+#undef X
+#undef reg
+#undef mem
+#undef cobr
+#undef ctrl
+    
 } // end namespace i960
 #endif // end I960_INSTRUCTION_H__

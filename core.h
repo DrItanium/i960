@@ -134,10 +134,32 @@ namespace i960 {
 			void generateFault(T faultSubtype) {
 				generateFault(ByteOrdinal(FaultAssociation<T>::ParentFaultType), ByteOrdinal(faultSubtype));
 			}
-            /** 
-             * perform a call
-             */
+            // CTRL Format instructions
             void call(Integer displacement) noexcept;
+            void call(const CTRLFormatInstruction& inst) noexcept;
+            void b(const CTRLFormatInstruction& inst) noexcept;
+            void b(Integer displacement) noexcept;
+            void ret() noexcept;
+            void ret(const CTRLFormatInstruction&) noexcept;
+            void bal(const CTRLFormatInstruction&) noexcept;
+            void bal(Integer displacement) noexcept;
+            void bno(const CTRLFormatInstruction&);
+            void bg(const CTRLFormatInstruction&);
+            void be(const CTRLFormatInstruction&);
+            void bge(const CTRLFormatInstruction&);
+            void bl(const CTRLFormatInstruction&);
+            void bne(const CTRLFormatInstruction&);
+            void ble(const CTRLFormatInstruction&);
+            void bo(const CTRLFormatInstruction&);
+            void faultno(const CTRLFormatInstruction&);
+            void faultg(const CTRLFormatInstruction&);
+            void faulte(const CTRLFormatInstruction&);
+            void faultge(const CTRLFormatInstruction&);
+            void faultl(const CTRLFormatInstruction&);
+            void faultne(const CTRLFormatInstruction&);
+            void faultle(const CTRLFormatInstruction&);
+            void faulto(const CTRLFormatInstruction&);
+            void bx(SourceRegister targ) noexcept; // TODO check these two instructions out for more variants
             Ordinal load(Ordinal address, bool atomic = false) noexcept;
             LongOrdinal loadDouble(Ordinal address, bool atomic = false) noexcept;
             void store(Ordinal address, Ordinal value, bool atomic = false) noexcept;
@@ -169,9 +191,6 @@ namespace i960 {
             __GEN_DEFAULT_THREE_ARG_SIGS__(andnot);
             void atadd(__DEFAULT_THREE_ARGS__) noexcept; // TODO add other forms of atadd
             void atmod(SourceRegister src, SourceRegister mask, DestinationRegister srcDest) noexcept; // TODO check out other forms of this instruction
-            void b(Integer displacement) noexcept;
-            void bx(SourceRegister targ) noexcept; // TODO check these two instructions out for more variants
-            void bal(Integer displacement) noexcept;
             enum class InstructionLength {
                 Single = 4,
                 Double = 8,
@@ -230,7 +249,6 @@ namespace i960 {
             __GEN_DEFAULT_THREE_ARG_SIGS__(remo);
             __GEN_DEFAULT_THREE_ARG_SIGS__(remi);
             void resumeprcs(SourceRegister src) noexcept;
-            void ret() noexcept;
             void rotate(__DEFAULT_THREE_ARGS__) noexcept;
             void scanbyte(SourceRegister src1, SourceRegister src2) noexcept;
             void scanbit(__DEFAULT_TWO_ARGS__) noexcept;
