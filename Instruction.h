@@ -3,33 +3,37 @@
 #include "types.h"
 #include "Operand.h"
 #include <variant>
+#include <optional>
 namespace i960 {
     /// @todo implement a flags class that makes extracting bits pretty easy
-    using RawEncodedInstruction = Ordinal;
-    using RawDoubleEncodedInstruction = LongOrdinal;
-    using EncodedInstruction = std::variant<RawEncodedInstruction, RawDoubleEncodedInstruction>;
+    using SingleEncodedInstructionValue = Ordinal;
+    using DoubleEncodedInstructionValue = LongOrdinal;
+    using EncodedInstruction = std::variant<SingleEncodedInstructionValue, DoubleEncodedInstructionValue>;
     class REGFormatInstruction;
     class MEMFormatInstruction;
     class COBRFormatInstruction;
     class CTRLFormatInstruction;
-    using SelectedInstruction = std::variant<REGFormatInstruction, MEMFormatInstruction, COBRFormatInstruction, CTRLFormatInstruction>;
-    class DecodedInstruction {
+    using DecodedInstruction = std::variant<REGFormatInstruction, MEMFormatInstruction, COBRFormatInstruction, CTRLFormatInstruction>;
+    class Instruction {
         public:
             /**
-             * Construct a 64-bit opcode, the second RawEncodedInstruction may not
+             * Construct a 64-bit opcode, the second EncodedInstructionValue may not
              * be used depending on the instruction.
              * @param first The first 32-bits
              * @param second The second 32-bits (not used in all cases)
              */
-            constexpr DecodedInstruction(RawEncodedInstruction first, RawEncodedInstruction second) : _enc(first), _second(second) { }
+            constexpr Instruction(SingleEncodedInstructionValue first, 
+                    SingleEncodedInstructionValue second) : _enc(first), _second(second) { }
             /**
              * Construct a 32-bit only opcode as though it is a 64-bit opcode
              * (upper 32-bits are set to zero)
              * @param first the lower 32-bits
              */
-            constexpr explicit DecodedInstruction(RawEncodedInstruction first) : DecodedInstruction(first, 0) { }
-            constexpr explicit DecodedInstruction(RawDoubleEncodedInstruction value) : DecodedInstruction(RawEncodedInstruction(value), RawEncodedInstruction(value >> 32)) { }
-            ~DecodedInstruction() = default;
+            constexpr explicit Instruction(SingleEncodedInstructionValue first) : Instruction(first, 0) { }
+            constexpr explicit Instruction(DoubleEncodedInstructionValue value) : 
+                Instruction(static_cast<SingleEncodedInstructionValue>(value), 
+                            static_cast<SingleEncodedInstructionValue>(value >> 32)) { }
+            ~Instruction() = default;
             constexpr auto getLowerHalf() const noexcept { return _enc; }
             constexpr auto getUpperHalf() const noexcept { return _second; }
             /**
@@ -39,10 +43,10 @@ namespace i960 {
              * be zero
              * @return the 16-bit opcode
              */
-            constexpr HalfOrdinal getStandardOpcode() const noexcept {
+            constexpr OpcodeValue getStandardOpcode() const noexcept {
                 return ((_enc >> 20) & 0x0FF0);
             }
-            constexpr HalfOrdinal getExtendedOpcode() const noexcept {
+            constexpr OpcodeValue getExtendedOpcode() const noexcept {
                 // according to the documents, reg format opcodes 
                 // are made up of 
                 // Opcode [0,3] -> bits [7,10]
@@ -78,28 +82,28 @@ namespace i960 {
                 }
             }
 
-            SelectedInstruction select();
+            DecodedInstruction decode();
 
         private:
-            RawEncodedInstruction _enc;
-            RawEncodedInstruction _second;
+            SingleEncodedInstructionValue _enc, 
+                                          _second;
 
     };
     class GenericFormatInstruction {
         public:
-            GenericFormatInstruction(const DecodedInstruction& inst) : _opcode(inst.getOpcode()) { }
+            GenericFormatInstruction(const Instruction& inst) : _opcode(inst.getOpcode()) { }
             virtual ~GenericFormatInstruction() = default;
             constexpr auto getOpcode() const noexcept { return _opcode; }
-            inline void setOpcode(Ordinal opcode) noexcept { _opcode = opcode; }
+            inline void setOpcode(OpcodeValue opcode) noexcept { _opcode = opcode; }
             virtual EncodedInstruction constructEncoding() const noexcept = 0;
         private:
-            HalfOrdinal _opcode;
+            OpcodeValue _opcode;
     };
     class REGFormatInstruction : public GenericFormatInstruction {
         public:
             using Base = GenericFormatInstruction;
         public:
-            REGFormatInstruction(const DecodedInstruction& inst);
+            REGFormatInstruction(const Instruction& inst);
             ~REGFormatInstruction() override = default;
             constexpr auto getSrc1() const noexcept { return _src1; }
             constexpr auto getSrc2() const noexcept { return _src2; }
@@ -133,7 +137,7 @@ namespace i960 {
         public:
             using Base = GenericFormatInstruction;
         public:
-            COBRFormatInstruction(const DecodedInstruction&);
+            COBRFormatInstruction(const Instruction&);
             ~COBRFormatInstruction() override = default;
             constexpr auto getSource1() const noexcept { return _source1; }
             constexpr auto getSource2() const noexcept { return _source2; }
@@ -159,7 +163,7 @@ namespace i960 {
         public:
             using Base = GenericFormatInstruction;
         public:
-            CTRLFormatInstruction(const DecodedInstruction&);
+            CTRLFormatInstruction(const Instruction&);
             ~CTRLFormatInstruction() override = default;
             constexpr auto getDisplacement() const noexcept { return _displacement; }
             constexpr auto getT() const noexcept { return _t; }
@@ -198,7 +202,7 @@ namespace i960 {
                 Bad = 0xFF,
             };
         public:
-            MEMFormatInstruction(const DecodedInstruction& inst);
+            MEMFormatInstruction(const Instruction& inst);
             ~MEMFormatInstruction() override = default;
             constexpr auto getSrcDest() const noexcept { return _srcDest; }
             constexpr auto getAbase() const noexcept { return _abase; }

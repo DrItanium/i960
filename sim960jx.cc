@@ -35,7 +35,7 @@ void testOverflowOfDisplacement(std::ostream& os) noexcept {
 	os << "Combined value: " << (_base + converter._displacement) << std::endl;
 	os << "Combined value is less: " << std::boolalpha << ((_base + converter._displacement) < _base) << std::endl;
 }
-bool testInstructionEncoding(std::ostream& os, const i960::Instruction& test, const std::string& compareAgainst) noexcept {
+bool testInstructionEncoding(std::ostream& os, const i960::DecodedInstruction& test, const std::string& compareAgainst) noexcept {
 	os << "test encoding: " << std::hex << test._raw << std::endl;
 	os << "\tbase opcode: 0x" << std::hex << test.getOpcode() << std::endl;
 	os << "\tencoded format for mema: " << std::hex << test._mem._mema._offset << std::endl;

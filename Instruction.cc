@@ -48,15 +48,15 @@ namespace i960 {
             return shiftedValue & memAModeMask;
         }
     }
-    constexpr Ordinal encodeMode(ByteOrdinal mode) noexcept {
-    }
     constexpr Ordinal encodeMode(Ordinal value, ByteOrdinal mode) noexcept {
         if (auto maskedOutValue = static_cast<Ordinal>(mode); isMEMBFormat(mode)) {
+            constexpr Ordinal mask = 0b1111'000'00'00000;
             // we really only have four bits to deal with in this case
-            maskedOutValue = ((maskedOutValue >> 2) << 10) & 0b1111'000'00'00000;
+            return (value & ~mask) | (((maskedOutValue >> 2) << 10) & mask);
         } else {
             // we must process the upper two bits
-            maskedOutValue = ((maskedOutValue >> 4) << 12) &  0b11'000000'000000;
+            constexpr Ordinal mask = 0b11'000000'000000;
+            return (value & ~mask) | (((maskedOutValue >> 4) << 12) & mask);
         }
     }
     constexpr auto decodeSrcDest(Ordinal input) noexcept {
@@ -91,7 +91,7 @@ namespace i960 {
         return encode<Ordinal, ByteOrdinal, Mask, 0>(value, input.getValue());
     }
     static_assert(encodeSrc1(0, 1_lr) == 1);
-    MEMFormatInstruction::MEMFormatInstruction(const DecodedInstruction& inst) : Base(inst), 
+    MEMFormatInstruction::MEMFormatInstruction(const Instruction& inst) : Base(inst), 
     _srcDest(decodeSrcDest(inst.getLowerHalf())),
     _abase(decodeSrc2(inst.getLowerHalf())),
     _mode(decodeMask(inst.getLowerHalf())),
@@ -110,7 +110,7 @@ namespace i960 {
     }
 
 
-    CTRLFormatInstruction::CTRLFormatInstruction(const DecodedInstruction& inst) : Base(inst), 
+    CTRLFormatInstruction::CTRLFormatInstruction(const Instruction& inst) : Base(inst), 
     _displacement(decode<Ordinal, Ordinal, 0x00FFFFFC, 2>(inst.getLowerHalf())),
     _t(decode<Ordinal, bool, 0b10>(inst.getLowerHalf())) {
         if ((inst.getLowerHalf() & 1) != 0) {
@@ -134,7 +134,7 @@ namespace i960 {
                encode<Ordinal, ByteOrdinal, 0b11, 0>(value, input);
     }
     static_assert(encodeCOBRFlags(0, 0b111) == 0b1'0000'0000'0011);
-    COBRFormatInstruction::COBRFormatInstruction(const DecodedInstruction& inst) : Base(inst),
+    COBRFormatInstruction::COBRFormatInstruction(const Instruction& inst) : Base(inst),
     _source1(decodeSrcDest(inst.getLowerHalf())),
     _source2(decodeSrc2(inst.getLowerHalf())),
     _displacement(decode<Ordinal, Ordinal, 0b1111'1111'1100, 2>(inst.getLowerHalf())),
@@ -161,7 +161,7 @@ namespace i960 {
         return lowerTwo | upperThree;
     }
 
-    REGFormatInstruction::REGFormatInstruction(const DecodedInstruction& inst) : Base(inst),
+    REGFormatInstruction::REGFormatInstruction(const Instruction& inst) : Base(inst),
     _srcDest(decodeSrcDest(inst.getLowerHalf())),
     _src2(decodeSrc2(inst.getLowerHalf())),
     _src1(decodeSrc1(inst.getLowerHalf())),
@@ -176,8 +176,8 @@ namespace i960 {
         return encodeREGFlags(instruction, _flags);
     }
 
-    SelectedInstruction
-    DecodedInstruction::select() {
+    DecodedInstruction 
+    Instruction::decode() {
         if (isREGFormat()) {
             return REGFormatInstruction(*this);
         } else if (isMEMFormat()) {

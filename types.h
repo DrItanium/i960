@@ -18,6 +18,7 @@ namespace i960 {
 
     using HalfInteger = ShortInteger;
     using HalfOrdinal = ShortOrdinal;
+    using OpcodeValue = HalfOrdinal;
 	template<typename T>
 	constexpr auto byteCount(size_t count) noexcept {
 		return count * sizeof(std::decay_t<T>);
@@ -130,5 +131,23 @@ namespace i960 {
         private:
             ByteOrdinal _storage;
     };
+    // false_v taken from https://quuxplusone.github.io/blog/2018/04/02/false-v/
+    template<typename...>
+        inline constexpr bool false_v = false;
+
+    /**
+     *
+     * Allow a separate lambda to be defined for each specific std::visit case.
+     * Found on the internet in many places
+     * @tparam Ts the functions that make up the dispatch logic
+     */
+    template<typename ... Ts> 
+    struct overloaded : Ts... 
+    {
+        using Ts::operator()...;
+    };
+
+    template<typename ... Ts>
+    overloaded(Ts...) -> overloaded<Ts...>;
 } // end namespace i960
 #endif // end I960_TYPES_H__
