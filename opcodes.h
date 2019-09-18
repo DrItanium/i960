@@ -100,9 +100,9 @@ namespace i960::Opcode {
 #undef o
 		};
 
+		const Description& getDescription(Ordinal opcode) noexcept;
 		inline const Description& getDescription(const Instruction& inst) noexcept {
             return getDescription(inst.getOpcode());
         }
-		const Description& getDescription(Ordinal opcode) noexcept;
 } // end namespace i960::Opcode
 #endif // end I960_OPCODES_H__

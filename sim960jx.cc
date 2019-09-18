@@ -35,10 +35,9 @@ void testOverflowOfDisplacement(std::ostream& os) noexcept {
 	os << "Combined value: " << (_base + converter._displacement) << std::endl;
 	os << "Combined value is less: " << std::boolalpha << ((_base + converter._displacement) < _base) << std::endl;
 }
-bool testInstructionEncoding(std::ostream& os, const i960::DecodedInstruction& test, const std::string& compareAgainst) noexcept {
-	os << "test encoding: " << std::hex << test._raw << std::endl;
+bool testInstructionEncoding(std::ostream& os, const i960::Instruction& test, const std::string& compareAgainst) noexcept {
+	os << "test encoding: " << std::hex << test.getLowerHalf() << std::endl;
 	os << "\tbase opcode: 0x" << std::hex << test.getOpcode() << std::endl;
-	os << "\tencoded format for mema: " << std::hex << test._mem._mema._offset << std::endl;
 	if (auto description = i960::Opcode::getDescription(test.getOpcode()); description.isUndefined()) {
 		os << "\tInstruction mnemonic: 'undefined'" << std::endl;
 		return false;
@@ -68,16 +67,7 @@ void testInstructionEncoding(std::ostream& os) {
 		auto opcode = i;
 		os << "Decoding: " << name << std::endl;
 		os << "Outcome: ";
-		i960::Instruction tmp(0);
-		if (opcode > 0xFF) {
-			auto upperOpcode = (0xFF0 & opcode) >> 4;
-			auto lowerOpcode = (0x00F & opcode) ;
-			tmp._reg._opcode = upperOpcode;
-			tmp._reg._opcode2 = lowerOpcode;
-		} else {
-			// non register kind
-			tmp._raw = opcode << 24;
-		}
+		i960::Instruction tmp(i960::encodeFullOpcode(0, opcode));
 		if (testInstructionEncoding(os, tmp, name)) {
 			os << "successful!" << std::endl;
 		} else {

@@ -242,5 +242,25 @@ namespace i960 {
             ByteOrdinal _index;
             Ordinal _displacement;
     };
+    constexpr Ordinal getMajorOpcode(HalfOrdinal ordinal) noexcept {
+        return decode<HalfOrdinal, Ordinal, 0x0FF0, 4>(ordinal);
+    }
+    constexpr Ordinal encodeMajorOpcode(Ordinal input, HalfOrdinal opcode) noexcept {
+        constexpr Ordinal majorOpcodeMask = 0xFF000000;
+        return encode<Ordinal, HalfOrdinal, majorOpcodeMask, 24>(input, getMajorOpcode(opcode));
+    }
+    constexpr Ordinal encodeMajorOpcode(HalfOrdinal opcode) noexcept {
+        return encodeMajorOpcode(0, opcode);
+    }
+    constexpr Ordinal getMinorOpcode(HalfOrdinal ordinal) noexcept {
+        return decode<Ordinal, Ordinal, 0x000F>(ordinal);
+    }
+    constexpr Ordinal encodeMinorOpcode(Ordinal input, HalfOrdinal opcode) noexcept {
+        constexpr Ordinal minorOpcodeMask = 0b1111'00'00000;
+        return encode<Ordinal, HalfOrdinal, minorOpcodeMask, 7>(input, getMinorOpcode(opcode));
+    }
+    constexpr Ordinal encodeFullOpcode(Ordinal input, HalfOrdinal opcode) noexcept {
+        return encodeMajorOpcode(encodeMinorOpcode(input, opcode), opcode);
+    }
 } // end namespace i960
 #endif // end I960_INSTRUCTION_H__
