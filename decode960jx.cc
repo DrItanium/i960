@@ -91,7 +91,6 @@ std::string decode(i960::Ordinal value) noexcept {
                     out << " " << ctrl.getDisplacement();
                 },
                 [&out, &desc, value](const i960::MEMFormatInstruction& dec) {
-                    out << std::hex << "0x" << value << ": " << desc.getString();
                     decode(out, desc, dec);
                 },
                 [&out, &desc, value](const i960::COBRFormatInstruction& dec) {
@@ -99,9 +98,10 @@ std::string decode(i960::Ordinal value) noexcept {
                     decode(out, desc, dec);
                 },
                 [&out, &desc, value](const i960::REGFormatInstruction& dec) {
+                    out << std::hex << "0x" << value << ": " << desc.getString();
                     decode(out, desc, dec);
                 },
-                [&out](auto&&) {
+                [&out](const auto&) {
                     out << "bad instruction format!";
                 }
             }, inst.decode());

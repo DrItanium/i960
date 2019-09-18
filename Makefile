@@ -1,6 +1,8 @@
 include config.mk
 
-I960JX_OBJS := opcodes.o Operand.o
+I960JX_OBJS := opcodes.o \
+	Operand.o \
+	Instruction.o
 I960JX_SIM_OBJS := sim960jx.o \
 	core.o \
 	dispatcher.o \
@@ -10,7 +12,6 @@ I960JX_SIM_OBJS := sim960jx.o \
 	TripleRegister.o \
 	DoubleRegister.o \
 	ArithmeticControls.o \
-	Instruction.o \
 	$(I960JX_OBJS)
 I960JX_DEC_OBJS := decode960jx.o \
 	$(I960JX_OBJS)
