@@ -8,6 +8,7 @@
 
 namespace i960 {
 	void Core::dispatch(const Instruction& inst) noexcept {
+#if 0
 		auto selectRegister = [this](const Operand& operand, NormalRegister& imm) -> NormalRegister& {
 			if (operand.isLiteral()) {
 				imm.set(operand.getValue());
@@ -201,5 +202,6 @@ namespace i960 {
 		} else {
 			generateFault(OperationFaultSubtype::InvalidOpcode); 
 		}
+#endif
 	}
 } // end namespace i960

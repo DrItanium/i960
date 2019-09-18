@@ -225,6 +225,7 @@ namespace i960 {
                         return AddressingModes::Bad;
                 }
             }
+            constexpr auto isOffsetAddressingMode() const noexcept { return getMode() == AddressingModes::Offset; }
             EncodedInstruction constructEncoding() const noexcept override;
             constexpr auto getOffset() const noexcept { return _offset; }
             constexpr auto getScale() const noexcept { return _scale; }
@@ -274,6 +275,62 @@ namespace i960 {
 #undef mem
 #undef cobr
 #undef ctrl
-    
+    using REGOpcodes = std::variant<std::monostate
+#define X(name, code, kind) \
+        , kind ## name ## Operation
+#define reg(name, code, __) X(name, code, REG)
+#define mem(name, code, __) // X(name, code, MEM)
+#define cobr(name, code, __) // X(name, code, COBR)
+#define ctrl(name, code, __) // X(name, code, CTRL)
+#include "opcodes.def"
+#undef X
+#undef reg
+#undef mem
+#undef cobr
+#undef ctrl
+    >;
+    using MEMOpcodes = std::variant<std::monostate
+#define X(name, code, kind) \
+        , kind ## name ## Operation
+#define reg(name, code, __) //X(name, code, REG)
+#define mem(name, code, __) X(name, code, MEM)
+#define cobr(name, code, __) // X(name, code, COBR)
+#define ctrl(name, code, __) // X(name, code, CTRL)
+#include "opcodes.def"
+#undef X
+#undef reg
+#undef mem
+#undef cobr
+#undef ctrl
+    >;
+    using COBROpcodes = std::variant<std::monostate
+#define X(name, code, kind) \
+        , kind ## name ## Operation
+#define reg(name, code, __) //X(name, code, REG)
+#define mem(name, code, __) //X(name, code, MEM)
+#define cobr(name, code, __) X(name, code, COBR)
+#define ctrl(name, code, __) // X(name, code, CTRL)
+#include "opcodes.def"
+#undef X
+#undef reg
+#undef mem
+#undef cobr
+#undef ctrl
+    >;
+    using CTRLOpcodes = std::variant<std::monostate
+#define X(name, code, kind) \
+        , kind ## name ## Operation
+#define reg(name, code, __) //X(name, code, REG)
+#define mem(name, code, __) //X(name, code, MEM)
+#define cobr(name, code, __) // X(name, code, COBR)
+#define ctrl(name, code, __) X(name, code, CTRL)
+#include "opcodes.def"
+#undef X
+#undef reg
+#undef mem
+#undef cobr
+#undef ctrl
+    >;
+
 } // end namespace i960
 #endif // end I960_INSTRUCTION_H__
