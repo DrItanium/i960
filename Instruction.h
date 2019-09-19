@@ -194,17 +194,15 @@ namespace i960 {
              * solves quite a few problems.
              */
             enum class AddressingModes : ByteOrdinal {
-                // MEMA Effective Address kinds
-                Offset = 0b00'0000,
-                Abase_Plus_Offset = 0b10'0000,
-                // MEMB Effective Address kinds
-                Abase = 0b010000,
-                IP_Plus_Displacement_Plus_8 = 0b010100,
-                Abase_Plus_Index_Times_2_Pow_Scale = 0b011100,
-                Displacement = 0b110000,
-                Abase_Plus_Displacement = 0b110100,
-                Index_Times_2_Pow_Scale_Plus_Displacement = 0b111000,
-                Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement = 0b111100,
+                AbsoluteOffset = 0b00'0000, // offset
+                AbsoluteDisplacement = 0b11'0000, // displacement
+                RegisterIndirect = 0b01'0000,
+                RegisterIndirectWithOffset = 0b10'0000,
+                RegisterIndirectWithDisplacement = 0b11'0100,
+                RegisterIndirectWithIndex = 0b01'1100,
+                RegisterIndirectWithIndexAndDisplacement = 0b11'1100,
+                IndexWithDisplacement = 0b11'1000,
+                IPWithDisplacement = 0b01'0100,
                 Bad = 0xFF,
             };
         public:
@@ -216,27 +214,38 @@ namespace i960 {
             constexpr auto getMode() const noexcept { 
                 auto mode = static_cast<AddressingModes>(_mode);
                 switch (mode) {
-                    case AddressingModes::Offset:
-                    case AddressingModes::Abase_Plus_Offset:
-                    case AddressingModes::Abase:
-                    case AddressingModes::IP_Plus_Displacement_Plus_8:
-                    case AddressingModes::Abase_Plus_Index_Times_2_Pow_Scale:
-                    case AddressingModes::Displacement:
-                    case AddressingModes::Abase_Plus_Displacement:
-                    case AddressingModes::Index_Times_2_Pow_Scale_Plus_Displacement:
-                    case AddressingModes::Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement:
+                    case AddressingModes::AbsoluteOffset:
+                    case AddressingModes::AbsoluteDisplacement:
+                    case AddressingModes::RegisterIndirect:
+                    case AddressingModes::RegisterIndirectWithOffset:
+                    case AddressingModes::RegisterIndirectWithDisplacement:
+                    case AddressingModes::RegisterIndirectWithIndex:
+                    case AddressingModes::RegisterIndirectWithIndexAndDisplacement:
+                    case AddressingModes::IndexWithDisplacement:
+                    case AddressingModes::IPWithDisplacement:
                         return mode;
                     default:
                         // Disallow modes that are not explicitly defined by the enumeration.
                         return AddressingModes::Bad;
                 }
             }
-            constexpr auto isOffsetAddressingMode() const noexcept { return getMode() == AddressingModes::Offset; }
+            constexpr auto isOffsetAddressingMode() const noexcept { return getMode() == AddressingModes::AbsoluteOffset; }
             EncodedInstruction encode() const noexcept override;
             constexpr auto getOffset() const noexcept { return _offset; }
             constexpr auto getScale() const noexcept { return _scale; }
             constexpr auto getIndex() const noexcept { return _index; }
             constexpr auto getDisplacement() const noexcept { return _displacement; }
+            constexpr auto isDoubleWide() const noexcept { 
+                switch (getMode()) {
+                    case AddressingModes::AbsoluteOffset:
+                    case AddressingModes::RegisterIndirect:
+                    case AddressingModes::RegisterIndirectWithOffset:
+                    case AddressingModes::RegisterIndirectWithIndex:
+                        return false;
+                    default:
+                        return true;
+                }
+            }
         private:
             Operand _srcDest;
             ByteOrdinal _abase;
