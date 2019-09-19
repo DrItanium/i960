@@ -134,7 +134,6 @@ namespace i960 {
             Operand _src2;
             Operand _src1;
             Flags _flags;
-            ByteOrdinal _bitpos;
     };
     class COBRFormatInstruction : public GenericFormatInstruction {
         public:
