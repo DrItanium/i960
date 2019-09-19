@@ -16,9 +16,9 @@ namespace i960::Opcode {
 #undef mem
 #undef ctrl
 #undef o
+            Undefined = 0xFFFF,
 		};
 		struct Description final {
-            using Opcode = std::underlying_type_t<Id>;
 			enum class Class : Ordinal {
 				Undefined,
 				Reg,
@@ -69,7 +69,7 @@ namespace i960::Opcode {
 				}
 			}
 
-			constexpr Description(Opcode opcode, Class type, const char* str, ArgumentLayout layout) noexcept : 
+			constexpr Description(OpcodeValue opcode, Class type, const char* str, ArgumentLayout layout) noexcept : 
 				_opcode(opcode), _type(type), _str(str), _argCount(getArgumentCount(layout)), _layout(layout) { }
             ~Description() = default;
 			constexpr auto getOpcode() const noexcept { return _opcode; }
@@ -89,12 +89,12 @@ namespace i960::Opcode {
 			X(Ctrl);
 			X(Undefined);
 #undef X
-			constexpr operator Opcode() const noexcept { return _opcode; }
+			constexpr operator OpcodeValue() const noexcept { return _opcode; }
 			private:
 				template<Class t>
 				constexpr bool isOfClass() const noexcept { return _type == t; }
 			private:
-                Opcode _opcode;
+                OpcodeValue _opcode;
 				Class _type;
 				const char* _str;
 				Integer _argCount;

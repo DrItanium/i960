@@ -58,15 +58,17 @@ namespace i960 {
                 //  so 58:0 becomes 0x0580 and 58:C -> 0x058C
                 return getStandardOpcode() | ((_enc >> 7) & 0xF);
             }
-            constexpr auto isREGFormat() const noexcept {
+            template<OpcodeValue start, OpcodeValue finish>
+            constexpr auto opcodeIsInRange() const noexcept {
                 auto standardOpcode = getStandardOpcode();
-                return (standardOpcode >= 0x580) &&
-                       (standardOpcode < 0x800);
+                return (standardOpcode >= start) &&
+                    (standardOpcode < finish);
+            }
+            constexpr auto isREGFormat() const noexcept {
+                return opcodeIsInRange<0x580, 0x800>();
             }
             constexpr auto isCOBRFormat() const noexcept {
-                auto standardOpcode = getStandardOpcode();
-                return (standardOpcode >= 0x200) &&
-                       (standardOpcode < 0x400);
+                return opcodeIsInRange<0x200, 0x400>();
             }
             constexpr auto isCTRLFormat() const noexcept {
                 return getStandardOpcode() < 0x200;

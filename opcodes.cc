@@ -4,7 +4,7 @@
 
 namespace i960::Opcode {
 	const Description& getDescription(Ordinal opcode) noexcept {
-		static constexpr Description undefined (0xFFFF, Description::Class::Undefined, "undefined", Description::ArgumentLayout::Undefined);
+		static constexpr Description undefined (static_cast<OpcodeValue>(Id::Undefined), Description::Class::Undefined, "undefined", Description::ArgumentLayout::Undefined);
 		static std::map<Ordinal, Description> lookupTable = {
 #define body(name, code, arg, kind) \
 			{ code , Description(code, Description::Class:: kind, #name , Description::ArgumentLayout:: arg ) },
