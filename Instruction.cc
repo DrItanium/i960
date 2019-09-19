@@ -142,7 +142,7 @@ namespace i960 {
         instruction = encodeSrcDest(instruction, _source1);
         instruction = encodeSrc2(instruction, _source2);
         instruction = i960::encode<Ordinal, Ordinal, 0b1111'1111'1100, 2>(instruction, _displacement);
-        return encodeCOBRFlags(instruction, _flags);
+        return encodeCOBRFlags(instruction, _flags.getValue());
     }
     constexpr ByteOrdinal computeREGFlags(Ordinal value) noexcept {
         auto lowerTwo = decode<Ordinal, ByteOrdinal, 0b11'00000, 5>(value);

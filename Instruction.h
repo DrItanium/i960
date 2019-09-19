@@ -139,28 +139,32 @@ namespace i960 {
     class COBRFormatInstruction : public GenericFormatInstruction {
         public:
             using Base = GenericFormatInstruction;
+            class Flags final {
+                public:
+                    constexpr Flags(ByteOrdinal flags) : _flags(flags) { }
+                    constexpr bool getM1() const noexcept { return _flags & 0b100; }
+                    constexpr bool getT()  const noexcept { return _flags & 0b010; }
+                    constexpr bool getS2() const noexcept { return _flags & 0b001; }
+                    constexpr auto getValue() const noexcept { return _flags; }
+                private:
+                    ByteOrdinal _flags;
+            };
         public:
             COBRFormatInstruction(const Instruction&);
             ~COBRFormatInstruction() override = default;
             constexpr auto getSrc1() const noexcept { return _source1; }
             constexpr auto getSrc2() const noexcept { return _source2; }
             constexpr auto getDisplacement() const noexcept { return _displacement; }
-            constexpr bool getM1() const noexcept { return _flags & 0b100; }
-            constexpr bool getT()  const noexcept { return _flags & 0b010; }
-            constexpr bool getS2() const noexcept { return _flags & 0b001; }
+            constexpr bool getM1() const noexcept { return _flags.getM1(); }
+            constexpr bool getT()  const noexcept { return _flags.getT(); }
+            constexpr bool getS2() const noexcept { return _flags.getS2(); }
             constexpr auto getBitPos() const noexcept { return _source1.getValue(); }
             EncodedInstruction encode() const noexcept override;
         private:
             Operand _source1;
             Operand _source2;
             Ordinal _displacement : 10;
-            /// These are the flags found within _flags
-            /// @code
-            /// bool _m1; // bit 2
-            /// bool _t;  // bit 1
-            /// bool _s2; // bit 0
-            /// @endcode
-            ByteOrdinal _flags;
+            Flags _flags;
     };
     class CTRLFormatInstruction : public GenericFormatInstruction {
         public:
