@@ -3,7 +3,7 @@
 #include "types.h"
 #include "Instruction.h"
 namespace i960::Opcode {
-		enum Id : Ordinal {
+		enum Id : OpcodeValue {
 #define o(name, code, arg, kind) \
 	name = code,
 #define reg(name, code, arg) o(name, code, arg, Reg)
@@ -18,6 +18,7 @@ namespace i960::Opcode {
 #undef o
 		};
 		struct Description final {
+            using Opcode = std::underlying_type_t<Id>;
 			enum class Class : Ordinal {
 				Undefined,
 				Reg,
@@ -68,7 +69,7 @@ namespace i960::Opcode {
 				}
 			}
 
-			constexpr Description(OpcodeValue opcode, Class type, const char* str, ArgumentLayout layout) noexcept : 
+			constexpr Description(Opcode opcode, Class type, const char* str, ArgumentLayout layout) noexcept : 
 				_opcode(opcode), _type(type), _str(str), _argCount(getArgumentCount(layout)), _layout(layout) { }
             ~Description() = default;
 			constexpr auto getOpcode() const noexcept { return _opcode; }
@@ -88,12 +89,12 @@ namespace i960::Opcode {
 			X(Ctrl);
 			X(Undefined);
 #undef X
-			constexpr operator OpcodeValue() const noexcept { return _opcode; }
+			constexpr operator Opcode() const noexcept { return _opcode; }
 			private:
 				template<Class t>
 				constexpr bool isOfClass() const noexcept { return _type == t; }
 			private:
-                OpcodeValue _opcode;
+                Opcode _opcode;
 				Class _type;
 				const char* _str;
 				Integer _argCount;
@@ -106,10 +107,7 @@ namespace i960::Opcode {
             return getDescription(inst.getOpcode());
         }
 #define X(name, code, kind) \
-        struct kind ## name ## Operation final { \
-            static constexpr auto TargetId = Id :: name ; \
-            static constexpr std::underlying_type_t < Id > number = code ; \
-        };
+        struct kind ## name ## Operation final { }; 
 #define reg(name, code, __) X(name, code, REG)
 #define mem(name, code, __) X(name, code, MEM)
 #define cobr(name, code, __) X(name, code, COBR)
