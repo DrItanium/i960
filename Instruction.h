@@ -102,6 +102,19 @@ namespace i960 {
     class REGFormatInstruction : public GenericFormatInstruction {
         public:
             using Base = GenericFormatInstruction;
+            class Flags {
+                public:
+                    constexpr Flags(ByteOrdinal flags) : _flags(flags) { }
+                    constexpr bool getM1()  const noexcept { return _flags & 0b10000; }
+                    constexpr bool getM2()  const noexcept { return _flags & 0b01000; }
+                    constexpr bool getM3()  const noexcept { return _flags & 0b00100; }
+                    constexpr bool getSF1() const noexcept { return _flags & 0b00010; }
+                    constexpr bool getSF2() const noexcept { return _flags & 0b00001; }
+                    constexpr auto getValue() const noexcept { return _flags; }
+                private:
+                    ByteOrdinal _flags;
+
+            };
         public:
             REGFormatInstruction(const Instruction& inst);
             ~REGFormatInstruction() override = default;
@@ -109,28 +122,18 @@ namespace i960 {
             constexpr auto getSrc2() const noexcept { return _src2; }
             constexpr auto getSrcDest() const noexcept { return _srcDest; }
             constexpr auto getBitPos() const noexcept { return _src1.getValue(); }
-            constexpr bool getM1()  const noexcept { return _flags & 0b10000; }
-            constexpr bool getM2()  const noexcept { return _flags & 0b01000; }
-            constexpr bool getM3()  const noexcept { return _flags & 0b00100; }
-            constexpr bool getSF1() const noexcept { return _flags & 0b00010; }
-            constexpr bool getSF2() const noexcept { return _flags & 0b00001; }
-            /// @todo implement set
+            constexpr bool getM1()  const noexcept { return _flags.getM1(); }
+            constexpr bool getM2()  const noexcept { return _flags.getM2(); }
+            constexpr bool getM3()  const noexcept { return _flags.getM3(); }
+            constexpr bool getSF1() const noexcept { return _flags.getSF1(); }
+            constexpr bool getSF2() const noexcept { return _flags.getSF2(); }
+            /// @todo implement setters
             EncodedInstruction encode() const noexcept override;
         private:
             Operand _srcDest;
             Operand _src2;
             Operand _src1;
-            /**
-             * Comprised of the following flags:
-             * @code
-             * bool _m1; // bit 4
-             * bool _m2; // bit 3
-             * bool _m3; // bit 2
-             * bool _s2; // bit 1
-             * bool _s1; // bit 0
-             * @endcode
-             */
-            ByteOrdinal _flags;
+            Flags _flags;
             ByteOrdinal _bitpos;
     };
     class COBRFormatInstruction : public GenericFormatInstruction {

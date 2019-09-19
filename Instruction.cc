@@ -168,7 +168,7 @@ namespace i960 {
         instruction = encodeSrcDest(instruction, _srcDest);
         instruction = encodeSrc2(instruction, _src2);
         instruction = encodeSrc1(instruction, _src1);
-        return encodeREGFlags(instruction, _flags);
+        return encodeREGFlags(instruction, _flags.getValue());
     }
 
     DecodedInstruction 
