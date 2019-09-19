@@ -3,6 +3,20 @@
 #include "types.h"
 #include "Instruction.h"
 namespace i960::Opcode {
+		enum Id : Ordinal {
+#define o(name, code, arg, kind) \
+	name = code,
+#define reg(name, code, arg) o(name, code, arg, Reg)
+#define cobr(name, code, arg) o(name, code, arg, Cobr) 
+#define mem(name, code, arg) o(name, code, arg, Mem) 
+#define ctrl(name, code, arg) o(name, code, arg, Ctrl)
+#include "opcodes.def"
+#undef reg
+#undef cobr
+#undef mem
+#undef ctrl
+#undef o
+		};
 		struct Description final {
 			enum class Class : Ordinal {
 				Undefined,
@@ -54,7 +68,7 @@ namespace i960::Opcode {
 				}
 			}
 
-			constexpr Description(Ordinal opcode, Class type, const char* str, ArgumentLayout layout) noexcept : 
+			constexpr Description(OpcodeValue opcode, Class type, const char* str, ArgumentLayout layout) noexcept : 
 				_opcode(opcode), _type(type), _str(str), _argCount(getArgumentCount(layout)), _layout(layout) { }
             ~Description() = default;
 			constexpr auto getOpcode() const noexcept { return _opcode; }
@@ -74,38 +88,28 @@ namespace i960::Opcode {
 			X(Ctrl);
 			X(Undefined);
 #undef X
-			constexpr operator Ordinal() const noexcept { return _opcode; }
+			constexpr operator OpcodeValue() const noexcept { return _opcode; }
 			private:
 				template<Class t>
 				constexpr bool isOfClass() const noexcept { return _type == t; }
 			private:
-				Ordinal _opcode;
+                OpcodeValue _opcode;
 				Class _type;
 				const char* _str;
 				Integer _argCount;
 				ArgumentLayout _layout;
 		};
-		enum Id : Ordinal {
-#define o(name, code, arg, kind) \
-	name = code,
-#define reg(name, code, arg) o(name, code, arg, Reg)
-#define cobr(name, code, arg) o(name, code, arg, Cobr) 
-#define mem(name, code, arg) o(name, code, arg, Mem) 
-#define ctrl(name, code, arg) o(name, code, arg, Ctrl)
-#include "opcodes.def"
-#undef reg
-#undef cobr
-#undef mem
-#undef ctrl
-#undef o
-		};
+
 
 		const Description& getDescription(Ordinal opcode) noexcept;
 		inline const Description& getDescription(const Instruction& inst) noexcept {
             return getDescription(inst.getOpcode());
         }
 #define X(name, code, kind) \
-        struct kind ## name ## Operation final { };
+        struct kind ## name ## Operation final { \
+            static constexpr auto TargetId = Id :: name ; \
+            static constexpr std::underlying_type_t < Id > number = code ; \
+        };
 #define reg(name, code, __) X(name, code, REG)
 #define mem(name, code, __) X(name, code, MEM)
 #define cobr(name, code, __) X(name, code, COBR)

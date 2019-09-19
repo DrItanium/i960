@@ -13,7 +13,7 @@ namespace i960 {
                 if constexpr(std::is_same_v<K, LongOrdinal>) {
                     return LongOrdinal(_lower.ordinal) | (LongOrdinal(_upper.ordinal) << 32);
                 } else {
-                    static_assert(LegalConversion<K>, "Illegal type requested");
+                    static_assert(false_v<K>, "Illegal type requested");
                 }
             }
             template<typename T>
@@ -23,7 +23,7 @@ namespace i960 {
                     _lower.ordinal = static_cast<Ordinal>(value);
                     _upper.ordinal = static_cast<Ordinal>(value >> 32);
                 } else {
-                    static_assert(LegalConversion<K>, "Illegal type requested");
+                    static_assert(false_v<K>, "Illegal type requested");
                 }
             }
             void set(Ordinal lower, Ordinal upper) noexcept;

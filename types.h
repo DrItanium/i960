@@ -4,8 +4,6 @@
 #include <memory>
 namespace i960 {
 
-    template<typename T>
-    constexpr bool LegalConversion = false;
     using ByteOrdinal = std::uint8_t;
     using ShortOrdinal = std::uint16_t;
     using Ordinal = std::uint32_t;
@@ -133,7 +131,7 @@ namespace i960 {
     };
     // false_v taken from https://quuxplusone.github.io/blog/2018/04/02/false-v/
     template<typename...>
-        inline constexpr bool false_v = false;
+    inline constexpr bool false_v = false;
 
     /**
      *

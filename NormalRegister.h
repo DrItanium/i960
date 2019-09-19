@@ -85,7 +85,7 @@ namespace i960 {
                 } else if constexpr(std::is_same_v<K, LongOrdinal>) {
                     return static_cast<LongOrdinal>(ordinal);
                 } else {
-                    static_assert(LegalConversion<K>, "Illegal type requested");
+                    static_assert(false_v<K>, "Illegal type requested");
                 }
             }
             template<typename T>
@@ -106,7 +106,7 @@ namespace i960 {
                 } else if constexpr(std::is_same_v<K, PreviousFramePointer>) {
                     ordinal = value.value;
                 } else {
-                    static_assert(LegalConversion<K>, "Illegal type requested");
+                    static_assert(false_v<K>, "Illegal type requested");
                 }
             }
             void move(const NormalRegister& other) noexcept;
