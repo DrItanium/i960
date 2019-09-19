@@ -15,8 +15,11 @@ namespace i960 {
 			static constexpr Ordinal valueMask = 0b011111;
 			static constexpr Ordinal typeInputMask = 0b1;
 			static constexpr Ordinal typeShiftAmount = 5;
-			constexpr Operand(Ordinal rawValue) : _raw(rawValue & encodingMask) { }
-			constexpr Operand(Ordinal type, Ordinal value) : Operand(((type & typeInputMask) << typeShiftAmount) | (value & valueMask)) { }
+            static constexpr Operand makeLiteral(Ordinal value) noexcept {
+                return Operand(((Operand::valueMask & Ordinal(value)) + Operand::typeMask));
+            }
+			constexpr Operand(Ordinal rawValue) noexcept : _raw(rawValue & encodingMask) { }
+			constexpr Operand(Ordinal type, Ordinal value) noexcept : Operand(((type & typeInputMask) << typeShiftAmount) | (value & valueMask)) { }
 			constexpr bool isLiteral() const noexcept { return (_raw & typeMask) != 0; }
 			constexpr bool isRegister() const noexcept { return (_raw & typeMask) == 0; }
 			constexpr Ordinal getValue() const noexcept { return (_raw & valueMask); }
@@ -29,24 +32,22 @@ namespace i960 {
 				return Operand((_raw & typeMask) != 0, getValue() + 1);
 			}
             constexpr bool operator ==(const Operand& other) const noexcept {
-                return ((this->_raw & typeMask) == (other._raw & typeMask)) &&
-                       (getValue() == other.getValue());
+                return _raw == other._raw;
             }
 		private:
 			Ordinal _raw;
 	};
     std::ostream& operator <<(std::ostream& stream, const Operand& op);
 
-	constexpr Operand operator"" _lit(unsigned long long n) {
-		return Operand(((Operand::valueMask & Ordinal(n)) + Operand::typeMask));
+	constexpr Operand operator"" _lit(unsigned long long n) noexcept {
+        return Operand::makeLiteral(n);
 	}
-	constexpr Operand operator"" _gr(unsigned long long n) {
+	constexpr Operand operator"" _gr(unsigned long long n) noexcept {
 		return Operand((n & 0b1111) + 0b10000);
 	}
-	constexpr Operand operator"" _lr(unsigned long long n) {
+	constexpr Operand operator"" _lr(unsigned long long n) noexcept {
 		return Operand((n & 0b1111));
 	}
-
     constexpr auto PFP = 0_lr;
     constexpr auto SP = 1_lr;
     constexpr auto RIP = 2_lr;

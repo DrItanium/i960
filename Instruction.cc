@@ -39,10 +39,15 @@ namespace i960 {
             return (value & ~mask) | (((maskedOutValue >> 4) << 12) & mask);
         }
     }
+    template<typename R = Operand>
     constexpr auto decodeSrcDest(Ordinal input) noexcept {
         constexpr Ordinal Mask = 0x00F80000;
         constexpr Ordinal Shift = 19;
-        return decode<Ordinal, Operand, Mask, Shift>(input);
+        return decode<Ordinal, R, Mask, Shift>(input);
+    }
+    template<Ordinal mask>
+    constexpr auto decodeSrcDest(Ordinal input, Ordinal modeBits) noexcept {
+        return Operand((modeBits & mask) != 0, decodeSrcDest<Ordinal>(input));
     }
     constexpr Ordinal encodeSrcDest(Ordinal value, Operand input) noexcept {
         constexpr Ordinal Mask = 0x00F80000;
@@ -50,10 +55,15 @@ namespace i960 {
         return encode<Ordinal, ByteOrdinal, Mask, Shift>(value, input.getValue());
     }
     static_assert(encodeSrcDest(0, 1_lr) == 0x00080000);
+    template<typename R = Operand>
     constexpr auto decodeSrc2(Ordinal input) noexcept {
         constexpr Ordinal Mask = 0x000C7000;
         constexpr Ordinal Shift = 14;
-        return decode<Ordinal, Operand, Mask, Shift>(input);
+        return decode<Ordinal, R, Mask, Shift>(input);
+    }
+    template<Ordinal mask>
+    constexpr auto decodeSrc2(Ordinal input, Ordinal modeBits) noexcept {
+        return Operand((modeBits & mask) != 0, decodeSrc2<Ordinal>(input));
     }
     constexpr auto encodeSrc2(Ordinal value, Operand input) noexcept {
         constexpr Ordinal Mask = 0x000C7000;
@@ -62,9 +72,14 @@ namespace i960 {
     }
     static_assert(encodeSrc2(0, 1_lr) == (0x00080000 >> 5));
 
+    template<typename R = ByteOrdinal>
     constexpr auto decodeSrc1(Ordinal input) noexcept {
         constexpr Ordinal Mask = 0x1F;
-        return decode<Ordinal, ByteOrdinal, Mask>(input);
+        return decode<Ordinal, R, Mask>(input);
+    }
+    template<Ordinal mask>
+    constexpr auto decodeSrc1(Ordinal value, Ordinal modeBits) noexcept {
+        return Operand((modeBits & mask) != 0, decodeSrc1<Ordinal>(value));
     }
     constexpr auto encodeSrc1(Ordinal value, Operand input) noexcept {
         constexpr Ordinal Mask = 0x1F;
@@ -115,7 +130,7 @@ namespace i960 {
     }
     static_assert(encodeCOBRFlags(0, 0b111) == 0b1'0000'0000'0011);
     COBRFormatInstruction::COBRFormatInstruction(const Instruction& inst) : Base(inst),
-    _source1(decodeSrcDest(inst.getLowerHalf())),
+    _source1(decodeSrcDest<0b100>(inst.getLowerHalf(), computeCOBRFlags(inst.getLowerHalf()))),
     _source2(decodeSrc2(inst.getLowerHalf())),
     _displacement(decode<Ordinal, Ordinal, 0b1111'1111'1100, 2>(inst.getLowerHalf())),
     _flags(computeCOBRFlags(inst.getLowerHalf()))
@@ -142,9 +157,9 @@ namespace i960 {
     }
 
     REGFormatInstruction::REGFormatInstruction(const Instruction& inst) : Base(inst),
-    _srcDest(decodeSrcDest(inst.getLowerHalf())),
-    _src2(decodeSrc2(inst.getLowerHalf())),
-    _src1(decodeSrc1(inst.getLowerHalf())),
+    _srcDest(decodeSrcDest<0b10000>(inst.getLowerHalf(), computeREGFlags(inst.getLowerHalf()))),
+    _src2(decodeSrc2<0b01000>(inst.getLowerHalf(), computeREGFlags(inst.getLowerHalf()))),
+    _src1(decodeSrc1<0b00100>(inst.getLowerHalf(), computeREGFlags(inst.getLowerHalf()))),
     _flags(computeREGFlags(inst.getLowerHalf())) { }
 
     EncodedInstruction
