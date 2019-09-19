@@ -102,15 +102,27 @@ namespace i960 {
     class REGFormatInstruction : public GenericFormatInstruction {
         public:
             using Base = GenericFormatInstruction;
-            class Flags {
+            class Flags final {
                 public:
-                    constexpr Flags(ByteOrdinal flags) : _flags(flags) { }
+                    static constexpr ByteOrdinal decode(SingleEncodedInstructionValue value) noexcept {
+                        auto lowerTwo = i960::decode<Ordinal, ByteOrdinal, 0b11'00000, 5>(value);
+                        auto upperThree = i960::decode<Ordinal, ByteOrdinal, 0b111'0000'00'00000, 8>(value);
+                        return lowerTwo | upperThree;
+                    }
+                public:
+                    constexpr Flags(ByteOrdinal flags) noexcept : _flags(flags) { }
+                    constexpr Flags(const Instruction& inst) noexcept : _flags(decode(inst.getLowerHalf())) { }
                     constexpr bool getM1()  const noexcept { return _flags & 0b10000; }
                     constexpr bool getM2()  const noexcept { return _flags & 0b01000; }
                     constexpr bool getM3()  const noexcept { return _flags & 0b00100; }
                     constexpr bool getSF1() const noexcept { return _flags & 0b00010; }
                     constexpr bool getSF2() const noexcept { return _flags & 0b00001; }
                     constexpr auto getValue() const noexcept { return _flags; }
+                    constexpr SingleEncodedInstructionValue encode(SingleEncodedInstructionValue value) const noexcept {
+                        auto lowerTwo = i960::encode<SingleEncodedInstructionValue, ByteOrdinal, 0b11'00000, 5>(value, _flags);
+                        auto upperThree = i960::encode<SingleEncodedInstructionValue, ByteOrdinal, 0b111'0000'00'00000, 8>(value, _flags);
+                        return lowerTwo | upperThree;
+                    }
                 private:
                     ByteOrdinal _flags;
 
@@ -130,21 +142,31 @@ namespace i960 {
             /// @todo implement setters
             EncodedInstruction encode() const noexcept override;
         private:
+            Flags _flags;
             Operand _srcDest;
             Operand _src2;
             Operand _src1;
-            Flags _flags;
     };
     class COBRFormatInstruction : public GenericFormatInstruction {
         public:
             using Base = GenericFormatInstruction;
             class Flags final {
                 public:
-                    constexpr Flags(ByteOrdinal flags) : _flags(flags) { }
+                    static constexpr ByteOrdinal decode(SingleEncodedInstructionValue value) noexcept {
+                        return i960::decode<SingleEncodedInstructionValue, ByteOrdinal, 0b1'0000'0000'0000, 10>(value) |
+                            i960::decode<SingleEncodedInstructionValue, ByteOrdinal, 0b11>(value);
+                    }
+                public:
+                    constexpr Flags(const Instruction& inst) : _flags(decode(inst.getLowerHalf())) { }
+                    explicit constexpr Flags(ByteOrdinal flags) : _flags(flags) { }
                     constexpr bool getM1() const noexcept { return _flags & 0b100; }
                     constexpr bool getT()  const noexcept { return _flags & 0b010; }
                     constexpr bool getS2() const noexcept { return _flags & 0b001; }
                     constexpr auto getValue() const noexcept { return _flags; }
+                    constexpr SingleEncodedInstructionValue encode(SingleEncodedInstructionValue value) const noexcept {
+                        return i960::encode<Ordinal, ByteOrdinal, 0b1'0000'0000'0000, 10>(value, _flags) |
+                            i960::encode<Ordinal, ByteOrdinal, 0b11, 0>(value, _flags);
+                    }
                 private:
                     ByteOrdinal _flags;
             };
@@ -160,10 +182,10 @@ namespace i960 {
             constexpr auto getBitPos() const noexcept { return _source1.getValue(); }
             EncodedInstruction encode() const noexcept override;
         private:
+            Flags _flags;
             Operand _source1;
             Operand _source2;
             Ordinal _displacement : 10;
-            Flags _flags;
     };
     class CTRLFormatInstruction : public GenericFormatInstruction {
         public:

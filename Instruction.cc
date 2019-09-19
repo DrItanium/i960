@@ -120,20 +120,11 @@ namespace i960 {
                 i960::encode<Ordinal, bool, 0b10, 1>(encodeMajorOpcode(0, getOpcode()), _t),
                 _displacement) & 0xFFFF'FFFE;
     }
-    constexpr ByteOrdinal computeCOBRFlags(Ordinal value) noexcept {
-        return decode<Ordinal, ByteOrdinal, 0b1'0000'0000'0000, 10>(value) |
-               decode<Ordinal, ByteOrdinal, 0b11>(value);
-    }
-    constexpr Ordinal encodeCOBRFlags(Ordinal value, ByteOrdinal input) noexcept {
-        return encode<Ordinal, ByteOrdinal, 0b1'0000'0000'0000, 10>(value, input) |
-               encode<Ordinal, ByteOrdinal, 0b11, 0>(value, input);
-    }
-    static_assert(encodeCOBRFlags(0, 0b111) == 0b1'0000'0000'0011);
     COBRFormatInstruction::COBRFormatInstruction(const Instruction& inst) : Base(inst),
-    _source1(decodeSrcDest<0b100>(inst.getLowerHalf(), computeCOBRFlags(inst.getLowerHalf()))),
+    _flags(inst),
+    _source1(decodeSrcDest<0b100>(inst.getLowerHalf(), _flags.getValue())),
     _source2(decodeSrc2(inst.getLowerHalf())),
-    _displacement(decode<Ordinal, Ordinal, 0b1111'1111'1100, 2>(inst.getLowerHalf())),
-    _flags(computeCOBRFlags(inst.getLowerHalf()))
+    _displacement(decode<Ordinal, Ordinal, 0b1111'1111'1100, 2>(inst.getLowerHalf()))
     { }
 
     EncodedInstruction
@@ -142,25 +133,14 @@ namespace i960 {
         instruction = encodeSrcDest(instruction, _source1);
         instruction = encodeSrc2(instruction, _source2);
         instruction = i960::encode<Ordinal, Ordinal, 0b1111'1111'1100, 2>(instruction, _displacement);
-        return encodeCOBRFlags(instruction, _flags.getValue());
-    }
-    constexpr ByteOrdinal computeREGFlags(Ordinal value) noexcept {
-        auto lowerTwo = decode<Ordinal, ByteOrdinal, 0b11'00000, 5>(value);
-        auto upperThree = decode<Ordinal, ByteOrdinal, 0b111'0000'00'00000, 8>(value);
-        return lowerTwo | upperThree;
-    }
-
-    constexpr Ordinal encodeREGFlags(Ordinal value, ByteOrdinal input) noexcept {
-        auto lowerTwo = encode<Ordinal, ByteOrdinal, 0b11'00000, 5>(value, input);
-        auto upperThree = encode<Ordinal, ByteOrdinal, 0b111'0000'00'00000, 8>(value, input);
-        return lowerTwo | upperThree;
+        return _flags.encode(instruction);
     }
 
     REGFormatInstruction::REGFormatInstruction(const Instruction& inst) : Base(inst),
-    _srcDest(decodeSrcDest<0b10000>(inst.getLowerHalf(), computeREGFlags(inst.getLowerHalf()))),
-    _src2(decodeSrc2<0b01000>(inst.getLowerHalf(), computeREGFlags(inst.getLowerHalf()))),
-    _src1(decodeSrc1<0b00100>(inst.getLowerHalf(), computeREGFlags(inst.getLowerHalf()))),
-    _flags(computeREGFlags(inst.getLowerHalf())) { }
+    _flags(inst),
+    _srcDest(decodeSrcDest<0b10000>(inst.getLowerHalf(), _flags.getValue())),
+    _src2(decodeSrc2<0b01000>(inst.getLowerHalf(), _flags.getValue())),
+    _src1(decodeSrc1<0b00100>(inst.getLowerHalf(), _flags.getValue())) { }
 
     EncodedInstruction
     REGFormatInstruction::encode() const noexcept {
@@ -168,7 +148,7 @@ namespace i960 {
         instruction = encodeSrcDest(instruction, _srcDest);
         instruction = encodeSrc2(instruction, _src2);
         instruction = encodeSrc1(instruction, _src1);
-        return encodeREGFlags(instruction, _flags.getValue());
+        return _flags.encode(instruction);
     }
 
     DecodedInstruction 
