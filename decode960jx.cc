@@ -47,32 +47,32 @@ void decode(std::ostream& out, const i960::Opcode::Description& desc, const i960
     using M = std::decay_t<i960::MEMFormatInstruction::AddressingModes>;
     std::visit([&out, &desc](auto&& value) { out << std::hex << "0x" << value << ": " << desc.getString() << " "; }, inst.encode());
     switch (inst.getMode()) {
-        case M::Offset:
+        case M::AbsoluteOffset:
             out << "0x" << inst.getOffset();
             break;
-        case M::Abase_Plus_Offset:
+        case M::RegisterIndirectWithOffset:
             out << "0x" << inst.getOffset() << "(" << inst.getAbase() << ")";
             break;
-        case M::Abase:
+        case M::RegisterIndirect:
             out << "(" << inst.getAbase() << ")";
             break;
-        case M::IP_Plus_Displacement_Plus_8:
+        case M::IPWithDisplacement:
             out << "((ip) + " << inst.getDisplacement() << " + 8)";
             break;
-        case M::Abase_Plus_Index_Times_2_Pow_Scale:
+        case M::RegisterIndirectWithIndex:
             out << "((" << inst.getAbase() << ") + (" << inst.getIndex() << ") * " << inst.getScale() << ")";
             break;
-        case M::Displacement:
+        case M::AbsoluteDisplacement:
             out << inst.getDisplacement();
             break;
-        case M::Abase_Plus_Displacement:
+        case M::RegisterIndirectWithDisplacement:
             out << "((" << inst.getAbase() << ") + " << inst.getDisplacement() << ")";
             break;
-        case M::Index_Times_2_Pow_Scale_Plus_Displacement:
-            out << "((" << inst.getIndex() << ") * " << inst.getScale() << " + " << inst.getDisplacement() << ")";
+        case M::RegisterIndirectWithIndexAndDisplacement:
+            out << "((" << inst.getAbase() << ") + (" << inst.getIndex() << " * " << inst.getScale() << ") + " << inst.getDisplacement() << ")";
             break;
-        case M::Abase_Plus_Index_Times_2_Pow_Scale_Plus_Displacement:
-            out << "((" << inst.getAbase() << ") + (" << inst.getIndex() << ") * " << inst.getScale() << " + " << inst.getDisplacement() << ")";
+        case M::IndexWithDisplacement:
+            out << "((" << inst.getIndex() << " * " << inst.getScale() << ") + " << inst.getDisplacement() << ")";
             break;
         default:
             out << "ERROR: reserved!!!";
