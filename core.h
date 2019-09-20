@@ -139,10 +139,17 @@ namespace i960 {
             void dispatchOperation(const T& inst, const typename T::OpcodeList& targetInstruction) {
                 std::visit([&inst, this](auto&& value) { return performOperation(inst, value); }, targetInstruction);
             }
-            void dispatchOperation(const CTRLFormatInstruction& inst, const Opcode::CTRL& opcode);
-            void dispatchOperation(const COBRFormatInstruction& inst, const Opcode::COBR& opcode);
-            void dispatchOperation(const REGFormatInstruction& inst, const Opcode::REG& opcode);
-            void dispatchOperation(const MEMFormatInstruction& inst, const Opcode::MEM& opcode);
+            template<typename T>
+            void dispatchOperation(const T& inst) {
+                std::visit([&inst, this](auto&& value) {
+                            using K = std::decay_t<decltype(value)>;
+                            if constexpr (std::is_same_v<K, std::monostate>) {
+                                generateFault(OperationFaultSubtype::InvalidOpcode);
+                            } else {
+                                performOperation(inst, value);
+                            }
+                        }, inst.getTarget());
+            }
             template<typename T>
             void performOperation(const T&, std::monostate) {
                 throw "Bad operation!";
