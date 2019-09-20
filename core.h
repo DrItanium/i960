@@ -169,9 +169,9 @@ namespace i960 {
 			LongRegister makeLongRegister(ByteOrdinal index) noexcept;
             inline auto makeLongRegister(const Operand& base) noexcept { return makeLongRegister(static_cast<ByteOrdinal>(base)); }
 			TripleRegister makeTripleRegister(ByteOrdinal index) noexcept;
-            inline auto makeTripleRegister(const Operand& index) noexcept { return makeTripleRegister(static_cast<ByteOrdinal>(base)); }
+            inline auto makeTripleRegister(const Operand& index) noexcept { return makeTripleRegister(static_cast<ByteOrdinal>(index)); }
 			QuadRegister makeQuadRegister(ByteOrdinal index) noexcept;
-            inline auto makeQuadRegister(const Operand& index) noexcept { return makeQuadRegister(static_cast<ByteOrdinal>(base)); }
+            inline auto makeQuadRegister(const Operand& index) noexcept { return makeQuadRegister(static_cast<ByteOrdinal>(index)); }
             PreviousFramePointer& getPFP() noexcept;
             Ordinal getStackPointerAddress() const noexcept;
             void setFramePointer(Ordinal value) noexcept;
@@ -210,6 +210,7 @@ namespace i960 {
             void performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLcallOperation) noexcept;
             void performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLbOperation) noexcept;
             void performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLretOperation) noexcept;
+            void b(Integer displacement) noexcept;
             // CTRL Format instructions
             void bal(const CTRLFormatInstruction&) noexcept;
             void bal(Integer displacement) noexcept;

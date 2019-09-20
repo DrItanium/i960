@@ -321,15 +321,17 @@ X(cmpi, bno);
 			d3.set(0);
 		}
 	}
-	void Core::performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLbOperation) noexcept {
+    void Core::b(Integer displacement) noexcept {
         static constexpr auto checkMask = 0x7F'FFFC;
 		union {
 			Integer _value : 24;
 		} conv;
-		conv._value = inst.getDisplacement();
+		conv._value = displacement;
 		conv._value = conv._value > checkMask ? checkMask : conv._value;
 		_instructionPointer += conv._value;
         _instructionPointer = computeAlignedAddress(_instructionPointer); // make sure the least significant two bits are clear
+	void Core::performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLbOperation) noexcept {
+        b(inst.getDisplacement());
 	}
 	void Core::bx(SourceRegister src) noexcept {
 		_instructionPointer = src.get<Ordinal>();
