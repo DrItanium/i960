@@ -175,7 +175,11 @@ namespace i960::Opcode {
 #undef cobr
 #undef ctrl
     >;
-    constexpr CTRL translateCTRL(i960::OpcodeValue op) noexcept {
+    struct CTRLClass final { };
+    struct COBRClass final { };
+    struct REGClass final { };
+    struct MEMClass final { };
+    constexpr CTRL translate(i960::OpcodeValue op, CTRLClass) noexcept {
         switch (op) {
 #define X(name, code, kind) case code : return kind ## name ## Operation () ; 
 #define reg(name, code, __) //X(name, code, REG)
@@ -192,7 +196,7 @@ namespace i960::Opcode {
                 return std::monostate();
         }
     }
-    constexpr COBR translateCOBR(i960::OpcodeValue op) noexcept {
+    constexpr COBR translate(i960::OpcodeValue op, COBRClass) noexcept {
         switch (op) {
 #define X(name, code, kind) case code : return kind ## name ## Operation () ; 
 #define reg(name, code, __) //X(name, code, REG)
@@ -209,7 +213,7 @@ namespace i960::Opcode {
                 return std::monostate();
         }
     }
-    constexpr REG translateREG(i960::OpcodeValue op) noexcept {
+    constexpr REG translate(i960::OpcodeValue op, REGClass) noexcept {
         switch (op) {
 #define X(name, code, kind) case code : return kind ## name ## Operation () ; 
 #define reg(name, code, __) X(name, code, REG)
@@ -226,7 +230,7 @@ namespace i960::Opcode {
                 return std::monostate();
         }
     }
-    constexpr MEM translateMEM(i960::OpcodeValue op) noexcept {
+    constexpr MEM translate(i960::OpcodeValue op, MEMClass) noexcept {
         switch (op) {
 #define X(name, code, kind) case code : return kind ## name ## Operation () ; 
 #define reg(name, code, __) //X(name, code, REG)
