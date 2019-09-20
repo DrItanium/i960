@@ -330,13 +330,14 @@ X(cmpi, bno);
 		conv._value = conv._value > checkMask ? checkMask : conv._value;
 		_instructionPointer += conv._value;
         _instructionPointer = computeAlignedAddress(_instructionPointer); // make sure the least significant two bits are clear
+
 	void Core::performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLbOperation) noexcept {
         b(inst.getDisplacement());
 	}
-	void Core::bx(SourceRegister src) noexcept {
-		_instructionPointer = src.get<Ordinal>();
+    void Core::performOperation(const MEMFormatInstruction& inst, Opcode::MEMbxOperation) noexcept {
+        _instructionPointer = getRegister(inst.getSrcDest()).get<Ordinal>();
         _instructionPointer = computeAlignedAddress(_instructionPointer); // make sure the least significant two bits are clear
-	}
+    }
 	void Core::bal(Integer displacement) noexcept {
         // this is taken from the i960mc manual since the one in the i960jx manual
         // contradicts itself. 

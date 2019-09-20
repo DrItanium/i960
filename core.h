@@ -230,7 +230,7 @@ namespace i960 {
             void faultne(const CTRLFormatInstruction&);
             void faultle(const CTRLFormatInstruction&);
             void faulto(const CTRLFormatInstruction&);
-            void bx(SourceRegister targ) noexcept; // TODO check these two instructions out for more variants
+            void performOperation(const MEMFormatInstruction& inst, Opcode::MEMbxOperation) noexcept;
             // begin core architecture
             void callx(SourceRegister value) noexcept;
             void calls(SourceRegister value);
@@ -311,10 +311,7 @@ namespace i960 {
             void shri(__DEFAULT_THREE_ARGS__) noexcept;
             void shrdi(__DEFAULT_THREE_ARGS__) noexcept;
             void spanbit(__DEFAULT_TWO_ARGS__) noexcept;
-            inline void performOperation(const MEMFormatInstruction& inst, Opcode::MEMstOperation) {
-		        //store(src2.get<Ordinal>(), src1.get<Ordinal>());
-                store(inst.getSrc2(), inst.getSrc1());
-            }
+            void performOperation(const MEMFormatInstruction& inst, Opcode::MEMstOperation);
             template<typename T, Ordinal mask>
             void genericStoreOperation(const MEMFormatInstruction& inst) noexcept {
                 auto upper = load(inst.getSrc2()) & mask;
