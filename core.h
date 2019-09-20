@@ -207,11 +207,18 @@ namespace i960 {
                             }
                         }, inst.getTarget());
             }
-            void performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLcallOperation) noexcept;
-            void performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLbOperation) noexcept;
-            void performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLretOperation) noexcept;
-            void performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLcallOperation) noexcept;
-            void performOperation(const MEMFormatInstruction& inst, Opcode::MEMbxOperation) noexcept;
+#define X(name, code, kind) \
+            void performOperation(const kind ## FormatInstruction& , Opcode:: kind ## name ## Operation ) noexcept ;
+#define reg(name, code, __) X(name, code, REG)
+#define mem(name, code, __) X(name, code, MEM)
+#define cobr(name, code, __) X(name, code, COBR)
+#define ctrl(name, code, __) X(name, code, CTRL)
+#include "opcodes.def"
+#undef X
+#undef reg
+#undef mem
+#undef cobr
+#undef ctrl
             void b(Integer displacement) noexcept;
             // CTRL Format instructions
             void bal(Integer displacement) noexcept;
@@ -227,7 +234,6 @@ namespace i960 {
             __GEN_DEFAULT_THREE_ARG_SIGS__(andnot);
             void atadd(__DEFAULT_THREE_ARGS__) noexcept; // TODO add other forms of atadd
             void atmod(SourceRegister src, SourceRegister mask, DestinationRegister srcDest) noexcept; // TODO check out other forms of this instruction
-            void performOperation(const MEMFormatInstruction& inst, Opcode::MEMbalxOperation) noexcept;
             void bbc(SourceRegister pos, SourceRegister src, Integer targ) noexcept; 
             void bbs(SourceRegister pos, SourceRegister src, Integer targ) noexcept;
             // compare and branch instructions as well
@@ -259,7 +265,6 @@ namespace i960 {
 			void ldq(SourceRegister src, Ordinal index) noexcept;
             void lda(__DEFAULT_TWO_ARGS__) noexcept;
             void mark() noexcept;
-            void performOperation(const REGFormatInstruction& inst, Opcode::REGmarkOperation) noexcept;
             __GEN_DEFAULT_THREE_ARG_SIGS__(modac);
             __GEN_DEFAULT_THREE_ARG_SIGS__(modi);
             __GEN_DEFAULT_THREE_ARG_SIGS__(modify);
@@ -292,14 +297,6 @@ namespace i960 {
             void shri(__DEFAULT_THREE_ARGS__) noexcept;
             void shrdi(__DEFAULT_THREE_ARGS__) noexcept;
             void spanbit(__DEFAULT_TWO_ARGS__) noexcept;
-            void performOperation(const MEMFormatInstruction& inst, Opcode::MEMstOperation) noexcept;
-            void performOperation(const MEMFormatInstruction& inst, Opcode::MEMstobOperation) noexcept;
-            void performOperation(const MEMFormatInstruction& inst, Opcode::MEMstosOperation) noexcept;
-            void performOperation(const MEMFormatInstruction& inst, Opcode::MEMstibOperation) noexcept;
-            void performOperation(const MEMFormatInstruction& inst, Opcode::MEMstisOperation) noexcept;
-            void performOperation(const MEMFormatInstruction& inst, Opcode::MEMstlOperation) noexcept;
-            void performOperation(const MEMFormatInstruction& inst, Opcode::MEMsttOperation) noexcept;
-            void performOperation(const MEMFormatInstruction& inst, Opcode::MEMstqOperation) noexcept;
 			void stl(Ordinal ind, SourceRegister dest) noexcept;
             void stt(Ordinal ind, SourceRegister dest) noexcept;
             void stq(Ordinal ind, SourceRegister dest) noexcept;
@@ -307,13 +304,10 @@ namespace i960 {
             __GEN_DEFAULT_THREE_ARG_SIGS__(subo);
             __GEN_DEFAULT_THREE_ARG_SIGS__(subi);
             void syncf() noexcept;
-            void performOperation(const REGFormatInstruction& inst, Opcode::REGsyncfOperation) noexcept;
             __GEN_DEFAULT_THREE_ARG_SIGS__(xnor);
             __GEN_DEFAULT_THREE_ARG_SIGS__(opxor);
 			__GEN_DEFAULT_THREE_ARG_SIGS__(sysctl);
 			void inten();
-            void performOperation(const REGFormatInstruction& inst, Opcode::REGintenOperation) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Opcode::REGintdisOperation) noexcept;
 			void intdis();
 			void intctl(__DEFAULT_TWO_ARGS__);
 			__GEN_DEFAULT_THREE_ARG_SIGS__(icctl);
@@ -326,12 +320,6 @@ namespace i960 {
             void cmpob(SourceRegister src1, SourceRegister src2) noexcept;
             void cmpib(SourceRegister src1, SourceRegister src2) noexcept;
 			void bswap(SourceRegister src1, DestinationRegister src2) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Opcode::REGbswapOperation) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Opcode::REGcmpibOperation) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Opcode::REGcmpobOperation) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Opcode::REGcmpisOperation) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Opcode::REGcmposOperation) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Opcode::REGhaltOperation) noexcept;
 		private:
 			// templated bodies
 			template<typename T>
