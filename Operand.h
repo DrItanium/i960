@@ -22,8 +22,8 @@ namespace i960 {
 			constexpr Operand(Ordinal type, Ordinal value) noexcept : Operand(((type & typeInputMask) << typeShiftAmount) | (value & valueMask)) { }
 			constexpr bool isLiteral() const noexcept { return (_raw & typeMask) != 0; }
 			constexpr bool isRegister() const noexcept { return (_raw & typeMask) == 0; }
-			constexpr Ordinal getValue() const noexcept { return (_raw & valueMask); }
-            constexpr Ordinal getOffset() const noexcept { return (_raw & 0b1111); }
+			constexpr ByteOrdinal getValue() const noexcept { return (_raw & valueMask); }
+            constexpr ByteOrdinal getOffset() const noexcept { return (_raw & 0b1111); }
 			constexpr operator ByteOrdinal() const noexcept { return ByteOrdinal(getValue()); }
 			constexpr auto notDivisibleBy(ByteOrdinal value) const noexcept { return (((ByteOrdinal)getValue()) % value) != 0; }
             constexpr auto isGlobalRegister() const noexcept { return isRegister() && (getValue() >= 0b10000); }

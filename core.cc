@@ -761,30 +761,6 @@ X(cmpi, bno);
                 break;
         }
 	}
-	void Core::stob(__TWO_SOURCE_REGS__) noexcept {
-		auto upper = load(src2.get<Ordinal>()) & 0xFFFFFF00;
-		auto lower = src1.get<ByteOrdinal>();
-		store(src2.get<Ordinal>(), upper | lower);
-	}
-	void Core::stos(__TWO_SOURCE_REGS__) noexcept {
-		auto upper = load(src2.get<Ordinal>()) & 0xFFFF0000;
-		auto lower = src1.get<ShortOrdinal>();
-		store(src2.get<Ordinal>(), upper | lower);
-	}
-	void Core::stib(__TWO_SOURCE_REGS__) noexcept {
-		auto upper = load(src2.get<Ordinal>()) & 0xFFFFFF00;
-		auto lower = Ordinal(src1.get<Integer>() & 0x000000FF);
-		store(src2.get<Ordinal>(), upper | lower);
-	}
-	void Core::stis(__TWO_SOURCE_REGS__) noexcept {
-		// load the complete value
-		auto upper = load(src2.get<Ordinal>()) & 0xFFFF0000;
-		auto lower = Ordinal(src1.get<Integer>() & 0x0000FFFF);
-		store(src2.get<Ordinal>(), upper | lower);
-	}
-	void Core::st(__TWO_SOURCE_REGS__) noexcept {
-		store(src2.get<Ordinal>(), src1.get<Ordinal>());
-	}
 	void Core::opnot(__DEFAULT_TWO_ARGS__) noexcept {
 		dest.set(~src.get<Ordinal>());
 	}

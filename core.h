@@ -130,11 +130,59 @@ namespace i960 {
 			Ordinal getPRCBPointer() noexcept;
 			Ordinal getFirstInstructionPointer() noexcept;
             Ordinal getSupervisorStackPointerBase() noexcept;
+            Ordinal load(Ordinal address, bool atomic = false) noexcept;
+            LongOrdinal loadDouble(Ordinal address, bool atomic = false) noexcept;
+            void store(Ordinal address, Ordinal value, bool atomic = false) noexcept;
+            inline void store(const NormalRegister& addr, const NormalRegister&  value, bool atomic = false) noexcept { 
+                store(addr.get<Ordinal>(), value.get<Ordinal>(), atomic);
+            }
+
+
+            inline void store(const NormalRegister& addr, Ordinal value) noexcept {
+                store(addr.get<Ordinal>(), value);
+            }
+
+            template<typename T>
+            void setRegister(ByteOrdinal index, T value) noexcept {
+                getRegister(index).set<T>(value);
+            }
+            inline void setRegister(ByteOrdinal index, SourceRegister other) noexcept {
+                setRegister(index, other.get<Ordinal>());
+            }
+            template<typename T>
+            void setRegister(const Operand& op, T value) noexcept {
+                setRegister<T>(static_cast<ByteOrdinal>(op), value);
+            }
+            inline void setRegister(const Operand& index, SourceRegister other) noexcept {
+                setRegister(static_cast<ByteOrdinal>(index), other);
+            }
+            NormalRegister& getRegister(ByteOrdinal index) noexcept;
+            inline auto& getRegister(const Operand& op) noexcept { return getRegister(static_cast<ByteOrdinal>(op)); }
+            inline auto load(const NormalRegister& reg, bool atomic = false) noexcept { return load(reg.get<Ordinal>(), atomic); }
+            inline auto load(const Operand& op, bool atomic = false) noexcept { return load(getRegister(op), atomic); }
+            inline void store(const Operand& addr, const Operand& value, bool atomic = false) noexcept {
+                store(getRegister(addr), getRegister(value), atomic);
+            }
+            inline void store(const Operand& op, Ordinal value) noexcept {
+                store(getRegister(op), value);
+            }
+			LongRegister makeLongRegister(ByteOrdinal index) noexcept;
+            inline auto makeLongRegister(const Operand& base) noexcept { return makeLongRegister(static_cast<ByteOrdinal>(base)); }
+			TripleRegister makeTripleRegister(ByteOrdinal index) noexcept;
+            inline auto makeTripleRegister(const Operand& index) noexcept { return makeTripleRegister(static_cast<ByteOrdinal>(base)); }
+			QuadRegister makeQuadRegister(ByteOrdinal index) noexcept;
+            inline auto makeQuadRegister(const Operand& index) noexcept { return makeQuadRegister(static_cast<ByteOrdinal>(base)); }
+            PreviousFramePointer& getPFP() noexcept;
+            Ordinal getStackPointerAddress() const noexcept;
+            void setFramePointer(Ordinal value) noexcept;
+            Ordinal getFramePointerAddress() const noexcept;
 			void generateFault(ByteOrdinal faultType, ByteOrdinal faultSubtype = 0);
 			template<typename T>
 			void generateFault(T faultSubtype) {
 				generateFault(ByteOrdinal(FaultAssociation<T>::ParentFaultType), ByteOrdinal(faultSubtype));
 			}
+        private:
+            // core dispatch logic
             template<typename T>
             void performOperation(const T&, std::monostate) {
                 throw "Bad operation!";
@@ -182,25 +230,6 @@ namespace i960 {
             void faultle(const CTRLFormatInstruction&);
             void faulto(const CTRLFormatInstruction&);
             void bx(SourceRegister targ) noexcept; // TODO check these two instructions out for more variants
-            Ordinal load(Ordinal address, bool atomic = false) noexcept;
-            LongOrdinal loadDouble(Ordinal address, bool atomic = false) noexcept;
-            void store(Ordinal address, Ordinal value, bool atomic = false) noexcept;
-
-            template<typename T>
-            void setRegister(ByteOrdinal index, T value) noexcept {
-                getRegister(index).set<T>(value);
-            }
-            inline void setRegister(ByteOrdinal index, SourceRegister other) noexcept {
-                setRegister(index, other.get<Ordinal>());
-            }
-            NormalRegister& getRegister(ByteOrdinal index) noexcept;
-			LongRegister makeLongRegister(ByteOrdinal index) noexcept;
-			TripleRegister makeTripleRegister(ByteOrdinal index) noexcept;
-			QuadRegister makeQuadRegister(ByteOrdinal index) noexcept;
-            PreviousFramePointer& getPFP() noexcept;
-            Ordinal getStackPointerAddress() const noexcept;
-            void setFramePointer(Ordinal value) noexcept;
-            Ordinal getFramePointerAddress() const noexcept;
             // begin core architecture
             void callx(SourceRegister value) noexcept;
             void calls(SourceRegister value);
@@ -281,11 +310,30 @@ namespace i960 {
             void shri(__DEFAULT_THREE_ARGS__) noexcept;
             void shrdi(__DEFAULT_THREE_ARGS__) noexcept;
             void spanbit(__DEFAULT_TWO_ARGS__) noexcept;
-            void st(__TWO_SOURCE_REGS__) noexcept;
-            void stob(__TWO_SOURCE_REGS__) noexcept;
-            void stos(__TWO_SOURCE_REGS__) noexcept;
-            void stib(__TWO_SOURCE_REGS__) noexcept;
-            void stis(__TWO_SOURCE_REGS__) noexcept;
+            inline void performOperation(const MEMFormatInstruction& inst, Opcode::MEMstOperation) {
+		        //store(src2.get<Ordinal>(), src1.get<Ordinal>());
+                store(inst.getSrc2(), inst.getSrc1());
+            }
+            template<typename T, Ordinal mask>
+            void genericStoreOperation(const MEMFormatInstruction& inst) noexcept {
+                auto upper = load(inst.getSrc2()) & mask;
+                auto lower = (getRegister(inst.getSrc1()).get<T>() & (~mask));
+                store(inst.getSrc2(), upper | lower);
+            }
+            void performOperation(const MEMFormatInstruction& inst, Opcode::MEMstobOperation) {
+                genericStoreOperation<ByteOrdinal, 0xFFFFFF00>(inst);
+            }
+            void performOperation(const MEMFormatInstruction& inst, Opcode::MEMstosOperation) {
+                genericStoreOperation<ShortOrdinal, 0xFFFF0000>(inst);
+            }
+            void performOperation(const MEMFormatInstruction& inst, Opcode::MEMstibOperation) {
+
+                genericStoreOperation<Integer, 0xFFFFFF00>(inst);
+            }
+            void performOperation(const MEMFormatInstruction& inst, Opcode::MEMstisOperation) {
+                genericStoreOperation<Integer, 0xFFFF0000>(inst);
+            }
+            //void performOperation(const MEMFormatInstruction& inst, Opcode::MEMstlOperation);
 			void stl(Ordinal ind, SourceRegister dest) noexcept;
             void stt(Ordinal ind, SourceRegister dest) noexcept;
             void stq(Ordinal ind, SourceRegister dest) noexcept;
