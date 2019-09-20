@@ -330,6 +330,7 @@ X(cmpi, bno);
 		conv._value = conv._value > checkMask ? checkMask : conv._value;
 		_instructionPointer += conv._value;
         _instructionPointer = computeAlignedAddress(_instructionPointer); // make sure the least significant two bits are clear
+    }
 
 	void Core::performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLbOperation) noexcept {
         b(inst.getDisplacement());
