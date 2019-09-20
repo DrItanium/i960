@@ -136,21 +136,6 @@ namespace i960 {
 				generateFault(ByteOrdinal(FaultAssociation<T>::ParentFaultType), ByteOrdinal(faultSubtype));
 			}
             template<typename T>
-            void dispatchOperation(const T& inst, const typename T::OpcodeList& targetInstruction) {
-                std::visit([&inst, this](auto&& value) { return performOperation(inst, value); }, targetInstruction);
-            }
-            template<typename T>
-            void dispatchOperation(const T& inst) {
-                std::visit([&inst, this](auto&& value) {
-                            using K = std::decay_t<decltype(value)>;
-                            if constexpr (std::is_same_v<K, std::monostate>) {
-                                generateFault(OperationFaultSubtype::InvalidOpcode);
-                            } else {
-                                performOperation(inst, value);
-                            }
-                        }, inst.getTarget());
-            }
-            template<typename T>
             void performOperation(const T&, std::monostate) {
                 throw "Bad operation!";
             }
@@ -166,6 +151,21 @@ namespace i960 {
 #undef mem
 #undef cobr
 #undef ctrl
+            template<typename T>
+            void dispatchOperation(const T& inst, const typename T::OpcodeList& targetInstruction) {
+                std::visit([&inst, this](auto&& value) { return performOperation(inst, value); }, targetInstruction);
+            }
+            template<typename T>
+            void dispatchOperation(const T& inst) {
+                std::visit([&inst, this](auto&& value) {
+                            using K = std::decay_t<decltype(value)>;
+                            if constexpr (std::is_same_v<K, std::monostate>) {
+                                generateFault(OperationFaultSubtype::InvalidOpcode);
+                            } else {
+                                performOperation(inst, value);
+                            }
+                        }, inst.getTarget());
+            }
             // CTRL Format instructions
             void call(Integer displacement) noexcept;
             void call(const CTRLFormatInstruction& inst) noexcept;
