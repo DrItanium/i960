@@ -110,7 +110,7 @@ namespace i960 {
                 }
             }
             void move(const NormalRegister& other) noexcept;
-			constexpr ByteOrdinal mostSignificantBit() const noexcept { return (ordinal & 0x80000000); }
+			constexpr Ordinal mostSignificantBit() const noexcept { return (ordinal & 0x80000000); }
 			constexpr bool mostSignificantBitSet() const noexcept     { return mostSignificantBit() == 1; }
 			constexpr bool mostSignificantBitClear() const noexcept   { return !mostSignificantBitSet(); }
     };

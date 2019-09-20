@@ -158,6 +158,15 @@ namespace i960 {
             }
             NormalRegister& getRegister(ByteOrdinal index) noexcept;
             inline auto& getRegister(const Operand& op) noexcept { return getRegister(static_cast<ByteOrdinal>(op)); }
+            template<typename T>
+            T getRegisterValue(const Operand& op) noexcept {
+                if (op.isRegister()) {
+                    return getRegister(op).get<T>();
+                } else {
+                    return static_cast<T>(op.getValue());
+                }
+            }
+        private:
             inline auto load(const NormalRegister& reg, bool atomic = false) noexcept { return load(reg.get<Ordinal>(), atomic); }
             inline auto load(const Operand& op, bool atomic = false) noexcept { return load(getRegister(op), atomic); }
             inline void store(const Operand& addr, const Operand& value, bool atomic = false) noexcept {
@@ -225,7 +234,6 @@ namespace i960 {
             // begin core architecture
             void callx(SourceRegister value) noexcept;
             void calls(SourceRegister value);
-            __GEN_DEFAULT_THREE_ARG_SIGS__(addc);
             __GEN_DEFAULT_THREE_ARG_SIGS__(addo);
             __GEN_DEFAULT_THREE_ARG_SIGS__(addi);
             void chkbit(SourceRegister pos, SourceRegister src) noexcept;
@@ -311,8 +319,6 @@ namespace i960 {
 			void intdis();
 			void intctl(__DEFAULT_TWO_ARGS__);
 			__GEN_DEFAULT_THREE_ARG_SIGS__(icctl);
-			void eshro(SourceRegister src1, ByteOrdinal src2Ind, DestinationRegister dest) noexcept;
-			__GEN_DEFAULT_THREE_ARG_SIGS__(eshro);
 			__GEN_DEFAULT_THREE_ARG_SIGS__(dcctl);
 			void halt(SourceRegister src1);
             void cmpos(SourceRegister src1, SourceRegister src2) noexcept;

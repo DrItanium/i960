@@ -683,22 +683,30 @@ X(cmpi, bno);
 		_ac.value = (src2.get<Ordinal>() & src1.get<Ordinal>()) | (_ac.value & (~src1.get<Ordinal>()));
 		dest.set<Ordinal>(tmp);
 	}
-	void Core::addc(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>(src2.get<Ordinal>() + src1.get<Ordinal>() + _ac.getCarryValue());
-		_ac.conditionCode = 0b000; // odd that they would do this first as it breaks their action description in the manual
-		auto overflowHappened = ((src2.mostSignificantBit() == src1.mostSignificantBit()) && (src2.mostSignificantBit() != dest.mostSignificantBit()));
-		// combine the most significant bit of the 
-		_ac.conditionCode = (dest.mostSignificantBit() << 1) + (overflowHappened ? 1 : 0);
-	}
+    constexpr auto mostSignificantBit(Ordinal input) noexcept {
+        return (input & 0x8000'0000);
+    }
+    void Core::performOperation(const REGFormatInstruction& inst, Opcode::REGaddcOperation) noexcept {
+        auto src1Value = getRegisterValue<Ordinal>(inst.getSrc1());
+        auto src2Value = getRegisterValue<Ordinal>(inst.getSrc2());
+        auto destReg = getRegister(inst.getSrcDest());
+        LongOrdinal result = static_cast<LongOrdinal>(src1Value) + static_cast<LongOrdinal>(src2Value) + _ac.getCarryValue();
+        destReg.set<Ordinal>(static_cast<Ordinal>(result));
+        _ac.conditionCode = 0b000; // odd that they would do this first as it breaks their action description in the manual
+        if (auto msb2 = mostSignificantBit(src2Value) ; (msb2 == mostSignificantBit(src1Value)) && (msb2 != destReg.mostSignificantBit())) {
+            _ac.conditionCode |= 0b001; 
+        }
+        _ac.conditionCode |= ((result >> 31 & 0b10));
+    }
     void Core::freeCurrentRegisterSet() noexcept {
-        // TODO implement
+        /// @todo implement
     }
     bool Core::registerSetNotAllocated(const Operand& fp) noexcept {
-        // TODO implement
+        /// @todo implement
         return true;
     }
     void Core::retrieveFromMemory(const Operand& fp) noexcept {
-        // TODO implement
+        /// @todo implement
     }
 	void Core::performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLretOperation) noexcept {
         syncf();
@@ -1017,10 +1025,10 @@ X(cmpi, bno);
 			generateFault(TypeFaultSubtype::Mismatch);
 		}
 	}
-	void Core::eshro(SourceRegister src1, ByteOrdinal src2Ind, DestinationRegister dest) noexcept {
-		// TODO perform byte ordinal check to make sure it is even
-		dest.set<Ordinal>(makeLongRegister(src2Ind).get<LongOrdinal>() >> (src1.get<Ordinal>() & 0b11111));
-	}
+    void Core::performOperation(const REGFormatInstruction& inst, Opcode::REGeshroOperation) noexcept {
+        /// @todo reimplement the following
+		/// dest.set<Ordinal>(makeLongRegister(src2Ind).get<LongOrdinal>() >> (src1.get<Ordinal>() & 0b11111));
+    }
 	void Core::icctl(__DEFAULT_THREE_ARGS__) noexcept { 
 		// TODO implement
 		if (!_pc.inSupervisorMode()) {
