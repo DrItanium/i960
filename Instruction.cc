@@ -93,7 +93,8 @@ namespace i960 {
     _offset(decode<Ordinal, ByteOrdinal, MEMAoffsetMask>(inst.getLowerHalf())),
     _scale(decode<Ordinal, ByteOrdinal, MEMBscaleMask, 7>(inst.getLowerHalf())),
     _index(decodeSrc1(inst.getLowerHalf())),
-    _displacement(inst.getUpperHalf()) { }
+    _displacement(inst.getUpperHalf()),
+    _target(Opcode::translateMEM(inst.getOpcode())) { }
 
     EncodedInstruction
     MEMFormatInstruction::encode() const noexcept {
@@ -107,11 +108,8 @@ namespace i960 {
 
     CTRLFormatInstruction::CTRLFormatInstruction(const Instruction& inst) : Base(inst), 
     _displacement(decode<Ordinal, Integer, 0x00FFFFFC, 2>(inst.getLowerHalf())),
-    _t(decode<Ordinal, bool, 0b10>(inst.getLowerHalf())) {
-        if ((inst.getLowerHalf() & 1) != 0) {
-            /// @todo throw an exception
-        }
-    }
+    _t(decode<Ordinal, bool, 0b10>(inst.getLowerHalf())),
+    _target(Opcode::translateCTRL(inst.getOpcode())) { }
 
     EncodedInstruction
     CTRLFormatInstruction::encode() const noexcept {
@@ -124,7 +122,8 @@ namespace i960 {
     _flags(inst),
     _source1(decodeSrcDest<0b100>(inst.getLowerHalf(), _flags.getValue())),
     _source2(decodeSrc2(inst.getLowerHalf())),
-    _displacement(decode<Ordinal, Ordinal, 0b1111'1111'1100, 2>(inst.getLowerHalf()))
+    _displacement(decode<Ordinal, Ordinal, 0b1111'1111'1100, 2>(inst.getLowerHalf())),
+    _target(Opcode::translateCOBR(inst.getOpcode()))
     { }
 
     EncodedInstruction
@@ -140,7 +139,8 @@ namespace i960 {
     _flags(inst),
     _srcDest(decodeSrcDest<0b10000>(inst.getLowerHalf(), _flags.getValue())),
     _src2(decodeSrc2<0b01000>(inst.getLowerHalf(), _flags.getValue())),
-    _src1(decodeSrc1<0b00100>(inst.getLowerHalf(), _flags.getValue())) { }
+    _src1(decodeSrc1<0b00100>(inst.getLowerHalf(), _flags.getValue())),
+    _target(Opcode::translateREG(inst.getOpcode())) { }
 
     EncodedInstruction
     REGFormatInstruction::encode() const noexcept {

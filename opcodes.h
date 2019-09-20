@@ -175,5 +175,73 @@ namespace i960::Opcode {
 #undef cobr
 #undef ctrl
     >;
+    constexpr CTRL translateCTRL(i960::OpcodeValue op) noexcept {
+        switch (op) {
+#define X(name, code, kind) case code : return kind ## name ## Operation () ; 
+#define reg(name, code, __) //X(name, code, REG)
+#define mem(name, code, __) //X(name, code, MEM)
+#define cobr(name, code, __) // X(name, code, COBR)
+#define ctrl(name, code, __) X(name, code, CTRL)
+#include "opcodes.def"
+#undef X
+#undef reg
+#undef mem
+#undef cobr
+#undef ctrl
+            default:
+                return std::monostate();
+        }
+    }
+    constexpr COBR translateCOBR(i960::OpcodeValue op) noexcept {
+        switch (op) {
+#define X(name, code, kind) case code : return kind ## name ## Operation () ; 
+#define reg(name, code, __) //X(name, code, REG)
+#define mem(name, code, __) //X(name, code, MEM)
+#define cobr(name, code, __)  X(name, code, COBR)
+#define ctrl(name, code, __) // X(name, code, CTRL)
+#include "opcodes.def"
+#undef X
+#undef reg
+#undef mem
+#undef cobr
+#undef ctrl
+            default:
+                return std::monostate();
+        }
+    }
+    constexpr REG translateREG(i960::OpcodeValue op) noexcept {
+        switch (op) {
+#define X(name, code, kind) case code : return kind ## name ## Operation () ; 
+#define reg(name, code, __) X(name, code, REG)
+#define mem(name, code, __) //X(name, code, MEM)
+#define cobr(name, code, __)  //X(name, code, COBR)
+#define ctrl(name, code, __) // X(name, code, CTRL)
+#include "opcodes.def"
+#undef X
+#undef reg
+#undef mem
+#undef cobr
+#undef ctrl
+            default:
+                return std::monostate();
+        }
+    }
+    constexpr MEM translateMEM(i960::OpcodeValue op) noexcept {
+        switch (op) {
+#define X(name, code, kind) case code : return kind ## name ## Operation () ; 
+#define reg(name, code, __) //X(name, code, REG)
+#define mem(name, code, __) X(name, code, MEM)
+#define cobr(name, code, __)  //X(name, code, COBR)
+#define ctrl(name, code, __) // X(name, code, CTRL)
+#include "opcodes.def"
+#undef X
+#undef reg
+#undef mem
+#undef cobr
+#undef ctrl
+            default:
+                return std::monostate();
+        }
+    }
 } // end namespace i960::Opcode
 #endif // end I960_OPCODES_H__
