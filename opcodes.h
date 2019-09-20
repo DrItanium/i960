@@ -1,7 +1,10 @@
 #ifndef I960_OPCODES_H__
 #define I960_OPCODES_H__
 #include "types.h"
-#include "Instruction.h"
+#include <variant>
+namespace i960 {
+    class Instruction;
+}
 namespace i960::Opcode {
 		enum Id : OpcodeValue {
 #define o(name, code, arg, kind) \
@@ -103,9 +106,7 @@ namespace i960::Opcode {
 
 
 		const Description& getDescription(Ordinal opcode) noexcept;
-		inline const Description& getDescription(const Instruction& inst) noexcept {
-            return getDescription(inst.getOpcode());
-        }
+		const Description& getDescription(const Instruction& inst) noexcept;
 #define X(name, code, kind) \
         struct kind ## name ## Operation final { }; 
 #define reg(name, code, __) X(name, code, REG)
@@ -118,7 +119,7 @@ namespace i960::Opcode {
 #undef mem
 #undef cobr
 #undef ctrl
-    using REGOpcodes = std::variant<std::monostate
+    using REG = std::variant<std::monostate
 #define X(name, code, kind) \
         , kind ## name ## Operation
 #define reg(name, code, __) X(name, code, REG)
@@ -132,7 +133,7 @@ namespace i960::Opcode {
 #undef cobr
 #undef ctrl
     >;
-    using MEMOpcodes = std::variant<std::monostate
+    using MEM = std::variant<std::monostate
 #define X(name, code, kind) \
         , kind ## name ## Operation
 #define reg(name, code, __) //X(name, code, REG)
@@ -146,7 +147,7 @@ namespace i960::Opcode {
 #undef cobr
 #undef ctrl
     >;
-    using COBROpcodes = std::variant<std::monostate
+    using COBR = std::variant<std::monostate
 #define X(name, code, kind) \
         , kind ## name ## Operation
 #define reg(name, code, __) //X(name, code, REG)
@@ -160,7 +161,7 @@ namespace i960::Opcode {
 #undef cobr
 #undef ctrl
     >;
-    using CTRLOpcodes = std::variant<std::monostate
+    using CTRL = std::variant<std::monostate
 #define X(name, code, kind) \
         , kind ## name ## Operation
 #define reg(name, code, __) //X(name, code, REG)

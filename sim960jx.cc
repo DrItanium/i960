@@ -6,6 +6,7 @@
 #include "ArithmeticControls.h"
 #include "Operand.h"
 #include "opcodes.h"
+#include "Instruction.h"
 #include <string>
 
 void bootupMessage(std::ostream& os) {

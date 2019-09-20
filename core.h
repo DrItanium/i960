@@ -21,6 +21,7 @@
 #include "ProcessorControlBlock.h"
 #include "MemoryMap.h"
 #include "StartupRecord.h"
+#include "opcodes.h"
 #include <cmath>
 #include <math.h>
 #include <variant>
@@ -134,6 +135,30 @@ namespace i960 {
 			void generateFault(T faultSubtype) {
 				generateFault(ByteOrdinal(FaultAssociation<T>::ParentFaultType), ByteOrdinal(faultSubtype));
 			}
+            template<typename T>
+            void dispatchOperation(const T& inst, const typename T::OpcodeList& targetInstruction) {
+                std::visit([&inst, this](auto&& value) { return performOperation(inst, value); }, targetInstruction);
+            }
+            void dispatchOperation(const CTRLFormatInstruction& inst, const Opcode::CTRL& opcode);
+            void dispatchOperation(const COBRFormatInstruction& inst, const Opcode::COBR& opcode);
+            void dispatchOperation(const REGFormatInstruction& inst, const Opcode::REG& opcode);
+            void dispatchOperation(const MEMFormatInstruction& inst, const Opcode::MEM& opcode);
+            template<typename T>
+            void performOperation(const T&, std::monostate) {
+                throw "Bad operation!";
+            }
+#define X(name, code, kind) \
+            void performOperation(const kind ## FormatInstruction& inst, Opcode:: kind ## name ## Operation);
+#define reg(name, code, __) X(name, code, REG)
+#define mem(name, code, __) X(name, code, MEM)
+#define cobr(name, code, __) X(name, code, COBR)
+#define ctrl(name, code, __) X(name, code, CTRL)
+#include "opcodes.def"
+#undef X
+#undef reg
+#undef mem
+#undef cobr
+#undef ctrl
             // CTRL Format instructions
             void call(Integer displacement) noexcept;
             void call(const CTRLFormatInstruction& inst) noexcept;
