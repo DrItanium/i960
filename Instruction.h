@@ -99,10 +99,8 @@ namespace i960 {
             constexpr auto getOpcode() const noexcept { return _opcode; }
             inline void setOpcode(OpcodeValue opcode) noexcept { _opcode = opcode; }
             virtual EncodedInstruction encode() const noexcept = 0;
-            const auto& getTarget() const noexcept { return _target; } 
         private:
             OpcodeValue _opcode;
-            Opcode::Identified _target;
     };
     class GenericFlags {
         public:
@@ -116,7 +114,7 @@ namespace i960 {
     class REGFormatInstruction : public GenericFormatInstruction {
         public:
             using Base = GenericFormatInstruction;
-            using Opcode = Opcode::REG;
+            using OpcodeList = Opcode::REG;
             class Flags final : public GenericFlags {
                 public:
                     using Parent = GenericFlags;
@@ -157,6 +155,10 @@ namespace i960 {
             Operand _srcDest;
             Operand _src2;
             Operand _src1;
+        public:
+            const auto& getTarget() const noexcept { return _target; }
+        private:
+            OpcodeList _target;
     };
     class COBRFormatInstruction : public GenericFormatInstruction {
         public:
@@ -195,6 +197,10 @@ namespace i960 {
             Operand _source1;
             Operand _source2;
             Ordinal _displacement : 10;
+        public:
+            const auto& getTarget() const noexcept { return _target; }
+        private:
+            OpcodeList _target;
     };
     class CTRLFormatInstruction : public GenericFormatInstruction {
         public:
@@ -209,6 +215,10 @@ namespace i960 {
         private:
             Integer _displacement : 22;
             bool _t;
+        public:
+            const auto& getTarget() const noexcept { return _target; }
+        private:
+            OpcodeList _target;
     };
     /**
      * Generic super type for MEM class instructions
@@ -290,6 +300,10 @@ namespace i960 {
             ByteOrdinal _scale;
             ByteOrdinal _index;
             Ordinal _displacement;
+        public:
+            const auto& getTarget() const noexcept { return _target; }
+        private:
+            OpcodeList _target;
     };
     constexpr Ordinal getMajorOpcode(HalfOrdinal ordinal) noexcept {
         return decode<HalfOrdinal, Ordinal, 0x0FF0, 4>(ordinal);
