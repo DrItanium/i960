@@ -143,20 +143,7 @@ namespace i960 {
             void performOperation(const T&, K) noexcept {
                 throw "UNIMPLEMENTED!";
             }
-#if 0
-#define X(name, code, kind) \
-            void performOperation(const kind ## FormatInstruction& inst, Opcode:: kind ## name ## Operation);
-#define reg(name, code, __) X(name, code, REG)
-#define mem(name, code, __) X(name, code, MEM)
-#define cobr(name, code, __) X(name, code, COBR)
-#define ctrl(name, code, __) X(name, code, CTRL)
-#include "opcodes.def"
-#undef X
-#undef reg
-#undef mem
-#undef cobr
-#undef ctrl
-#endif
+
             template<typename T>
             void dispatchOperation(const T& inst, const typename T::OpcodeList& targetInstruction) {
                 std::visit([&inst, this](auto&& value) { return performOperation(inst, value); }, targetInstruction);
@@ -172,13 +159,10 @@ namespace i960 {
                             }
                         }, inst.getTarget());
             }
+            void performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLcallOperation) noexcept;
+            void performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLbOperation) noexcept;
+            void performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLretOperation) noexcept;
             // CTRL Format instructions
-            void call(Integer displacement) noexcept;
-            void call(const CTRLFormatInstruction& inst) noexcept;
-            void b(const CTRLFormatInstruction& inst) noexcept;
-            void b(Integer displacement) noexcept;
-            void ret() noexcept;
-            void ret(const CTRLFormatInstruction&) noexcept;
             void bal(const CTRLFormatInstruction&) noexcept;
             void bal(Integer displacement) noexcept;
             void bno(const CTRLFormatInstruction&);

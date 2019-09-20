@@ -82,10 +82,10 @@ X(cmpi, bno);
 		// this function does nothing at this point as we are always saving locals to ram
 	}
     void Core::allocateNewFrame() noexcept {
-        // TODO implement
+        /// @todo implement
     }
     void Core::saveFrame() noexcept {
-        // TODO implement
+        /// @todo implement
     }
     Ordinal Core::getSupervisorStackPointerBase() noexcept {
         return getSystemProcedureTableBaseAddress() + 12;
@@ -98,21 +98,6 @@ X(cmpi, bno);
 	}
 	auto Core::getPFP() noexcept -> PreviousFramePointer& {
 		return _localRegisters[PFP.getOffset()].pfp;
-	}
-	void Core::call(Integer addr) noexcept {
-		union {
-			Integer _value : 22;
-		} conv;
-		conv._value = addr;
-		auto newAddress = conv._value;
-		auto tmp = (getStackPointerAddress() + 63) & (~63); // round to the next boundary
-		setRegister(RIP, _instructionPointer);
-		saveLocalRegisters();
-		allocateNewLocalRegisterSet();
-		_instructionPointer += newAddress;
-		setRegister(PFP, getFramePointerAddress());
-		setFramePointer(tmp);
-		setRegister(SP, tmp + 64);
 	}
 	constexpr Ordinal clearLowestTwoBitsMask = ~0b11;
     constexpr Ordinal computeAlignedAddress(Ordinal value) noexcept {
@@ -336,12 +321,12 @@ X(cmpi, bno);
 			d3.set(0);
 		}
 	}
-	void Core::b(Integer displacement) noexcept {
+	void Core::performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLbOperation) noexcept {
         static constexpr auto checkMask = 0x7F'FFFC;
 		union {
 			Integer _value : 24;
 		} conv;
-		conv._value = displacement;
+		conv._value = inst.getDisplacement();
 		conv._value = conv._value > checkMask ? checkMask : conv._value;
 		_instructionPointer += conv._value;
         _instructionPointer = computeAlignedAddress(_instructionPointer); // make sure the least significant two bits are clear
@@ -715,7 +700,7 @@ X(cmpi, bno);
     void Core::retrieveFromMemory(const Operand& fp) noexcept {
         // TODO implement
     }
-	void Core::ret() noexcept {
+	void Core::performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLretOperation) noexcept {
         syncf();
         auto pfp = getPFP();
         if (pfp.prereturnTrace && _pc.traceEnable && _tc.prereturnTraceMode) {
@@ -770,7 +755,7 @@ X(cmpi, bno);
                     _ac.value = tempb;
                     if (_pc.inSupervisorMode()) {
                         _pc.value = tempa;
-                        // TODO check for pending interrupts
+                        /// @todo check for pending interrupts
                     }
                 }();
                 break;
@@ -1262,4 +1247,21 @@ X(cmpi, bno);
 #undef __DEFAULT_THREE_ARGS__
 #undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
 #undef __TWO_SOURCE_REGS__
+    void 
+    Core::performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLcallOperation) noexcept {
+        /// @todo see if this remasking is overkill
+		union {
+			Integer _value : 22;
+		} conv;
+		conv._value = inst.getDisplacement();
+		auto newAddress = conv._value;
+		auto tmp = (getStackPointerAddress() + 63) & (~63); // round to the next boundary
+		setRegister(RIP, _instructionPointer);
+		saveLocalRegisters();
+		allocateNewLocalRegisterSet();
+		_instructionPointer += newAddress;
+		setRegister(PFP, getFramePointerAddress());
+		setFramePointer(tmp);
+		setRegister(SP, tmp + 64);
+    }
 } // end namespace i960
