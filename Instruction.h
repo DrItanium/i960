@@ -289,6 +289,7 @@ namespace i960 {
                         return true;
                 }
             }
+            /// @todo add effective address computation support
         private:
             Operand _srcDest;
             ByteOrdinal _abase;

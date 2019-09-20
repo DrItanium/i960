@@ -346,10 +346,6 @@ X(cmpi, bno);
 		b(displacement);
 	}
 
-	void Core::balx(__DEFAULT_TWO_ARGS__,Core::InstructionLength length) noexcept {
-		dest.set<Ordinal>(_instructionPointer + static_cast<Ordinal>(length));
-		_instructionPointer = src.get<Ordinal>();
-	}
 	constexpr Ordinal computeCheckBitMask(Ordinal value) noexcept {
 		return 1 << (value & 0b11111);
 	}

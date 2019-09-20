@@ -210,27 +210,11 @@ namespace i960 {
             void performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLcallOperation) noexcept;
             void performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLbOperation) noexcept;
             void performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLretOperation) noexcept;
+            void performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLcallOperation) noexcept;
+            void performOperation(const MEMFormatInstruction& inst, Opcode::MEMbxOperation) noexcept;
             void b(Integer displacement) noexcept;
             // CTRL Format instructions
-            void bal(const CTRLFormatInstruction&) noexcept;
             void bal(Integer displacement) noexcept;
-            void bno(const CTRLFormatInstruction&);
-            void bg(const CTRLFormatInstruction&);
-            void be(const CTRLFormatInstruction&);
-            void bge(const CTRLFormatInstruction&);
-            void bl(const CTRLFormatInstruction&);
-            void bne(const CTRLFormatInstruction&);
-            void ble(const CTRLFormatInstruction&);
-            void bo(const CTRLFormatInstruction&);
-            void faultno(const CTRLFormatInstruction&);
-            void faultg(const CTRLFormatInstruction&);
-            void faulte(const CTRLFormatInstruction&);
-            void faultge(const CTRLFormatInstruction&);
-            void faultl(const CTRLFormatInstruction&);
-            void faultne(const CTRLFormatInstruction&);
-            void faultle(const CTRLFormatInstruction&);
-            void faulto(const CTRLFormatInstruction&);
-            void performOperation(const MEMFormatInstruction& inst, Opcode::MEMbxOperation) noexcept;
             // begin core architecture
             void callx(SourceRegister value) noexcept;
             void calls(SourceRegister value);
@@ -243,11 +227,7 @@ namespace i960 {
             __GEN_DEFAULT_THREE_ARG_SIGS__(andnot);
             void atadd(__DEFAULT_THREE_ARGS__) noexcept; // TODO add other forms of atadd
             void atmod(SourceRegister src, SourceRegister mask, DestinationRegister srcDest) noexcept; // TODO check out other forms of this instruction
-            enum class InstructionLength {
-                Single = 4,
-                Double = 8,
-            };
-            void balx(__DEFAULT_TWO_ARGS__, InstructionLength length) noexcept; // TODO check these two instructions out for more variants
+            void performOperation(const MEMFormatInstruction& inst, Opcode::MEMbalxOperation) noexcept;
             void bbc(SourceRegister pos, SourceRegister src, Integer targ) noexcept; 
             void bbs(SourceRegister pos, SourceRegister src, Integer targ) noexcept;
             // compare and branch instructions as well
@@ -279,6 +259,7 @@ namespace i960 {
 			void ldq(SourceRegister src, Ordinal index) noexcept;
             void lda(__DEFAULT_TWO_ARGS__) noexcept;
             void mark() noexcept;
+            void performOperation(const REGFormatInstruction& inst, Opcode::REGmarkOperation) noexcept;
             __GEN_DEFAULT_THREE_ARG_SIGS__(modac);
             __GEN_DEFAULT_THREE_ARG_SIGS__(modi);
             __GEN_DEFAULT_THREE_ARG_SIGS__(modify);
