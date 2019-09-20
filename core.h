@@ -139,6 +139,11 @@ namespace i960 {
             void performOperation(const T&, std::monostate) {
                 throw "Bad operation!";
             }
+            template<typename T, typename K>
+            void performOperation(const T&, K) noexcept {
+                throw "UNIMPLEMENTED!";
+            }
+#if 0
 #define X(name, code, kind) \
             void performOperation(const kind ## FormatInstruction& inst, Opcode:: kind ## name ## Operation);
 #define reg(name, code, __) X(name, code, REG)
@@ -151,6 +156,7 @@ namespace i960 {
 #undef mem
 #undef cobr
 #undef ctrl
+#endif
             template<typename T>
             void dispatchOperation(const T& inst, const typename T::OpcodeList& targetInstruction) {
                 std::visit([&inst, this](auto&& value) { return performOperation(inst, value); }, targetInstruction);
