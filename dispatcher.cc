@@ -13,7 +13,7 @@ namespace i960 {
                     if constexpr (std::is_same_v<K, std::monostate>) {
                         generateFault(OperationFaultSubtype::InvalidOpcode);
                     } else {
-                        performDispatch(value, value.getTarget());
+                        dispatchOperation(value);
                     }
                 }, inst.decode());
 #if 0
