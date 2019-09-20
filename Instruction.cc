@@ -152,7 +152,7 @@ namespace i960 {
     }
 
     DecodedInstruction 
-    Instruction::decode() {
+    Instruction::decode() const noexcept {
         if (isREGFormat()) {
             return REGFormatInstruction(*this);
         } else if (isMEMFormat()) {
@@ -162,7 +162,7 @@ namespace i960 {
         } else if (isCTRLFormat()) {
             return CTRLFormatInstruction(*this);
         } else {
-            throw "Bad type";
+            return std::monostate();
         }
     }
 

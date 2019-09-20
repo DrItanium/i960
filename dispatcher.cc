@@ -8,6 +8,14 @@
 
 namespace i960 {
 	void Core::dispatch(const Instruction& inst) noexcept {
+        std::visit([this](auto&& value) {
+                    using K = std::decay_t<decltype(value)>;
+                    if constexpr (std::is_same_v<K, std::monostate>) {
+                        generateFault(OperationFaultSubtype::InvalidOpcode);
+                    } else {
+                        
+                    }
+                }, inst.decode());
 #if 0
 		auto selectRegister = [this](const Operand& operand, NormalRegister& imm) -> NormalRegister& {
 			if (operand.isLiteral()) {

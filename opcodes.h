@@ -175,5 +175,6 @@ namespace i960::Opcode {
 #undef cobr
 #undef ctrl
     >;
+    using Identified = std::variant<std::monostate, REG, MEM, COBR, CTRL>;
 } // end namespace i960::Opcode
 #endif // end I960_OPCODES_H__

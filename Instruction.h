@@ -14,7 +14,7 @@ namespace i960 {
     class MEMFormatInstruction;
     class COBRFormatInstruction;
     class CTRLFormatInstruction;
-    using DecodedInstruction = std::variant<REGFormatInstruction, MEMFormatInstruction, COBRFormatInstruction, CTRLFormatInstruction>;
+    using DecodedInstruction = std::variant<std::monostate, REGFormatInstruction, MEMFormatInstruction, COBRFormatInstruction, CTRLFormatInstruction>;
     class Instruction {
         public:
             /**
@@ -85,7 +85,7 @@ namespace i960 {
                 }
             }
 
-            DecodedInstruction decode();
+            DecodedInstruction decode() const noexcept;
 
         private:
             SingleEncodedInstructionValue _enc, 
@@ -99,8 +99,10 @@ namespace i960 {
             constexpr auto getOpcode() const noexcept { return _opcode; }
             inline void setOpcode(OpcodeValue opcode) noexcept { _opcode = opcode; }
             virtual EncodedInstruction encode() const noexcept = 0;
+            const auto& getTarget() const noexcept { return _target; } 
         private:
             OpcodeValue _opcode;
+            Opcode::Identified _target;
     };
     class GenericFlags {
         public:
