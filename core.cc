@@ -772,6 +772,9 @@ X(cmpi, bno);
                 break;
         }
 	}
+    void Core::(const REGFormatInstruction& inst, Operation::opnot) noexcept {
+        /// @todo implement
+    }
 	void Core::opnot(__DEFAULT_TWO_ARGS__) noexcept {
 		dest.set(~src.get<Ordinal>());
 	}
