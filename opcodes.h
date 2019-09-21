@@ -108,7 +108,7 @@ namespace i960::Opcode {
 		const Description& getDescription(Ordinal opcode) noexcept;
 		const Description& getDescription(const Instruction& inst) noexcept;
 #define X(name, code, kind) \
-        struct kind ## name ## Operation final { }; 
+        struct name ## Operation final { }; 
 #define reg(name, code, __) X(name, code, REG)
 #define mem(name, code, __) X(name, code, MEM)
 #define cobr(name, code, __) X(name, code, COBR)
@@ -121,7 +121,7 @@ namespace i960::Opcode {
 #undef ctrl
     using REG = std::variant<std::monostate
 #define X(name, code, kind) \
-        , kind ## name ## Operation
+        , name ## Operation
 #define reg(name, code, __) X(name, code, REG)
 #define mem(name, code, __) // X(name, code, MEM)
 #define cobr(name, code, __) // X(name, code, COBR)
@@ -135,7 +135,7 @@ namespace i960::Opcode {
     >;
     using MEM = std::variant<std::monostate
 #define X(name, code, kind) \
-        , kind ## name ## Operation
+        , name ## Operation
 #define reg(name, code, __) //X(name, code, REG)
 #define mem(name, code, __) X(name, code, MEM)
 #define cobr(name, code, __) // X(name, code, COBR)
@@ -149,7 +149,7 @@ namespace i960::Opcode {
     >;
     using COBR = std::variant<std::monostate
 #define X(name, code, kind) \
-        , kind ## name ## Operation
+        , name ## Operation
 #define reg(name, code, __) //X(name, code, REG)
 #define mem(name, code, __) //X(name, code, MEM)
 #define cobr(name, code, __) X(name, code, COBR)
@@ -163,7 +163,7 @@ namespace i960::Opcode {
     >;
     using CTRL = std::variant<std::monostate
 #define X(name, code, kind) \
-        , kind ## name ## Operation
+        , name ## Operation
 #define reg(name, code, __) //X(name, code, REG)
 #define mem(name, code, __) //X(name, code, MEM)
 #define cobr(name, code, __) // X(name, code, COBR)
@@ -181,7 +181,7 @@ namespace i960::Opcode {
     struct MEMClass final { };
     constexpr CTRL translate(i960::OpcodeValue op, CTRLClass) noexcept {
         switch (op) {
-#define X(name, code, kind) case code : return kind ## name ## Operation () ; 
+#define X(name, code, kind) case code : return name ## Operation () ; 
 #define reg(name, code, __) //X(name, code, REG)
 #define mem(name, code, __) //X(name, code, MEM)
 #define cobr(name, code, __) // X(name, code, COBR)
@@ -198,7 +198,7 @@ namespace i960::Opcode {
     }
     constexpr COBR translate(i960::OpcodeValue op, COBRClass) noexcept {
         switch (op) {
-#define X(name, code, kind) case code : return kind ## name ## Operation () ; 
+#define X(name, code, kind) case code : return name ## Operation () ; 
 #define reg(name, code, __) //X(name, code, REG)
 #define mem(name, code, __) //X(name, code, MEM)
 #define cobr(name, code, __)  X(name, code, COBR)
@@ -215,7 +215,7 @@ namespace i960::Opcode {
     }
     constexpr REG translate(i960::OpcodeValue op, REGClass) noexcept {
         switch (op) {
-#define X(name, code, kind) case code : return kind ## name ## Operation () ; 
+#define X(name, code, kind) case code : return name ## Operation () ; 
 #define reg(name, code, __) X(name, code, REG)
 #define mem(name, code, __) //X(name, code, MEM)
 #define cobr(name, code, __)  //X(name, code, COBR)
@@ -232,7 +232,7 @@ namespace i960::Opcode {
     }
     constexpr MEM translate(i960::OpcodeValue op, MEMClass) noexcept {
         switch (op) {
-#define X(name, code, kind) case code : return kind ## name ## Operation () ; 
+#define X(name, code, kind) case code : return name ## Operation () ; 
 #define reg(name, code, __) //X(name, code, REG)
 #define mem(name, code, __) X(name, code, MEM)
 #define cobr(name, code, __)  //X(name, code, COBR)

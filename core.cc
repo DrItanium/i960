@@ -198,6 +198,9 @@ X(cmpi, bno);
 		setFramePointer(tmp);
 		setRegister(SP, tmp + boundaryAlignment);
 	}
+    void Core::performOperation(const REGFormatInstruction& inst, Opcode::REGaddoOperation) noexcept {
+
+    }
 	void Core::addo(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set<Ordinal>(src2.get<Ordinal>() + src1.get<Ordinal>());
 	}
