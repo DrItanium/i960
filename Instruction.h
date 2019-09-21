@@ -114,7 +114,7 @@ namespace i960 {
     class REGFormatInstruction : public GenericFormatInstruction {
         public:
             using Base = GenericFormatInstruction;
-            using OpcodeList = Opcode::REG;
+            using OpcodeList = Operation::REG;
             class Flags final : public GenericFlags {
                 public:
                     using Parent = GenericFlags;
@@ -163,7 +163,7 @@ namespace i960 {
     class COBRFormatInstruction : public GenericFormatInstruction {
         public:
             using Base = GenericFormatInstruction;
-            using OpcodeList = Opcode::COBR;
+            using OpcodeList = Operation::COBR;
             class Flags final : public GenericFlags {
                 public:
                     using Parent = GenericFlags;
@@ -205,7 +205,7 @@ namespace i960 {
     class CTRLFormatInstruction : public GenericFormatInstruction {
         public:
             using Base = GenericFormatInstruction;
-            using OpcodeList = Opcode::CTRL;
+            using OpcodeList = Operation::CTRL;
         public:
             CTRLFormatInstruction(const Instruction&);
             ~CTRLFormatInstruction() override = default;
@@ -226,7 +226,7 @@ namespace i960 {
     class MEMFormatInstruction : public GenericFormatInstruction {
         public:
             using Base = GenericFormatInstruction;
-            using OpcodeList = Opcode::MEM;
+            using OpcodeList = Operation::MEM;
             /** 
              * A 6-bit code that describes what addressing mode to perform. The
              * common upper two bits are used internally to construct the raw mode

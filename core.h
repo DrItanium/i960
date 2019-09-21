@@ -217,7 +217,7 @@ namespace i960 {
                         }, inst.getTarget());
             }
 #define X(name, code, kind) \
-            void performOperation(const kind ## FormatInstruction& , Opcode:: kind ## name ## Operation ) noexcept ;
+            void performOperation(const kind ## FormatInstruction& , Operation:: name ) noexcept ;
 #define reg(name, code, __) X(name, code, REG)
 #define mem(name, code, __) X(name, code, MEM)
 #define cobr(name, code, __) X(name, code, COBR)
