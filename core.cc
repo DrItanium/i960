@@ -198,7 +198,7 @@ X(cmpi, bno);
 		setFramePointer(tmp);
 		setRegister(SP, tmp + boundaryAlignment);
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Opcode::REGaddoOperation) noexcept {
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::addo) noexcept {
 
     }
 	void Core::addo(__DEFAULT_THREE_ARGS__) noexcept {
@@ -335,10 +335,10 @@ X(cmpi, bno);
         _instructionPointer = computeAlignedAddress(_instructionPointer); // make sure the least significant two bits are clear
     }
 
-	void Core::performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLbOperation) noexcept {
+	void Core::performOperation(const CTRLFormatInstruction& inst, Operation::b) noexcept {
         b(inst.getDisplacement());
 	}
-    void Core::performOperation(const MEMFormatInstruction& inst, Opcode::MEMbxOperation) noexcept {
+    void Core::performOperation(const MEMFormatInstruction& inst, Operation::bx) noexcept {
         _instructionPointer = getRegister(inst.getSrcDest()).get<Ordinal>();
         _instructionPointer = computeAlignedAddress(_instructionPointer); // make sure the least significant two bits are clear
     }
@@ -689,7 +689,7 @@ X(cmpi, bno);
     constexpr auto mostSignificantBit(Ordinal input) noexcept {
         return (input & 0x8000'0000);
     }
-    void Core::performOperation(const REGFormatInstruction& inst, Opcode::REGaddcOperation) noexcept {
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::addc) noexcept {
         auto src1Value = getRegisterValue<Ordinal>(inst.getSrc1());
         auto src2Value = getRegisterValue<Ordinal>(inst.getSrc2());
         auto destReg = getRegister(inst.getSrcDest());
@@ -711,7 +711,7 @@ X(cmpi, bno);
     void Core::retrieveFromMemory(const Operand& fp) noexcept {
         /// @todo implement
     }
-	void Core::performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLretOperation) noexcept {
+	void Core::performOperation(const CTRLFormatInstruction& inst, Operation::ret) noexcept {
         syncf();
         auto pfp = getPFP();
         if (pfp.prereturnTrace && _pc.traceEnable && _tc.prereturnTraceMode) {
@@ -1028,7 +1028,7 @@ X(cmpi, bno);
 			generateFault(TypeFaultSubtype::Mismatch);
 		}
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Opcode::REGeshroOperation) noexcept {
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::eshro) noexcept {
         /// @todo reimplement the following
 		/// dest.set<Ordinal>(makeLongRegister(src2Ind).get<LongOrdinal>() >> (src1.get<Ordinal>() & 0b11111));
     }
@@ -1235,7 +1235,7 @@ X(cmpi, bno);
 #undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
 #undef __TWO_SOURCE_REGS__
     void 
-    Core::performOperation(const CTRLFormatInstruction& inst, Opcode::CTRLcallOperation) noexcept {
+    Core::performOperation(const CTRLFormatInstruction& inst, Operation::call) noexcept {
         /// @todo see if this remasking is overkill
 		union {
 			Integer _value : 22;
