@@ -571,13 +571,11 @@ X(cmpi, bno);
 	}
 
     void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpi) noexcept {
-        cmpi(getRegister(inst.getSrc1()),
-                getRegister(inst.getSrc2()));
+        cmpi(getRegister(inst.getSrc1()), getRegister(inst.getSrc2()));
     }
 	void Core::cmpi(SourceRegister src1, SourceRegister src2) noexcept { compare(src1.get<Integer>(), src2.get<Integer>()); }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpo) noexcept {
-        cmpo(getRegister(inst.getSrc1()),
-             getRegister(inst.getSrc2()));
+        cmpo(getRegister(inst.getSrc1()), getRegister(inst.getSrc2()));
     }
 	void Core::cmpo(SourceRegister src1, SourceRegister src2) noexcept { compare(src1.get<Ordinal>(), src2.get<Ordinal>()); }
 	void Core::muli(SourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept {
