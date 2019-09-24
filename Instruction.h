@@ -299,7 +299,6 @@ namespace i960 {
             }
             /// @todo add effective address computation support
         private:
-            Operand _srcDest;
             /// @todo convert this to be part of the code structure instead of wasting space
             ByteOrdinal _mode;
             // MEMA Specific Fields 

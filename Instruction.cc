@@ -121,17 +121,17 @@ namespace i960 {
     }
     COBRFormatInstruction::COBRFormatInstruction(const Instruction& inst) : Base(inst),
     Flags(inst),
-    HasSrcDest(decodeSrcDest<0b100>(inst.getLowerHalf(), _flags.getValue())),
+    HasSrcDest(decodeSrcDest<0b100>(inst.getLowerHalf(), Flags::getValue())),
     HasSrc2(decodeSrc2(inst.getLowerHalf())),
-    _displacement(decode<Ordinal, Ordinal, 0b1111'1111'1100, 2>(inst.getLowerHalf())),
+    _displacement(i960::decode<Ordinal, Ordinal, 0b1111'1111'1100, 2>(inst.getLowerHalf())),
     _target(Operation::translate(inst.getOpcode(), Operation::COBRClass()))
     { }
 
     EncodedInstruction
     COBRFormatInstruction::encode() const noexcept {
         auto instruction = encodeMajorOpcode(0, getOpcode());
-        instruction = encodeSrcDest(instruction, _source1);
-        instruction = encodeSrc2(instruction, _source2);
+        instruction = encodeSrcDest(instruction, getSrc1());
+        instruction = encodeSrc2(instruction, getSrc2());
         instruction = i960::encode<Ordinal, Ordinal, 0b1111'1111'1100, 2>(instruction, _displacement);
         return Flags::encode(instruction);
     }
