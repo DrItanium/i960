@@ -806,7 +806,7 @@ X(cmpi, bno);
     }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::shri) noexcept {
         // we want src1 to be an ordinal to prevent shifting by negative numbers
-        setDest(inst, getSrc2<Integer>(inst) >> std::abs(getSrc1<Integer>()));
+        setDest(inst, getSrc2<Integer>(inst) >> std::abs(getSrc1<Integer>(inst)));
     }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::shlo) noexcept {
         auto result = 0u;
@@ -816,7 +816,7 @@ X(cmpi, bno);
         setDest(inst, result);
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::shli) noexcept {
-        setDest(inst, getSrc2<Integer>(inst) << std::abs(getSrc1<Integer>()));
+        setDest(inst, getSrc2<Integer>(inst) << std::abs(getSrc1<Integer>(inst)));
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::shrdi) noexcept {
         auto src = getSrc2<Integer>(inst);
@@ -835,8 +835,11 @@ X(cmpi, bno);
         auto length = getSrc1(inst);
         setDest(inst, rotateOperation(src, length));
 	}
-	void Core::modify(SourceRegister mask, SourceRegister src, DestinationRegister srcDest) noexcept {
-		srcDest.set<Ordinal>((src.get<Ordinal>() & mask.get<Ordinal>()) | (srcDest.get<Ordinal>() & (~src.get<Ordinal>())));
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::modify) noexcept {
+        auto mask = getSrc1(inst);
+        auto src = getSrc2(inst);
+        auto sdVal = getSrc(inst);
+        setDest(inst, (src & mask) | (sdVal & (~mask)));
 	}
 	template<Ordinal mask>
 	constexpr bool maskedEquals(Ordinal src1, Ordinal src2) noexcept {
