@@ -250,7 +250,7 @@ X(cmpi, bno);
         setDest(inst, getSrc1(inst));
     }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::movl) noexcept {
-        if (auto src1 = inst.getSrc1(), auto dst = inst.getSrcDest(); 
+        if (auto src1 = inst.getSrc1(), dst = inst.getSrcDest(); 
                 notDivisibleBy(src1, 2) ||
                 notDivisibleBy(dst, 2)) {
             setRegister<Integer>(dst, -1);
@@ -266,7 +266,7 @@ X(cmpi, bno);
         }
     }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::movt) noexcept {
-        if (auto src1 = inst.getSrc1(), auto dst = inst.getSrcDest(); 
+        if (auto src1 = inst.getSrc1(), dst = inst.getSrcDest(); 
                 notDivisibleBy(src1, 4) ||
                 notDivisibleBy(dst, 4)) {
             setRegister<Integer>(dst, -1);
@@ -285,7 +285,7 @@ X(cmpi, bno);
         }
     }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::movq) noexcept {
-        if (auto src1 = inst.getSrc1(), auto dst = inst.getSrcDest(); 
+        if (auto src1 = inst.getSrc1(), dst = inst.getSrcDest(); 
                 notDivisibleBy(src1, 4) ||
                 notDivisibleBy(dst, 4)) {
             setRegister<Integer>(dst, -1);
