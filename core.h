@@ -470,8 +470,7 @@ namespace i960 {
 			// auto generated routines
 #define X(kind, __) \
             void b ## kind (Integer) noexcept; \
-            void cmpib ## kind ( SourceRegister, SourceRegister, Integer) noexcept; \
-            void fault ## kind () noexcept;
+            void cmpib ## kind ( SourceRegister, SourceRegister, Integer) noexcept;
 #define Y(kind) void cmp ## kind ( SourceRegister, SourceRegister, Integer) noexcept;
 #include "conditional_kinds.def"
 			Y(obe)

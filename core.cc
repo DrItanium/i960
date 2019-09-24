@@ -36,8 +36,8 @@ namespace i960 {
     }
 #define X(kind, action) \
     void Core:: performOperation ( const COBRFormatInstruction& inst, Operation:: test ## kind ) noexcept { testGeneric<TestTypes:: action> ( getDest(inst) ); } \
+    void Core:: performOperation ( const COBRFormatInstruction& inst, Operation:: fault ## kind ) noexcept { genericFault<ConditionCode:: action > ( ); } \
 	void Core:: b ## kind (Integer addr) noexcept { branchIfGeneric<ConditionCode:: action > ( addr ) ; } \
-    void Core:: fault ## kind () noexcept { genericFault< ConditionCode:: action > ( ) ; } \
     void Core:: sel ## kind (__DEFAULT_THREE_ARGS__) noexcept { baseSelect<ConditionCode:: action>(src1, src2, dest); } \
     void Core:: subo ## kind (__DEFAULT_THREE_ARGS__) noexcept { suboBase<ConditionCode:: action>(src1, src2, dest); } \
     void Core:: subi ## kind (__DEFAULT_THREE_ARGS__) noexcept { subiBase<ConditionCode:: action>(src1, src2, dest); } \
