@@ -395,7 +395,7 @@ namespace i960 {
             }
 			template<ConditionCode code>
 			constexpr bool genericCondCheck() noexcept {
-                if constexpr (auto casted = static_cast<Ordinal>(code); casted & 0b1000) {
+                if constexpr (code == ConditionCode::Unconditional) {
                     // we're in a don't care situation so pass the conditional check
                     return true;
                 } else {
@@ -412,7 +412,7 @@ namespace i960 {
 			}
 			template<ConditionCode mask>
 			void addoBase(const REGFormatInstruction& inst) noexcept {
-				if (genericCondCheck<mask>()) {
+                if (genericCondCheck<mask>()) {
                     setDest(inst, getSrc1(inst) +
                                   getSrc2(inst));
 				}
