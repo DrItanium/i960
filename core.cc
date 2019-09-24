@@ -47,10 +47,10 @@ namespace i960 {
 #include "conditional_kinds.def"
 #undef X
 #define X(cmpop, bop) \
-	void Core:: cmpop ## bop ( __TWO_SOURCE_AND_INT_ARGS__ ) noexcept { \
-		cmpop ( src1, src2 ) ; \
-		bop ( targ ) ; \
-	}
+    void Core:: performOperation (const COBRFormatInstruction& inst, Operation:: cmpop ## bop ) noexcept { \
+        cmpop ( getRegister(inst.getSrc1()), getRegister(inst.getSrc2())); \
+        bop ( inst.getDisplacement() ); \
+    }
 X(cmpo, bg);
 X(cmpo, be);
 X(cmpo, bge);
