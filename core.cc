@@ -41,8 +41,8 @@ namespace i960 {
     void Core:: sel ## kind (__DEFAULT_THREE_ARGS__) noexcept { baseSelect<ConditionCode:: action>(src1, src2, dest); } \
     void Core:: subo ## kind (__DEFAULT_THREE_ARGS__) noexcept { suboBase<ConditionCode:: action>(src1, src2, dest); } \
     void Core:: subi ## kind (__DEFAULT_THREE_ARGS__) noexcept { subiBase<ConditionCode:: action>(src1, src2, dest); } \
-    void Core:: addo ## kind (__DEFAULT_THREE_ARGS__) noexcept { addoBase<ConditionCode:: action>(src1, src2, dest); } \
-    void Core:: addi ## kind (__DEFAULT_THREE_ARGS__) noexcept { addiBase<ConditionCode:: action>(src1, src2, dest); } 
+    void Core::performOperation(const REGFormatInstruction& inst, Operation:: addo ## kind ) noexcept { addoBase<ConditionCode:: action>(inst) ; } \
+    void Core::performOperation(const REGFormatInstruction& inst, Operation:: addi ## kind ) noexcept { addiBase<ConditionCode:: action>(inst) ; }
 #include "conditional_kinds.def"
 #undef X
 #define X(cmpop, bop) \
@@ -339,7 +339,7 @@ X(cmpi, bno);
         b(inst.getDisplacement());
 	}
     void Core::performOperation(const MEMFormatInstruction& inst, Operation::bx) noexcept {
-        _instructionPointer = getRegister(inst.getSrcDest()).get<Ordinal>();
+        _instructionPointer = getSrc(inst);
         _instructionPointer = computeAlignedAddress(_instructionPointer); // make sure the least significant two bits are clear
     }
 	void Core::bal(Integer displacement) noexcept {
@@ -845,36 +845,36 @@ X(cmpi, bno);
 	constexpr bool maskedEquals(Ordinal src1, Ordinal src2) noexcept {
 		return (src1 & mask) == (src2 & mask);
 	}
-	void Core::scanbyte(__TWO_SOURCE_REGS__) noexcept {
-		if (auto s1 = src1.get<Ordinal>(), s2 = src2.get<Ordinal>(); 
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::scanbyte) noexcept {
+        _ac.conditionCode = 0b000;
+		if (auto s1 = getSrc1(inst), 
+                 s2 = getSrc2(inst); 
                 maskedEquals<0x000000FF>(s1, s2) ||
 				maskedEquals<0x0000FF00>(s1, s2) ||
 				maskedEquals<0x00FF0000>(s1, s2) ||
 				maskedEquals<0xFF000000>(s1, s2)) {
 			_ac.conditionCode = 0b010;
-		} else {
-			_ac.conditionCode = 0b000;
-		}
+		} 
 	}
 	constexpr Ordinal alignToWordBoundary(Ordinal value) noexcept {
 		return value & (~0x3);
 	}
-	void Core::atmod(__DEFAULT_THREE_ARGS__) noexcept {
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::atmod) noexcept {
 		// TODO implement
-		auto srcDest = dest.get<Ordinal>();
-		auto mask = src2.get<Ordinal>();
-		auto fixedAddr = alignToWordBoundary(src1.get<Ordinal>());
+		auto srcDest = getSrc(inst);
+		auto mask = getSrc2(inst);
+		auto fixedAddr = alignToWordBoundary(getSrc1(inst));
 		auto tmp = load(fixedAddr, true);
 		store(fixedAddr, (srcDest & mask) | (tmp & (~mask)), true);
-		dest.set<Ordinal>(tmp);
+        setDest(inst, tmp);
 	}
-	void Core::atadd(__DEFAULT_THREE_ARGS__) noexcept {
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::atadd) noexcept {
 		// TODO implement atomic operations
-		auto fixedAddr = alignToWordBoundary(src1.get<Ordinal>());
-		auto src = src2.get<Ordinal>();
+		auto fixedAddr = alignToWordBoundary(getSrc1(inst));
+		auto src = getSrc2(inst);
 		auto tmp = load(fixedAddr, true);
 		store(fixedAddr, tmp + src, true);
-		dest.set<Ordinal>(tmp);
+        setDest(inst, tmp);
 	}
 	void Core::concmpo(__TWO_SOURCE_REGS__) noexcept {
 		concmpBase<Ordinal>(src1, src2);
@@ -956,8 +956,7 @@ X(cmpi, bno);
 			generateFault(TypeFaultSubtype::Mismatch);
 		}
 	}
-
-	void Core::halt(SourceRegister src1) {
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::halt) noexcept {
 		// TODO finish implementing this
 		// From the i960Jx manual:
 		// causes the processor to enter HALT mode which is described in
@@ -977,7 +976,7 @@ X(cmpi, bno);
 		if (!_pc.inSupervisorMode()) {
 			generateFault(TypeFaultSubtype::Mismatch);
 		} else {
-			switch (src1.get<Ordinal>()) {
+			switch (getSrc1(inst)) {
 				case 0: // Disable interrupts. Clear ICON.gie
 					// globalInterruptEnable = false; 
 					break;
@@ -994,7 +993,7 @@ X(cmpi, bno);
 		// ensure_bus_is_quiescient; // WAT!??
 		// enter_HALT_mode; // TODO
 	}
-	void Core::bswap(SourceRegister src1, DestinationRegister src2) noexcept {
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::bswap) noexcept {
 		// Taken from the i960 Jx reference manual:
 		// alter the order of bytes in a word, reversing its "endianness."
 		//
@@ -1009,10 +1008,10 @@ X(cmpi, bno);
 		//
 		// 	action: dst = (rotate_left(src, 8) & 0x00FF00FF) +
 		// 				  (rotate_left(src, 24) & 0xFF00FF00)
-		auto src = src1.get<Ordinal>();
+		auto src = getSrc1(inst);
 		auto rotl8 = rotateOperation(src, 8) & 0x00FF00FF; // rotate the upper 8 bits around to the bottom
 		auto rotl24 = rotateOperation(src, 24) & 0xFF00FF00;
-		src2.set<Ordinal>(rotl8 + rotl24);
+        setDest(inst, rotl8 + rotl24);
 	}
 	void Core::cmpos(SourceRegister src1, SourceRegister src2) noexcept { 
 		compare<ShortOrdinal>(src1.get<ShortOrdinal>(), src2.get<ShortOrdinal>());

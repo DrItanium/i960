@@ -49,6 +49,15 @@ namespace i960 {
         void clear() noexcept;
     } __attribute__((packed));
 	static_assert(sizeof(TraceControls) == 1_words, "TraceControls must be the size of an ordinal!");
+    constexpr Ordinal getMostSignificantBit(Ordinal value) noexcept {
+        return value & 0x8000'0000;
+    }
+    constexpr auto mostSignificantBitSet(Ordinal value) noexcept {
+        return getMostSignificantBit(value) != 0;
+    }
+    constexpr auto mostSignificantBitClear(Ordinal value) noexcept {
+        return getMostSignificantBit(value) == 0;
+    }
     union NormalRegister {
         public:
             constexpr NormalRegister(Ordinal value = 0) : ordinal(value) { }
@@ -110,10 +119,11 @@ namespace i960 {
                 }
             }
             void move(const NormalRegister& other) noexcept;
-			constexpr Ordinal mostSignificantBit() const noexcept { return (ordinal & 0x80000000); }
-			constexpr bool mostSignificantBitSet() const noexcept     { return mostSignificantBit() == 1; }
-			constexpr bool mostSignificantBitClear() const noexcept   { return !mostSignificantBitSet(); }
+			constexpr Ordinal mostSignificantBit() const noexcept { return getMostSignificantBit(ordinal); }
+			constexpr bool mostSignificantBitSet() const noexcept     { return i960::mostSignificantBitSet(ordinal); }
+			constexpr bool mostSignificantBitClear() const noexcept   { return i960::mostSignificantBitClear(ordinal); }
     };
+
 	static_assert(sizeof(NormalRegister) == 1_words, "NormalRegister must be 32-bits wide!");
 
 } // end namespace i960

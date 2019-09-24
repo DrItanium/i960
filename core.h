@@ -406,19 +406,24 @@ namespace i960 {
                 }
 			}
 			template<ConditionCode mask>
-			void addoBase(__DEFAULT_THREE_ARGS__) noexcept {
+			void addoBase(const REGFormatInstruction& inst) noexcept {
 				if (genericCondCheck<mask>()) {
-					addo(src1, src2, dest);
+                    setDest(inst, getSrc1(inst) +
+                                  getSrc2(inst));
 				}
 			}
-			template<ConditionCode mask>
-			void addiBase(__DEFAULT_THREE_ARGS__) noexcept {
-				if (genericCondCheck<mask>()) {
-					dest.set<Integer>(src1.get<Integer>() + src2.get<Integer>());
-				}
+            template<ConditionCode mask>
+            void addiBase(const REGFormatInstruction& inst) noexcept {
+                auto s1 = getSrc1<Integer>(inst);
+                auto s2 = getSrc2<Integer>(inst);
+                if (genericCondCheck<mask>()) {
+                    setDest<Integer>(inst, getSrc1<Integer>(inst) + 
+                                           getSrc2<Integer>(inst));
+                }
 				// according to the docs, the arithmetic overflow always is
 				// computed even if the addition is not performed
-				if ((src2.mostSignificantBit() == src1.mostSignificantBit()) && (src2.mostSignificantBit() != dest.mostSignificantBit())) {
+                if ((getMostSignificantBit(s1) == getMostSignificantBit(s2)) && 
+                    (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
 					if (_ac.integerOverflowMask == 1) {
 						_ac.integerOverflowFlag = 1;
 					} else {
