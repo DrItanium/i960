@@ -168,11 +168,21 @@ namespace i960 {
                 }
             }
 
-            Ordinal unpackSourceOperand(const Operand& op) const noexcept;
-            Ordinal getSrc1(const HasSrc1& src1) const noexcept;
-            Ordinal getSrc2(const HasSrc2& src2) const noexcept;
-            Ordinal getSrc(const HasSrcDest& srcDest) const noexcept;
-            DestinationRegister& getDest(const HasSrcDest& srcDest) noexcept;
+            template<typename R = Ordinal>
+            R getSrc1(const HasSrc1& src1) noexcept {
+                return getRegisterValue<R>(src1.getSrc1());
+            }
+            template<typename R = Ordinal>
+            R getSrc2(const HasSrc2& src2) noexcept {
+                return getRegisterValue<R>(src2.getSrc2());
+            }
+            template<typename R = Ordinal>
+            R getSrc(const HasSrcDest& srcDest) noexcept {
+                return getRegisterValue<R>(srcDest.getSrcDest());
+            }
+            inline DestinationRegister& getDest(const HasSrcDest& srcDest) noexcept {
+                return getRegister(srcDest.getSrcDest());
+            }
             template<typename T>
             void setDest(const HasSrcDest& srcDest, T value) noexcept {
                 getDest(srcDest).set<T>(value);

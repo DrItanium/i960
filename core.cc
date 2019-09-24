@@ -772,29 +772,6 @@ X(cmpi, bno);
                 break;
         }
 	}
-    Ordinal Core::unpackSourceOperand(const Operand& op) const noexcept {
-        if (op.isLiteral()) {
-            return op.getValue();
-        } else {
-            return getRegister(op).get<Ordinal>();
-        }
-    }
-    Ordinal Core::getSrc1(const HasSrc1& src1) const noexcept {
-        return unpackSourceOperand(src1.getSrc1());
-    }
-    Ordinal Core::getSrc2(const HasSrc2& src2) const noexcept {
-        return unpackSourceOperand(src2.getSrc2());
-    }
-    Ordinal Core::getSrc(const HasSrcDest& srcDest) const noexcept {
-        return unpackSourceOperand(srcDest.getSrcDest());
-    }
-    DestinationRegister& Core::getDest(const HasSrcDest& srcDest) noexcept {
-        if (auto s = srcDest.getSrcDest(); s.isLiteral()) {
-            throw "Destination is marked as a literal";
-        } else {
-            return getRegister(srcDest.getSrcDest());
-        }
-    }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::opnot) noexcept {
         setDest(inst, ~getSrc1(inst));
     }
@@ -804,59 +781,59 @@ X(cmpi, bno);
     void Core::performOperation(const REGFormatInstruction& inst, Operation::notbit) noexcept {
         setDest(inst, xorOperation(getSrc2(inst), oneShiftLeft(getSrc1(inst))));
     }
-	void Core::notbit(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set(xorOperation(src2.get<Ordinal>(), oneShiftLeft(src1.get<Ordinal>())));
-	}
-	void Core::notor(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>((~src2.get<Ordinal>()) | src1.get<Ordinal>());
-	}
-	void Core::opor(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set(src2.get<Ordinal>() | src1.get<Ordinal>());
-	}
-	void Core::ornot(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set(src2.get<Ordinal>() | (~src1.get<Ordinal>()));
-	}
-	void Core::nand(__DEFAULT_THREE_ARGS__) noexcept {
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::notor) noexcept {
+        setDest(inst, (~getSrc2(inst)) | getSrc1(inst));
+    }
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::opor) noexcept {
+        setDest(inst, (getSrc2(inst) | getSrc1(inst)));
+    }
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::ornot) noexcept {
+        setDest(inst, (getSrc2(inst) | (~getSrc1(inst))));
+    }
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::nand) noexcept {
 		// as shown in the manual
-		dest.set((~src2.get<Ordinal>()) | (~src1.get<Ordinal>()));
+        setDest(inst, (~getSrc2(inst)) | (~getSrc1(inst)));
+    }
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::nor) noexcept {
+        setDest(inst, (~getSrc2(inst)) & (~getSrc1(inst)));
 	}
-	void Core::nor(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set((~src2.get<Ordinal>()) & (~src1.get<Ordinal>()));
-	}
-	void Core::shro(__DEFAULT_THREE_ARGS__) noexcept {
-        if (auto shift = src1.get<Ordinal>(); shift < 32u) {
-            dest.set<Ordinal>(src2.get<Ordinal>() >> shift);
-        } else {
-            dest.set<Ordinal>(0u);
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::shro) noexcept {
+        auto result = 0u;
+        if (auto shift = getSrc1(inst); shift < 32u) {
+            result = getSrc2(inst) >> shift;
         }
+        setDest(inst, result);
+    }
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::shri) noexcept {
+        // we want src1 to be an ordinal to prevent shifting by negative numbers
+        setDest(inst, getSrc2<Integer>(inst) >> std::abs(getSrc1<Integer>()));
+    }
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::shlo) noexcept {
+        auto result = 0u;
+        if (auto shift = getSrc1(inst); shift < 32u) {
+            result = getSrc2(inst) << shift;
+        } 
+        setDest(inst, result);
 	}
-	void Core::shri(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set(src2.get<Integer>() >> src1.get<Integer>());
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::shli) noexcept {
+        setDest(inst, getSrc2<Integer>(inst) << std::abs(getSrc1<Integer>()));
 	}
-	void Core::shlo(__DEFAULT_THREE_ARGS__) noexcept {
-        if (auto shift = src1.get<Ordinal>(); shift < 32u) {
-            dest.set<Ordinal>(src2.get<Ordinal>() << shift);
-        } else {
-            dest.set<Ordinal>(0u);
-        }
-	}
-	void Core::shli(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set(src2.get<Integer>() << src1.get<Integer>());
-	}
-	void Core::shrdi(SourceRegister len, SourceRegister src, DestinationRegister dest) noexcept {
-		auto result = src.get<Integer>() >> len.get<Integer>();
-		if (result < 0) {
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::shrdi) noexcept {
+        auto src = getSrc2<Integer>(inst);
+        auto len = std::abs(getSrc1<Integer>(inst));
+        auto result = src >> len;
+        if (src < 0 && result < 0) {
             ++result;
-		}
-		dest.set<Integer>(result);
-	}
+        }
+        setDest<Integer>(inst, result);
+    }
 	constexpr Ordinal rotateOperation(Ordinal src, Ordinal length) noexcept {
 		return (src << length) | (src >> ((-length) & 31u));
 	}
-	void Core::rotate(__DEFAULT_THREE_ARGS__) noexcept {
-		auto src = src2.get<Ordinal>();
-		auto length = src1.get<Ordinal>();
-		dest.set(rotateOperation(src, length));
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::rotate) noexcept {
+        auto src = getSrc2(inst);
+        auto length = getSrc1(inst);
+        setDest(inst, rotateOperation(src, length));
 	}
 	void Core::modify(SourceRegister mask, SourceRegister src, DestinationRegister srcDest) noexcept {
 		srcDest.set<Ordinal>((src.get<Ordinal>() & mask.get<Ordinal>()) | (srcDest.get<Ordinal>() & (~src.get<Ordinal>())));
