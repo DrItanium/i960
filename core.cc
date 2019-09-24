@@ -636,31 +636,32 @@ X(cmpi, bno);
 			}
 		}
 	}
-	void Core::modtc(SourceRegister src, SourceRegister mask, DestinationRegister dest) noexcept {
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::modtc) noexcept {
+        auto mask = getSrc1(inst);
+        auto src2 = getSrc2(inst);
 		TraceControls tmp;
 		tmp.value = _tc.value;
-		auto temp1 = 0x00FF00FF & mask.get<Ordinal>(); // masked to prevent reserved bits from being used
-		_tc.value = (temp1 & src.get<Ordinal>()) | (_tc.value & (~temp1));
-		dest.set(tmp.value);
+		auto temp1 = 0x00FF00FF & mask; // masked to prevent reserved bits from being used
+		_tc.value = (temp1 & src2) | (_tc.value & (~temp1));
+        setDest(inst, tmp.value);
 	}
-	void Core::modpc(SourceRegister, SourceRegister mask, DestinationRegister srcDest) noexcept {
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::modpc) noexcept {
 		// modify process controls
-		auto maskVal = mask.get<Ordinal>();
-		if (maskVal != 0) {
+		if (auto maskVal = getSrc2(inst); maskVal != 0) {
 			if (_pc.inUserMode()) {
 				generateFault(TypeFaultSubtype::Mismatch);
 				return;
 			}
 			ProcessControls temp;
 			temp.value = _pc.value;
-			_pc.value = (maskVal & srcDest.get<Ordinal>()) | (_pc.value & (~maskVal));
-			srcDest.set(temp.value);
+			_pc.value = (maskVal & getSrc(inst)) | (_pc.value & (~maskVal));
+            setDest(inst, temp.value);
 			if (temp.priority > _pc.priority) {
 				// TODO check pending interrupts
 			}
 			// if continue here, no interrupt to do
 		} else {
-			srcDest.set(_pc.value);
+            setDest(inst, _pc.value);
 		}
 	}
 	void Core::modac(__DEFAULT_THREE_ARGS__) noexcept {
