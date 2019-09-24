@@ -637,13 +637,14 @@ X(cmpi, bno);
 		}
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::modtc) noexcept {
-        auto mask = getSrc1(inst);
+        // the instruction has its arguments reversed for some reason...
+        auto mask = getSrc(inst);
         auto src2 = getSrc2(inst);
 		TraceControls tmp;
 		tmp.value = _tc.value;
 		auto temp1 = 0x00FF00FF & mask; // masked to prevent reserved bits from being used
 		_tc.value = (temp1 & src2) | (_tc.value & (~temp1));
-        setDest(inst, tmp.value);
+        setRegister(inst.getSrc1(), tmp.value);
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::modpc) noexcept {
 		// modify process controls
@@ -664,10 +665,15 @@ X(cmpi, bno);
             setDest(inst, _pc.value);
 		}
 	}
-	void Core::modac(__DEFAULT_THREE_ARGS__) noexcept {
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::modac) noexcept {
+	//void Core::modac(__DEFAULT_THREE_ARGS__) noexcept {
+        auto mask = getSrc(inst);
+        auto src = getSrc2(inst);
+        auto dest = getRegister(inst.getSrc1());
+        
 		auto tmp = _ac.value;
-		_ac.value = (src2.get<Ordinal>() & src1.get<Ordinal>()) | (_ac.value & (~src1.get<Ordinal>()));
-		dest.set<Ordinal>(tmp);
+        _ac.value = (src & mask) | (tmp & (~mask));
+        setRegister<Ordinal>(inst.getSrc1(), tmp);
 	}
     constexpr auto mostSignificantBit(Ordinal input) noexcept {
         return (input & 0x8000'0000);
