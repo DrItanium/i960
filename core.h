@@ -180,7 +180,7 @@ namespace i960 {
             R getSrc(const HasSrcDest& srcDest) noexcept {
                 return getRegisterValue<R>(srcDest.getSrcDest());
             }
-            inline DestinationRegister& getDest(const HasSrcDest& srcDest) noexcept {
+            inline NormalRegister& getDest(const HasSrcDest& srcDest) noexcept {
                 return getRegister(srcDest.getSrcDest());
             }
             template<typename T>
@@ -395,7 +395,12 @@ namespace i960 {
             }
 			template<ConditionCode code>
 			constexpr bool genericCondCheck() noexcept {
-                return _ac.conditionCodeBitSet<Ordinal(code)>() || _ac.conditionCodeIs<Ordinal(code)>();
+                if constexpr (auto casted = static_cast<Ordinal>(code); casted & 0b1000) {
+                    // we're in a don't care situation so pass the conditional check
+                    return true;
+                } else {
+                    return _ac.conditionCodeBitSet<static_cast<Ordinal>(code)>() || _ac.conditionCodeIs<static_cast<Ordinal>(code)>();
+                }
 			}
 			template<ConditionCode mask>
 			void baseSelect(__DEFAULT_THREE_ARGS__) noexcept {

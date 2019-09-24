@@ -199,21 +199,10 @@ X(cmpi, bno);
 		setRegister(SP, tmp + boundaryAlignment);
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::addo) noexcept {
-
+        addoBase<ConditionCode::Unconditional>(inst);
     }
-	void Core::addo(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>(src2.get<Ordinal>() + src1.get<Ordinal>());
-	}
-	void Core::addi(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Integer>(src2.get<Integer>() + src1.get<Integer>());
-		// check for overflow
-		if ((src2.mostSignificantBit() == src1.mostSignificantBit()) && (src2.mostSignificantBit() != dest.mostSignificantBit())) {
-			if (_ac.integerOverflowMask == 1) {
-				_ac.integerOverflowFlag = 1;
-			} else {
-				generateFault(ArithmeticFaultSubtype::IntegerOverflow);
-			}
-		}
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::addi) noexcept {
+        addiBase<ConditionCode::Unconditional>(inst);
 	}
 	void Core::subo(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set(src2.get<Ordinal>() - src1.get<Ordinal>());
@@ -249,81 +238,74 @@ X(cmpi, bno);
 			dest.set<Ordinal>(src.get<Ordinal>() | (1 << p));
 		}
 	}
-	void Core::opand(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>(src2.get<Ordinal>() & src1.get<Ordinal>());
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::opand) noexcept {
+        setDest(inst, getSrc2<Ordinal>(inst) & 
+                      getSrc1<Ordinal>(inst));
 	}
-	void Core::andnot(__DEFAULT_THREE_ARGS__) noexcept {
-		auto s2 = src2.get<Ordinal>();
-		auto s1 = src1.get<Ordinal>();
-		dest.set(~s2 & s1);
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::andnot) noexcept {
+        setDest(inst, (getSrc2(inst)) & (~getSrc1(inst)));
 	}
 
-
-	void Core::mov(const Operand& src, const Operand& dest) noexcept { 
-		if (DestinationRegister d = getRegister(dest); src.isRegister()) {
-			d.move(getRegister(src));
-		} else {
-			// in the manual the arguments are differentiated
-			d.set<Ordinal>(src.getValue());
-		}
-	}
-	void Core::movl(const Operand& src, const Operand& dest) noexcept {
-		if (notDivisibleBy(src, 2) || notDivisibleBy(dest, 2)) {
-			// registers are not properly aligned so watch things burn...
-			// however the manual states that this is an acceptable state
-			getRegister(dest).set<Integer>(-1);
-			getRegister(dest.next()).set<Integer>(-1);
-			generateFault(OperationFaultSubtype::InvalidOperand);
-		} else if (src.isRegister()) {
-			mov(src, dest);
-			mov(src.next(), dest.next());
-		} else {
-			mov(src, dest);
-			getRegister(dest.next()).set<Ordinal>(0);
-		}
-	}
-	void Core::movt(const Operand& src, const Operand& dest) noexcept {
-		DestinationRegister d0 = getRegister(dest);
-		DestinationRegister d1 = getRegister(dest.next());
-		DestinationRegister d2 = getRegister(dest.next().next());
-		if (notDivisibleBy(src, 4) || notDivisibleBy(dest, 4)) {
-			d0.set(-1);
-			d1.set(-1);
-			d2.set(-1);
-			generateFault(OperationFaultSubtype::InvalidOperand);
-		} else if (src.isRegister()) {
-			d0.move(getRegister(src));
-			d1.move(getRegister(src.next()));
-			d2.move(getRegister(src.next().next()));
-		} else {
-			d0.set<Ordinal>(src.getValue());
-			d1.set(0);
-			d2.set(0);
-		}
-	}
-	void Core::movq(const Operand& src, const Operand& dest) noexcept {
-		DestinationRegister d0 = getRegister(dest);
-		DestinationRegister d1 = getRegister(dest.next());
-		DestinationRegister d2 = getRegister(dest.next().next());
-		DestinationRegister d3 = getRegister(dest.next().next().next());
-		if (notDivisibleBy(src, 4) || notDivisibleBy(dest, 4)) {
-			d0.set(-1);
-			d1.set(-1);
-			d2.set(-1);
-			d3.set(-1);
-			generateFault(OperationFaultSubtype::InvalidOperand);
-		} else if (src.isRegister()) {
-			d0.move(getRegister(src));
-			d1.move(getRegister(src.next()));
-			d2.move(getRegister(src.next().next()));
-			d3.move(getRegister(src.next().next().next()));
-		} else {
-			d0.set<Ordinal>(src.getValue());
-			d1.set(0);
-			d2.set(0);
-			d3.set(0);
-		}
-	}
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::mov) noexcept {
+        setDest(inst, getSrc1(inst));
+    }
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::movl) noexcept {
+        if (auto src1 = inst.getSrc1(), auto dst = inst.getSrcDest(); 
+                notDivisibleBy(src1, 2) ||
+                notDivisibleBy(dst, 2)) {
+            setRegister<Integer>(dst, -1);
+            setRegister<Integer>(dst.next(), -1);
+            generateFault(OperationFaultSubtype::InvalidOperand);
+        } else if (src1.isLiteral()) {
+            setRegister<Ordinal>(dst, src1.getValue());
+            setRegister<Ordinal>(dst.next(), 0);
+        } else {
+            // src1 is a register
+            setRegister<Ordinal>(dst, getRegisterValue<Ordinal>(src1));
+            setRegister<Ordinal>(dst.next(), getRegisterValue<Ordinal>(src1.next()));
+        }
+    }
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::movt) noexcept {
+        if (auto src1 = inst.getSrc1(), auto dst = inst.getSrcDest(); 
+                notDivisibleBy(src1, 4) ||
+                notDivisibleBy(dst, 4)) {
+            setRegister<Integer>(dst, -1);
+            setRegister<Integer>(dst.next(), -1);
+            setRegister<Integer>(dst.next().next(), -1);
+            generateFault(OperationFaultSubtype::InvalidOperand);
+        } else if (src1.isLiteral()) {
+            setRegister<Ordinal>(dst, src1.getValue());
+            setRegister<Ordinal>(dst.next(), 0);
+            setRegister<Ordinal>(dst.next().next(), 0);
+        } else {
+            // src1 is a register
+            setRegister<Ordinal>(dst, getRegisterValue<Ordinal>(src1));
+            setRegister<Ordinal>(dst.next(), getRegisterValue<Ordinal>(src1.next()));
+            setRegister<Ordinal>(dst.next().next(), getRegisterValue<Ordinal>(src1.next().next()));
+        }
+    }
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::movq) noexcept {
+        if (auto src1 = inst.getSrc1(), auto dst = inst.getSrcDest(); 
+                notDivisibleBy(src1, 4) ||
+                notDivisibleBy(dst, 4)) {
+            setRegister<Integer>(dst, -1);
+            setRegister<Integer>(dst.next(), -1);
+            setRegister<Integer>(dst.next().next(), -1);
+            setRegister<Integer>(dst.next().next().next(), -1);
+            generateFault(OperationFaultSubtype::InvalidOperand);
+        } else if (src1.isLiteral()) {
+            setRegister<Ordinal>(dst, src1.getValue());
+            setRegister<Ordinal>(dst.next(), 0);
+            setRegister<Ordinal>(dst.next().next(), 0);
+            setRegister<Ordinal>(dst.next().next().next(), 0);
+        } else {
+            // src1 is a register
+            setRegister<Ordinal>(dst, getRegisterValue<Ordinal>(src1));
+            setRegister<Ordinal>(dst.next(), getRegisterValue<Ordinal>(src1.next()));
+            setRegister<Ordinal>(dst.next().next(), getRegisterValue<Ordinal>(src1.next().next()));
+            setRegister<Ordinal>(dst.next().next().next(), getRegisterValue<Ordinal>(src1.next().next().next()));
+        }
+    }
     void Core::b(Integer displacement) noexcept {
         static constexpr auto checkMask = 0x7F'FFFC;
 		union {
