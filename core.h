@@ -263,7 +263,6 @@ namespace i960 {
             __GEN_DEFAULT_THREE_ARG_SIGS__(andnot);
             void atadd(__DEFAULT_THREE_ARGS__) noexcept; // TODO add other forms of atadd
             void atmod(SourceRegister src, SourceRegister mask, DestinationRegister srcDest) noexcept; // TODO check out other forms of this instruction
-            void bbc(SourceRegister pos, SourceRegister src, Integer targ) noexcept; 
             void bbs(SourceRegister pos, SourceRegister src, Integer targ) noexcept;
             // compare and branch instructions as well
             // faults too
@@ -472,8 +471,7 @@ namespace i960 {
 #define X(kind, __) \
             void b ## kind (Integer) noexcept; \
             void cmpib ## kind ( SourceRegister, SourceRegister, Integer) noexcept; \
-            void fault ## kind () noexcept; \
-            void test ## kind ( DestinationRegister) noexcept;
+            void fault ## kind () noexcept;
 #define Y(kind) void cmp ## kind ( SourceRegister, SourceRegister, Integer) noexcept;
 #include "conditional_kinds.def"
 			Y(obe)

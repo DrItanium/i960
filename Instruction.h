@@ -205,7 +205,8 @@ namespace i960 {
             constexpr auto getBitPos() const noexcept { return getSrc1().getValue(); }
             EncodedInstruction encode() const noexcept override;
         private:
-            Ordinal _displacement : 10;
+            // meant to be a signed 12-bit value with the lowest two bits always zero
+            Integer _displacement : 12;
         public:
             const auto& getTarget() const noexcept { return _target; }
         private:
@@ -305,7 +306,7 @@ namespace i960 {
             Ordinal _offset : 12;
             // MEMB Specific Fields
             ByteOrdinal _scale;
-            Ordinal _displacement;
+            Integer _displacement;
         public:
             const auto& getTarget() const noexcept { return _target; }
         private:

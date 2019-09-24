@@ -115,7 +115,7 @@ namespace i960 {
     EncodedInstruction
     CTRLFormatInstruction::encode() const noexcept {
         // mask out the least significant bit to follow the ctrl format
-        return i960::encode<Ordinal, Ordinal, 0x00FFFFFC, 2>(
+        return i960::encode<Ordinal, Integer, 0x00FFFFFC, 2>(
                 i960::encode<Ordinal, bool, 0b10, 1>(encodeMajorOpcode(0, getOpcode()), _t),
                 _displacement) & 0xFFFF'FFFE;
     }
@@ -123,7 +123,7 @@ namespace i960 {
     Flags(inst),
     HasSrcDest(decodeSrcDest<0b100>(inst.getLowerHalf(), Flags::getValue())),
     HasSrc2(decodeSrc2(inst.getLowerHalf())),
-    _displacement(i960::decode<Ordinal, Ordinal, 0b1111'1111'1100, 2>(inst.getLowerHalf())),
+    _displacement(i960::decode<Ordinal, Integer, 0b1111'1111'1100, 0>(inst.getLowerHalf())), // we want to make a 12-bit number out of this
     _target(Operation::translate(inst.getOpcode(), Operation::COBRClass()))
     { }
 
@@ -132,7 +132,7 @@ namespace i960 {
         auto instruction = encodeMajorOpcode(0, getOpcode());
         instruction = encodeSrcDest(instruction, getSrc1());
         instruction = encodeSrc2(instruction, getSrc2());
-        instruction = i960::encode<Ordinal, Ordinal, 0b1111'1111'1100, 2>(instruction, _displacement);
+        instruction = i960::encode<Ordinal, Integer, 0b1111'1111'1100, 2>(instruction, _displacement);
         return Flags::encode(instruction);
     }
 

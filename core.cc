@@ -35,7 +35,7 @@ namespace i960 {
         return framePointerAddress + 64;
     }
 #define X(kind, action) \
-	void Core:: test ## kind (DestinationRegister dest) noexcept { testGeneric<TestTypes:: action>(dest); } \
+    void Core:: performOperation ( const COBRFormatInstruction& inst, Operation:: test ## kind ) noexcept { testGeneric<TestTypes:: action> ( getDest(inst) ); } \
 	void Core:: b ## kind (Integer addr) noexcept { branchIfGeneric<ConditionCode:: action > ( addr ) ; } \
     void Core:: fault ## kind () noexcept { genericFault< ConditionCode:: action > ( ) ; } \
     void Core:: sel ## kind (__DEFAULT_THREE_ARGS__) noexcept { baseSelect<ConditionCode:: action>(src1, src2, dest); } \
@@ -334,35 +334,32 @@ X(cmpi, bno);
 	constexpr Ordinal computeCheckBitMask(Ordinal value) noexcept {
 		return 1 << (value & 0b11111);
 	}
-	void Core::bbc(SourceRegister bitpos, SourceRegister src, Integer targ) noexcept {
-		// check bit and branch if clear
-		if (auto s = src.get<Ordinal>(), mask = computeCheckBitMask(bitpos.get<Ordinal>()); (s & mask) == 0) {
-			_ac.conditionCode = 0;
-			union {
-				Integer value : 11;
-			} displacement;
-			displacement.value = targ;
-			_instructionPointer = _instructionPointer + 4 + (displacement.value * 4);
-		} else {
-			_ac.conditionCode = 0b010;
-		}
-	}
-
-	void Core::bbs(SourceRegister bitpos, SourceRegister src, Integer targ) noexcept {
-		// check bit and branch if set
-		if (auto s = src.get<Ordinal>(), mask = computeCheckBitMask(bitpos.get<Ordinal>()); (s & mask) != 0) {
-			_ac.conditionCode = 0b010;
-
-			union {
-				Integer value : 11;
-			} displacement;
-			displacement.value = targ;
-			_instructionPointer = _instructionPointer + 4 + (displacement.value * 4);
-		} else {
-			_ac.conditionCode = 0;
-		}
-	}
-
+    void Core::performOperation(const COBRFormatInstruction& inst, Operation::bbc) noexcept {
+        // check bit and branch if clear
+        auto bitpos = getSrc(inst);
+        auto src = getSrc2(inst);
+        auto mask = computeCheckBitMask(bitpos);
+        _ac.conditionCode = 0b010; // update condition code to not taken result since it will always be done
+        if ((src & mask) == 0) {
+            _ac.conditionCode = 0b000;
+            _instructionPointer = _instructionPointer + inst.getDisplacement();
+            // clear the lowest two bits of the instruction pointer
+            _instructionPointer &= (~0b11);
+        } 
+    }
+    void Core::performOperation(const COBRFormatInstruction& inst, Operation::bbs) noexcept {
+        // check bit and branch if set
+        auto bitpos = getSrc(inst);
+        auto src = getSrc2(inst);
+        auto mask = computeCheckBitMask(bitpos);
+        _ac.conditionCode = 0b000;
+        if ((src & mask) == 1) {
+            _ac.conditionCode = 0b010;
+            _instructionPointer = _instructionPointer + inst.getDisplacement();
+            // clear the lowest two bits of the instruction pointer
+            _instructionPointer &= (~0b11);
+        } 
+    }
 
 	// Begin Instruction::REGFormat implementations
 	/**
