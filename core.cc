@@ -572,7 +572,15 @@ X(cmpi, bno);
 		}
 	}
 
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpi) noexcept {
+        cmpi(getRegister(inst.getSrc1()),
+                getRegister(inst.getSrc2()));
+    }
 	void Core::cmpi(SourceRegister src1, SourceRegister src2) noexcept { compare(src1.get<Integer>(), src2.get<Integer>()); }
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpo) noexcept {
+        cmpo(getRegister(inst.getSrc1()),
+             getRegister(inst.getSrc2()));
+    }
 	void Core::cmpo(SourceRegister src1, SourceRegister src2) noexcept { compare(src1.get<Ordinal>(), src2.get<Ordinal>()); }
 	void Core::muli(SourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept {
 		dest.set(src2.get<Integer>() * src1.get<Integer>());
@@ -865,11 +873,11 @@ X(cmpi, bno);
 		store(fixedAddr, tmp + src, true);
         setDest(inst, tmp);
 	}
-	void Core::concmpo(__TWO_SOURCE_REGS__) noexcept {
-		concmpBase<Ordinal>(src1, src2);
-	}
-	void Core::concmpi(__TWO_SOURCE_REGS__) noexcept {
-		concmpBase<Integer>(src1, src2);
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::concmpo) noexcept {
+        concmpBase(getSrc1(inst), getSrc2(inst));
+    }
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::concmpi) noexcept {
+        concmpBase(getSrc1<Integer>(inst), getSrc2<Integer>(inst));
 	}
 	void Core::cmpinco(__DEFAULT_THREE_ARGS__) noexcept {
 		// TODO add support for overflow detection

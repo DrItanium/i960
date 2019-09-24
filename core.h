@@ -349,15 +349,19 @@ namespace i960 {
 			void bswap(SourceRegister src1, DestinationRegister src2) noexcept;
 		private:
 			// templated bodies
-			template<typename T>
-			void concmpBase(SourceRegister src1, SourceRegister src2) noexcept {
+            template<typename T>
+            void concmpBase(T src1, T src2) noexcept {
 				if (_ac.conditionCodeBitSet<0b100>()) {
-                    if (src1.get<T>() <= src2.get<T>()) {
+                    if (src1 <= src2) {
 						_ac.conditionCode = 0b010;
 					} else {
 						_ac.conditionCode = 0b001;
 					}
 				}
+            }
+			template<typename T>
+			void concmpBase(SourceRegister src1, SourceRegister src2) noexcept {
+                concmpBase<T>(src1.get<T>(), src2.get<T>());
 			}
             template<ConditionCode cc>
             constexpr bool conditionCodeIs() const noexcept {
