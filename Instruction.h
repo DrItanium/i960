@@ -111,91 +111,100 @@ namespace i960 {
         private:
             ByteOrdinal _flags;
     };
-    class REGFormatInstruction : public GenericFormatInstruction {
+    class REGFlags : public GenericFlags {
+        public:
+            using Parent = GenericFlags;
+            static constexpr ByteOrdinal decode(SingleEncodedInstructionValue value) noexcept {
+                auto lowerTwo = i960::decode<Ordinal, ByteOrdinal, 0b11'00000, 5>(value);
+                auto upperThree = i960::decode<Ordinal, ByteOrdinal, 0b111'0000'00'00000, 8>(value);
+                return lowerTwo | upperThree;
+            }
+        public:
+            constexpr REGFlags(const Instruction& inst) noexcept : Parent(decode(inst.getLowerHalf())) { }
+            constexpr bool getM1()  const noexcept { return getFlag<0b10000>(); }
+            constexpr bool getM2()  const noexcept { return getFlag<0b01000>(); }
+            constexpr bool getM3()  const noexcept { return getFlag<0b00100>(); }
+            constexpr bool getSF1() const noexcept { return getFlag<0b00010>(); }
+            constexpr bool getSF2() const noexcept { return getFlag<0b00001>(); }
+            constexpr SingleEncodedInstructionValue encode(SingleEncodedInstructionValue value) const noexcept {
+                auto lowerTwo = i960::encode<SingleEncodedInstructionValue, ByteOrdinal, 0b11'00000, 5>(value, getValue());
+                auto upperThree = i960::encode<SingleEncodedInstructionValue, ByteOrdinal, 0b111'0000'00'00000, 8>(value, getValue());
+                return lowerTwo | upperThree;
+            }
+    };
+    class HasSrc1 {
+        public:
+            constexpr explicit HasSrc1(Operand op) : _src1(op) { }
+            ~HasSrc1() = default;
+            constexpr auto getSrc1() const noexcept { return _src1; }
+            void setSrc1(Operand op) noexcept { _src1 = op; }
+            /// @todo insert encode operation here
+        private:
+            Operand _src1;
+    };
+    class HasSrc2 {
+        public:
+            constexpr explicit HasSrc2(Operand op) : _src2(op) { }
+            ~HasSrc2() = default;
+            constexpr auto getSrc2() const noexcept { return _src2; }
+            void setSrc2(Operand op) noexcept { _src2 = op; }
+        private:
+            Operand _src2;
+    };
+    class HasSrcDest {
+        public:
+            constexpr explicit HasSrcDest(Operand op) : _srcDest(op) { }
+            ~HasSrcDest() = default;
+            constexpr auto getSrcDest() const noexcept { return _srcDest; }
+            void setSrcDest(Operand op) noexcept { _srcDest = op; }
+        private:
+            Operand _srcDest;
+    };
+    class REGFormatInstruction : public GenericFormatInstruction, public REGFlags, public HasSrcDest, public HasSrc2, public HasSrc1 {
         public:
             using Base = GenericFormatInstruction;
             using OpcodeList = Operation::REG;
-            class Flags final : public GenericFlags {
-                public:
-                    using Parent = GenericFlags;
-                    static constexpr ByteOrdinal decode(SingleEncodedInstructionValue value) noexcept {
-                        auto lowerTwo = i960::decode<Ordinal, ByteOrdinal, 0b11'00000, 5>(value);
-                        auto upperThree = i960::decode<Ordinal, ByteOrdinal, 0b111'0000'00'00000, 8>(value);
-                        return lowerTwo | upperThree;
-                    }
-                public:
-                    constexpr Flags(const Instruction& inst) noexcept : Parent(decode(inst.getLowerHalf())) { }
-                    constexpr bool getM1()  const noexcept { return getFlag<0b10000>(); }
-                    constexpr bool getM2()  const noexcept { return getFlag<0b01000>(); }
-                    constexpr bool getM3()  const noexcept { return getFlag<0b00100>(); }
-                    constexpr bool getSF1() const noexcept { return getFlag<0b00010>(); }
-                    constexpr bool getSF2() const noexcept { return getFlag<0b00001>(); }
-                    constexpr SingleEncodedInstructionValue encode(SingleEncodedInstructionValue value) const noexcept {
-                        auto lowerTwo = i960::encode<SingleEncodedInstructionValue, ByteOrdinal, 0b11'00000, 5>(value, getValue());
-                        auto upperThree = i960::encode<SingleEncodedInstructionValue, ByteOrdinal, 0b111'0000'00'00000, 8>(value, getValue());
-                        return lowerTwo | upperThree;
-                    }
-            };
+            using Flags = REGFlags;
         public:
             REGFormatInstruction(const Instruction& inst);
             ~REGFormatInstruction() override = default;
-            constexpr auto getSrc1() const noexcept { return _src1; }
-            constexpr auto getSrc2() const noexcept { return _src2; }
-            constexpr auto getSrcDest() const noexcept { return _srcDest; }
-            constexpr auto getBitPos() const noexcept { return _src1.getValue(); }
-            constexpr bool getM1()  const noexcept { return _flags.getM1(); }
-            constexpr bool getM2()  const noexcept { return _flags.getM2(); }
-            constexpr bool getM3()  const noexcept { return _flags.getM3(); }
-            constexpr bool getSF1() const noexcept { return _flags.getSF1(); }
-            constexpr bool getSF2() const noexcept { return _flags.getSF2(); }
+            constexpr auto getBitPos() const noexcept { return getSrc1().getValue(); }
             /// @todo implement setters
             EncodedInstruction encode() const noexcept override;
-        private:
-            Flags _flags;
-            Operand _srcDest;
-            Operand _src2;
-            Operand _src1;
-        public:
             const auto& getTarget() const noexcept { return _target; }
         private:
             OpcodeList _target;
     };
-    class COBRFormatInstruction : public GenericFormatInstruction {
+    class COBRFlags : public GenericFlags {
+        public:
+            using Parent = GenericFlags;
+            static constexpr ByteOrdinal decode(SingleEncodedInstructionValue value) noexcept {
+                return i960::decode<SingleEncodedInstructionValue, ByteOrdinal, 0b1'0000'0000'0000, 10>(value) |
+                    i960::decode<SingleEncodedInstructionValue, ByteOrdinal, 0b11>(value);
+            }
+        public:
+            constexpr COBRFlags(const Instruction& inst) : Parent(decode(inst.getLowerHalf())) { }
+            constexpr bool getM1() const noexcept { return getFlag<0b100>(); }
+            constexpr bool getT()  const noexcept { return getFlag<0b010>(); }
+            constexpr bool getS2() const noexcept { return getFlag<0b001>(); }
+            constexpr SingleEncodedInstructionValue encode(SingleEncodedInstructionValue value) const noexcept {
+                return i960::encode<Ordinal, ByteOrdinal, 0b1'0000'0000'0000, 10>(value, getValue()) |
+                    i960::encode<Ordinal, ByteOrdinal, 0b11, 0>(value, getValue());
+            }
+    };
+    class COBRFormatInstruction : public GenericFormatInstruction, public COBRFlags, public HasSrcDest, public HasSrc2 {
         public:
             using Base = GenericFormatInstruction;
             using OpcodeList = Operation::COBR;
-            class Flags final : public GenericFlags {
-                public:
-                    using Parent = GenericFlags;
-                    static constexpr ByteOrdinal decode(SingleEncodedInstructionValue value) noexcept {
-                        return i960::decode<SingleEncodedInstructionValue, ByteOrdinal, 0b1'0000'0000'0000, 10>(value) |
-                            i960::decode<SingleEncodedInstructionValue, ByteOrdinal, 0b11>(value);
-                    }
-                public:
-                    constexpr Flags(const Instruction& inst) : Parent(decode(inst.getLowerHalf())) { }
-                    constexpr bool getM1() const noexcept { return getFlag<0b100>(); }
-                    constexpr bool getT()  const noexcept { return getFlag<0b010>(); }
-                    constexpr bool getS2() const noexcept { return getFlag<0b001>(); }
-                    constexpr SingleEncodedInstructionValue encode(SingleEncodedInstructionValue value) const noexcept {
-                        return i960::encode<Ordinal, ByteOrdinal, 0b1'0000'0000'0000, 10>(value, getValue()) |
-                            i960::encode<Ordinal, ByteOrdinal, 0b11, 0>(value, getValue());
-                    }
-            };
+            using Flags = COBRFlags;
         public:
             COBRFormatInstruction(const Instruction&);
             ~COBRFormatInstruction() override = default;
-            constexpr auto getSrc1() const noexcept { return _source1; }
-            constexpr auto getSrc2() const noexcept { return _source2; }
+            constexpr auto getSrc1() const noexcept { return getSrcDest(); }
             constexpr auto getDisplacement() const noexcept { return _displacement; }
-            constexpr bool getM1() const noexcept { return _flags.getM1(); }
-            constexpr bool getT()  const noexcept { return _flags.getT(); }
-            constexpr bool getS2() const noexcept { return _flags.getS2(); }
-            constexpr auto getBitPos() const noexcept { return _source1.getValue(); }
+            constexpr auto getBitPos() const noexcept { return getSrc1().getValue(); }
             EncodedInstruction encode() const noexcept override;
         private:
-            Flags _flags;
-            Operand _source1;
-            Operand _source2;
             Ordinal _displacement : 10;
         public:
             const auto& getTarget() const noexcept { return _target; }
@@ -223,7 +232,7 @@ namespace i960 {
     /**
      * Generic super type for MEM class instructions
      */
-    class MEMFormatInstruction : public GenericFormatInstruction {
+    class MEMFormatInstruction : public GenericFormatInstruction, public HasSrcDest, public HasSrc1, public HasSrc2 {
         public:
             using Base = GenericFormatInstruction;
             using OpcodeList = Operation::MEM;
@@ -251,8 +260,7 @@ namespace i960 {
         public:
             MEMFormatInstruction(const Instruction& inst);
             ~MEMFormatInstruction() override = default;
-            constexpr auto getSrcDest() const noexcept { return _srcDest; }
-            constexpr auto getAbase() const noexcept { return _abase; }
+            constexpr auto getAbase() const noexcept { return getSrc2(); }
             constexpr auto getRawMode() const noexcept { return _mode; }
             constexpr auto getMode() const noexcept { 
                 auto mode = static_cast<AddressingModes>(_mode);
@@ -276,7 +284,7 @@ namespace i960 {
             EncodedInstruction encode() const noexcept override;
             constexpr auto getOffset() const noexcept { return _offset; }
             constexpr auto getScale() const noexcept { return _scale; }
-            constexpr auto getIndex() const noexcept { return _index; }
+            constexpr auto getIndex() const noexcept { return getSrc1(); }
             constexpr auto getDisplacement() const noexcept { return _displacement; }
             constexpr auto isDoubleWide() const noexcept { 
                 switch (getMode()) {
@@ -292,14 +300,12 @@ namespace i960 {
             /// @todo add effective address computation support
         private:
             Operand _srcDest;
-            ByteOrdinal _abase;
             /// @todo convert this to be part of the code structure instead of wasting space
             ByteOrdinal _mode;
             // MEMA Specific Fields 
             Ordinal _offset : 12;
             // MEMB Specific Fields
             ByteOrdinal _scale;
-            ByteOrdinal _index;
             Ordinal _displacement;
         public:
             const auto& getTarget() const noexcept { return _target; }

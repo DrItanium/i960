@@ -141,6 +141,12 @@ namespace i960 {
             inline void store(const NormalRegister& addr, Ordinal value) noexcept {
                 store(addr.get<Ordinal>(), value);
             }
+            template<typename T>
+            void setRegister(const Operand& op, T value) noexcept {
+                setRegister<T>(static_cast<ByteOrdinal>(op), value);
+            }
+            inline auto& getRegister(const Operand& op) noexcept { return getRegister(static_cast<ByteOrdinal>(op)); }
+            inline SourceRegister& getRegister(const Operand& op) const noexcept { return getRegister(static_cast<ByteOrdinal>(op)); }
 
             template<typename T>
             void setRegister(ByteOrdinal index, T value) noexcept {
@@ -149,15 +155,10 @@ namespace i960 {
             inline void setRegister(ByteOrdinal index, SourceRegister other) noexcept {
                 setRegister(index, other.get<Ordinal>());
             }
-            template<typename T>
-            void setRegister(const Operand& op, T value) noexcept {
-                setRegister<T>(static_cast<ByteOrdinal>(op), value);
-            }
             inline void setRegister(const Operand& index, SourceRegister other) noexcept {
                 setRegister(static_cast<ByteOrdinal>(index), other);
             }
             NormalRegister& getRegister(ByteOrdinal index) noexcept;
-            inline auto& getRegister(const Operand& op) noexcept { return getRegister(static_cast<ByteOrdinal>(op)); }
             template<typename T>
             T getRegisterValue(const Operand& op) noexcept {
                 if (op.isRegister()) {
@@ -165,6 +166,16 @@ namespace i960 {
                 } else {
                     return static_cast<T>(op.getValue());
                 }
+            }
+
+            Ordinal unpackSourceOperand(const Operand& op) const noexcept;
+            Ordinal getSrc1(const HasSrc1& src1) const noexcept;
+            Ordinal getSrc2(const HasSrc2& src2) const noexcept;
+            Ordinal getSrc(const HasSrcDest& srcDest) const noexcept;
+            DestinationRegister& getDest(const HasSrcDest& srcDest) noexcept;
+            template<typename T>
+            void setDest(const HasSrcDest& srcDest, T value) noexcept {
+                getDest(srcDest).set<T>(value);
             }
         private:
             inline auto load(const NormalRegister& reg, bool atomic = false) noexcept { return load(reg.get<Ordinal>(), atomic); }

@@ -55,22 +55,18 @@ namespace i960 {
         return encode<Ordinal, ByteOrdinal, Mask, Shift>(value, input.getValue());
     }
     static_assert(encodeSrcDest(0, 1_lr) == 0x00080000);
-    template<typename R = Operand>
-    constexpr auto decodeSrc2(Ordinal input) noexcept {
-        constexpr Ordinal Mask = 0x000C7000;
-        constexpr Ordinal Shift = 14;
-        return decode<Ordinal, R, Mask, Shift>(input);
-    }
-    template<Ordinal mask>
-    constexpr auto decodeSrc2(Ordinal input, Ordinal modeBits) noexcept {
-        return Operand((modeBits & mask) != 0, decodeSrc2<Ordinal>(input));
-    }
     constexpr auto encodeSrc2(Ordinal value, Operand input) noexcept {
         constexpr Ordinal Mask = 0x000C7000;
         constexpr Ordinal Shift = 14;
         return encode<Ordinal, ByteOrdinal, Mask, Shift>(value, input.getValue());
     }
     static_assert(encodeSrc2(0, 1_lr) == (0x00080000 >> 5));
+
+    constexpr auto encodeSrc1(Ordinal value, Operand input) noexcept {
+        constexpr Ordinal Mask = 0x1F;
+        return encode<Ordinal, ByteOrdinal, Mask, 0>(value, input.getValue());
+    }
+    static_assert(encodeSrc1(0, 1_lr) == 1);
 
     template<typename R = ByteOrdinal>
     constexpr auto decodeSrc1(Ordinal input) noexcept {
@@ -81,26 +77,31 @@ namespace i960 {
     constexpr auto decodeSrc1(Ordinal value, Ordinal modeBits) noexcept {
         return Operand((modeBits & mask) != 0, decodeSrc1<Ordinal>(value));
     }
-    constexpr auto encodeSrc1(Ordinal value, Operand input) noexcept {
-        constexpr Ordinal Mask = 0x1F;
-        return encode<Ordinal, ByteOrdinal, Mask, 0>(value, input.getValue());
+    template<typename R = Operand>
+    constexpr auto decodeSrc2(Ordinal input) noexcept {
+        constexpr Ordinal Mask = 0x000C7000;
+        constexpr Ordinal Shift = 14;
+        return decode<Ordinal, R, Mask, Shift>(input);
     }
-    static_assert(encodeSrc1(0, 1_lr) == 1);
+    template<Ordinal mask>
+    constexpr auto decodeSrc2(Ordinal input, Ordinal modeBits) noexcept {
+        return Operand((modeBits & mask) != 0, decodeSrc2<Ordinal>(input));
+    }
     MEMFormatInstruction::MEMFormatInstruction(const Instruction& inst) : Base(inst), 
-    _srcDest(decodeSrcDest(inst.getLowerHalf())),
-    _abase(decodeSrc2(inst.getLowerHalf())),
+    HasSrcDest(decodeSrcDest(inst.getLowerHalf())),
+    HasSrc2(decodeSrc2(inst.getLowerHalf())),
+    HasSrc1(decodeSrc1(inst.getLowerHalf())),
     _mode(decodeMask(inst.getLowerHalf())),
     _offset(decode<Ordinal, ByteOrdinal, MEMAoffsetMask>(inst.getLowerHalf())),
     _scale(decode<Ordinal, ByteOrdinal, MEMBscaleMask, 7>(inst.getLowerHalf())),
-    _index(decodeSrc1(inst.getLowerHalf())),
     _displacement(inst.getUpperHalf()),
     _target(Operation::translate(inst.getOpcode(), Operation::MEMClass())) { }
 
     EncodedInstruction
     MEMFormatInstruction::encode() const noexcept {
         auto instruction = encodeMajorOpcode(getOpcode());
-        instruction = encodeSrcDest(instruction, _srcDest);
-        instruction = encodeSrc2(instruction, _abase);
+        instruction = encodeSrcDest(instruction, getSrcDest());
+        instruction = encodeSrc2(instruction, getAbase());
         /// @todo implement
         return 0u;
     }
@@ -119,9 +120,9 @@ namespace i960 {
                 _displacement) & 0xFFFF'FFFE;
     }
     COBRFormatInstruction::COBRFormatInstruction(const Instruction& inst) : Base(inst),
-    _flags(inst),
-    _source1(decodeSrcDest<0b100>(inst.getLowerHalf(), _flags.getValue())),
-    _source2(decodeSrc2(inst.getLowerHalf())),
+    Flags(inst),
+    HasSrcDest(decodeSrcDest<0b100>(inst.getLowerHalf(), _flags.getValue())),
+    HasSrc2(decodeSrc2(inst.getLowerHalf())),
     _displacement(decode<Ordinal, Ordinal, 0b1111'1111'1100, 2>(inst.getLowerHalf())),
     _target(Operation::translate(inst.getOpcode(), Operation::COBRClass()))
     { }
@@ -132,23 +133,23 @@ namespace i960 {
         instruction = encodeSrcDest(instruction, _source1);
         instruction = encodeSrc2(instruction, _source2);
         instruction = i960::encode<Ordinal, Ordinal, 0b1111'1111'1100, 2>(instruction, _displacement);
-        return _flags.encode(instruction);
+        return Flags::encode(instruction);
     }
 
-    REGFormatInstruction::REGFormatInstruction(const Instruction& inst) : Base(inst),
-    _flags(inst),
-    _srcDest(decodeSrcDest<0b10000>(inst.getLowerHalf(), _flags.getValue())),
-    _src2(decodeSrc2<0b01000>(inst.getLowerHalf(), _flags.getValue())),
-    _src1(decodeSrc1<0b00100>(inst.getLowerHalf(), _flags.getValue())),
+    REGFormatInstruction::REGFormatInstruction(const Instruction& inst) : Base(inst), 
+    Flags(inst),
+    HasSrcDest(decodeSrcDest<0b10000>(inst.getLowerHalf(), Flags::getValue())),
+    HasSrc2(decodeSrc2<0b01000>(inst.getLowerHalf(), Flags::getValue())),
+    HasSrc1(decodeSrc1<0b00100>(inst.getLowerHalf(), Flags::getValue())),
     _target(Operation::translate(inst.getOpcode(), Operation::REGClass())) { }
 
     EncodedInstruction
     REGFormatInstruction::encode() const noexcept {
         auto instruction = encodeFullOpcode(0, getOpcode());
-        instruction = encodeSrcDest(instruction, _srcDest);
-        instruction = encodeSrc2(instruction, _src2);
-        instruction = encodeSrc1(instruction, _src1);
-        return _flags.encode(instruction);
+        instruction = encodeSrcDest(instruction, getSrcDest());
+        instruction = encodeSrc2(instruction, getSrc2());
+        instruction = encodeSrc1(instruction, getSrc1());
+        return Flags::encode(instruction);
     }
 
     DecodedInstruction 

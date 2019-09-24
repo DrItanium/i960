@@ -772,15 +772,38 @@ X(cmpi, bno);
                 break;
         }
 	}
-    void Core::(const REGFormatInstruction& inst, Operation::opnot) noexcept {
-        /// @todo implement
+    Ordinal Core::unpackSourceOperand(const Operand& op) const noexcept {
+        if (op.isLiteral()) {
+            return op.getValue();
+        } else {
+            return getRegister(op).get<Ordinal>();
+        }
     }
-	void Core::opnot(__DEFAULT_TWO_ARGS__) noexcept {
-		dest.set(~src.get<Ordinal>());
-	}
-	void Core::notand(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Ordinal>((~src2.get<Ordinal>()) & src1.get<Ordinal>());
-	}
+    Ordinal Core::getSrc1(const HasSrc1& src1) const noexcept {
+        return unpackSourceOperand(src1.getSrc1());
+    }
+    Ordinal Core::getSrc2(const HasSrc2& src2) const noexcept {
+        return unpackSourceOperand(src2.getSrc2());
+    }
+    Ordinal Core::getSrc(const HasSrcDest& srcDest) const noexcept {
+        return unpackSourceOperand(srcDest.getSrcDest());
+    }
+    DestinationRegister& Core::getDest(const HasSrcDest& srcDest) noexcept {
+        if (auto s = srcDest.getSrcDest(); s.isLiteral()) {
+            throw "Destination is marked as a literal";
+        } else {
+            return getRegister(srcDest.getSrcDest());
+        }
+    }
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::opnot) noexcept {
+        setDest(inst, ~getSrc1(inst));
+    }
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::notand) noexcept {
+        setDest(inst, (~getSrc2(inst)) & getSrc1(inst));
+    }
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::notbit) noexcept {
+        setDest(inst, xorOperation(getSrc2(inst), oneShiftLeft(getSrc1(inst))));
+    }
 	void Core::notbit(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set(xorOperation(src2.get<Ordinal>(), oneShiftLeft(src1.get<Ordinal>())));
 	}
