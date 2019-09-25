@@ -252,8 +252,6 @@ namespace i960 {
 #undef mem
 #undef cobr
 #undef ctrl
-            // CTRL Format instructions
-            void bal(Integer displacement) noexcept;
             // begin core architecture
             void callx(SourceRegister value) noexcept;
             void calls(SourceRegister value);

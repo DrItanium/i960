@@ -310,12 +310,10 @@ X(cmpi, bno);
         _instructionPointer = getSrc(inst);
         _instructionPointer = computeAlignedAddress(_instructionPointer); // make sure the least significant two bits are clear
     }
-	void Core::bal(Integer displacement) noexcept {
-        // this is taken from the i960mc manual since the one in the i960jx manual
-        // contradicts itself. 
+    void Core::performOperation(const CTRLFormatInstruction& inst, Operation::bal) noexcept {
 		_globalRegisters[14].set<Ordinal>(_instructionPointer + 4);
         branchIfGeneric<ConditionCode::Unconditional>(displacement);
-	}
+    }
 
 	constexpr Ordinal computeCheckBitMask(Ordinal value) noexcept {
 		return 1 << (value & 0b11111);
