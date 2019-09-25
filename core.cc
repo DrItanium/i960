@@ -36,12 +36,12 @@ namespace i960 {
     }
 #define X(kind, action) \
 	void Core:: b ## kind (Integer addr) noexcept { branchIfGeneric<ConditionCode:: action > ( addr ) ; } \
-    void Core:: subo ## kind (__DEFAULT_THREE_ARGS__) noexcept { suboBase<ConditionCode:: action>(src1, src2, dest); } \
-    void Core:: subi ## kind (__DEFAULT_THREE_ARGS__) noexcept { subiBase<ConditionCode:: action>(src1, src2, dest); } \
-    void Core:: performOperation ( const COBRFormatInstruction& inst, Operation:: test ## kind ) noexcept { testGeneric<TestTypes:: action> ( getDest(inst) ); } \
-    void Core:: performOperation ( const CTRLFormatInstruction&, Operation:: fault ## kind ) noexcept { genericFault<ConditionCode:: action > ( ); } \
-    void Core:: performOperation ( const CTRLFormatInstruction& inst, Operation:: b ## kind ) noexcept { branchIfGeneric<ConditionCode:: action > ( inst.getDisplacement() ); } \
-    void Core:: performOperation ( const REGFormatInstruction& inst, Operation :: sel ## kind ) noexcept { baseSelect<ConditionCode:: action>(inst); } \
+    void Core:: performOperation(const REGFormatInstruction& inst, Operation:: subi ## kind ) noexcept { subiBase<ConditionCode:: action>(inst); } \
+    void Core:: performOperation(const REGFormatInstruction& inst, Operation:: subo ## kind ) noexcept { suboBase<ConditionCode:: action>(inst); } \
+    void Core:: performOperation(const COBRFormatInstruction& inst, Operation:: test ## kind ) noexcept { testGeneric<TestTypes:: action> ( getDest(inst) ); } \
+    void Core:: performOperation(const CTRLFormatInstruction&, Operation:: fault ## kind ) noexcept { genericFault<ConditionCode:: action > ( ); } \
+    void Core:: performOperation(const CTRLFormatInstruction& inst, Operation:: b ## kind ) noexcept { branchIfGeneric<ConditionCode:: action > ( inst.getDisplacement() ); } \
+    void Core:: performOperation(const REGFormatInstruction& inst, Operation :: sel ## kind ) noexcept { baseSelect<ConditionCode:: action>(inst); } \
     void Core:: performOperation(const REGFormatInstruction& inst, Operation:: addo ## kind ) noexcept { addoBase<ConditionCode:: action>(inst) ; } \
     void Core:: performOperation(const REGFormatInstruction& inst, Operation:: addi ## kind ) noexcept { addiBase<ConditionCode:: action>(inst) ; }
 #include "conditional_kinds.def"
@@ -205,9 +205,9 @@ X(cmpi, bno);
     void Core::performOperation(const REGFormatInstruction& inst, Operation::addi) noexcept {
         addiBase<ConditionCode::Unconditional>(inst);
 	}
-	void Core::subo(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set(src2.get<Ordinal>() - src1.get<Ordinal>());
-	}
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::subo) noexcept {
+        suboBase<ConditionCode::Unconditional>(inst);
+    }
 	void Core::mulo(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set(src2.get<Ordinal>() * src1.get<Ordinal>());
 	}
@@ -629,17 +629,9 @@ X(cmpi, bno);
 		// this will nop currently as I'm saving all local registers to the 
 		// stack when a call happens
 	}
-	void Core::subi(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set<Integer>(src2.get<Integer>() - src1.get<Integer>());
-		// check for overflow
-		if ((src2.mostSignificantBit() != src1.mostSignificantBit()) && (src2.mostSignificantBit() != dest.mostSignificantBit())) {
-			if (_ac.integerOverflowMask == 1) {
-				_ac.integerOverflowFlag = 1;
-			} else {
-				generateFault(ArithmeticFaultSubtype::IntegerOverflow);
-			}
-		}
-	}
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::subi) noexcept {
+        subiBase<ConditionCode::Unconditional>(inst);
+    }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::modtc) noexcept {
         // the instruction has its arguments reversed for some reason...
         auto mask = getSrc(inst);

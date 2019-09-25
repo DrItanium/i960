@@ -429,8 +429,7 @@ namespace i960 {
                 auto s1 = getSrc1<Integer>(inst);
                 auto s2 = getSrc2<Integer>(inst);
                 if (genericCondCheck<mask>()) {
-                    setDest<Integer>(inst, getSrc1<Integer>(inst) + 
-                                           getSrc2<Integer>(inst));
+                    setDest<Integer>(inst, s1 + s2);
                 }
 				// according to the docs, the arithmetic overflow always is
 				// computed even if the addition is not performed
@@ -443,26 +442,29 @@ namespace i960 {
 					}
 				}
 			}
+            template<ConditionCode mask>
+            void suboBase(const REGFormatInstruction& inst) noexcept {
+                if (genericCondCheck<mask>()) {
+                    setDest(inst, getSrc2<Ordinal>(inst) - getSrc1<Ordinal>(inst));
+                }
+            }
 			template<ConditionCode mask>
-			void suboBase(__DEFAULT_THREE_ARGS__) noexcept {
+			void subiBase(const REGFormatInstruction& inst) noexcept {
+                auto s1 = getSrc1<Integer>(inst);
+                auto s2 = getSrc2<Integer>(inst);
 				if (genericCondCheck<mask>()) {
-					subo(src1, src2, dest);
-				}
-			}
-			template<ConditionCode mask>
-			void subiBase(__DEFAULT_THREE_ARGS__) noexcept {
-				if (genericCondCheck<mask>()) {
-					dest.set<Integer>(src2.get<Integer>() - src1.get<Integer>());
+                    setDest<Integer>(inst, s2 - s1);
 				}
 				// according to the docs, the arithmetic overflow always is
 				// computed even if the subtraction is not performed
-				if ((src2.mostSignificantBit() != src1.mostSignificantBit()) && (src2.mostSignificantBit() != dest.mostSignificantBit())) {
+                if ((getMostSignificantBit(s2) != getMostSignificantBit(s1)) &&
+                    (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
 					if (_ac.integerOverflowMask == 1) {
 						_ac.integerOverflowFlag = 1;
 					} else {
 						generateFault(ArithmeticFaultSubtype::IntegerOverflow);
 					}
-				}
+                }
 			}
 		private:
             template<ConditionCode code>
@@ -474,23 +476,8 @@ namespace i960 {
 			// auto generated routines
 #define X(kind, __) \
             void b ## kind (Integer) noexcept;
-#define Y(kind) void cmp ## kind ( SourceRegister, SourceRegister, Integer) noexcept;
 #include "conditional_kinds.def"
-			Y(obe)
-			Y(obne)
-			Y(obl)
-			Y(oble)
-			Y(obg)
-			Y(obge)
 #undef X
-#undef Y
-#define X(kind, __) \
-			__GEN_DEFAULT_THREE_ARG_SIGS__(addo ## kind) ; \
-			__GEN_DEFAULT_THREE_ARG_SIGS__(addi ## kind) ; \
-			__GEN_DEFAULT_THREE_ARG_SIGS__(subo ## kind) ; \
-			__GEN_DEFAULT_THREE_ARG_SIGS__(subi ## kind) ;
-#include "conditional_kinds.def"
-#undef X 
 		private:
 			void dispatch(const Instruction& decodedInstruction) noexcept;
             bool cycle();
