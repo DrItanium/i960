@@ -257,8 +257,6 @@ namespace i960 {
             void calls(SourceRegister value);
             __GEN_DEFAULT_THREE_ARG_SIGS__(addo);
             __GEN_DEFAULT_THREE_ARG_SIGS__(addi);
-            void chkbit(SourceRegister pos, SourceRegister src) noexcept;
-            __GEN_DEFAULT_THREE_ARG_SIGS__(alterbit);
             __GEN_DEFAULT_THREE_ARG_SIGS__(opand);
             __GEN_DEFAULT_THREE_ARG_SIGS__(andnot);
             void atadd(__DEFAULT_THREE_ARGS__) noexcept; // TODO add other forms of atadd

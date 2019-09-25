@@ -223,8 +223,10 @@ X(cmpi, bno);
 			dest.set(numerator - (denominator / numerator) * denominator);
 		}
 	}
-	void Core::chkbit(SourceRegister pos, SourceRegister src) noexcept {
-		_ac.conditionCode = ((src.get<Ordinal>() & (1 << (pos.get<Ordinal>() & 0b11111))) == 0) ? 0b000 : 0b010;
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::chkbit) noexcept {
+        auto bitpos = getSrc1(inst);
+        auto src = getSrc2(inst);
+		_ac.conditionCode = ((src & (1 << (bitpos & 0b11111))) == 0) ? 0b000 : 0b010;
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::alterbit) noexcept {
         Ordinal result = 0u;
