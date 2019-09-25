@@ -265,7 +265,6 @@ namespace i960 {
             __GEN_DEFAULT_THREE_ARG_SIGS__(andnot);
             void atadd(__DEFAULT_THREE_ARGS__) noexcept; // TODO add other forms of atadd
             void atmod(SourceRegister src, SourceRegister mask, DestinationRegister srcDest) noexcept; // TODO check out other forms of this instruction
-            void bbs(SourceRegister pos, SourceRegister src, Integer targ) noexcept;
             // compare and branch instructions as well
             // faults too
             void clrbit(SourceRegister pos, SourceRegister src, DestinationRegister dest) noexcept; // TODO look into the various forms further
