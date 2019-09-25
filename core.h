@@ -413,6 +413,10 @@ namespace i960 {
                     dest.set<Ordinal>(src1.get<Ordinal>());
                 }
 			}
+            template<ConditionCode mask>
+            void baseSelect(const REGFormatInstruction& inst) noexcept {
+                setDest(inst, genericCondCheck<mask>() ? getSrc2(inst) : getSrc1(inst));
+            }
 			template<ConditionCode mask>
 			void addoBase(const REGFormatInstruction& inst) noexcept {
                 if (genericCondCheck<mask>()) {

@@ -35,15 +35,15 @@ namespace i960 {
         return framePointerAddress + 64;
     }
 #define X(kind, action) \
+	void Core:: b ## kind (Integer addr) noexcept { branchIfGeneric<ConditionCode:: action > ( addr ) ; } \
+    void Core:: subo ## kind (__DEFAULT_THREE_ARGS__) noexcept { suboBase<ConditionCode:: action>(src1, src2, dest); } \
+    void Core:: subi ## kind (__DEFAULT_THREE_ARGS__) noexcept { subiBase<ConditionCode:: action>(src1, src2, dest); } \
     void Core:: performOperation ( const COBRFormatInstruction& inst, Operation:: test ## kind ) noexcept { testGeneric<TestTypes:: action> ( getDest(inst) ); } \
     void Core:: performOperation ( const CTRLFormatInstruction&, Operation:: fault ## kind ) noexcept { genericFault<ConditionCode:: action > ( ); } \
     void Core:: performOperation ( const CTRLFormatInstruction& inst, Operation:: b ## kind ) noexcept { branchIfGeneric<ConditionCode:: action > ( inst.getDisplacement() ); } \
-	void Core:: b ## kind (Integer addr) noexcept { branchIfGeneric<ConditionCode:: action > ( addr ) ; } \
-    void Core:: sel ## kind (__DEFAULT_THREE_ARGS__) noexcept { baseSelect<ConditionCode:: action>(src1, src2, dest); } \
-    void Core:: subo ## kind (__DEFAULT_THREE_ARGS__) noexcept { suboBase<ConditionCode:: action>(src1, src2, dest); } \
-    void Core:: subi ## kind (__DEFAULT_THREE_ARGS__) noexcept { subiBase<ConditionCode:: action>(src1, src2, dest); } \
-    void Core::performOperation(const REGFormatInstruction& inst, Operation:: addo ## kind ) noexcept { addoBase<ConditionCode:: action>(inst) ; } \
-    void Core::performOperation(const REGFormatInstruction& inst, Operation:: addi ## kind ) noexcept { addiBase<ConditionCode:: action>(inst) ; }
+    void Core:: performOperation ( const REGFormatInstruction& inst, Operation :: sel ## kind ) noexcept { baseSelect<ConditionCode:: action>(inst); } \
+    void Core:: performOperation(const REGFormatInstruction& inst, Operation:: addo ## kind ) noexcept { addoBase<ConditionCode:: action>(inst) ; } \
+    void Core:: performOperation(const REGFormatInstruction& inst, Operation:: addi ## kind ) noexcept { addiBase<ConditionCode:: action>(inst) ; }
 #include "conditional_kinds.def"
 #undef X
 #define X(cmpop, bop) \
