@@ -100,10 +100,6 @@ X(cmpi, bno);
 	auto Core::getPFP() noexcept -> PreviousFramePointer& {
 		return _localRegisters[PFP.getOffset()].pfp;
 	}
-	constexpr Ordinal clearLowestTwoBitsMask = ~0b11;
-    constexpr Ordinal computeAlignedAddress(Ordinal value) noexcept {
-        return value & clearLowestTwoBitsMask;
-    }
 	constexpr Ordinal getProcedureAddress(Ordinal value) noexcept {
         return computeAlignedAddress(value);
 	}
@@ -307,19 +303,8 @@ X(cmpi, bno);
             setRegister<Ordinal>(dst.next().next().next(), getRegisterValue<Ordinal>(src1.next().next().next()));
         }
     }
-    void Core::b(Integer displacement) noexcept {
-        static constexpr auto checkMask = 0x7F'FFFC;
-		union {
-			Integer _value : 24;
-		} conv;
-		conv._value = displacement;
-		conv._value = conv._value > checkMask ? checkMask : conv._value;
-		_instructionPointer += conv._value;
-        _instructionPointer = computeAlignedAddress(_instructionPointer); // make sure the least significant two bits are clear
-    }
-
 	void Core::performOperation(const CTRLFormatInstruction& inst, Operation::b) noexcept {
-        b(inst.getDisplacement());
+        branchIfGeneric<ConditionCode::Unconditional>(inst.getDisplacement());
 	}
     void Core::performOperation(const MEMFormatInstruction& inst, Operation::bx) noexcept {
         _instructionPointer = getSrc(inst);
@@ -329,7 +314,7 @@ X(cmpi, bno);
         // this is taken from the i960mc manual since the one in the i960jx manual
         // contradicts itself. 
 		_globalRegisters[14].set<Ordinal>(_instructionPointer + 4);
-		b(displacement);
+        branchIfGeneric<ConditionCode::Unconditional>(displacement);
 	}
 
 	constexpr Ordinal computeCheckBitMask(Ordinal value) noexcept {

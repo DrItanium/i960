@@ -88,7 +88,6 @@ namespace i960 {
 	class FaultAssociation< type > final { \
 		public: \
 			static constexpr auto ParentFaultType = FaultType:: parent ; \
-        private: \
 			FaultAssociation() = delete; \
 			FaultAssociation(const FaultAssociation&) = delete; \
 			FaultAssociation(FaultAssociation&&) = delete; \
@@ -104,6 +103,10 @@ namespace i960 {
 	X(TypeFaultSubtype, Type);
 #undef X
 
+	constexpr Ordinal clearLowestTwoBitsMask = ~0b11;
+    constexpr Ordinal computeAlignedAddress(Ordinal value) noexcept {
+        return value & clearLowestTwoBitsMask;
+    }
     class Core {
         public:
             static constexpr auto targetSeries = ProcessorSeries::Jx;
@@ -249,7 +252,6 @@ namespace i960 {
 #undef mem
 #undef cobr
 #undef ctrl
-            void b(Integer displacement) noexcept;
             // CTRL Format instructions
             void bal(Integer displacement) noexcept;
             // begin core architecture
@@ -364,7 +366,9 @@ namespace i960 {
 			}
             template<ConditionCode cc>
             constexpr bool conditionCodeIs() const noexcept {
-                if constexpr (cc == ConditionCode::False) {
+                if constexpr (cc == ConditionCode::Unconditional) {
+                    return true;
+                } else if constexpr (cc == ConditionCode::False) {
                     return _ac.conditionCodeIs<Ordinal(cc)>();
                 } else {
                     return _ac.conditionCodeBitSet<Ordinal(cc)>();
@@ -375,9 +379,16 @@ namespace i960 {
                 dest.set<Ordinal>(conditionCodeIs<t>() ? 1u : 0u);
             }
             template<ConditionCode cc>
-            void branchIfGeneric(Integer addr) noexcept {
+            void branchIfGeneric(Integer displacement) noexcept {
                 if (conditionCodeIs<cc>()) {
-                    b(addr);
+                    static constexpr auto checkMask = 0x7F'FFFC;
+                    union {
+                        Integer _value : 24;
+                    } conv;
+                    conv._value = displacement;
+                    conv._value = conv._value > checkMask ? checkMask : conv._value;
+                    _instructionPointer += conv._value;
+                    _instructionPointer = computeAlignedAddress(_instructionPointer); // make sure the least significant two bits are clear
                 }
             }
             template<typename T>
