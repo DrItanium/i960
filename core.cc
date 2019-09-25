@@ -312,7 +312,7 @@ X(cmpi, bno);
     }
     void Core::performOperation(const CTRLFormatInstruction& inst, Operation::bal) noexcept {
 		_globalRegisters[14].set<Ordinal>(_instructionPointer + 4);
-        branchIfGeneric<ConditionCode::Unconditional>(displacement);
+        branchIfGeneric<ConditionCode::Unconditional>(inst.getDisplacement());
     }
 
 	constexpr Ordinal computeCheckBitMask(Ordinal value) noexcept {
