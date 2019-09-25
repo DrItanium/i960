@@ -112,10 +112,10 @@ X(cmpi, bno);
 	constexpr bool isSupervisorProcedure(Ordinal value) noexcept {
 		return getProcedureKind(value) == 0b10;
 	}
-	void Core::calls(const NormalRegister& value) {
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::calls) noexcept {
         constexpr Ordinal SALIGN = 1u;
         syncf();
-		auto targ = value.get<ShortOrdinal>();
+        auto targ = getSrc1<ShortOrdinal>(inst);
 		if (targ > 259) {
 			generateFault(ProtectionFaultSubtype::Length);
 			return;
