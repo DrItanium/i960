@@ -181,10 +181,11 @@ X(cmpi, bno);
 			return _globalRegisters[offset];
 		}
 	}
-	void Core::callx(const NormalRegister& value) noexcept {
+    void Core::performOperation(const MEMFormatInstruction& inst, Operation::callx) noexcept {
 		static constexpr Ordinal boundaryMarker = 63u;
 		static constexpr Ordinal boundaryAlignment = 64u;
-		auto newAddress = value.get<Ordinal>();
+        // TODO, compute the effective address as needed from the REG
+		auto newAddress = getSrcDest<Ordinal>(inst);
 		Ordinal tmp = (getStackPointerAddress() + boundaryMarker) && (~boundaryMarker); // round to the next boundary
 		setRegister(RIP, _instructionPointer);
 		// Code for handling multiple internal local register sets not implemented!
