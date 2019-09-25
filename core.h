@@ -473,8 +473,7 @@ namespace i960 {
             }
 			// auto generated routines
 #define X(kind, __) \
-            void b ## kind (Integer) noexcept; \
-            void cmpib ## kind ( SourceRegister, SourceRegister, Integer) noexcept;
+            void b ## kind (Integer) noexcept;
 #define Y(kind) void cmp ## kind ( SourceRegister, SourceRegister, Integer) noexcept;
 #include "conditional_kinds.def"
 			Y(obe)
@@ -489,8 +488,7 @@ namespace i960 {
 			__GEN_DEFAULT_THREE_ARG_SIGS__(addo ## kind) ; \
 			__GEN_DEFAULT_THREE_ARG_SIGS__(addi ## kind) ; \
 			__GEN_DEFAULT_THREE_ARG_SIGS__(subo ## kind) ; \
-			__GEN_DEFAULT_THREE_ARG_SIGS__(subi ## kind) ; \
-			__GEN_DEFAULT_THREE_ARG_SIGS__(sel ## kind) ;
+			__GEN_DEFAULT_THREE_ARG_SIGS__(subi ## kind) ;
 #include "conditional_kinds.def"
 #undef X 
 		private:
