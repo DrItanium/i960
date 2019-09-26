@@ -211,8 +211,8 @@ CompareIntegerAndBranch(bno);
     void Core::performOperation(const REGFormatInstruction& inst, Operation::subo) noexcept {
         suboBase<ConditionCode::Unconditional>(inst);
     }
-	void Core::mulo(__DEFAULT_THREE_ARGS__) noexcept {
-		dest.set(src2.get<Ordinal>() * src1.get<Ordinal>());
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::mulo) noexcept {
+        setDest(inst, getSrc2(inst) * getSrc1(inst));
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::divo) noexcept {
         if (auto denominator = getSrc1<Ordinal>(inst); denominator == 0) {
@@ -580,9 +580,12 @@ CompareIntegerAndBranch(bno);
     void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpo) noexcept {
         compare<Ordinal>(getSrc1(inst), getSrc2(inst));
     }
-	void Core::muli(SourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept {
-		dest.set(src2.get<Integer>() * src1.get<Integer>());
-		if ((src2.mostSignificantBit() == src1.mostSignificantBit()) && (src2.mostSignificantBit() != dest.mostSignificantBit())) {
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::muli) noexcept {
+        auto s1 = getSrc2<Integer>(inst);
+        auto s2 = getSrc1<Integer>(inst);
+        setDest<Integer>(inst, s1 * s2);
+        if ((getMostSignificantBit(s1) == getMostSignificantBit(s2)) && 
+                (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
 			if (_ac.integerOverflowMask == 1) {
 				_ac.integerOverflowFlag = 1;
 			} else {
