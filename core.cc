@@ -46,26 +46,32 @@ namespace i960 {
     void Core:: performOperation(const REGFormatInstruction& inst, Operation:: addi ## kind ) noexcept { addiBase<ConditionCode:: action>(inst) ; }
 #include "conditional_kinds.def"
 #undef X
-#define X(cmpop, bop) \
+#define CompareOrdinalAndBranch(bop) \
     void Core:: performOperation (const COBRFormatInstruction& inst, Operation:: cmpop ## bop ) noexcept { \
-        cmpop ( getRegister(inst.getSrc1()), getRegister(inst.getSrc2())); \
+        compare<Ordinal>(getSrc1(inst), getSrc2(inst)); \
         bop ( inst.getDisplacement() ); \
     }
-X(cmpo, bg);
-X(cmpo, be);
-X(cmpo, bge);
-X(cmpo, bl);
-X(cmpo, bne);
-X(cmpo, ble);
-X(cmpi, bg);
-X(cmpi, be);
-X(cmpi, bge);
-X(cmpi, bl);
-X(cmpi, bne);
-X(cmpi, ble);
-X(cmpi, bo);
-X(cmpi, bno);
-#undef X
+#define CompareIntegerAndBranch(bop) \
+    void Core:: performOperation (const COBRFormatInstruction& inst, Operation:: cmpop ## bop ) noexcept { \
+        compare<Ordinal>(getSrc1<Integer>(inst), getSrc2<Integer>(inst)); \
+        bop ( inst.getDisplacement() ); \
+    }
+CompareOrdinalAndBranch(bg);
+CompareOrdinalAndBranch(be);
+CompareOrdinalAndBranch(bge);
+CompareOrdinalAndBranch(bl);
+CompareOrdinalAndBranch(bne);
+CompareOrdinalAndBranch(ble);
+CompareIntegerAndBranch(bg);
+CompareIntegerAndBranch(be);
+CompareIntegerAndBranch(bge);
+CompareIntegerAndBranch(bl);
+CompareIntegerAndBranch(bne);
+CompareIntegerAndBranch(ble);
+CompareIntegerAndBranch(bo);
+CompareIntegerAndBranch(bno);
+#undef CompareOrdinalAndBranch
+#undef CompareIntegerAndBranch
 	Core::Core(const CoreInformation& info, MemoryInterface& mem) : _mem(mem), _deviceId(info) { }
 	Ordinal Core::getStackPointerAddress() const noexcept {
         return _localRegisters[SP.getOffset()].get<Ordinal>();
@@ -573,7 +579,7 @@ X(cmpi, bno);
     }
 	void Core::cmpi(SourceRegister src1, SourceRegister src2) noexcept { compare(src1.get<Integer>(), src2.get<Integer>()); }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpo) noexcept {
-        cmpo(getRegister(inst.getSrc1()), getRegister(inst.getSrc2()));
+        compare<Ordinal>(getSrc1(inst), getSrc2(inst));
     }
 	void Core::cmpo(SourceRegister src1, SourceRegister src2) noexcept { compare(src1.get<Ordinal>(), src2.get<Ordinal>()); }
 	void Core::muli(SourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept {
@@ -869,23 +875,23 @@ X(cmpi, bno);
     void Core::performOperation(const REGFormatInstruction& inst, Operation::concmpi) noexcept {
         concmpBase(getSrc1<Integer>(inst), getSrc2<Integer>(inst));
 	}
-	void Core::cmpinco(__DEFAULT_THREE_ARGS__) noexcept {
-		// TODO add support for overflow detection
-		cmpo(src1, src2);
-		dest.set<Ordinal>(src2.get<Ordinal>() + 1);
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpinco) noexcept {
+		/// @todo add support for overflow detection
+        compare<Ordinal>(getSrc1(inst), getSrc2(inst));
+        setDest(inst, getSrc2(inst) + 1);
 	}
-	void Core::cmpdeco(__DEFAULT_THREE_ARGS__) noexcept {
-		// TODO add support for overflow detection
-		cmpo(src1, src2);
-		dest.set<Ordinal>(src2.get<Ordinal>() - 1);
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpdeco) noexcept {
+        /// @todo add support for overflow detection
+        compare<Ordinal>(getSrc1(inst), getSrc2(inst));
+        setDest(inst, getSrc2(inst) - 1);
 	}
-	void Core::cmpinci(__DEFAULT_THREE_ARGS__) noexcept {
-		cmpi(src1, src2);
-		dest.set<Integer>(src2.get<Integer>() + 1); // overflow suppressed
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpinci) noexcept {
+        compare<Integer>(getSrc1<Integer>(inst), getSrc2<Integer>(inst));
+        setDest<Integer>(inst, getSrc2<Integer>(inst) + 1); // overflow suppressed
 	}
-	void Core::cmpdeci(__DEFAULT_THREE_ARGS__) noexcept {
-		cmpi(src1, src2);
-		dest.set<Integer>(src2.get<Integer>() - 1);
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpdeci) noexcept {
+        compare<Integer>(getSrc1<Integer>(inst), getSrc2<Integer>(inst));
+        setDest<Integer>(inst, getSrc2<Integer>(inst) - 1);
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::clrbit) noexcept {
         setDest(inst, getSrc2(inst) & ~oneShiftLeft(getSrc1(inst)));
