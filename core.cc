@@ -185,7 +185,7 @@ X(cmpi, bno);
 		static constexpr Ordinal boundaryMarker = 63u;
 		static constexpr Ordinal boundaryAlignment = 64u;
         // TODO, compute the effective address as needed from the REG
-		auto newAddress = getSrcDest<Ordinal>(inst);
+        auto newAddress = getSrc(inst);
 		Ordinal tmp = (getStackPointerAddress() + boundaryMarker) && (~boundaryMarker); // round to the next boundary
 		setRegister(RIP, _instructionPointer);
 		// Code for handling multiple internal local register sets not implemented!
