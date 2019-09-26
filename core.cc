@@ -902,36 +902,38 @@ X(cmpi, bno);
 		// already computed this value by proxy of decoding
 		dest.move(src);
 	}
-	void Core::fmark() noexcept {
+    void Core::performOperation(const REGFormatInstruction&, Operation::fmark) noexcept {
+        /// @todo see if we have to do anything else
 		if (_pc.traceEnabled()) {
 			generateFault(TraceFaultSubtype::Mark);
 		}
 	}
-	void Core::mark() noexcept {
+    void Core::performOperation(const REGFormatInstruction&, Operation::mark) noexcept {
 		// force mark aka generate a breakpoint trace-event
 		if (_pc.traceEnabled() && _tc.traceMarked()) {
 			generateFault(TraceFaultSubtype::Mark);
 		}
 	}
-    void Core::xnor(__DEFAULT_THREE_ARGS__) noexcept {
-		auto s2 = src2.get<Ordinal>();
-		auto s1 = src1.get<Ordinal>();
-		dest.set<Ordinal>(~(s2 | s1) | (s2 & s1));
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::xnor) noexcept {
+        auto s2 = getSrc2(inst);
+		auto s1 = getSrc1(inst);
+        setDest(inst, ~(s2 | s1) | (s2 & s1));
     }
-    void Core::opxor(__DEFAULT_THREE_ARGS__) noexcept {
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::opxor) noexcept {
+    //void Core::opxor(__DEFAULT_THREE_ARGS__) noexcept {
 		// there is an actual implementation within the manual so I'm going to
 		// use that instead of the xor operator.
-		auto s2 = src2.get<Ordinal>();
-		auto s1 = src1.get<Ordinal>();
-		dest.set(xorOperation(s2, s1));
+		auto s2 = getSrc2(inst);
+        auto s1 = getSrc1(inst);
+        setDest(inst, xorOperation(s2, s1));
     }
-	void Core::intdis() {
+    void Core::performOperation(const REGFormatInstruction&, Operation::intdis) noexcept {
 		// TODO implement
 		if (!_pc.inSupervisorMode()) {
 			generateFault(TypeFaultSubtype::Mismatch);
 		}
 	}
-	void Core::inten() {
+    void Core::performOperation(const REGFormatInstruction&, Operation::inten) noexcept {
 		// TODO implement
 		if (!_pc.inSupervisorMode()) {
 			generateFault(TypeFaultSubtype::Mismatch);
