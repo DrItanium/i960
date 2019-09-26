@@ -455,22 +455,22 @@ CompareIntegerAndBranch(bno);
 			dest.set(remainder, quotient);
 		}
 	}
-	void Core::divi(__DEFAULT_THREE_ARGS__) noexcept {
-		if (auto denominator = src1.get<Integer>(); denominator == 0) {
-			dest.set<Integer>(-1);
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::divi) noexcept {
+		if (auto denominator = getSrc1<Integer>(inst); denominator == 0) {
+            setDest<Integer>(inst, -1);
 			generateFault(ArithmeticFaultSubtype::ZeroDivide);
-		} else if (auto numerator = src2.get<Integer>(); (numerator == 0x8000'0000) && (denominator == -1)) {
+		} else if (auto numerator = getSrc2<Integer>(inst); (numerator == 0x8000'0000) && (denominator == -1)) {
 			// this one is a little strange, the manual states -2**31
 			// which is just 0x8000'0000 in signed integer, no clue why they
 			// described it like that. So I'm just going to put 0x8000'0000
-			dest.set<Integer>(0x8000'0000);
+            setDest<Integer>(inst, 0x8000'0000);
 			if (_ac.integerOverflowMask == 1) {
 				_ac.integerOverflowFlag = 1;
 			} else {
 				generateFault(ArithmeticFaultSubtype::IntegerOverflow);
 			}
 		} else {
-			dest.set<Integer>(numerator / denominator);
+            setDest<Integer>(inst, numerator / denominator);
 		}
 	}
 	constexpr Ordinal getLowestTwoBits(Ordinal address) noexcept {
