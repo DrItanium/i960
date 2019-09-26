@@ -374,7 +374,6 @@ X(cmpi, bno);
 	//void Core::scanbit(SourceRegister src, DestinationRegister dest) noexcept {
         // find the most significant set bit
         auto result = largestOrdinal;
-        auto src = getSrc1(inst);
 		_ac.conditionCode = 0b000;
         // while the psuedo-code in the programmers manual talks about setting
         // the destination to all ones if src is equal to zero, there is no short 
@@ -621,6 +620,9 @@ X(cmpi, bno);
 		store(addr + RegisterIndex<3>, src.getHighestPart());
 	}
     void Core::performOperation(const REGFormatInstruction&, Operation::syncf) noexcept {
+        syncf();
+    }
+    void Core::syncf() noexcept {
 		// this does nothing for the time being because this implementation does not execute instructions 
 		// in parallel. When we get there this will become an important instruction
 	}
