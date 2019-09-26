@@ -149,6 +149,9 @@ namespace i960 {
                 setRegister<T>(static_cast<ByteOrdinal>(op), value);
             }
             inline auto& getRegister(const Operand& op) noexcept { return getRegister(static_cast<ByteOrdinal>(op)); }
+            inline auto getDoubleRegister(const Operand& op) noexcept { return DoubleRegister(getRegister(op), getRegister(op.next())); }
+            inline auto getTripleRegister(const Operand& op) noexcept { return TripleRegister(getRegister(op), getRegister(op.next()), getRegister(op.next().next())); }
+            inline auto getQuadRegister(const Operand& op) noexcept { return QuadRegister(getRegister(op), getRegister(op.next()), getRegister(op.next().next()), getRegister(op.next().next().next())); }
             inline SourceRegister& getRegister(const Operand& op) const noexcept { return getRegister(static_cast<ByteOrdinal>(op)); }
 
             template<typename T>
@@ -164,8 +167,14 @@ namespace i960 {
             NormalRegister& getRegister(ByteOrdinal index) noexcept;
             template<typename T>
             T getRegisterValue(const Operand& op) noexcept {
+                using K = std::decay_t<T>;
                 if (op.isRegister()) {
-                    return getRegister(op).get<T>();
+                    if constexpr (std::is_same_v<K, LongOrdinal> ||
+                            std::is_saem_v<K, LongInteger>) {
+                        return getDoubleRegister(op).get<T>();
+                    } else {
+                        return getRegister(op).get<T>();
+                    }
                 } else {
                     return static_cast<T>(op.getValue());
                 }
@@ -177,20 +186,7 @@ namespace i960 {
             }
             template<typename R = Ordinal>
             R getSrc2(const HasSrc2& src2) noexcept {
-                using K = std::decay_t<R>;
-                auto s2 = src2.getSrc2();
-                if constexpr (std::is_same_v<K, LongOrdinal> ||
-                              std::is_same_v<K, LongInteger>) {
-                    if (s2.isRegister()) {
-                        DoubleRegister reg(getRegister(s2), 
-                                           getRegister(s2.next()));
-                        return reg.get<R>();
-                    } else {
-                        return static_cast<R>(s2.getValue());
-                    }
-                } else {
-                    return getRegisterValue<R>(s2);
-                }
+                return getRegisterValue<R>(src2.getSrc2());
             }
             template<typename R = Ordinal>
             R getSrc(const HasSrcDest& srcDest) noexcept {
@@ -201,7 +197,16 @@ namespace i960 {
             }
             template<typename T>
             void setDest(const HasSrcDest& srcDest, T value) noexcept {
-                getDest(srcDest).set<T>(value);
+                using K = std::decay_t<T>;
+                if constexpr (std::is_same_v<K, LongOrdinal> ||
+                              std::is_same_v<K, LongInteger>) {
+                    getDoubleRegister(srcDest.getSrcDest()).set<T>(value);
+                } else {
+                    getDest(inst).set<T>(value);
+                }
+            }
+            inline void setDest(const HasSrcDest& srcDest, Operand lower, Operand upper) noexcept {
+                getDoubleRegister(srcDest.getSrcDest()).set(lower, upper);
             }
         private:
             inline auto load(const NormalRegister& reg, bool atomic = false) noexcept { return load(reg.get<Ordinal>(), atomic); }

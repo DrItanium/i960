@@ -441,24 +441,20 @@ CompareIntegerAndBranch(bno);
             _ac.conditionCode |= 0b010;
         } 
 	}
-	void Core::ediv(SourceRegister src1, ByteOrdinal src2Ind, ByteOrdinal destInd) noexcept {
-		// TODO make sure that src2 and dest indicies are even
-		LongRegister src2 = makeLongRegister(src2Ind);
-		LongRegister dest = makeLongRegister(destInd);
-		if (auto s1 = src1.get<LongOrdinal>(); s1 == 0) {
-			dest.set<LongOrdinal>(-1); // set to undefined value
-			generateFault(OperationFaultSubtype::InvalidOperand);
-		} else if (src1.get<Ordinal>() == 0) {
-			dest.set<LongOrdinal>(-1);
-			generateFault(ArithmeticFaultSubtype::ZeroDivide);
-		} else {
-			auto s2 = src2.get<LongOrdinal>();
-			// lower contains remainder, upper contains quotient
-			auto quotient = s2 / s1;
-			auto remainder = s2 - (s2 / s1) * s1;
-			dest.set(remainder, quotient);
-		}
-	}
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::ediv) noexcept {
+        if (auto sdop = inst.getSrc2(), dop = inst.getDest(); sdop.notDivisibleBy(2) || dop.notDivisibleBy(2)) {
+            setDest<LongOrdinal>(inst, -1);
+            raiseFault(OperationFaultSubtype::InvalidOperand);
+        } else if (auto src1 = getSrc1<LongOrdinal>(inst); src1 == 0) {
+            setDest<LongOrdinal>(inst, -1);
+            raiseFault(ArithmeticFaultSubtype::ZeroDivide);
+        } else {
+            auto src2 = getSrc2<LongOrdinal>(inst);
+            auto quotient = src2 / src1;
+            auto remainder = src2 - (src2 / src1) * src1;
+            setDest(inst, remainder, quotient);
+        }
+    }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::divi) noexcept {
 		if (auto denominator = getSrc1<Integer>(inst); denominator == 0) {
             setDest<Integer>(inst, -1);
