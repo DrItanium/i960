@@ -884,7 +884,7 @@ X(cmpi, bno);
 		cmpi(src1, src2);
 		dest.set<Integer>(src2.get<Integer>() - 1);
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::clrbit) {
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::clrbit) noexcept {
         setDest(inst, getSrc2(inst) & ~oneShiftLeft(getSrc1(inst)));
 	}
 	void Core::setbit(__DEFAULT_THREE_ARGS__) noexcept {
