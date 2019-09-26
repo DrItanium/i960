@@ -177,7 +177,20 @@ namespace i960 {
             }
             template<typename R = Ordinal>
             R getSrc2(const HasSrc2& src2) noexcept {
-                return getRegisterValue<R>(src2.getSrc2());
+                using K = std::decay_t<R>;
+                auto s2 = src2.getSrc2();
+                if constexpr (std::is_same_v<K, LongOrdinal> ||
+                              std::is_same_v<K, LongInteger>) {
+                    if (s2.isRegister()) {
+                        DoubleRegister reg(getRegister(s2), 
+                                           getRegister(s2.next()));
+                        return reg.get<T>();
+                    } else {
+                        return static_cast<T>(s2.getValue());
+                    }
+                } else {
+                    return getRegisterValue<R>(s2);
+                }
             }
             template<typename R = Ordinal>
             R getSrc(const HasSrcDest& srcDest) noexcept {

@@ -425,17 +425,21 @@ CompareIntegerAndBranch(bno);
 			}
 		}
 	}
-	void Core::subc(__DEFAULT_THREE_ARGS__) noexcept {
-		auto s1 = src1.get<Ordinal>() - 1u;
-		auto s2 = src2.get<Ordinal>();
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::subc) noexcept {
+        auto s1 = getSrc1(inst) - 1u;
+        auto s2 = getSrc2(inst);
 		auto carryBit = (_ac.conditionCode & 0b010) >> 1;
-		dest.set<Ordinal>(s2 - s1 + carryBit);
+        setDest(inst, s2 - s1 + carryBit);
 		_ac.conditionCode = 0b000;
-		if ((src2.mostSignificantBit() == src1.mostSignificantBit()) && (src2.mostSignificantBit() != dest.mostSignificantBit())) {
+        auto dmsb = getMostSignificantBit(getSrc<Ordinal>(inst));
+        if ((getMostSignificantBit(s1) == getMostSignificantBit(s2)) && (getMostSignificantBit(s2) != dmsb)) {
 			// we've overflowed
 			_ac.conditionCode = 0b001;
 		}
-		_ac.conditionCode += (dest.mostSignificantBit() << 1);
+        if (dmsb) {
+            /// @todo verify this
+            _ac.conditionCode |= 0b010;
+        } 
 	}
 	void Core::ediv(SourceRegister src1, ByteOrdinal src2Ind, ByteOrdinal destInd) noexcept {
 		// TODO make sure that src2 and dest indicies are even
