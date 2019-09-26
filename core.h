@@ -277,7 +277,6 @@ namespace i960 {
 			void ediv(SourceRegister src1, ByteOrdinal src2Ind, ByteOrdinal destInd) noexcept;
 			void emul(SourceRegister src1, SourceRegister src2, ByteOrdinal destIndex) noexcept;
             __GEN_DEFAULT_THREE_ARG_SIGS__(extract);
-            void fill(SourceRegister dst, SourceRegister value, SourceRegister len) noexcept;
             void flushreg() noexcept;
             void fmark() noexcept;
             void ld(__DEFAULT_TWO_ARGS__) noexcept;

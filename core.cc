@@ -365,37 +365,48 @@ X(cmpi, bno);
 		return shifted & mask;
 	}
 
-	void Core::extract(SourceRegister bitpos, SourceRegister len, DestinationRegister srcDest) noexcept {
-		srcDest.set<Ordinal>(decode(bitpos.get<Ordinal>(), len.get<Ordinal>(), srcDest.get<Ordinal>()));
-	}
+
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::extract) noexcept {
+        setDest(inst, decode(getSrc1(inst), getSrc2(inst), getSrc(inst)));
+    }
     constexpr Ordinal largestOrdinal = 0xFFFF'FFFF;
-	/**
-	 * Find the most significant set bit
-	 */
-	void Core::scanbit(SourceRegister src, DestinationRegister dest) noexcept {
-        dest.set(largestOrdinal);
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::scanbit) noexcept {
+	//void Core::scanbit(SourceRegister src, DestinationRegister dest) noexcept {
+        // find the most significant set bit
+        auto result = largestOrdinal;
+        auto src = getSrc1(inst);
 		_ac.conditionCode = 0b000;
-		for (Integer i = 31; i >= 0; --i) {
-			if (auto k = 1 << i; (src.get<Ordinal>() & k) != 0) {
-				_ac.conditionCode = 0b010;
-				dest.set<Ordinal>(i);
-				break;
-			}
-		}
+        // while the psuedo-code in the programmers manual talks about setting
+        // the destination to all ones if src is equal to zero, there is no short 
+        // circuit in the action section for not iterating through the loop when
+        // src is zero. A small optimization
+        if (auto src = getSrc1(inst); src != 0) {
+            for (Integer i = 31; i >= 0; --i) {
+                if (auto k = 1 << i; (src & k) != 0) {
+                    _ac.conditionCode = 0b010;
+                    result = i;
+                    break;
+                }
+            }
+        }
+        setDest(inst, result);
 	}
-	/**
-	 * Find the most significant clear bit
-	 */
-	void Core::spanbit(SourceRegister src, DestinationRegister dest) noexcept {
-        dest.set(largestOrdinal);
-		_ac.conditionCode = 0b000;
-		for (Integer i = 31; i >= 0; --i) {
-			if (auto k = (1 << i); (src.get<Ordinal>() & k) == 0) {
-				dest.set<Ordinal>(i);
-				_ac.conditionCode = 0b010;
-				break;
-			}
-		}
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::spanbit) noexcept {
+        /**
+         * Find the most significant clear bit
+         */
+        auto result = largestOrdinal;
+        _ac.conditionCode = 0b000;
+        if (auto src = getSrc1(inst); src != largestOrdinal) {
+            for (Integer i = 31; i >= 0; --i) {
+                if (auto k = (1 << i); (src & k) == 0) {
+                    result = i;
+                    _ac.conditionCode = 0b010;
+                    break;
+                }
+            }
+        }
+        setDest(inst, result);
 	}
 	void Core::modi(__DEFAULT_THREE_ARGS__) noexcept {
 		if (auto s1 = src1.get<Integer>(); s1 == 0) {
