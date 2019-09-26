@@ -575,13 +575,11 @@ CompareIntegerAndBranch(bno);
 	}
 
     void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpi) noexcept {
-        cmpi(getRegister(inst.getSrc1()), getRegister(inst.getSrc2()));
+        compare<Integer>(getSrc1<Integer>(inst), getSrc2<Integer>(inst));
     }
-	void Core::cmpi(SourceRegister src1, SourceRegister src2) noexcept { compare(src1.get<Integer>(), src2.get<Integer>()); }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpo) noexcept {
         compare<Ordinal>(getSrc1(inst), getSrc2(inst));
     }
-	void Core::cmpo(SourceRegister src1, SourceRegister src2) noexcept { compare(src1.get<Ordinal>(), src2.get<Ordinal>()); }
 	void Core::muli(SourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept {
 		dest.set(src2.get<Integer>() * src1.get<Integer>());
 		if ((src2.mostSignificantBit() == src1.mostSignificantBit()) && (src2.mostSignificantBit() != dest.mostSignificantBit())) {
@@ -592,38 +590,50 @@ CompareIntegerAndBranch(bno);
 			}
 		}
 	}
-	void Core::remi(SourceRegister src1, SourceRegister src2, DestinationRegister dest) noexcept {
-		if (auto denominator = src1.get<Integer>(); denominator == 0) {
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::remi) noexcept {
+		if (auto denominator = getSrc1<Integer>(inst); denominator == 0) {
 			generateFault(ArithmeticFaultSubtype::ZeroDivide);
 		} else {
 			// as defined in the manual
-			auto numerator = src2.get<Integer>();
-			dest.set(numerator - (denominator / numerator) * denominator);
+            auto numerator = getSrc2<Integer>(inst);
+            setDest<Integer>(inst, numerator - (denominator / numerator) * denominator);
 		}
 	}
-	void Core::stl(Ordinal ind, SourceRegister dest) noexcept {
-		// TODO check for valid register
+    void Core::performOperation(const MEMFormatInstruction& inst, Operation::stl) noexcept {
+		/// @todo check for valid register
+        /// @todo reimplement and compute effective address
+        throw "stl unimplemented";
+#if 0
 		LongRegister src = makeLongRegister(ind);
 		store(dest.get<Ordinal>() + RegisterIndex<0>, src.getLowerHalf());
 		store(dest.get<Ordinal>() + RegisterIndex<1>, src.getUpperHalf());
+#endif
 	}
 
-	void Core::stt(Ordinal ind, SourceRegister dest) noexcept {
-		// TODO perform fault checks
+    void Core::performOperation(const MEMFormatInstruction& inst, Operation::stt) noexcept {
+        /// @todo reimplement and compute effective address
+        /// @todo validate operand for wide register
+        throw "stt unimplemented";
+#if 0
 		TripleRegister src = makeTripleRegister(ind);
 		auto addr = dest.get<Ordinal>();
 		store(addr + RegisterIndex<0>, src.getLowerPart());
 		store(addr + RegisterIndex<1>, src.getMiddlePart());
         store(addr + RegisterIndex<2>, src.getUpperPart());
+#endif
 	}
 
-	void Core::stq(Ordinal ind, SourceRegister dest) noexcept {
+    void Core::performOperation(const MEMFormatInstruction& inst, Operation::stq) noexcept {
+        /// @todo reimplement and compute effective address
+        throw "stq unimplemented";
+#if 0
 		QuadRegister src = makeQuadRegister(ind);
 		auto addr = dest.get<Ordinal>();
 		store(addr + RegisterIndex<0>, src.getLowestPart());
 		store(addr + RegisterIndex<1>, src.getLowerPart());
 		store(addr + RegisterIndex<2>, src.getHigherPart());
 		store(addr + RegisterIndex<3>, src.getHighestPart());
+#endif
 	}
     void Core::performOperation(const REGFormatInstruction&, Operation::syncf) noexcept {
         syncf();

@@ -264,8 +264,6 @@ namespace i960 {
             // compare and branch instructions as well
             // faults too
             void clrbit(SourceRegister pos, SourceRegister src, DestinationRegister dest) noexcept; // TODO look into the various forms further
-            void cmpi(SourceRegister src1, SourceRegister src2) noexcept;
-            void cmpo(SourceRegister src1, SourceRegister src2) noexcept;
             __GEN_DEFAULT_THREE_ARG_SIGS__(cmpdeci);
             __GEN_DEFAULT_THREE_ARG_SIGS__(cmpdeco);
             __GEN_DEFAULT_THREE_ARG_SIGS__(cmpinci);
