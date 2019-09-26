@@ -385,6 +385,8 @@ namespace i960 {
             }
             template<TestTypes t>
             void testGeneric(DestinationRegister dest) noexcept {
+                // apparently bit 1 of a test instruction can be used to denote
+                // false or true is expected
                 dest.set<Ordinal>(conditionCodeIs<t>() ? 1u : 0u);
             }
             template<ConditionCode cc>
