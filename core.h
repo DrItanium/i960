@@ -169,8 +169,7 @@ namespace i960 {
             T getRegisterValue(const Operand& op) noexcept {
                 using K = std::decay_t<T>;
                 if (op.isRegister()) {
-                    if constexpr (std::is_same_v<K, LongOrdinal> ||
-                            std::is_saem_v<K, LongInteger>) {
+                    if constexpr (std::is_same_v<K, LongOrdinal>) {
                         return getDoubleRegister(op).get<T>();
                     } else {
                         return getRegister(op).get<T>();
@@ -202,7 +201,7 @@ namespace i960 {
                               std::is_same_v<K, LongInteger>) {
                     getDoubleRegister(srcDest.getSrcDest()).set<T>(value);
                 } else {
-                    getDest(inst).set<T>(value);
+                    getDest(srcDest).set<T>(value);
                 }
             }
             inline void setDest(const HasSrcDest& srcDest, Operand lower, Operand upper) noexcept {

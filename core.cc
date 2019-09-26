@@ -442,12 +442,12 @@ CompareIntegerAndBranch(bno);
         } 
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::ediv) noexcept {
-        if (auto sdop = inst.getSrc2(), dop = inst.getDest(); sdop.notDivisibleBy(2) || dop.notDivisibleBy(2)) {
+        if (auto sdop = inst.getSrc2(), dop = inst.getSrcDest(); sdop.notDivisibleBy(2) || dop.notDivisibleBy(2)) {
             setDest<LongOrdinal>(inst, -1);
-            raiseFault(OperationFaultSubtype::InvalidOperand);
+            generateFault(OperationFaultSubtype::InvalidOperand);
         } else if (auto src1 = getSrc1<LongOrdinal>(inst); src1 == 0) {
             setDest<LongOrdinal>(inst, -1);
-            raiseFault(ArithmeticFaultSubtype::ZeroDivide);
+            generateFault(ArithmeticFaultSubtype::ZeroDivide);
         } else {
             auto src2 = getSrc2<LongOrdinal>(inst);
             auto quotient = src2 / src1;
