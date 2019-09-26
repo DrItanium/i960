@@ -943,12 +943,11 @@ CompareIntegerAndBranch(bno);
         setDest(inst, ~(s2 | s1) | (s2 & s1));
     }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::opxor) noexcept {
-    //void Core::opxor(__DEFAULT_THREE_ARGS__) noexcept {
 		// there is an actual implementation within the manual so I'm going to
 		// use that instead of the xor operator.
 		auto s2 = getSrc2(inst);
         auto s1 = getSrc1(inst);
-        setDest(inst, xorOperation(s2, s1));
+        setDest(inst, (s2 | s1) & ~(s2 & s1));
     }
     void Core::performOperation(const REGFormatInstruction&, Operation::intdis) noexcept {
 		// TODO implement
