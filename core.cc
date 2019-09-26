@@ -47,13 +47,13 @@ namespace i960 {
 #include "conditional_kinds.def"
 #undef X
 #define CompareOrdinalAndBranch(bop) \
-    void Core:: performOperation (const COBRFormatInstruction& inst, Operation:: cmpop ## bop ) noexcept { \
-        compare<Ordinal>(getSrc1(inst), getSrc2(inst)); \
+    void Core:: performOperation (const COBRFormatInstruction& inst, Operation:: cmpo ## bop ) noexcept { \
+        compare<Ordinal>(getSrc(inst), getSrc2(inst)); \
         bop ( inst.getDisplacement() ); \
     }
 #define CompareIntegerAndBranch(bop) \
-    void Core:: performOperation (const COBRFormatInstruction& inst, Operation:: cmpop ## bop ) noexcept { \
-        compare<Ordinal>(getSrc1<Integer>(inst), getSrc2<Integer>(inst)); \
+    void Core:: performOperation (const COBRFormatInstruction& inst, Operation:: cmpi ## bop ) noexcept { \
+        compare<Integer>(getSrc<Integer>(inst), getSrc2<Integer>(inst)); \
         bop ( inst.getDisplacement() ); \
     }
 CompareOrdinalAndBranch(bg);
