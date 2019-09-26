@@ -887,11 +887,8 @@ X(cmpi, bno);
     void Core::performOperation(const REGFormatInstruction& inst, Operation::clrbit) noexcept {
         setDest(inst, getSrc2(inst) & ~oneShiftLeft(getSrc1(inst)));
 	}
-	void Core::setbit(__DEFAULT_THREE_ARGS__) noexcept {
-		auto s2 = src2.get<Ordinal>();
-		auto s1 = src1.get<Ordinal>();
-		dest.set(s2 | oneShiftLeft(s1));
-		//dest.set<Ordinal>(i960::setBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::setbit) noexcept {
+        setDest(inst, getSrc2(inst) | oneShiftLeft(getSrc1(inst)));
 	}
 	void Core::emul(SourceRegister src1, SourceRegister src2, ByteOrdinal destIndex) noexcept {
 		// TODO perform double register validity check
@@ -1006,7 +1003,7 @@ X(cmpi, bno);
 	void Core::cmpib(SourceRegister src1, SourceRegister src2) noexcept { 
 		compare<ByteInteger>(src1.get<ByteInteger>(), src2.get<ByteInteger>());
 	}
-	void Core::dcctl(__DEFAULT_THREE_ARGS__) noexcept { 
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::dcctl) noexcept {
 		// while I don't implement a data cache myself, this instruction must
 		// do something!
 		// TODO something
@@ -1018,19 +1015,19 @@ X(cmpi, bno);
         /// @todo reimplement the following
 		/// dest.set<Ordinal>(makeLongRegister(src2Ind).get<LongOrdinal>() >> (src1.get<Ordinal>() & 0b11111));
     }
-	void Core::icctl(__DEFAULT_THREE_ARGS__) noexcept { 
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::icctl) noexcept {
 		// TODO implement
 		if (!_pc.inSupervisorMode()) {
 			generateFault(TypeFaultSubtype::Mismatch);
 		}
 	}
-	void Core::intctl(__DEFAULT_TWO_ARGS__) { 
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::intctl) noexcept {
 		// TODO: implement
 		if (!_pc.inSupervisorMode()) {
 			generateFault(TypeFaultSubtype::Mismatch);
 		}
 	}
-	void Core::sysctl(__DEFAULT_THREE_ARGS__) noexcept { 
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::sysctl) noexcept {
 		// TODO: implement
 		if (!_pc.inSupervisorMode()) {
 			generateFault(TypeFaultSubtype::Mismatch);
