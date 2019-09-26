@@ -214,20 +214,20 @@ CompareIntegerAndBranch(bno);
 	void Core::mulo(__DEFAULT_THREE_ARGS__) noexcept {
 		dest.set(src2.get<Ordinal>() * src1.get<Ordinal>());
 	}
-	void Core::divo(__DEFAULT_THREE_ARGS__) noexcept {
-		if (auto denominator = src1.get<Ordinal>(); denominator == 0) {
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::divo) noexcept {
+        if (auto denominator = getSrc1<Ordinal>(inst); denominator == 0) {
 			generateFault(ArithmeticFaultSubtype::ZeroDivide);
 		} else {
-			dest.set(src2.get<Ordinal>() / denominator);
+            setDest(inst, getSrc2(inst) / denominator);
 		}
 	}
-	void Core::remo(__DEFAULT_THREE_ARGS__) noexcept {
-		if (auto denominator = src1.get<Ordinal>(); denominator == 0) {
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::remo) noexcept {
+		if (auto denominator = getSrc1(inst); denominator == 0) {
 			generateFault(ArithmeticFaultSubtype::ZeroDivide);
 		} else {
 			// as defined in the manual
-			auto numerator = src2.get<Ordinal>();
-			dest.set(numerator - (denominator / numerator) * denominator);
+			auto numerator = getSrc2(inst);
+            setDest(inst, numerator - (denominator / numerator) * denominator);
 		}
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::chkbit) noexcept {
