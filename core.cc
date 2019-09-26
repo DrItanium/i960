@@ -996,17 +996,17 @@ X(cmpi, bno);
 		auto rotl24 = rotateOperation(src, 24) & 0xFF00FF00;
         setDest(inst, rotl8 + rotl24);
 	}
-	void Core::cmpos(SourceRegister src1, SourceRegister src2) noexcept { 
-		compare<ShortOrdinal>(src1.get<ShortOrdinal>(), src2.get<ShortOrdinal>());
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpos) noexcept {
+        compare<ShortOrdinal>(getSrc1<ShortOrdinal>(inst), getSrc2<ShortOrdinal>(inst));
 	}
-	void Core::cmpis(SourceRegister src1, SourceRegister src2) noexcept { 
-		compare<ShortInteger>(src1.get<ShortInteger>(), src2.get<ShortInteger>());
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpis) noexcept {
+        compare<ShortInteger>(getSrc1<ShortInteger>(inst), getSrc2<ShortInteger>(inst));
 	}
-	void Core::cmpob(SourceRegister src1, SourceRegister src2) noexcept { 
-		compare<ByteOrdinal>(src1.get<ByteOrdinal>(), src2.get<ByteOrdinal>());
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpob) noexcept {
+        compare<ByteOrdinal>(getSrc1<ByteOrdinal>(inst), getSrc2<ByteOrdinal>(inst));
 	}
-	void Core::cmpib(SourceRegister src1, SourceRegister src2) noexcept { 
-		compare<ByteInteger>(src1.get<ByteInteger>(), src2.get<ByteInteger>());
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpib) noexcept {
+        compare<ByteInteger>(getSrc1<ByteInteger>(inst), getSrc2<ByteInteger>(inst));
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::dcctl) noexcept {
 		// while I don't implement a data cache myself, this instruction must
