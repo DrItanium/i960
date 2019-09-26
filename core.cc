@@ -884,11 +884,8 @@ X(cmpi, bno);
 		cmpi(src1, src2);
 		dest.set<Integer>(src2.get<Integer>() - 1);
 	}
-	void Core::clrbit(__DEFAULT_THREE_ARGS__) noexcept {
-		auto s2 = src2.get<Ordinal>();
-		auto s1 = src1.get<Ordinal>();
-		dest.set(s2 & ~oneShiftLeft(s1));
-		//dest.set<Ordinal>(i960::clearBit(src2.get<Ordinal>(), src1.get<Ordinal>()));
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::clrbit) {
+        setDest(inst, getSrc2(inst) & ~oneShiftLeft(getSrc1(inst)));
 	}
 	void Core::setbit(__DEFAULT_THREE_ARGS__) noexcept {
 		auto s2 = src2.get<Ordinal>();
