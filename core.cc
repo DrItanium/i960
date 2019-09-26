@@ -620,11 +620,12 @@ X(cmpi, bno);
 		store(addr + RegisterIndex<2>, src.getHigherPart());
 		store(addr + RegisterIndex<3>, src.getHighestPart());
 	}
-	void Core::syncf() noexcept {
+    void Core::performOperation(const REGFormatInstruction&, Operation::syncf) noexcept {
 		// this does nothing for the time being because this implementation does not execute instructions 
 		// in parallel. When we get there this will become an important instruction
 	}
-	void Core::flushreg() noexcept {
+
+    void Core::performOperation(const REGFormatInstruction&, Operation::flushreg) noexcept {
 		// this will nop currently as I'm saving all local registers to the 
 		// stack when a call happens
 	}
