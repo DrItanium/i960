@@ -912,10 +912,14 @@ CompareIntegerAndBranch(bno);
     void Core::performOperation(const REGFormatInstruction& inst, Operation::setbit) noexcept {
         setDest(inst, getSrc2(inst) | oneShiftLeft(getSrc1(inst)));
 	}
-	void Core::emul(SourceRegister src1, SourceRegister src2, ByteOrdinal destIndex) noexcept {
-		// TODO perform double register validity check
-		LongRegister dest = makeLongRegister(destIndex);
-		dest.set<LongOrdinal>(src2.get<LongOrdinal>() * src1.get<LongOrdinal>());
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::emul) noexcept {
+        if (inst.getSrcDest().notDivisibleBy(2)) {
+            setDest<LongOrdinal>(inst, -1);
+            generateFault(OperationFaultSubtype::InvalidOperand);
+        } else {
+            setDest<LongOrdinal>(inst, static_cast<LongOrdinal>(getSrc2(inst)) *
+                                       static_cast<LongOrdinal>(getSrc1(inst)));
+        }
 	}
 	void Core::lda(SourceRegister src, DestinationRegister dest) noexcept {
 		// already computed this value by proxy of decoding
