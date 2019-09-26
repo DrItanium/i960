@@ -184,9 +184,9 @@ namespace i960 {
                     if (s2.isRegister()) {
                         DoubleRegister reg(getRegister(s2), 
                                            getRegister(s2.next()));
-                        return reg.get<T>();
+                        return reg.get<R>();
                     } else {
-                        return static_cast<T>(s2.getValue());
+                        return static_cast<R>(s2.getValue());
                     }
                 } else {
                     return getRegisterValue<R>(s2);
