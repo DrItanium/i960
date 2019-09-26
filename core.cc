@@ -413,15 +413,15 @@ CompareIntegerAndBranch(bno);
         }
         setDest(inst, result);
 	}
-	void Core::modi(__DEFAULT_THREE_ARGS__) noexcept {
-		if (auto s1 = src1.get<Integer>(); s1 == 0) {
-			dest.set<Integer>(-1); // says in the manual, to assign it to an undefined value
+    void Core::performOperation(const REGFormatInstruction& inst, Operation::modi) noexcept {
+		if (auto s1 = getSrc1<Integer>(inst); s1 == 0) {
+            setDest<Integer>(inst, -1); // says in the manual, to assign it to an undefined value
 			generateFault(ArithmeticFaultSubtype::ZeroDivide);
 		} else {
-			auto s2 = src2.get<Integer>();
-			dest.set<Integer>(s2 - (s2 / s1) * s1);
+			auto s2 = getSrc2<Integer>(inst);
+            setDest<Integer>(inst, s2 - (s2 / s1) * s1);
 			if ((s2 * s1) < 0) {
-				dest.set<Integer>(dest.get<Integer>() + s1);
+                setDest<Integer>(inst, getSrc<Integer>(inst) + s1);
 			}
 		}
 	}
