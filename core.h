@@ -236,16 +236,16 @@ namespace i960 {
         private:
             // core dispatch logic
             template<typename T>
-            void performOperation(const T&, std::monostate) {
-                throw "Bad operation!";
+            void performOperation(const T&, std::monostate) noexcept {
+                generateFault(OperationFaultSubtype::InvalidOpcode);
             }
 
             template<typename T>
-            void dispatchOperation(const T& inst, const typename T::OpcodeList& targetInstruction) {
+            void dispatchOperation(const T& inst, const typename T::OpcodeList& targetInstruction) noexcept {
                 std::visit([&inst, this](auto&& value) { return performOperation(inst, value); }, targetInstruction);
             }
             template<typename T>
-            void dispatchOperation(const T& inst) {
+            void dispatchOperation(const T& inst) noexcept {
                 std::visit([&inst, this](auto&& value) {
                             using K = std::decay_t<decltype(value)>;
                             if constexpr (std::is_same_v<K, std::monostate>) {
@@ -311,15 +311,6 @@ namespace i960 {
 					}
 				}
             }
-            constexpr bool conditionCodeIs(ConditionCode cc) const noexcept {
-                if (cc == ConditionCode::Unconditional) {
-                    return true;
-                } else if (cc == ConditionCode::False) {
-                    return _ac.conditionCodeIs(static_cast<Ordinal>(cc));
-                } else {
-                    return _ac.conditionCodeBitSet(static_cast<Ordinal>(cc));
-                }
-            }
             template<ConditionCode cc>
             constexpr bool conditionCodeIs() const noexcept {
                 if constexpr (cc == ConditionCode::Unconditional) {
@@ -329,12 +320,6 @@ namespace i960 {
                 } else {
                     return _ac.conditionCodeBitSet<static_cast<Ordinal>(cc)>();
                 }
-            }
-            template<TestTypes t>
-            void testGeneric(const COBRFormatInstruction& inst) noexcept {
-                // apparently bit 1 of a test instruction can be used to denote
-                // false or true is expected
-                setDest(inst, conditionCodeIs<t>() ? 1u : 0u);
             }
             template<ConditionCode cc>
             void branchIfGeneric(Integer displacement) noexcept {

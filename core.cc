@@ -28,15 +28,15 @@ namespace i960 {
     constexpr Ordinal computeStackFrameStart(Ordinal framePointerAddress) noexcept {
         return framePointerAddress + 64;
     }
-    void Core::performOperation(const COBRFormatInstruction& inst, Operation::testno) noexcept {
+    void Core::performOperation(const COBRFormatInstruction& inst, Operation::testno) {
         if (_ac.getConditionCode() == 0b000) {
             setDest(inst, 1);
         } else {
             setDest(inst, 0);
         }
     }
-    void Core::performOperation(const COBRFormatInstruction&, TestOperation) noexcept {
-
+    void Core::performOperation(const COBRFormatInstruction& inst, TestOperation) noexcept {
+        setDest(inst, ((lowestThreeBitsOfMajorOpcode(inst.getOpcode()) & _ac.getConditionCode()) != 0) ? 1 : 0);
     }
     void Core::performOperation(const COBRFormatInstruction& inst, CompareOrdinalAndBranchOperation) noexcept {
         // use variants as a side effect :D
@@ -54,7 +54,6 @@ namespace i960 {
         }
     }
 #define X(kind, action) \
-	void Core:: b ## kind (Integer addr) noexcept { branchIfGeneric<ConditionCode:: action > ( addr ) ; } \
     void Core:: performOperation(const REGFormatInstruction& inst, Operation:: subi ## kind ) noexcept { subiBase<ConditionCode:: action>(inst); } \
     void Core:: performOperation(const REGFormatInstruction& inst, Operation:: subo ## kind ) noexcept { suboBase<ConditionCode:: action>(inst); } \
     void Core:: performOperation(const CTRLFormatInstruction&, Operation:: fault ## kind ) noexcept { genericFault<ConditionCode:: action > ( ); } \
