@@ -9,12 +9,6 @@
 #include "InternalDataRam.h"
 #include <limits>
 #include <cmath>
-#define __DEFAULT_THREE_ARGS__ SourceRegister src1, SourceRegister src2, DestinationRegister dest
-#define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ const DoubleRegister& src1, const DoubleRegister& src2, DoubleRegister& dest
-#define __DEFAULT_TWO_ARGS__ SourceRegister src, DestinationRegister dest
-#define __DEFAULT_DOUBLE_WIDE_TWO_ARGS__ const DoubleRegister& src, DoubleRegister& dest
-#define __TWO_SOURCE_AND_INT_ARGS__ SourceRegister src1, SourceRegister src2, Integer targ
-#define __TWO_SOURCE_REGS__ SourceRegister src1, SourceRegister src2
 namespace i960 {
 	constexpr Ordinal xorOperation(Ordinal src2, Ordinal src1) noexcept {
 		return (src2 | src1) & ~(src2 & src1);
@@ -38,7 +32,7 @@ namespace i960 {
 	void Core:: b ## kind (Integer addr) noexcept { branchIfGeneric<ConditionCode:: action > ( addr ) ; } \
     void Core:: performOperation(const REGFormatInstruction& inst, Operation:: subi ## kind ) noexcept { subiBase<ConditionCode:: action>(inst); } \
     void Core:: performOperation(const REGFormatInstruction& inst, Operation:: subo ## kind ) noexcept { suboBase<ConditionCode:: action>(inst); } \
-    void Core:: performOperation(const COBRFormatInstruction& inst, Operation:: test ## kind ) noexcept { testGeneric<TestTypes:: action> ( getDest(inst) ); } \
+    void Core:: performOperation(const COBRFormatInstruction& inst, Operation:: test ## kind ) noexcept { testGeneric<TestTypes:: action> (inst); } \
     void Core:: performOperation(const CTRLFormatInstruction&, Operation:: fault ## kind ) noexcept { genericFault<ConditionCode:: action > ( ); } \
     void Core:: performOperation(const CTRLFormatInstruction& inst, Operation:: b ## kind ) noexcept { branchIfGeneric<ConditionCode:: action > ( inst.getDisplacement() ); } \
     void Core:: performOperation(const REGFormatInstruction& inst, Operation :: sel ## kind ) noexcept { baseSelect<ConditionCode:: action>(inst); } \
@@ -1282,9 +1276,6 @@ CompareIntegerAndBranch(bno);
     void
     Core::performOperation(const MEMFormatInstruction& inst, Operation::balx) noexcept {
         /// @todo implement this
-    }
-    constexpr bool isUnalignedMemoryAddress(Ordinal addr) noexcept {
-        return (addr & 0b11) != 0;
     }
     void
     Core::performOperation(const MEMFormatInstruction& inst, Operation::st) noexcept {

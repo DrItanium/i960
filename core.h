@@ -1,11 +1,5 @@
 #ifndef I960_CORE_H__
 #define I960_CORE_H__
-#define __DEFAULT_THREE_ARGS__ SourceRegister src1, SourceRegister src2, DestinationRegister dest
-#define __DEFAULT_TWO_ARGS__ SourceRegister src, DestinationRegister dest
-#define __DEFAULT_DOUBLE_WIDE_THREE_ARGS__ LongSourceRegister src1, LongSourceRegister src2, LongDestinationRegister dest
-#define __DEFAULT_DOUBLE_WIDE_TWO_ARGS__ LongSourceRegister src, LongDestinationRegister dest
-#define __GEN_DEFAULT_THREE_ARG_SIGS__(name) void name (__DEFAULT_THREE_ARGS__) noexcept
-#define __TWO_SOURCE_REGS__ SourceRegister src, SourceRegister dest
 #include "types.h"
 #include "NormalRegister.h"
 #include "DoubleRegister.h"
@@ -85,8 +79,7 @@ namespace i960 {
 	};
 #define X(type, parent) \
 	template<> \
-	class FaultAssociation< type > final { \
-		public: \
+	struct FaultAssociation< type > final { \
 			static constexpr auto ParentFaultType = FaultType:: parent ; \
 			FaultAssociation() = delete; \
 			FaultAssociation(const FaultAssociation&) = delete; \
@@ -103,10 +96,15 @@ namespace i960 {
 	X(TypeFaultSubtype, Type);
 #undef X
 
-	constexpr Ordinal clearLowestTwoBitsMask = ~0b11;
+    constexpr Ordinal unusedAddressBits = 0b11;
+	constexpr Ordinal clearLowestTwoBitsMask = ~unusedAddressBits;
     constexpr Ordinal computeAlignedAddress(Ordinal value) noexcept {
         return value & clearLowestTwoBitsMask;
     }
+    constexpr bool isAlignedAddress(Ordinal value) noexcept {
+        return (value & unusedAddressBits) == 0;
+    }
+
     class Core {
         public:
             static constexpr auto targetSeries = ProcessorSeries::Jx;
@@ -294,10 +292,10 @@ namespace i960 {
                 }
             }
             template<TestTypes t>
-            void testGeneric(DestinationRegister dest) noexcept {
+            void testGeneric(const COBRFormatInstruction& inst) noexcept {
                 // apparently bit 1 of a test instruction can be used to denote
                 // false or true is expected
-                dest.set<Ordinal>(conditionCodeIs<t>() ? 1u : 0u);
+                setDest(inst, conditionCodeIs<t>() ? 1u : 0u);
             }
             template<ConditionCode cc>
             void branchIfGeneric(Integer displacement) noexcept {
@@ -448,12 +446,5 @@ namespace i960 {
             bool _frameAvailable = true;
     };
 
-}
-#undef __TWO_SOURCE_REGS__
-#undef __GEN_DEFAULT_THREE_ARG_SIGS__
-#undef __DEFAULT_THREE_ARGS__
-#undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
-#undef __DEFAULT_TWO_ARGS__
-#undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
-
+} // end namespace i960
 #endif // end I960_CORE_H__
