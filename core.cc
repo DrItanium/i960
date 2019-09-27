@@ -1283,7 +1283,7 @@ CompareIntegerAndBranch(bno);
     Core::performOperation(const MEMFormatInstruction& inst, Operation::balx) noexcept {
         /// @todo implement this
     }
-    constexpr bool isUnalignedMemoryAddress(Address addr) noexcept {
+    constexpr bool isUnalignedMemoryAddress(Ordinal addr) noexcept {
         return (addr & 0b11) != 0;
     }
     void
