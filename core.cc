@@ -28,6 +28,31 @@ namespace i960 {
     constexpr Ordinal computeStackFrameStart(Ordinal framePointerAddress) noexcept {
         return framePointerAddress + 64;
     }
+    void Core::performOperation(const COBRFormatInstruction& inst, Operation::testno) {
+        if (_ac.getConditionCode() == 0b000) {
+            setDest(inst, 1);
+        } else {
+            setDest(inst, 0);
+        }
+    }
+    void Core::performOperation(const COBRFormatInstruction&, TestOperation) noexcept {
+
+    }
+    void Core::performOperation(const COBRFormatInstruction& inst, CompareOrdinalAndBranchOperation) noexcept {
+        // use variants as a side effect :D
+        compare<Ordinal>(getSrc(inst), getSrc2(inst));
+        if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) != 0) {
+            _instructionPointer += (inst.getDisplacement() * 4);
+            _instructionPointer = computeAlignedAddress(_instructionPointer);
+        }
+    }
+    void Core::performOperation(const COBRFormatInstruction& inst, CompareIntegerAndBranchOperation) noexcept {
+        compare<Integer>(getSrc<Integer>(inst), getSrc2<Integer>(inst));
+        if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) != 0) {
+            _instructionPointer += (inst.getDisplacement() * 4);
+            _instructionPointer = computeAlignedAddress(_instructionPointer);
+        }
+    }
 #define X(kind, action) \
 	void Core:: b ## kind (Integer addr) noexcept { branchIfGeneric<ConditionCode:: action > ( addr ) ; } \
     void Core:: performOperation(const REGFormatInstruction& inst, Operation:: subi ## kind ) noexcept { subiBase<ConditionCode:: action>(inst); } \
@@ -40,32 +65,6 @@ namespace i960 {
     void Core:: performOperation(const REGFormatInstruction& inst, Operation:: addi ## kind ) noexcept { addiBase<ConditionCode:: action>(inst) ; }
 #include "conditional_kinds.def"
 #undef X
-#define CompareOrdinalAndBranch(bop) \
-    void Core:: performOperation (const COBRFormatInstruction& inst, Operation:: cmpo ## bop ) noexcept { \
-        compare<Ordinal>(getSrc(inst), getSrc2(inst)); \
-        bop ( inst.getDisplacement() ); \
-    }
-#define CompareIntegerAndBranch(bop) \
-    void Core:: performOperation (const COBRFormatInstruction& inst, Operation:: cmpi ## bop ) noexcept { \
-        compare<Integer>(getSrc<Integer>(inst), getSrc2<Integer>(inst)); \
-        bop ( inst.getDisplacement() ); \
-    }
-CompareOrdinalAndBranch(bg);
-CompareOrdinalAndBranch(be);
-CompareOrdinalAndBranch(bge);
-CompareOrdinalAndBranch(bl);
-CompareOrdinalAndBranch(bne);
-CompareOrdinalAndBranch(ble);
-CompareIntegerAndBranch(bg);
-CompareIntegerAndBranch(be);
-CompareIntegerAndBranch(bge);
-CompareIntegerAndBranch(bl);
-CompareIntegerAndBranch(bne);
-CompareIntegerAndBranch(ble);
-CompareIntegerAndBranch(bo);
-CompareIntegerAndBranch(bno);
-#undef CompareOrdinalAndBranch
-#undef CompareIntegerAndBranch
 	Core::Core(const CoreInformation& info, MemoryInterface& mem) : _mem(mem), _deviceId(info) { }
 	Ordinal Core::getStackPointerAddress() const noexcept {
         return _localRegisters[SP.getOffset()].get<Ordinal>();

@@ -23,6 +23,10 @@ namespace i960 {
                 }
             }
 
+            constexpr auto getConditionCode(Ordinal mask) const noexcept {
+                return _conditionCode & mask;
+            }
+
             constexpr auto integerOverflowFlagSet() const noexcept { return _integerOverflowFlag; }
             constexpr auto maskIntegerOverflow() const noexcept { return _integerOverflowMask; }
             constexpr auto noImpreciseFaults() const noexcept { return _noImpreciseFaults; }
@@ -34,8 +38,10 @@ namespace i960 {
             void clearConditionCode() noexcept { _conditionCode = 0; }
             template<Ordinal mask>
             constexpr auto conditionCodeIs() const noexcept { return _conditionCode == mask; }
+            constexpr auto conditionCodeIs(Ordinal mask) const noexcept { return _conditionCode == mask; }
             template<Ordinal mask>
             constexpr bool conditionCodeBitSet() const noexcept { return getConditionCode<mask>() != 0; }
+            constexpr bool conditionCodeBitSet(Ordinal mask) const noexcept { return getConditionCode(mask) != 0; }
             constexpr bool shouldCarryOut() const noexcept {
                 // 0b01X where X is don't care
                 return _conditionCode == 0b010 || _conditionCode == 0b011;

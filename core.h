@@ -105,6 +105,10 @@ namespace i960 {
         return (value & unusedAddressBits) == 0;
     }
 
+    constexpr auto lowestThreeBitsOfMajorOpcode(OpcodeValue v) noexcept {
+        return (v & 0b111'0000) >> 4;
+    }
+
     class Core {
         public:
             static constexpr auto targetSeries = ProcessorSeries::Jx;
@@ -259,7 +263,7 @@ namespace i960 {
             void performOperation(const kind ## FormatInstruction& , Operation:: name ) noexcept ;
 #define reg(name, code, __) X(name, code, REG)
 #define mem(name, code, __) X(name, code, MEM)
-#define cobr(name, code, __) X(name, code, COBR)
+#define cobr(name, code, __) //X(name, code, COBR)
 #define ctrl(name, code, __) X(name, code, CTRL)
 #include "opcodes.def"
 #undef X
@@ -267,6 +271,37 @@ namespace i960 {
 #undef mem
 #undef cobr
 #undef ctrl
+        private:
+            // COBR format decls
+            using TestOperation = std::variant<Operation::testg,
+                                               Operation::teste,
+                                               Operation::testge,
+                                               Operation::testl,
+                                               Operation::testne,
+                                               Operation::testle,
+                                               Operation::testo>;
+            using CompareOrdinalAndBranchOperation = std::variant<Operation::cmpobg, 
+                                                                  Operation::cmpobe, 
+                                                                  Operation::cmpobge, 
+                                                                  Operation::cmpobl,
+                                                                  Operation::cmpobne,
+                                                                  Operation::cmpoble>;
+            using CompareIntegerAndBranchOperation = std::variant<Operation::cmpibg, 
+                                                                  Operation::cmpibe, 
+                                                                  Operation::cmpibge, 
+                                                                  Operation::cmpibl,
+                                                                  Operation::cmpibne,
+                                                                  Operation::cmpible,
+                                                                  Operation::cmpibo, // always branches
+                                                                  Operation::cmpibno, // never branches
+                                                                  >;
+            void performOperation(const COBRFormatInstruction& inst, Operation::bbc);
+            void performOperation(const COBRFormatInstruction& inst, Operation::bbs);
+            void performOperation(const COBRFormatInstruction&, Operation::testno);
+            void performOperation(const COBRFormatInstruction&, TestOperation) noexcept;
+            void performOperation(const COBRFormatInstruction&, CompareOrdinalAndBranchOperation) noexcept;
+            void performOperation(const COBRFormatInstruction&, CompareIntegerAndBranchOperation) noexcept;
+
         private:
             void syncf() noexcept;
 		private:
@@ -281,14 +316,23 @@ namespace i960 {
 					}
 				}
             }
+            constexpr bool conditionCodeIs(ConditionCode cc) const noexcept {
+                if constexpr (cc == ConditionCode::Unconditional) {
+                    return true;
+                } else if constexpr (cc == ConditionCode::False) {
+                    return _ac.conditionCodeIs(static_cast<Ordinal>(cc))();
+                } else {
+                    return _ac.conditionCodeBitSet(static_cast<Ordinal>(cc))();
+                }
+            }
             template<ConditionCode cc>
             constexpr bool conditionCodeIs() const noexcept {
                 if constexpr (cc == ConditionCode::Unconditional) {
                     return true;
                 } else if constexpr (cc == ConditionCode::False) {
-                    return _ac.conditionCodeIs<Ordinal(cc)>();
+                    return _ac.conditionCodeIs<static_cast<Ordinal>(cc)>();
                 } else {
-                    return _ac.conditionCodeBitSet<Ordinal(cc)>();
+                    return _ac.conditionCodeBitSet<static_cast<Ordinal>(cc)>();
                 }
             }
             template<TestTypes t>
