@@ -369,10 +369,6 @@ namespace i960 {
 					}
 				}
             }
-			template<typename T>
-			void concmpBase(SourceRegister src1, SourceRegister src2) noexcept {
-                concmpBase<T>(src1.get<T>(), src2.get<T>());
-			}
             template<ConditionCode cc>
             constexpr bool conditionCodeIs() const noexcept {
                 if constexpr (cc == ConditionCode::Unconditional) {
