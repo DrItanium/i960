@@ -36,23 +36,31 @@ namespace i960 {
         } else if constexpr (kind == PMCONRegisterKind::Region14_15) {
             return std::make_tuple(0xE000'0000, 0xFFFF'FFFF);
         } else {
-            static_assert(LegalConversion<PMCONRegisterKind>, "Illegal pmcon register kind provided!");
+            static_assert(false_v<PMCONRegisterKind>, "Illegal pmcon register kind provided!");
         }
     }
     template<PMCONRegisterKind kind>
     constexpr PMCONRegisterRange_t PMCONRegisterRange = getRegisterRange<kind>();
-	union PMCONRegister final {
-		struct {
-			Ordinal _unused0 : 22;
-			Ordinal _busWidth : 2;
-			Ordinal _unused1 : 8;
-		};
-		Ordinal _value;
-		constexpr bool busWidthIs8bit() const noexcept { return _busWidth == 0b00; }
-		constexpr bool busWidthIs16bit() const noexcept { return _busWidth == 0b01; }
-		constexpr bool busWidthIs32bit() const noexcept { return _busWidth == 0b10; }
-		constexpr bool busWidthIsUndefined() const noexcept { return _busWidth == 0b11; }
-	} __attribute__((packed));
+    class PMCONRegister final {
+        public:
+            constexpr PMCONRegister(Ordinal value = 0) : _value(value) { }
+            constexpr bool busWidthIs8bit() const noexcept { return _busWidth == 0b00; }
+            constexpr bool busWidthIs16bit() const noexcept { return _busWidth == 0b01; }
+            constexpr bool busWidthIs32bit() const noexcept { return _busWidth == 0b10; }
+            constexpr bool busWidthIsUndefined() const noexcept { return _busWidth == 0b11; }
+            void setBusWidth(Ordinal v) noexcept { _busWidth = v; }
+            void setRawValue(Ordinal val) noexcept { _value = val; }
+            constexpr auto getRawValue() const noexcept { return _value; }
+        private:
+            union {
+                struct {
+                    Ordinal _unused0 : 22;
+                    Ordinal _busWidth : 2;
+                    Ordinal _unused1 : 8;
+                };
+                Ordinal _value;
+            };
+    };
 	union BCONRegister final {
 		struct {
 			Ordinal _configurationEntriesInControlTableValid : 1;
