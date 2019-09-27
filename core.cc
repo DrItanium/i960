@@ -233,11 +233,11 @@ CompareIntegerAndBranch(bno);
     void Core::performOperation(const REGFormatInstruction& inst, Operation::chkbit) noexcept {
         auto bitpos = getSrc1(inst);
         auto src = getSrc2(inst);
-		_ac.conditionCode = ((src & (1 << (bitpos & 0b11111))) == 0) ? 0b000 : 0b010;
+        _ac.setConditionCode(((src & (1 << (bitpos & 0b11111))) == 0) ? 0b000 : 0b010);
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::alterbit) noexcept {
         Ordinal result = 0u;
-        if (auto bitpos = getSrc1(inst), src = getSrc2(inst); (_ac.conditionCode & 0b010) == 0) {
+        if (auto bitpos = getSrc1(inst), src = getSrc2(inst); _ac.conditionCodeBitSet<0b010>()) {
 			// if the condition bit is clear then we clear the given bit
             result = src & (~(1 << bitpos));
         } else {
@@ -334,9 +334,9 @@ CompareIntegerAndBranch(bno);
         auto bitpos = getSrc(inst);
         auto src = getSrc2(inst);
         auto mask = computeCheckBitMask(bitpos);
-        _ac.conditionCode = 0b010; // update condition code to not taken result since it will always be done
+        _ac.setConditionCode(0b010); // update condition code to not taken result since it will always be done
         if ((src & mask) == 0) {
-            _ac.conditionCode = 0b000;
+            _ac.clearConditionCode();
             _instructionPointer = _instructionPointer + inst.getDisplacement();
             // clear the lowest two bits of the instruction pointer
             _instructionPointer &= (~0b11);
@@ -347,9 +347,9 @@ CompareIntegerAndBranch(bno);
         auto bitpos = getSrc(inst);
         auto src = getSrc2(inst);
         auto mask = computeCheckBitMask(bitpos);
-        _ac.conditionCode = 0b000;
+        _ac.clearConditionCode();
         if ((src & mask) == 1) {
-            _ac.conditionCode = 0b010;
+            _ac.setConditionCode(0b010);
             _instructionPointer = _instructionPointer + inst.getDisplacement();
             // clear the lowest two bits of the instruction pointer
             _instructionPointer &= (~0b11);
@@ -380,7 +380,7 @@ CompareIntegerAndBranch(bno);
 	//void Core::scanbit(SourceRegister src, DestinationRegister dest) noexcept {
         // find the most significant set bit
         auto result = largestOrdinal;
-		_ac.conditionCode = 0b000;
+        _ac.clearConditionCode();
         // while the psuedo-code in the programmers manual talks about setting
         // the destination to all ones if src is equal to zero, there is no short 
         // circuit in the action section for not iterating through the loop when
@@ -388,7 +388,7 @@ CompareIntegerAndBranch(bno);
         if (auto src = getSrc1(inst); src != 0) {
             for (Integer i = 31; i >= 0; --i) {
                 if (auto k = 1 << i; (src & k) != 0) {
-                    _ac.conditionCode = 0b010;
+                    _ac.setConditionCode(0b010);
                     result = i;
                     break;
                 }
@@ -401,12 +401,12 @@ CompareIntegerAndBranch(bno);
          * Find the most significant clear bit
          */
         auto result = largestOrdinal;
-        _ac.conditionCode = 0b000;
+        _ac.clearConditionCode();
         if (auto src = getSrc1(inst); src != largestOrdinal) {
             for (Integer i = 31; i >= 0; --i) {
                 if (auto k = (1 << i); (src & k) == 0) {
                     result = i;
-                    _ac.conditionCode = 0b010;
+                    _ac.setConditionCode(0b010);
                     break;
                 }
             }
@@ -428,17 +428,17 @@ CompareIntegerAndBranch(bno);
     void Core::performOperation(const REGFormatInstruction& inst, Operation::subc) noexcept {
         auto s1 = getSrc1(inst) - 1u;
         auto s2 = getSrc2(inst);
-		auto carryBit = (_ac.conditionCode & 0b010) >> 1;
+        auto carryBit = _ac.getCarryValue();
         setDest(inst, s2 - s1 + carryBit);
-		_ac.conditionCode = 0b000;
+        _ac.clearConditionCode();
         auto dmsb = getMostSignificantBit(getSrc<Ordinal>(inst));
         if ((getMostSignificantBit(s1) == getMostSignificantBit(s2)) && (getMostSignificantBit(s2) != dmsb)) {
 			// we've overflowed
-			_ac.conditionCode = 0b001;
+            _ac.setConditionCode(0b001);
 		}
         if (dmsb) {
             /// @todo verify this
-            _ac.conditionCode |= 0b010;
+            _ac.setConditionCode(_ac.getConditionCode() | 0b010);
         } 
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::ediv) noexcept {
@@ -464,8 +464,8 @@ CompareIntegerAndBranch(bno);
 			// which is just 0x8000'0000 in signed integer, no clue why they
 			// described it like that. So I'm just going to put 0x8000'0000
             setDest<Integer>(inst, 0x8000'0000);
-			if (_ac.integerOverflowMask == 1) {
-				_ac.integerOverflowFlag = 1;
+            if (_ac.maskIntegerOverflow()) {
+                _ac.setIntegerOverflowFlag(true);
 			} else {
 				generateFault(ArithmeticFaultSubtype::IntegerOverflow);
 			}
@@ -586,8 +586,8 @@ CompareIntegerAndBranch(bno);
         setDest<Integer>(inst, s1 * s2);
         if ((getMostSignificantBit(s1) == getMostSignificantBit(s2)) && 
                 (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
-			if (_ac.integerOverflowMask == 1) {
-				_ac.integerOverflowFlag = 1;
+            if (_ac.maskIntegerOverflow()) {
+                _ac.setIntegerOverflowFlag(true);
 			} else {
 				generateFault(ArithmeticFaultSubtype::IntegerOverflow);
 			}
@@ -683,13 +683,12 @@ CompareIntegerAndBranch(bno);
 		}
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::modac) noexcept {
-	//void Core::modac(__DEFAULT_THREE_ARGS__) noexcept {
         auto mask = getSrc(inst);
         auto src = getSrc2(inst);
         auto dest = getRegister(inst.getSrc1());
         
-		auto tmp = _ac.value;
-        _ac.value = (src & mask) | (tmp & (~mask));
+		auto tmp = _ac.getRawValue();
+        _ac.setRawValue((src & mask) | (tmp & (~mask)));
         setRegister<Ordinal>(inst.getSrc1(), tmp);
 	}
     constexpr auto mostSignificantBit(Ordinal input) noexcept {
@@ -701,11 +700,11 @@ CompareIntegerAndBranch(bno);
         auto destReg = getRegister(inst.getSrcDest());
         LongOrdinal result = static_cast<LongOrdinal>(src1Value) + static_cast<LongOrdinal>(src2Value) + _ac.getCarryValue();
         destReg.set<Ordinal>(static_cast<Ordinal>(result));
-        _ac.conditionCode = 0b000; // odd that they would do this first as it breaks their action description in the manual
+        _ac.clearConditionCode(); // odd that they would do this first as it breaks their action description in the manual
         if (auto msb2 = mostSignificantBit(src2Value) ; (msb2 == mostSignificantBit(src1Value)) && (msb2 != destReg.mostSignificantBit())) {
-            _ac.conditionCode |= 0b001; 
+            _ac.setConditionCode(_ac.getConditionCode() | 0b001);
         }
-        _ac.conditionCode |= ((result >> 31 & 0b10));
+        _ac.setConditionCode(_ac.getConditionCode() | ((result >> 31 & 0b10)));
     }
     void Core::freeCurrentRegisterSet() noexcept {
         /// @todo implement
@@ -717,7 +716,7 @@ CompareIntegerAndBranch(bno);
     void Core::retrieveFromMemory(const Operand& fp) noexcept {
         /// @todo implement
     }
-	void Core::performOperation(const CTRLFormatInstruction& inst, Operation::ret) noexcept {
+	void Core::performOperation(const CTRLFormatInstruction&, Operation::ret) noexcept {
         syncf();
         auto pfp = getPFP();
         if (pfp.prereturnTrace && _pc.traceEnable && _tc.prereturnTraceMode) {
@@ -742,7 +741,7 @@ CompareIntegerAndBranch(bno);
                     auto tempa = load(getRegister(FP).ordinal - 16);
                     auto tempb = load(getRegister(FP).ordinal - 12);
                     getIPFP();
-                    _ac.value = tempb;
+                    _ac.setRawValue(tempb);
                     if (_pc.inSupervisorMode()) {
                         _pc.value = tempa;
                     }
@@ -769,7 +768,7 @@ CompareIntegerAndBranch(bno);
                     auto tempa = load(getRegister(FP).ordinal - 16);
                     auto tempb = load(getRegister(FP).ordinal - 12);
                     getIPFP();
-                    _ac.value = tempb;
+                    _ac.setRawValue(tempb);
                     if (_pc.inSupervisorMode()) {
                         _pc.value = tempa;
                         /// @todo check for pending interrupts
@@ -852,14 +851,14 @@ CompareIntegerAndBranch(bno);
 		return (src1 & mask) == (src2 & mask);
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::scanbyte) noexcept {
-        _ac.conditionCode = 0b000;
+        _ac.clearConditionCode();
 		if (auto s1 = getSrc1(inst), 
                  s2 = getSrc2(inst); 
                 maskedEquals<0x000000FF>(s1, s2) ||
 				maskedEquals<0x0000FF00>(s1, s2) ||
 				maskedEquals<0x00FF0000>(s1, s2) ||
 				maskedEquals<0xFF000000>(s1, s2)) {
-			_ac.conditionCode = 0b010;
+            _ac.setConditionCode(0b010);
 		} 
 	}
 	constexpr Ordinal alignToWordBoundary(Ordinal value) noexcept {

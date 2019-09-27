@@ -363,9 +363,9 @@ namespace i960 {
             void concmpBase(T src1, T src2) noexcept {
 				if (_ac.conditionCodeBitSet<0b100>()) {
                     if (src1 <= src2) {
-						_ac.conditionCode = 0b010;
+                        _ac.setConditionCode(0b010);
 					} else {
-						_ac.conditionCode = 0b001;
+                        _ac.setConditionCode(0b001);
 					}
 				}
             }
@@ -404,7 +404,7 @@ namespace i960 {
 				// performance improvements. Reduces the number of
 				// assignments but also makes modification easier in
 				// the future if necessary
-				_ac.conditionCode = [src1, src2]() noexcept {
+                _ac.setConditionCode([src1, src2]() noexcept {
 								if (src1 < src2) {
 									return 0b100;
 								} else if (src1 == src2) {
@@ -412,7 +412,7 @@ namespace i960 {
 								} else {
 									return 0b001;
 								}
-				}();
+				}());
             }
 			template<ConditionCode code>
 			constexpr bool genericCondCheck() noexcept {
@@ -453,8 +453,8 @@ namespace i960 {
 				// computed even if the addition is not performed
                 if ((getMostSignificantBit(s1) == getMostSignificantBit(s2)) && 
                     (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
-					if (_ac.integerOverflowMask == 1) {
-						_ac.integerOverflowFlag = 1;
+                    if (_ac.maskIntegerOverflow()) {
+                        _ac.setIntegerOverflowFlag(true);
 					} else {
 						generateFault(ArithmeticFaultSubtype::IntegerOverflow);
 					}
@@ -477,8 +477,8 @@ namespace i960 {
 				// computed even if the subtraction is not performed
                 if ((getMostSignificantBit(s2) != getMostSignificantBit(s1)) &&
                     (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
-					if (_ac.integerOverflowMask == 1) {
-						_ac.integerOverflowFlag = 1;
+                    if (_ac.maskIntegerOverflow()) {
+                        _ac.setIntegerOverflowFlag(true);
 					} else {
 						generateFault(ArithmeticFaultSubtype::IntegerOverflow);
 					}
