@@ -57,7 +57,6 @@ namespace i960 {
 	void Core:: b ## kind (Integer addr) noexcept { branchIfGeneric<ConditionCode:: action > ( addr ) ; } \
     void Core:: performOperation(const REGFormatInstruction& inst, Operation:: subi ## kind ) noexcept { subiBase<ConditionCode:: action>(inst); } \
     void Core:: performOperation(const REGFormatInstruction& inst, Operation:: subo ## kind ) noexcept { suboBase<ConditionCode:: action>(inst); } \
-    void Core:: performOperation(const COBRFormatInstruction& inst, Operation:: test ## kind ) noexcept { testGeneric<TestTypes:: action> (inst); } \
     void Core:: performOperation(const CTRLFormatInstruction&, Operation:: fault ## kind ) noexcept { genericFault<ConditionCode:: action > ( ); } \
     void Core:: performOperation(const CTRLFormatInstruction& inst, Operation:: b ## kind ) noexcept { branchIfGeneric<ConditionCode:: action > ( inst.getDisplacement() ); } \
     void Core:: performOperation(const REGFormatInstruction& inst, Operation :: sel ## kind ) noexcept { baseSelect<ConditionCode:: action>(inst); } \

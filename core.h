@@ -293,11 +293,10 @@ namespace i960 {
                                                                   Operation::cmpibne,
                                                                   Operation::cmpible,
                                                                   Operation::cmpibo, // always branches
-                                                                  Operation::cmpibno, // never branches
-                                                                  >;
-            void performOperation(const COBRFormatInstruction& inst, Operation::bbc);
-            void performOperation(const COBRFormatInstruction& inst, Operation::bbs);
-            void performOperation(const COBRFormatInstruction&, Operation::testno);
+                                                                  Operation::cmpibno>; // never branches
+            void performOperation(const COBRFormatInstruction& inst, Operation::bbc) noexcept;
+            void performOperation(const COBRFormatInstruction& inst, Operation::bbs) noexcept;
+            void performOperation(const COBRFormatInstruction&, Operation::testno) noexcept;
             void performOperation(const COBRFormatInstruction&, TestOperation) noexcept;
             void performOperation(const COBRFormatInstruction&, CompareOrdinalAndBranchOperation) noexcept;
             void performOperation(const COBRFormatInstruction&, CompareIntegerAndBranchOperation) noexcept;
@@ -317,12 +316,12 @@ namespace i960 {
 				}
             }
             constexpr bool conditionCodeIs(ConditionCode cc) const noexcept {
-                if constexpr (cc == ConditionCode::Unconditional) {
+                if (cc == ConditionCode::Unconditional) {
                     return true;
-                } else if constexpr (cc == ConditionCode::False) {
-                    return _ac.conditionCodeIs(static_cast<Ordinal>(cc))();
+                } else if (cc == ConditionCode::False) {
+                    return _ac.conditionCodeIs(static_cast<Ordinal>(cc));
                 } else {
-                    return _ac.conditionCodeBitSet(static_cast<Ordinal>(cc))();
+                    return _ac.conditionCodeBitSet(static_cast<Ordinal>(cc));
                 }
             }
             template<ConditionCode cc>
