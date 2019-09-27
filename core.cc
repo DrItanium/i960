@@ -479,14 +479,17 @@ CompareIntegerAndBranch(bno);
 	constexpr Ordinal getLowestBit(Ordinal address) noexcept {
 		return address & 0b1;
 	}
-	void Core::ld(SourceRegister src, DestinationRegister dest) noexcept {
+    void Core::performOperation(const MEMFormatInstruction& inst, Operation::ld) noexcept {
+	//void Core::ld(SourceRegister src, DestinationRegister dest) noexcept {
 		// this is the base operation for load, src contains the fully computed value
 		// so this will probably be an internal register in most cases.
+#if 0
 		auto effectiveAddress = src.get<Ordinal>();
 		dest.set<Ordinal>(load(effectiveAddress));
 		if ((getLowestTwoBits(effectiveAddress) != 0) && unalignedFaultEnabled) {
 			generateFault(OperationFaultSubtype::Unaligned);
 		}
+#endif
 	}
 	constexpr Ordinal getByteOrdinalMostSignificantBit(Ordinal value) noexcept {
 		return value & 0b1000'0000;
@@ -500,27 +503,34 @@ CompareIntegerAndBranch(bno);
 	constexpr Ordinal maskToShortOrdinal(Ordinal value) noexcept {
 		return value & 0xFFFF;
 	}
-	void Core::ldob(SourceRegister src, DestinationRegister dest) noexcept {
+    void Core::performOperation(const MEMFormatInstruction& inst, Operation::ldob) noexcept {
+#if 0
 		dest.set<Ordinal>(maskToByteOrdinal(load(src.get<Ordinal>())));
+#endif
 	}
-	void Core::ldos(SourceRegister src, DestinationRegister dest) noexcept {
+    void Core::performOperation(const MEMFormatInstruction& inst, Operation::ldos) noexcept {
+#if 0
 		auto effectiveAddress = src.get<Ordinal>();
 		auto value = maskToShortOrdinal(load(effectiveAddress));
 		dest.set<Ordinal>(value);
 		if ((getLowestBit(effectiveAddress) != 0) && unalignedFaultEnabled) {
 			generateFault(OperationFaultSubtype::Unaligned);
 		}
-		
+#endif
 	}
-	void Core::ldib(SourceRegister src, DestinationRegister dest) noexcept {
+    void Core::performOperation(const MEMFormatInstruction& inst, Operation::ldib) noexcept {
+#if 0
 		auto effectiveAddress = src.get<Ordinal>();
 		auto result = (maskToByteOrdinal(load(effectiveAddress)));
 		if (getByteOrdinalMostSignificantBit(result) != 0) {
 			result += 0xFFFF'FF00; // 
 		}
 		dest.set<Ordinal>(result);
+#endif
 	}
-	void Core::ldis(SourceRegister src, DestinationRegister dest) noexcept {
+
+    void Core::performOperation(const MEMFormatInstruction& inst, Operation::ldis) noexcept {
+#if 0
 		auto effectiveAddress = src.get<Ordinal>();
 		auto value = maskToShortOrdinal(load(effectiveAddress));
 		if (getShortOrdinalMostSignificantBit(value) != 0) {
@@ -530,11 +540,14 @@ CompareIntegerAndBranch(bno);
 		if ((getLowestBit(effectiveAddress) != 0) && unalignedFaultEnabled) {
 			generateFault(OperationFaultSubtype::Unaligned);
 		}
+#endif
 	}
 	constexpr Ordinal getLowestThreeBits(Ordinal value) noexcept {
 		return value & 0b111;
 	}
-	void Core::ldl(SourceRegister src, Ordinal srcDestIndex) noexcept {
+
+    void Core::performOperation(const MEMFormatInstruction& inst, Operation::ldl) noexcept {
+#if 0
 		if ((srcDestIndex % 2) != 0) {
 			generateFault(OperationFaultSubtype::InvalidOperand);
 		} else {
@@ -545,11 +558,13 @@ CompareIntegerAndBranch(bno);
 				generateFault(OperationFaultSubtype::Unaligned);
 			}
 		}
+#endif
 	}
 	constexpr Ordinal getLowestFourBits(Ordinal value) noexcept {
 		return value & 0b1111;
 	}
-	void Core::ldt(SourceRegister src, Ordinal srcDestIndex) noexcept {
+    void Core::performOperation(const MEMFormatInstruction& inst, Operation::ldt) noexcept {
+#if 0
 		if ((srcDestIndex % 4) != 0) {
 			generateFault(OperationFaultSubtype::InvalidOperand);
 		} else {
@@ -560,8 +575,10 @@ CompareIntegerAndBranch(bno);
 				generateFault(OperationFaultSubtype::Unaligned);
 			}
 		}
+#endif
 	}
-	void Core::ldq(SourceRegister src, Ordinal index) noexcept {
+    void Core::performOperation(const MEMFormatInstruction& inst, Operation::ldq) noexcept {
+#if 0
 		if ((index % 4) != 0) {
 			generateFault(OperationFaultSubtype::InvalidOperand);
 		} else {
@@ -572,6 +589,7 @@ CompareIntegerAndBranch(bno);
 				generateFault(OperationFaultSubtype::Unaligned);
 			}
 		}
+#endif
 	}
 
     void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpi) noexcept {
@@ -919,9 +937,11 @@ CompareIntegerAndBranch(bno);
                                        static_cast<LongOrdinal>(getSrc1(inst)));
         }
 	}
-	void Core::lda(SourceRegister src, DestinationRegister dest) noexcept {
-		// already computed this value by proxy of decoding
+    void Core::performOperation(const MEMFormatInstruction& inst, Operation::lda) noexcept {
+        /// @todo finish this
+#if 0
 		dest.move(src);
+#endif
 	}
     void Core::performOperation(const REGFormatInstruction&, Operation::fmark) noexcept {
         /// @todo see if we have to do anything else
