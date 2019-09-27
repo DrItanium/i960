@@ -21,16 +21,16 @@ namespace i960 {
             template<Ordinal mask>
             constexpr auto conditionCodeIs() const noexcept { return _conditionCode == mask; }
             template<Ordinal mask>
-            constexpr bool conditionCodeBitSet() const noexcept { return (conditionCode & mask) != 0; }
+            constexpr bool conditionCodeBitSet() const noexcept { return (_conditionCode & mask) != 0; }
             constexpr bool shouldCarryOut() const noexcept {
                 // 0b01X where X is don't care
-                return conditionCode == 0b010 || conditionCode == 0b011;
+                return _conditionCode == 0b010 || _conditionCode == 0b011;
             }
             constexpr bool markedAsOverflow() const noexcept {
                 // 0b0X1 where X is don't care
-                return conditionCode == 0b001 || conditionCode == 0b011;
+                return _conditionCode == 0b001 || _conditionCode == 0b011;
             }
-            constexpr bool carrySet() const noexcept { return (conditionCode & 0b010) != 0; }
+            constexpr bool carrySet() const noexcept { return (_conditionCode & 0b010) != 0; }
             constexpr Ordinal getCarryValue() const noexcept { return carrySet() ? 1 : 0; }
         private:
             union {
