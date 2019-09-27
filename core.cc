@@ -1279,4 +1279,33 @@ CompareIntegerAndBranch(bno);
 		setFramePointer(tmp);
 		setRegister(SP, tmp + 64);
     }
+    void
+    Core::performOperation(const MEMFormatInstruction& inst, Operation::balx) noexcept {
+        /// @todo implement this
+    }
+    constexpr bool isUnalignedMemoryAddress(Address addr) noexcept {
+        return (addr & 0b11) != 0;
+    }
+    void
+    Core::performOperation(const MEMFormatInstruction& inst, Operation::st) noexcept {
+        /// @todo implement computation of effective address
+    }
+
+    void
+    Core::performOperation(const MEMFormatInstruction& inst, Operation::stib) noexcept {
+        /// @todo implement computation of effective address
+    }
+    void
+    Core::performOperation(const MEMFormatInstruction& inst, Operation::stob) noexcept {
+        /// @todo implement computation of effective address
+    }
+    void
+    Core::performOperation(const MEMFormatInstruction& inst, Operation::stis) noexcept {
+        /// @todo implement computation of effective address
+    }
+    void
+    Core::performOperation(const MEMFormatInstruction& inst, Operation::stos) noexcept {
+        /// @todo implement computation of effective address
+    }
+      
 } // end namespace i960
