@@ -5,6 +5,7 @@ namespace i960 {
     class ProcessControls {
         public:
             constexpr ProcessControls(Ordinal raw = 0) : _value(raw) { }
+            constexpr bool getTraceMode() const noexcept            { return _traceEnable; }
             constexpr bool traceEnabled() const noexcept            { return _traceEnable != 0; }
             constexpr bool inUserMode() const noexcept              { return _executionMode == 0; }
             constexpr bool inSupervisorMode() const noexcept        { return _executionMode != 0; }
@@ -17,6 +18,7 @@ namespace i960 {
             void setState(bool value) noexcept { _state = value; }
             void enableTrace() noexcept { _traceEnable = true; }
             void disableTrace() noexcept { _traceEnable = false; }
+            void setTraceMode(bool value) noexcept { _traceEnable = value; }
             void enterSupervisorMode() noexcept { _executionMode = true; }
             void enterUserMode() noexcept { _executionMode = false; }
             void interrupt() noexcept { _state = true; }

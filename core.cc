@@ -149,9 +149,9 @@ CompareIntegerAndBranch(bno);
         } else {
             // supervisor call from user mode
             temp.ordinal = getSupervisorStackPointerBase();
-            temp.pfp.returnCode = 0b010 | _pc.traceEnable;
+            temp.pfp.returnCode = 0b010 | _pc.traceEnabled();
             _pc.enterSupervisorMode();
-            _pc.traceEnable = temp.pc.traceEnable;
+            _pc.setTraceMode(temp.pc.getTraceMode());
         }
         setRegister(PFP, getRegister(FP).get<Ordinal>());
         getPFP().returnCode = temp.pfp.returnCode;
@@ -670,16 +670,15 @@ CompareIntegerAndBranch(bno);
 				generateFault(TypeFaultSubtype::Mismatch);
 				return;
 			}
-			ProcessControls temp;
-			temp.value = _pc.value;
-			_pc.value = (maskVal & getSrc(inst)) | (_pc.value & (~maskVal));
-            setDest(inst, temp.value);
-			if (temp.priority > _pc.priority) {
+            ProcessControls temp = _pc;
+            _pc.setRawValue((maskVal & getSrc(inst)) | (_pc.getRawValue() & (~maskVal)));
+            setDest(inst, temp.getRawValue());
+            if (temp.getProcessPriority() > _pc.getProcessPriority()) {
 				// TODO check pending interrupts
 			}
 			// if continue here, no interrupt to do
 		} else {
-            setDest(inst, _pc.value);
+            setDest(inst, _pc.getRawValue());
 		}
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::modac) noexcept {
@@ -719,7 +718,7 @@ CompareIntegerAndBranch(bno);
 	void Core::performOperation(const CTRLFormatInstruction&, Operation::ret) noexcept {
         syncf();
         auto pfp = getPFP();
-        if (pfp.prereturnTrace && _pc.traceEnable && _tc.prereturnTraceMode) {
+        if (pfp.prereturnTrace && _pc.traceEnabled() && _tc.prereturnTraceMode) {
             pfp.prereturnTrace = 0;
             generateFault(TraceFaultSubtype::PreReturn);
             return;
@@ -743,7 +742,7 @@ CompareIntegerAndBranch(bno);
                     getIPFP();
                     _ac.setRawValue(tempb);
                     if (_pc.inSupervisorMode()) {
-                        _pc.value = tempa;
+                        _pc.setRawValue(tempa);
                     }
                 }();
                 break;
@@ -752,7 +751,7 @@ CompareIntegerAndBranch(bno);
                     if (!_pc.inSupervisorMode()) {
                         getIPFP();
                     } else {
-                        _pc.traceEnable = 0;
+                        _pc.disableTrace();
                         _pc.enterUserMode();
                         getIPFP();
                     }
@@ -770,7 +769,7 @@ CompareIntegerAndBranch(bno);
                     getIPFP();
                     _ac.setRawValue(tempb);
                     if (_pc.inSupervisorMode()) {
-                        _pc.value = tempa;
+                        _pc.setRawValue(tempa);
                         /// @todo check for pending interrupts
                     }
                 }();
@@ -1120,7 +1119,7 @@ CompareIntegerAndBranch(bno);
 		//   _status = bist(); // bist does not return if it fails
 		// }
 		// _failPin = false;
-		_pc.value = 0x001F2002; 
+        _pc.setRawValue(0x001F2002);
         constexpr auto ibrPtr = StartupRecordAddress<targetSeries>;
 		// read pmcon14_15 image in ibr 
 		// _failPin = true;
