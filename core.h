@@ -239,10 +239,6 @@ namespace i960 {
             void performOperation(const T&, std::monostate) {
                 throw "Bad operation!";
             }
-            template<typename T, typename K>
-            void performOperation(const T&, K) noexcept {
-                throw "UNIMPLEMENTED!";
-            }
 
             template<typename T>
             void dispatchOperation(const T& inst, const typename T::OpcodeList& targetInstruction) {
