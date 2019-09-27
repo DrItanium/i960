@@ -335,14 +335,6 @@ namespace i960 {
                     return _ac.conditionCodeBitSet<static_cast<Ordinal>(code)>() || _ac.conditionCodeIs<static_cast<Ordinal>(code)>();
                 }
 			}
-			template<ConditionCode mask>
-			void baseSelect(__DEFAULT_THREE_ARGS__) noexcept {
-                if (genericCondCheck<mask>()) {
-                    dest.set<Ordinal>(src2.get<Ordinal>());
-                } else {
-                    dest.set<Ordinal>(src1.get<Ordinal>());
-                }
-			}
             template<ConditionCode mask>
             void baseSelect(const REGFormatInstruction& inst) noexcept {
                 setDest(inst, genericCondCheck<mask>() ? getSrc2(inst) : getSrc1(inst));
