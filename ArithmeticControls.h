@@ -9,6 +9,7 @@ namespace i960 {
     class ArithmeticControls {
         public:
             constexpr ArithmeticControls(Ordinal rawValue = 0) noexcept : _rawValue(rawValue) { }
+            ~ArithmeticControls() = default;
             constexpr auto getRawValue() const noexcept { return _rawValue; }
             constexpr auto getConditionCode() const noexcept { return _conditionCode; }
             template<Ordinal mask = 0b111>
