@@ -272,6 +272,16 @@ namespace i960 {
                 // lowest three bits of the opcode like before.
                 return lowestThreeBitsOfMajorOpcode(value);
             }
+            static constexpr Ordinal getConditionalSubtractMask(OpcodeValue value) noexcept {
+                // mask is in bits 4-6 of the opcode in reg format so it is the
+                // lowest three bits of the opcode like before.
+                return lowestThreeBitsOfMajorOpcode(value);
+            }
+            static constexpr Ordinal getSelectMask(OpcodeValue value) noexcept {
+                // mask is in bits 4-6 of the opcode in reg format so it is the
+                // lowest three bits of the opcode like before.
+                return lowestThreeBitsOfMajorOpcode(value);
+            }
             using ConditionalAddOrdinalOperation = std::variant<Operation::addono,
                                                                 Operation::addog,
                                                                 Operation::addoe,
@@ -288,39 +298,115 @@ namespace i960 {
                                                                 Operation::addine,
                                                                 Operation::addile,
                                                                 Operation::addio>;
-            void performOperation(const REGFormatInstruction& inst, ConditionalAddOrdinalOperation) noexcept;
-            void performOperation(const REGFormatInstruction& inst, ConditionalAddIntegerOperation) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::inten) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::intdis) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::sysctl) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::icctl) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::dcctl) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::intctl) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::eshro) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::cmpib) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::cmpob) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::cmpis) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::cmpos) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::cmpi) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::cmpo) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::bswap) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::halt) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::opxor) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::nand) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::xnor) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::mark) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::fmark) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::emul) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::setbit) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::chkbit) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::cmpdeco) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::cmpdeci) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::concmpi) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::concmpo) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::atadd) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::atmod) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::scanbyte) noexcept;
-            void performOperation(const REGFormatInstruction& inst, Operation::modify) noexcept;
+            using ConditionalSubtractOrdinalOperation = std::variant<Operation::subono,
+                                                                Operation::subog,
+                                                                Operation::suboe,
+                                                                Operation::suboge,
+                                                                Operation::subol,
+                                                                Operation::subone,
+                                                                Operation::subole,
+                                                                Operation::suboo>;
+            using ConditionalSubtractIntegerOperation = std::variant<Operation::subino,
+                                                                Operation::subig,
+                                                                Operation::subie,
+                                                                Operation::subige,
+                                                                Operation::subil,
+                                                                Operation::subine,
+                                                                Operation::subile,
+                                                                Operation::subio>;
+            using SelectOperation = std::variant<Operation::selno,
+                                                 Operation::selg,
+                                                 Operation::sele,
+                                                 Operation::selge,
+                                                 Operation::sell,
+                                                 Operation::selne,
+                                                 Operation::selle,
+                                                 Operation::selo>;
+
+#define X(title) void performOperation(const REGFormatInstruction& inst, title ) noexcept
+            X(SelectOperation);
+            X(ConditionalAddIntegerOperation);
+            X(ConditionalAddOrdinalOperation);
+            X(ConditionalSubtractIntegerOperation);
+            X(ConditionalSubtractOrdinalOperation);
+            X(Operation::inten);
+            X(Operation::intdis);
+            X(Operation::sysctl);
+            X(Operation::icctl);
+            X(Operation::dcctl);
+            X(Operation::intctl);
+            X(Operation::eshro);
+            X(Operation::cmpib); 
+            X(Operation::cmpob);
+            X(Operation::cmpis); 
+            X(Operation::cmpos);
+            X(Operation::cmpi);  
+            X(Operation::cmpo);
+            X(Operation::bswap);
+            X(Operation::halt);
+            X(Operation::opxor);
+            X(Operation::nand);
+            X(Operation::xnor);
+            X(Operation::mark);
+            X(Operation::fmark);
+            X(Operation::emul);
+            X(Operation::setbit);
+            X(Operation::chkbit);
+            X(Operation::cmpdeco); 
+            X(Operation::cmpdeci);
+            X(Operation::concmpi); 
+            X(Operation::concmpo);
+            X(Operation::atadd);
+            X(Operation::atmod);
+            X(Operation::scanbyte);
+            X(Operation::modify);
+            X(Operation::clrbit);
+            X(Operation::cmpinci); 
+            X(Operation::cmpinco);
+            X(Operation::rotate);
+            X(Operation::shrdi);
+            X(Operation::shli); 
+            X(Operation::shlo);
+            X(Operation::shri);
+            X(Operation::shro);
+            X(Operation::nor);
+            X(Operation::ornot);
+            X(Operation::notor);
+            X(Operation::opor);
+            X(Operation::notbit);
+            X(Operation::notand);
+            X(Operation::opnot);
+            X(Operation::addc);
+            X(Operation::modac);
+            X(Operation::modpc);
+            X(Operation::subi);
+            X(Operation::subo);
+            X(Operation::muli);
+            X(Operation::mulo);
+            X(Operation::divi);
+            X(Operation::divo);
+            X(Operation::modtc);
+            X(Operation::remi);
+            X(Operation::remo);
+            X(Operation::ediv);
+            X(Operation::flushreg);
+            X(Operation::syncf);
+            X(Operation::modi);
+            X(Operation::spanbit);
+            X(Operation::scanbit);
+            X(Operation::calls);
+            X(Operation::addo);
+            X(Operation::addi);
+            X(Operation::alterbit);
+            X(Operation::opand);
+            X(Operation::andnot);
+            X(Operation::mov);
+            X(Operation::movl);
+            X(Operation::movt);
+            X(Operation::movq);
+            X(Operation::extract);
+            X(Operation::subc);
+#undef X
         private:
             // COBR format decls
             using TestOperation = std::variant<Operation::testg,
@@ -380,26 +466,6 @@ namespace i960 {
 		private:
 			// templated bodies
             template<typename T>
-            void concmpBase(T src1, T src2) noexcept {
-				if (_ac.conditionCodeBitSet<0b100>()) {
-                    if (src1 <= src2) {
-                        _ac.setConditionCode(0b010);
-					} else {
-                        _ac.setConditionCode(0b001);
-					}
-				}
-            }
-            template<ConditionCode cc>
-            constexpr bool conditionCodeIs() const noexcept {
-                if constexpr (cc == ConditionCode::Unconditional) {
-                    return true;
-                } else if constexpr (cc == ConditionCode::False) {
-                    return _ac.conditionCodeIs<static_cast<Ordinal>(cc)>();
-                } else {
-                    return _ac.conditionCodeBitSet<static_cast<Ordinal>(cc)>();
-                }
-            }
-            template<typename T>
             void compare(T src1, T src2) noexcept {
 				// saw this nifty trick from a CppCon talk about 
 				// performance improvements. Reduces the number of
@@ -415,68 +481,6 @@ namespace i960 {
 								}
 				}());
             }
-			template<ConditionCode code>
-			constexpr bool genericCondCheck() noexcept {
-                if constexpr (code == ConditionCode::Unconditional) {
-                    // we're in a don't care situation so pass the conditional check
-                    return true;
-                } else {
-                    return _ac.conditionCodeBitSet<static_cast<Ordinal>(code)>() || _ac.conditionCodeIs<static_cast<Ordinal>(code)>();
-                }
-			}
-            template<ConditionCode mask>
-            void baseSelect(const REGFormatInstruction& inst) noexcept {
-                setDest(inst, genericCondCheck<mask>() ? getSrc2(inst) : getSrc1(inst));
-            }
-			template<ConditionCode mask>
-			void addoBase(const REGFormatInstruction& inst) noexcept {
-                if (genericCondCheck<mask>()) {
-                    setDest(inst, getSrc1(inst) +
-                                  getSrc2(inst));
-				}
-			}
-            template<ConditionCode mask>
-            void addiBase(const REGFormatInstruction& inst) noexcept {
-                auto s1 = getSrc1<Integer>(inst);
-                auto s2 = getSrc2<Integer>(inst);
-                if (genericCondCheck<mask>()) {
-                    setDest<Integer>(inst, s1 + s2);
-                }
-				// according to the docs, the arithmetic overflow always is
-				// computed even if the addition is not performed
-                if ((getMostSignificantBit(s1) == getMostSignificantBit(s2)) && 
-                    (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
-                    if (_ac.maskIntegerOverflow()) {
-                        _ac.setIntegerOverflowFlag(true);
-					} else {
-						generateFault(ArithmeticFaultSubtype::IntegerOverflow);
-					}
-				}
-			}
-            template<ConditionCode mask>
-            void suboBase(const REGFormatInstruction& inst) noexcept {
-                if (genericCondCheck<mask>()) {
-                    setDest(inst, getSrc2<Ordinal>(inst) - getSrc1<Ordinal>(inst));
-                }
-            }
-			template<ConditionCode mask>
-			void subiBase(const REGFormatInstruction& inst) noexcept {
-                auto s1 = getSrc1<Integer>(inst);
-                auto s2 = getSrc2<Integer>(inst);
-				if (genericCondCheck<mask>()) {
-                    setDest<Integer>(inst, s2 - s1);
-				}
-				// according to the docs, the arithmetic overflow always is
-				// computed even if the subtraction is not performed
-                if ((getMostSignificantBit(s2) != getMostSignificantBit(s1)) &&
-                    (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
-                    if (_ac.maskIntegerOverflow()) {
-                        _ac.setIntegerOverflowFlag(true);
-					} else {
-						generateFault(ArithmeticFaultSubtype::IntegerOverflow);
-					}
-                }
-			}
 		private:
 			void dispatch(const Instruction& decodedInstruction) noexcept;
             bool cycle();

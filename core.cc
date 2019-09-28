@@ -96,12 +96,34 @@ namespace i960 {
 		}
     }
 
-#define X(kind, action) \
-    void Core:: performOperation(const REGFormatInstruction& inst, Operation:: subi ## kind ) noexcept { subiBase<ConditionCode:: action>(inst); } \
-    void Core:: performOperation(const REGFormatInstruction& inst, Operation:: subo ## kind ) noexcept { suboBase<ConditionCode:: action>(inst); } \
-    void Core:: performOperation(const REGFormatInstruction& inst, Operation :: sel ## kind ) noexcept { baseSelect<ConditionCode:: action>(inst); } 
-#include "conditional_kinds.def"
-#undef X
+    void Core::performOperation(const REGFormatInstruction& inst, ConditionalSubtractOrdinalOperation) noexcept {
+        if (auto mask = getConditionalSubtractMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
+            setDest(inst, getSrc2(inst) - getSrc1(inst));
+        }
+    }
+
+    void Core::performOperation(const REGFormatInstruction& inst, ConditionalSubtractIntegerOperation) noexcept {
+        auto s1 = getSrc1<Integer>(inst);
+        auto s2 = getSrc1<Integer>(inst);
+        if (auto mask = getConditionalSubtractMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
+            setDest<Integer>(inst, s2 - s1);
+        }
+        if ((getMostSignificantBit(s1) != getMostSignificantBit(s2)) && (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
+            if (_ac.maskIntegerOverflow()) {
+                _ac.setIntegerOverflowFlag(true);
+			} else {
+				generateFault(ArithmeticFaultSubtype::IntegerOverflow);
+			}
+		}
+    }
+
+    void Core::performOperation(const REGFormatInstruction& inst, SelectOperation) noexcept {
+        if (auto mask = getSelectMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
+            setDest(inst, getSrc2(inst));
+        } else {
+            setDest(inst, getSrc1(inst));
+        }
+    }
 	Core::Core(const CoreInformation& info, MemoryInterface& mem) : _mem(mem), _deviceId(info) { }
 	Ordinal Core::getStackPointerAddress() const noexcept {
         return _localRegisters[SP.getOffset()].get<Ordinal>();
@@ -233,13 +255,13 @@ namespace i960 {
 		setRegister(SP, tmp + boundaryAlignment);
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::addo) noexcept {
-        addoBase<ConditionCode::Unconditional>(inst);
+        setDest(inst, getSrc2(inst) + getSrc1(inst));
     }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::addi) noexcept {
-        addiBase<ConditionCode::Unconditional>(inst);
+        setDest<Integer>(inst, getSrc2<Integer>(inst) + getSrc1<Integer>(inst));
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::subo) noexcept {
-        suboBase<ConditionCode::Unconditional>(inst);
+        setDest(inst, getSrc2(inst) - getSrc1(inst));
     }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::mulo) noexcept {
         setDest(inst, getSrc2(inst) * getSrc1(inst));
@@ -698,7 +720,7 @@ namespace i960 {
 		// stack when a call happens
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::subi) noexcept {
-        subiBase<ConditionCode::Unconditional>(inst);
+        setDest<Integer>(inst, getSrc2<Integer>(inst) - getSrc1<Integer>(inst));
     }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::modtc) noexcept {
         // the instruction has its arguments reversed for some reason...
@@ -928,10 +950,26 @@ namespace i960 {
         setDest(inst, tmp);
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::concmpo) noexcept {
-        concmpBase(getSrc1(inst), getSrc2(inst));
+        if (_ac.conditionCodeBitSet<0b100>()) {
+            auto src1 = getSrc1(inst);
+            auto src2 = getSrc2(inst);
+            if (src1 <= src2) {
+                _ac.setConditionCode(0b010);
+            } else {
+                _ac.setConditionCode(0b001);
+            }
+        }
     }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::concmpi) noexcept {
-        concmpBase(getSrc1<Integer>(inst), getSrc2<Integer>(inst));
+        if (_ac.conditionCodeBitSet<0b100>()) {
+            auto src1 = getSrc1<Integer>(inst);
+            auto src2 = getSrc2<Integer>(inst);
+            if (src1 <= src2) {
+                _ac.setConditionCode(0b010);
+            } else {
+                _ac.setConditionCode(0b001);
+            }
+        }
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpinco) noexcept {
 		/// @todo add support for overflow detection
