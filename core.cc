@@ -70,7 +70,7 @@ namespace i960 {
             _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
         }
     }
-    void performOperation(const CTRLFormatInstruction&, FaultOperation) noexcept {
+    void Core::performOperation(const CTRLFormatInstruction& inst, FaultOperation) noexcept {
         if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); mask && _ac.getConditionCode() != 0b000) {
             generateFault(ConstraintFaultSubtype::Range);
         }
