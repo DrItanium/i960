@@ -85,7 +85,7 @@ namespace i960 {
         auto s1 = getSrc1<Integer>(inst);
         auto s2 = getSrc1<Integer>(inst);
         if (auto mask = getConditionalAddMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-            setDest<Integer>(inst, getSrc1<Integer>(inst) + getSrc2<Integer>(inst));
+            setDest<Integer>(inst, s1 + s2);
         }
         if ((getMostSignificantBit(s1) == getMostSignificantBit(s2)) && (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
             if (_ac.maskIntegerOverflow()) {
@@ -99,9 +99,7 @@ namespace i960 {
 #define X(kind, action) \
     void Core:: performOperation(const REGFormatInstruction& inst, Operation:: subi ## kind ) noexcept { subiBase<ConditionCode:: action>(inst); } \
     void Core:: performOperation(const REGFormatInstruction& inst, Operation:: subo ## kind ) noexcept { suboBase<ConditionCode:: action>(inst); } \
-    void Core:: performOperation(const REGFormatInstruction& inst, Operation :: sel ## kind ) noexcept { baseSelect<ConditionCode:: action>(inst); } \
-    void Core:: performOperation(const REGFormatInstruction& inst, Operation:: addo ## kind ) noexcept { addoBase<ConditionCode:: action>(inst) ; } \
-    void Core:: performOperation(const REGFormatInstruction& inst, Operation:: addi ## kind ) noexcept { addiBase<ConditionCode:: action>(inst) ; }
+    void Core:: performOperation(const REGFormatInstruction& inst, Operation :: sel ## kind ) noexcept { baseSelect<ConditionCode:: action>(inst); } 
 #include "conditional_kinds.def"
 #undef X
 	Core::Core(const CoreInformation& info, MemoryInterface& mem) : _mem(mem), _deviceId(info) { }

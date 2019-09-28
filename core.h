@@ -256,7 +256,7 @@ namespace i960 {
             }
 #define X(name, code, kind) \
             void performOperation(const kind ## FormatInstruction& , Operation:: name ) noexcept ;
-#define reg(name, code, __) X(name, code, REG)
+#define reg(name, code, __) //X(name, code, REG)
 #define mem(name, code, __) X(name, code, MEM)
 #define cobr(name, code, __) //X(name, code, COBR)
 #define ctrl(name, code, __) //X(name, code, CTRL)
@@ -288,8 +288,39 @@ namespace i960 {
                                                                 Operation::addine,
                                                                 Operation::addile,
                                                                 Operation::addio>;
-            void performOperation(const REGFormatInstruction& inst, ConditionalAddOrdinalOperation op) noexcept;
-            void performOperation(const REGFormatInstruction& inst, ConditionalAddIntegerOperation op) noexcept;
+            void performOperation(const REGFormatInstruction& inst, ConditionalAddOrdinalOperation) noexcept;
+            void performOperation(const REGFormatInstruction& inst, ConditionalAddIntegerOperation) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::inten) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::intdis) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::sysctl) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::icctl) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::dcctl) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::intctl) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::eshro) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::cmpib) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::cmpob) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::cmpis) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::cmpos) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::cmpi) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::cmpo) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::bswap) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::halt) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::opxor) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::nand) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::xnor) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::mark) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::fmark) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::emul) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::setbit) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::chkbit) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::cmpdeco) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::cmpdeci) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::concmpi) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::concmpo) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::atadd) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::atmod) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::scanbyte) noexcept;
+            void performOperation(const REGFormatInstruction& inst, Operation::modify) noexcept;
         private:
             // COBR format decls
             using TestOperation = std::variant<Operation::testg,
