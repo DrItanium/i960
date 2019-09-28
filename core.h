@@ -254,19 +254,31 @@ namespace i960 {
                             }
                         }, inst.getTarget());
             }
-#define X(name, code, kind) \
-            void performOperation(const kind ## FormatInstruction& , Operation:: name ) noexcept ;
-#define reg(name, code, __) //X(name, code, REG)
-#define mem(name, code, __) X(name, code, MEM)
-#define cobr(name, code, __) //X(name, code, COBR)
-#define ctrl(name, code, __) //X(name, code, CTRL)
-#include "opcodes.def"
-#undef X
-#undef reg
-#undef mem
-#undef cobr
-#undef ctrl
         private:
+            // MEM format instructions
+            void performOperation(const MEMFormatInstruction& inst, Operation::bx)    noexcept;
+            void performOperation(const MEMFormatInstruction& inst, Operation::balx)  noexcept;
+            void performOperation(const MEMFormatInstruction& inst, Operation::callx) noexcept;
+            void performOperation(const MEMFormatInstruction& inst, Operation::lda)   noexcept;
+            void performOperation(const MEMFormatInstruction& inst, Operation::ld)    noexcept;
+            void performOperation(const MEMFormatInstruction& inst, Operation::ldl)   noexcept;
+            void performOperation(const MEMFormatInstruction& inst, Operation::ldt)   noexcept;
+            void performOperation(const MEMFormatInstruction& inst, Operation::ldq)   noexcept;
+            void performOperation(const MEMFormatInstruction& inst, Operation::ldos)  noexcept;
+            void performOperation(const MEMFormatInstruction& inst, Operation::ldis)  noexcept;
+            void performOperation(const MEMFormatInstruction& inst, Operation::ldob)  noexcept;
+            void performOperation(const MEMFormatInstruction& inst, Operation::ldib)  noexcept;
+            void performOperation(const MEMFormatInstruction& inst, Operation::st)    noexcept;
+            void performOperation(const MEMFormatInstruction& inst, Operation::stl)   noexcept;
+            void performOperation(const MEMFormatInstruction& inst, Operation::stt)   noexcept;
+            void performOperation(const MEMFormatInstruction& inst, Operation::stq)   noexcept;
+            void performOperation(const MEMFormatInstruction& inst, Operation::stos)  noexcept;
+            void performOperation(const MEMFormatInstruction& inst, Operation::stis)  noexcept;
+            void performOperation(const MEMFormatInstruction& inst, Operation::stob)  noexcept;
+            void performOperation(const MEMFormatInstruction& inst, Operation::stib)  noexcept;
+
+        private:
+            // REG format instructions
             static constexpr Ordinal getConditionalAddMask(OpcodeValue value) noexcept {
                 // mask is in bits 4-6 of the opcode in reg format so it is the
                 // lowest three bits of the opcode like before.
