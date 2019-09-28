@@ -204,7 +204,7 @@ namespace i960 {
 		static constexpr Ordinal boundaryAlignment = 64u;
         // TODO, compute the effective address as needed from the REG
         auto newAddress = getSrc(inst);
-		Ordinal tmp = (getStackPointerAddress() + boundaryMarker) && (~boundaryMarker); // round to the next boundary
+		Ordinal tmp = (getStackPointerAddress() + boundaryMarker) & (~boundaryMarker); // round to the next boundary
 		setRegister(RIP, _instructionPointer);
 		// Code for handling multiple internal local register sets not implemented!
 		saveLocalRegisters();
@@ -473,7 +473,7 @@ namespace i960 {
 		if (auto denominator = getSrc1<Integer>(inst); denominator == 0) {
             setDest<Integer>(inst, -1);
 			generateFault(ArithmeticFaultSubtype::ZeroDivide);
-		} else if (auto numerator = getSrc2<Integer>(inst); (numerator == 0x8000'0000) && (denominator == -1)) {
+		} else if (auto numerator = getSrc2<Integer>(inst); (numerator == static_cast<Integer>(0x8000'0000)) && (denominator == -1)) {
 			// this one is a little strange, the manual states -2**31
 			// which is just 0x8000'0000 in signed integer, no clue why they
 			// described it like that. So I'm just going to put 0x8000'0000
@@ -493,7 +493,7 @@ namespace i960 {
 	constexpr Ordinal getLowestBit(Ordinal address) noexcept {
 		return address & 0b1;
 	}
-    void Core::performOperation(const MEMFormatInstruction& inst, Operation::ld) noexcept {
+    void Core::performOperation(const MEMFormatInstruction& , Operation::ld) noexcept {
 	//void Core::ld(SourceRegister src, DestinationRegister dest) noexcept {
 		// this is the base operation for load, src contains the fully computed value
 		// so this will probably be an internal register in most cases.
@@ -517,12 +517,12 @@ namespace i960 {
 	constexpr Ordinal maskToShortOrdinal(Ordinal value) noexcept {
 		return value & 0xFFFF;
 	}
-    void Core::performOperation(const MEMFormatInstruction& inst, Operation::ldob) noexcept {
+    void Core::performOperation(const MEMFormatInstruction& , Operation::ldob) noexcept {
 #if 0
 		dest.set<Ordinal>(maskToByteOrdinal(load(src.get<Ordinal>())));
 #endif
 	}
-    void Core::performOperation(const MEMFormatInstruction& inst, Operation::ldos) noexcept {
+    void Core::performOperation(const MEMFormatInstruction& , Operation::ldos) noexcept {
 #if 0
 		auto effectiveAddress = src.get<Ordinal>();
 		auto value = maskToShortOrdinal(load(effectiveAddress));
@@ -532,7 +532,7 @@ namespace i960 {
 		}
 #endif
 	}
-    void Core::performOperation(const MEMFormatInstruction& inst, Operation::ldib) noexcept {
+    void Core::performOperation(const MEMFormatInstruction& , Operation::ldib) noexcept {
 #if 0
 		auto effectiveAddress = src.get<Ordinal>();
 		auto result = (maskToByteOrdinal(load(effectiveAddress)));
@@ -543,7 +543,7 @@ namespace i960 {
 #endif
 	}
 
-    void Core::performOperation(const MEMFormatInstruction& inst, Operation::ldis) noexcept {
+    void Core::performOperation(const MEMFormatInstruction& , Operation::ldis) noexcept {
 #if 0
 		auto effectiveAddress = src.get<Ordinal>();
 		auto value = maskToShortOrdinal(load(effectiveAddress));
@@ -560,7 +560,7 @@ namespace i960 {
 		return value & 0b111;
 	}
 
-    void Core::performOperation(const MEMFormatInstruction& inst, Operation::ldl) noexcept {
+    void Core::performOperation(const MEMFormatInstruction&, Operation::ldl) noexcept {
 #if 0
 		if ((srcDestIndex % 2) != 0) {
 			generateFault(OperationFaultSubtype::InvalidOperand);
@@ -577,7 +577,7 @@ namespace i960 {
 	constexpr Ordinal getLowestFourBits(Ordinal value) noexcept {
 		return value & 0b1111;
 	}
-    void Core::performOperation(const MEMFormatInstruction& inst, Operation::ldt) noexcept {
+    void Core::performOperation(const MEMFormatInstruction&, Operation::ldt) noexcept {
 #if 0
 		if ((srcDestIndex % 4) != 0) {
 			generateFault(OperationFaultSubtype::InvalidOperand);
@@ -591,7 +591,7 @@ namespace i960 {
 		}
 #endif
 	}
-    void Core::performOperation(const MEMFormatInstruction& inst, Operation::ldq) noexcept {
+    void Core::performOperation(const MEMFormatInstruction&, Operation::ldq) noexcept {
 #if 0
 		if ((index % 4) != 0) {
 			generateFault(OperationFaultSubtype::InvalidOperand);
@@ -634,10 +634,9 @@ namespace i960 {
             setDest<Integer>(inst, numerator - (denominator / numerator) * denominator);
 		}
 	}
-    void Core::performOperation(const MEMFormatInstruction& inst, Operation::stl) noexcept {
+    void Core::performOperation(const MEMFormatInstruction&, Operation::stl) noexcept {
 		/// @todo check for valid register
         /// @todo reimplement and compute effective address
-        throw "stl unimplemented";
 #if 0
 		LongRegister src = makeLongRegister(ind);
 		store(dest.get<Ordinal>() + RegisterIndex<0>, src.getLowerHalf());
@@ -645,10 +644,9 @@ namespace i960 {
 #endif
 	}
 
-    void Core::performOperation(const MEMFormatInstruction& inst, Operation::stt) noexcept {
+    void Core::performOperation(const MEMFormatInstruction&, Operation::stt) noexcept {
         /// @todo reimplement and compute effective address
         /// @todo validate operand for wide register
-        throw "stt unimplemented";
 #if 0
 		TripleRegister src = makeTripleRegister(ind);
 		auto addr = dest.get<Ordinal>();
@@ -658,9 +656,8 @@ namespace i960 {
 #endif
 	}
 
-    void Core::performOperation(const MEMFormatInstruction& inst, Operation::stq) noexcept {
+    void Core::performOperation(const MEMFormatInstruction&, Operation::stq) noexcept {
         /// @todo reimplement and compute effective address
-        throw "stq unimplemented";
 #if 0
 		QuadRegister src = makeQuadRegister(ind);
 		auto addr = dest.get<Ordinal>();
@@ -740,11 +737,11 @@ namespace i960 {
     void Core::freeCurrentRegisterSet() noexcept {
         /// @todo implement
     }
-    bool Core::registerSetNotAllocated(const Operand& fp) noexcept {
+    bool Core::registerSetNotAllocated(const Operand& /*fp*/) noexcept {
         /// @todo implement
         return true;
     }
-    void Core::retrieveFromMemory(const Operand& fp) noexcept {
+    void Core::retrieveFromMemory(const Operand& /*fp*/) noexcept {
         /// @todo implement
     }
 	void Core::performOperation(const CTRLFormatInstruction&, Operation::ret) noexcept {
@@ -951,7 +948,7 @@ namespace i960 {
                                        static_cast<LongOrdinal>(getSrc1(inst)));
         }
 	}
-    void Core::performOperation(const MEMFormatInstruction& inst, Operation::lda) noexcept {
+    void Core::performOperation(const MEMFormatInstruction&, Operation::lda) noexcept {
         /// @todo finish this
 #if 0
 		dest.move(src);
@@ -1062,7 +1059,7 @@ namespace i960 {
     void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpib) noexcept {
         compare<ByteInteger>(getSrc1<ByteInteger>(inst), getSrc2<ByteInteger>(inst));
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::dcctl) noexcept {
+    void Core::performOperation(const REGFormatInstruction&, Operation::dcctl) noexcept {
 		// while I don't implement a data cache myself, this instruction must
 		// do something!
 		// TODO something
@@ -1070,23 +1067,23 @@ namespace i960 {
 			generateFault(TypeFaultSubtype::Mismatch);
 		}
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::eshro) noexcept {
+    void Core::performOperation(const REGFormatInstruction&, Operation::eshro) noexcept {
         /// @todo reimplement the following
 		/// dest.set<Ordinal>(makeLongRegister(src2Ind).get<LongOrdinal>() >> (src1.get<Ordinal>() & 0b11111));
     }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::icctl) noexcept {
+    void Core::performOperation(const REGFormatInstruction&, Operation::icctl) noexcept {
 		// TODO implement
 		if (!_pc.inSupervisorMode()) {
 			generateFault(TypeFaultSubtype::Mismatch);
 		}
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::intctl) noexcept {
+    void Core::performOperation(const REGFormatInstruction&, Operation::intctl) noexcept {
 		// TODO: implement
 		if (!_pc.inSupervisorMode()) {
 			generateFault(TypeFaultSubtype::Mismatch);
 		}
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::sysctl) noexcept {
+    void Core::performOperation(const REGFormatInstruction&, Operation::sysctl) noexcept {
 		// TODO: implement
 		if (!_pc.inSupervisorMode()) {
 			generateFault(TypeFaultSubtype::Mismatch);
@@ -1101,7 +1098,7 @@ namespace i960 {
 	LongRegister Core::makeLongRegister(ByteOrdinal index) noexcept {
 		return LongRegister(getRegister(index), getRegister(index + 1));
 	}
-	void Core::generateFault(ByteOrdinal faultType, ByteOrdinal faultSubtype) {
+	void Core::generateFault(ByteOrdinal /*faultType*/, ByteOrdinal /*faultSubtype*/) {
 		// get the fault table base address
 	//	auto faultTableBaseAddress = getFaultTableBaseAddress();
 	}
@@ -1171,7 +1168,7 @@ namespace i960 {
 			checksum = load(ibrPtr + 16 + (i * 4)) + checksum + carry;
 		}
 		if (checksum != 0) {
-			constexpr Ordinal failMsg = 0xFEFF'FF64; // fail bus confidence test
+			//constexpr Ordinal failMsg = 0xFEFF'FF64; // fail bus confidence test
 			//auto dummy = load(failMsg); // do load with address = failMsg
 			// loop forever with FAIL pin true (hardware does this)
 			// for (;;);
@@ -1294,28 +1291,28 @@ namespace i960 {
 		setRegister(SP, tmp + 64);
     }
     void
-    Core::performOperation(const MEMFormatInstruction& inst, Operation::balx) noexcept {
+    Core::performOperation(const MEMFormatInstruction&, Operation::balx) noexcept {
         /// @todo implement this
     }
     void
-    Core::performOperation(const MEMFormatInstruction& inst, Operation::st) noexcept {
+    Core::performOperation(const MEMFormatInstruction&, Operation::st) noexcept {
         /// @todo implement computation of effective address
     }
 
     void
-    Core::performOperation(const MEMFormatInstruction& inst, Operation::stib) noexcept {
+    Core::performOperation(const MEMFormatInstruction&, Operation::stib) noexcept {
         /// @todo implement computation of effective address
     }
     void
-    Core::performOperation(const MEMFormatInstruction& inst, Operation::stob) noexcept {
+    Core::performOperation(const MEMFormatInstruction&, Operation::stob) noexcept {
         /// @todo implement computation of effective address
     }
     void
-    Core::performOperation(const MEMFormatInstruction& inst, Operation::stis) noexcept {
+    Core::performOperation(const MEMFormatInstruction&, Operation::stis) noexcept {
         /// @todo implement computation of effective address
     }
     void
-    Core::performOperation(const MEMFormatInstruction& inst, Operation::stos) noexcept {
+    Core::performOperation(const MEMFormatInstruction&, Operation::stos) noexcept {
         /// @todo implement computation of effective address
     }
       

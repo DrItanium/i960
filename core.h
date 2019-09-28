@@ -105,7 +105,7 @@ namespace i960 {
         return (value & unusedAddressBits) == 0;
     }
 
-    constexpr auto lowestThreeBitsOfMajorOpcode(OpcodeValue v) noexcept {
+    constexpr Ordinal lowestThreeBitsOfMajorOpcode(OpcodeValue v) noexcept {
         return (v & 0b111'0000) >> 4;
     }
 
@@ -154,7 +154,6 @@ namespace i960 {
             inline auto getDoubleRegister(const Operand& op) noexcept { return DoubleRegister(getRegister(op), getRegister(op.next())); }
             inline auto getTripleRegister(const Operand& op) noexcept { return TripleRegister(getRegister(op), getRegister(op.next()), getRegister(op.next().next())); }
             inline auto getQuadRegister(const Operand& op) noexcept { return QuadRegister(getRegister(op), getRegister(op.next()), getRegister(op.next().next()), getRegister(op.next().next().next())); }
-            inline SourceRegister& getRegister(const Operand& op) const noexcept { return getRegister(static_cast<ByteOrdinal>(op)); }
 
             template<typename T>
             void setRegister(ByteOrdinal index, T value) noexcept {
