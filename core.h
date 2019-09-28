@@ -230,7 +230,7 @@ namespace i960 {
 			void generateFault(ByteOrdinal faultType, ByteOrdinal faultSubtype = 0);
 			template<typename T>
 			void generateFault(T faultSubtype) {
-				generateFault(ByteOrdinal(FaultAssociation<T>::ParentFaultType), ByteOrdinal(faultSubtype));
+				generateFault(static_cast<ByteOrdinal>(FaultAssociation<T>::ParentFaultType), static_cast<ByteOrdinal>(faultSubtype));
 			}
         private:
             // core dispatch logic
