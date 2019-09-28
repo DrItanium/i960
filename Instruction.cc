@@ -89,8 +89,8 @@ namespace i960 {
     }
     MEMFormatInstruction::MEMFormatInstruction(const Instruction& inst) : Base(inst), 
     HasSrcDest(decodeSrcDest(inst.getLowerHalf())),
-    HasSrc2(decodeSrc2(inst.getLowerHalf())),
     HasSrc1(decodeSrc1(inst.getLowerHalf())),
+    HasSrc2(decodeSrc2(inst.getLowerHalf())),
     _mode(decodeMask(inst.getLowerHalf())),
     _offset(decode<Ordinal, ByteOrdinal, MEMAoffsetMask>(inst.getLowerHalf())),
     _scale(decode<Ordinal, ByteOrdinal, MEMBscaleMask, 7>(inst.getLowerHalf())),
