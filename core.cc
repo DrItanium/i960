@@ -53,11 +53,32 @@ namespace i960 {
             _instructionPointer = computeAlignedAddress(_instructionPointer);
         }
     }
+    void Core::performOperation(const CTRLFormatInstruction& inst, Operation::bno) noexcept {
+        if (_ac.getConditionCode() == 0) {
+            auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
+            _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
+        }
+    }
+    void Core::performOperation(const CTRLFormatInstruction&, Operation::faultno) noexcept {
+        if (_ac.getConditionCode() == 0b000) {
+            generateFault(ConstraintFaultSubtype::Range);
+        }
+    }
+    void Core::performOperation(const CTRLFormatInstruction& inst, ConditionalBranchOperation) noexcept {
+        if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
+            auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
+            _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
+        }
+    }
+    void performOperation(const CTRLFormatInstruction&, FaultOperation) noexcept {
+        if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); mask && _ac.getConditionCode() != 0b000) {
+            generateFault(ConstraintFaultSubtype::Range);
+        }
+
+    }
 #define X(kind, action) \
     void Core:: performOperation(const REGFormatInstruction& inst, Operation:: subi ## kind ) noexcept { subiBase<ConditionCode:: action>(inst); } \
     void Core:: performOperation(const REGFormatInstruction& inst, Operation:: subo ## kind ) noexcept { suboBase<ConditionCode:: action>(inst); } \
-    void Core:: performOperation(const CTRLFormatInstruction&, Operation:: fault ## kind ) noexcept { genericFault<ConditionCode:: action > ( ); } \
-    void Core:: performOperation(const CTRLFormatInstruction& inst, Operation:: b ## kind ) noexcept { branchIfGeneric<ConditionCode:: action > ( inst.getDisplacement() ); } \
     void Core:: performOperation(const REGFormatInstruction& inst, Operation :: sel ## kind ) noexcept { baseSelect<ConditionCode:: action>(inst); } \
     void Core:: performOperation(const REGFormatInstruction& inst, Operation:: addo ## kind ) noexcept { addoBase<ConditionCode:: action>(inst) ; } \
     void Core:: performOperation(const REGFormatInstruction& inst, Operation:: addi ## kind ) noexcept { addiBase<ConditionCode:: action>(inst) ; }
@@ -306,7 +327,8 @@ namespace i960 {
         }
     }
 	void Core::performOperation(const CTRLFormatInstruction& inst, Operation::b) noexcept {
-        branchIfGeneric<ConditionCode::Unconditional>(inst.getDisplacement());
+        auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
+        _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
 	}
     void Core::performOperation(const MEMFormatInstruction& inst, Operation::bx) noexcept {
         _instructionPointer = getSrc(inst);
@@ -314,7 +336,8 @@ namespace i960 {
     }
     void Core::performOperation(const CTRLFormatInstruction& inst, Operation::bal) noexcept {
 		_globalRegisters[14].set<Ordinal>(_instructionPointer + 4);
-        branchIfGeneric<ConditionCode::Unconditional>(inst.getDisplacement());
+        auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
+        _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
     }
 
 	constexpr Ordinal computeCheckBitMask(Ordinal value) noexcept {

@@ -223,7 +223,8 @@ namespace i960 {
             constexpr auto getT() const noexcept { return _t; }
             EncodedInstruction encode() const noexcept override;
         private:
-            Integer _displacement : 22;
+            // signed 24-bit value since the lowest two bits are always zero
+            Integer _displacement : 24;
             bool _t;
         public:
             const auto& getTarget() const noexcept { return _target; }

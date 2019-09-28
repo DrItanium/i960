@@ -108,14 +108,14 @@ namespace i960 {
 
 
     CTRLFormatInstruction::CTRLFormatInstruction(const Instruction& inst) : Base(inst), 
-    _displacement(decode<Ordinal, Integer, 0x00FFFFFC, 2>(inst.getLowerHalf())),
+    _displacement(decode<Ordinal, Integer, 0x00FFFFFC, 0>(inst.getLowerHalf())),
     _t(decode<Ordinal, bool, 0b10>(inst.getLowerHalf())),
     _target(Operation::translate(inst.getOpcode(), Operation::CTRLClass())) { }
 
     EncodedInstruction
     CTRLFormatInstruction::encode() const noexcept {
         // mask out the least significant bit to follow the ctrl format
-        return i960::encode<Ordinal, Integer, 0x00FFFFFC, 2>(
+        return i960::encode<Ordinal, Integer, 0x00FFFFFC, 0>(
                 i960::encode<Ordinal, bool, 0b10, 1>(encodeMajorOpcode(0, getOpcode()), _t),
                 _displacement) & 0xFFFF'FFFE;
     }
@@ -132,7 +132,7 @@ namespace i960 {
         auto instruction = encodeMajorOpcode(0, getOpcode());
         instruction = encodeSrcDest(instruction, getSrc1());
         instruction = encodeSrc2(instruction, getSrc2());
-        instruction = i960::encode<Ordinal, Integer, 0b1111'1111'1100, 2>(instruction, _displacement);
+        instruction = i960::encode<Ordinal, Integer, 0b1111'1111'1100, 0>(instruction, _displacement);
         return Flags::encode(instruction);
     }
 

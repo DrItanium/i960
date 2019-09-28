@@ -260,7 +260,7 @@ namespace i960 {
 #define reg(name, code, __) X(name, code, REG)
 #define mem(name, code, __) X(name, code, MEM)
 #define cobr(name, code, __) //X(name, code, COBR)
-#define ctrl(name, code, __) X(name, code, CTRL)
+#define ctrl(name, code, __) //X(name, code, CTRL)
 #include "opcodes.def"
 #undef X
 #undef reg
@@ -296,6 +296,30 @@ namespace i960 {
             void performOperation(const COBRFormatInstruction&, TestOperation) noexcept;
             void performOperation(const COBRFormatInstruction&, CompareOrdinalAndBranchOperation) noexcept;
             void performOperation(const COBRFormatInstruction&, CompareIntegerAndBranchOperation) noexcept;
+        private:
+            // CTRL format instructions
+            using ConditionalBranchOperation = std::variant<Operation::bg,
+                                                            Operation::be,
+                                                            Operation::bge,
+                                                            Operation::bl,
+                                                            Operation::bne,
+                                                            Operation::ble,
+                                                            Operation::bo>;
+            using FaultOperation = std::variant<Operation::faultg,
+                                                Operation::faulte,
+                                                Operation::faultge,
+                                                Operation::faultl,
+                                                Operation::faultne,
+                                                Operation::faultle,
+                                                Operation::faulto>;
+            void performOperation(const CTRLFormatInstruction&, Operation::b) noexcept;
+            void performOperation(const CTRLFormatInstruction&, Operation::call) noexcept;
+            void performOperation(const CTRLFormatInstruction&, Operation::ret) noexcept;
+            void performOperation(const CTRLFormatInstruction&, Operation::bal) noexcept;
+            void performOperation(const CTRLFormatInstruction&, Operation::bno) noexcept;
+            void performOperation(const CTRLFormatInstruction&, Operation::faultno) noexcept;
+            void performOperation(const CTRLFormatInstruction&, ConditionalBranchOperation) noexcept;
+            void performOperation(const CTRLFormatInstruction&, FaultOperation) noexcept;
 
         private:
             void syncf() noexcept;
@@ -319,19 +343,6 @@ namespace i960 {
                     return _ac.conditionCodeIs<static_cast<Ordinal>(cc)>();
                 } else {
                     return _ac.conditionCodeBitSet<static_cast<Ordinal>(cc)>();
-                }
-            }
-            template<ConditionCode cc>
-            void branchIfGeneric(Integer displacement) noexcept {
-                if (conditionCodeIs<cc>()) {
-                    static constexpr auto checkMask = 0x7F'FFFC;
-                    union {
-                        Integer _value : 24;
-                    } conv;
-                    conv._value = displacement;
-                    conv._value = conv._value > checkMask ? checkMask : conv._value;
-                    _instructionPointer += conv._value;
-                    _instructionPointer = computeAlignedAddress(_instructionPointer); // make sure the least significant two bits are clear
                 }
             }
             template<typename T>
@@ -412,18 +423,6 @@ namespace i960 {
 					}
                 }
 			}
-		private:
-            template<ConditionCode code>
-            void genericFault() noexcept {
-                if (conditionCodeIs<code>()) {
-                    generateFault(ConstraintFaultSubtype::Range);
-                }
-            }
-			// auto generated routines
-#define X(kind, __) \
-            void b ## kind (Integer) noexcept;
-#include "conditional_kinds.def"
-#undef X
 		private:
 			void dispatch(const Instruction& decodedInstruction) noexcept;
             bool cycle();
