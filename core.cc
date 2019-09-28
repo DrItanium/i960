@@ -74,8 +74,28 @@ namespace i960 {
         if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); mask && _ac.getConditionCode() != 0b000) {
             generateFault(ConstraintFaultSubtype::Range);
         }
-
     }
+    void Core::performOperation(const REGFormatInstruction& inst, ConditionalAddOrdinalOperation) noexcept {
+        if (auto mask = getConditionalAddMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
+            setDest(inst, getSrc1(inst) + getSrc2(inst));
+        }
+    }
+
+    void Core::performOperation(const REGFormatInstruction& inst, ConditionalAddIntegerOperation) noexcept {
+        auto s1 = getSrc1<Integer>(inst);
+        auto s2 = getSrc1<Integer>(inst);
+        if (auto mask = getConditionalAddMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
+            setDest<Integer>(inst, getSrc1<Integer>(inst) + getSrc2<Integer>(inst));
+        }
+        if ((getMostSignificantBit(s1) == getMostSignificantBit(s2)) && (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
+            if (_ac.maskIntegerOverflow()) {
+                _ac.setIntegerOverflowFlag(true);
+			} else {
+				generateFault(ArithmeticFaultSubtype::IntegerOverflow);
+			}
+		}
+    }
+
 #define X(kind, action) \
     void Core:: performOperation(const REGFormatInstruction& inst, Operation:: subi ## kind ) noexcept { subiBase<ConditionCode:: action>(inst); } \
     void Core:: performOperation(const REGFormatInstruction& inst, Operation:: subo ## kind ) noexcept { suboBase<ConditionCode:: action>(inst); } \

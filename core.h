@@ -267,6 +267,30 @@ namespace i960 {
 #undef cobr
 #undef ctrl
         private:
+            static constexpr Ordinal getConditionalAddMask(OpcodeValue value) noexcept {
+                // mask is in bits 4-6 of the opcode in reg format so it is the
+                // lowest three bits of the opcode like before.
+                return lowestThreeBitsOfMajorOpcode(value);
+            }
+            using ConditionalAddOrdinalOperation = std::variant<Operation::addono,
+                                                                Operation::addog,
+                                                                Operation::addoe,
+                                                                Operation::addoge,
+                                                                Operation::addol,
+                                                                Operation::addone,
+                                                                Operation::addole,
+                                                                Operation::addoo>;
+            using ConditionalAddIntegerOperation = std::variant<Operation::addino,
+                                                                Operation::addig,
+                                                                Operation::addie,
+                                                                Operation::addige,
+                                                                Operation::addil,
+                                                                Operation::addine,
+                                                                Operation::addile,
+                                                                Operation::addio>;
+            void performOperation(const REGFormatInstruction& inst, ConditionalAddOrdinalOperation op) noexcept;
+            void performOperation(const REGFormatInstruction& inst, ConditionalAddIntegerOperation op) noexcept;
+        private:
             // COBR format decls
             using TestOperation = std::variant<Operation::testg,
                                                Operation::teste,
