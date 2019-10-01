@@ -1,1 +1,1 @@
-Thanks to Rob Krum for finding this source code.
+Thanks to Rob Krum for finding the source code to NINDY
