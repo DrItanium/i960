@@ -1,0 +1,32 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+ <head>
+  <title>Index of /afs/cs/project/cmcl/link.vcnectar/gnu960/src/gcdm960/sun4</title>
+ </head>
+ <body>
+<h1>Index of /afs/cs/project/cmcl/link.vcnectar/gnu960/src/gcdm960/sun4</h1>
+<pre><img src="/icons/blank.gif" alt="Icon "> <a href="?C=N;O=A">Name</a>                    <a href="?C=M;O=A">Last modified</a>      <a href="?C=S;O=A">Size</a>  <a href="?C=D;O=A">Description</a><hr><img src="/icons/back.gif" alt="[DIR]"> <a href="/afs/cs/project/cmcl/link.vcnectar/gnu960/src/gcdm960/">Parent Directory</a>                             -   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="ver960.c">ver960.c</a>                14-Jun-1996 18:17   92   
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="Makefile">Makefile</a>                13-Jun-1996 16:15  6.9K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="subst.h">subst.h</a>                 04-Jun-1996 11:29  3.2K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="subst.c">subst.c</a>                 04-Jun-1996 11:29   59K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="regex.c">regex.c</a>                 04-Jun-1996 11:29  160K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="parmchk.h">parmchk.h</a>               04-Jun-1996 11:29  102   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="parmchk.c">parmchk.c</a>               04-Jun-1996 11:29  3.8K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="inline.h">inline.h</a>                04-Jun-1996 11:29  1.5K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="inline.c">inline.c</a>                04-Jun-1996 11:29   30K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="gcdm960.h">gcdm960.h</a>               04-Jun-1996 11:29  1.8K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="gcdm960.c">gcdm960.c</a>               04-Jun-1996 11:29   19K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="fastmem.h">fastmem.h</a>               04-Jun-1996 11:29  1.6K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="fastmem.c">fastmem.c</a>               04-Jun-1996 11:29   13K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="defprof.h">defprof.h</a>               04-Jun-1996 11:29  1.3K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="defprof.c">defprof.c</a>               04-Jun-1996 11:29  7.8K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="compile.c">compile.c</a>               04-Jun-1996 11:29   12K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="cgprof.h">cgprof.h</a>                04-Jun-1996 11:29  1.6K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="cgprof.c">cgprof.c</a>                04-Jun-1996 11:29  7.8K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="callgrph.h">callgrph.h</a>              04-Jun-1996 11:29  5.0K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="callgrph.c">callgrph.c</a>              04-Jun-1996 11:29   12K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="assert.h">assert.h</a>                04-Jun-1996 11:29  254   
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="_version">_version</a>                04-Jun-1996 11:29    4   
+<hr></pre>
+</body></html>

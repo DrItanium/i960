@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+ <head>
+  <title>Index of /afs/cs/project/cmcl/link.vcnectar/gnu960/i386_nbsd1/include</title>
+ </head>
+ <body>
+<h1>Index of /afs/cs/project/cmcl/link.vcnectar/gnu960/i386_nbsd1/include</h1>
+<pre><img src="/icons/blank.gif" alt="Icon "> <a href="?C=N;O=A">Name</a>                    <a href="?C=M;O=D">Last modified</a>      <a href="?C=S;O=A">Size</a>  <a href="?C=D;O=A">Description</a><hr><img src="/icons/back.gif" alt="[DIR]"> <a href="/afs/cs/project/cmcl/link.vcnectar/gnu960/i386_nbsd1/">Parent Directory</a>                             -   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="__macros.h">__macros.h</a>              04-Jun-1996 11:26  3.2K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="afpfault.h">afpfault.h</a>              04-Jun-1996 11:26  4.3K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="alloca.h">alloca.h</a>                04-Jun-1996 11:26  200   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="ar.h">ar.h</a>                    04-Jun-1996 11:26  2.6K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="assert.h">assert.h</a>                04-Jun-1996 11:26  645   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="coff.h">coff.h</a>                  04-Jun-1996 11:26   15K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="ctype.h">ctype.h</a>                 04-Jun-1996 11:26  2.3K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="errno.h">errno.h</a>                 04-Jun-1996 11:26  1.4K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="fcntl.h">fcntl.h</a>                 04-Jun-1996 11:26   23   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="float.h">float.h</a>                 04-Jun-1996 11:26  1.5K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="fpsl.h">fpsl.h</a>                  04-Jun-1996 11:26  4.8K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="ldfcn.h">ldfcn.h</a>                 04-Jun-1996 11:26  6.0K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="limits.h">limits.h</a>                04-Jun-1996 11:26  2.0K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="locale.h">locale.h</a>                04-Jun-1996 11:26  935   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="math.h">math.h</a>                  04-Jun-1996 11:26   12K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="reent.h">reent.h</a>                 04-Jun-1996 11:26  1.8K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="search.h">search.h</a>                04-Jun-1996 11:26  471   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="setjmp.h">setjmp.h</a>                04-Jun-1996 11:26  563   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="signal.h">signal.h</a>                04-Jun-1996 11:26  1.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="stat.h">stat.h</a>                  04-Jun-1996 11:26   22   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="std.h">std.h</a>                   04-Jun-1996 11:26  5.2K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="stdarg.h">stdarg.h</a>                04-Jun-1996 11:26  296   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="stddef.h">stddef.h</a>                04-Jun-1996 11:26  539   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="stdio.h">stdio.h</a>                 04-Jun-1996 11:26  5.8K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="stdlib.h">stdlib.h</a>                04-Jun-1996 11:26  3.3K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="string.h">string.h</a>                04-Jun-1996 11:26  2.5K  
+<img src="/icons/folder.gif" alt="[DIR]"> <a href="sys/">sys/</a>                    04-Jun-1996 11:26    -   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="time.h">time.h</a>                  04-Jun-1996 11:26  1.5K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="types.h">types.h</a>                 04-Jun-1996 11:26   23   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="unalign.h">unalign.h</a>               04-Jun-1996 11:26  8.6K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="varargs.h">varargs.h</a>               04-Jun-1996 11:26  396   
+<hr></pre>
+</body></html>

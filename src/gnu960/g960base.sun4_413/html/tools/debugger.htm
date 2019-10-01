@@ -1,0 +1,264 @@
+<HTML>
+
+<HEAD>
+
+<TITLE>Debugger (gdb960)</TITLE>
+
+<META NAME="GENERATOR" CONTENT="Internet Assistant for Microsoft Word 2.0z Beta">
+</HEAD>
+
+<BODY>
+
+<H1>
+<CENTER>
+gdb960 <A NAME="top">Debugger </A>
+</CENTER>
+</H1>
+
+<HR>
+
+<P>
+gdb960 is a source-level debugger for C programs compiled for
+a commercial i960 processor. gdb960 runs on a DOS, Unix, or Windows
+95 host system and debugs, over a serial line, a program running
+on the i960 processor with the MON960 debug monitor.
+<P>
+gdb960 can debug an executable ELF/DWARF2 object file that conforms
+to the 80960 Embedded ABI specification. It can also debug b.out
+and COFF executable object files created with ic960 or gcc960.
+<P>
+The gdb960 debugger invocation command is:
+<DL>
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">gdb960 </FONT></B><FONT SIZE=4 FACE="Courier New">[<B>
+-</B><I>option</I><B> </B>]... [ <I>file</I> ]</FONT></TT> 
+</DL>
+
+<P>
+Each invocation option must be preceded by a <TT><B><FONT SIZE=4 FACE="Courier New">-</FONT></B></TT>
+character. (On DOS, you can also use a <TT><B><FONT SIZE=4 FACE="Courier New">/</FONT></B></TT>
+character.) Click on <A HREF="#options">option</A> for a list
+of gdb960 invocation options. All options that take an argument
+allow white space between the option and the argument.
+<P>
+If <TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>
+is given on the command line, gdb960 will read symbolic debug
+information from the file, try to connect to the target system,
+and if successful, download the file. For related information,
+see <A HREF="#files">Specifying gdb960's Input Files</A>.
+<P>
+Once the invocation command has been processed, gdb960 will:
+<UL>
+<LI>Check your home directory for a <TT><FONT SIZE=4 FACE="Courier New">.<B>gdbinit</B></FONT></TT>
+(Unix) or <TT><B><FONT SIZE=4 FACE="Courier New">init.gdb</FONT></B></TT>
+(DOS) file. If it exists (and if <TT><B><FONT SIZE=4 FACE="Courier New">nx</FONT></B></TT>
+was not specified), gdb960 executes the commands in it.
+<LI>Check the current working directory for a <TT><FONT SIZE=4 FACE="Courier New">.<B>gdbinit</B></FONT></TT>
+(Unix) or <TT><B><FONT SIZE=4 FACE="Courier New">init.gdb</FONT></B></TT>
+(DOS) file. If it exists (and if <TT><B><FONT SIZE=4 FACE="Courier New">nx</FONT></B></TT>
+was not specified), gdb960 executes the commands in it.
+<LI>If you specified a remote serial device in the invocation
+command (or a PCI device on a PCI-enabled DOS host, and you are
+using the Cyclone PLX baseboard) connect to the target using the
+specified device.
+<LI>If you specified <TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>
+or <TT><B><FONT SIZE=4 FACE="Courier New">se</FONT></B><FONT SIZE=4 FACE="Courier New">
+<I>file</I></FONT></TT> in the invocation command, load symbol
+information from file and download it to the target. 
+</UL>
+
+<HR>
+
+<H2><A NAME="options">gdb960 Debugger Options</A> </H2>
+
+<HR>
+
+<P>
+The gdb960 invocation options are listed below. The options can
+be abbreviated, as long as the abbreviations are unambiguous.
+<UL>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">b </FONT></B><I><FONT SIZE=4 FACE="Courier New">rate
+<BR>
+</FONT></I></TT>Sets the baud rate of the serial port used for
+debugging to <TT><I><FONT SIZE=4 FACE="Courier New">rate</FONT></I></TT>.
+The default baud rate is 38400. MON960 supports baud rates of
+2400, 4800, 9600, 19200, and 38400 bps; all of these may not be
+available on every host. Some hosts also support the additional
+higher rates of 57600 and 115200 bps.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">batch</FONT></B><FONT SIZE=4 FACE="Courier New">
+<BR>
+</FONT></TT>Run in batch mode. gdb960 exits with code 0 after
+processing all the command files specified with <TT><B><FONT SIZE=4 FACE="Courier New">x</FONT></B><FONT SIZE=4 FACE="Courier New">
+</FONT></TT>(and <B>.</B><TT><B><FONT SIZE=4 FACE="Courier New">gdbinit</FONT></B></TT>,
+if not inhibited). gdb960 exits with non-zero status if an error
+occurs in executing the gdb960 commands in the command files.
+<BR>
+Batch mode may be useful for running gdb960 as a filter (for example,
+to download and run a series of programs and capture their output).
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">brk</FONT></B><FONT SIZE=4 FACE="Courier New">
+<BR>
+</FONT></TT>Sends a break (about 1/4 second long) to the target
+system after opening the connection but before trying to talk.
+If the target board is equipped with a break-triggered reset circuit,
+this allows the user to connect to a running system.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">cd </FONT></B><I><FONT SIZE=4 FACE="Courier New">dir
+<BR>
+</FONT></I></TT><STRONG>Changes</STRONG> the current working directory
+to <TT><I><FONT SIZE=4 FACE="Courier New">dir</FONT></I></TT>.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">command </FONT></B><I><FONT SIZE=4 FACE="Courier New">file
+<BR>
+</FONT></I></TT>Executes gdb960 commands from <TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>
+as soon as this option is encountered on the invocation line.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">directory </FONT></B><I><FONT SIZE=4 FACE="Courier New">dir
+<BR>
+</FONT></I></TT>Adds directory <TT><I><FONT SIZE=4 FACE="Courier New">dir</FONT></I></TT>
+to the list of directories to search for source files.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">exec </FONT></B><I><FONT SIZE=4 FACE="Courier New">file
+<BR>
+</FONT></I></TT>Downloads the executable object file <TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>
+to the i960 processor for debugging. Does not read symbols from
+<TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">G<BR>
+</FONT></B></TT>Informs gdb960 that the target has big-endian
+memory.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">help<BR>
+</FONT></B></TT>Displays online help.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">nx<BR>
+</FONT></B></TT>Inhibits execution of <B>.</B><TT><B><FONT SIZE=4 FACE="Courier New">gdbinit</FONT></B></TT>
+startup command file. On DOS hosts, the command file is <TT><B><FONT SIZE=4 FACE="Courier New">init.gdb</FONT></B></TT>
+instead of <TT><B><FONT SIZE=4 FACE="Courier New">.gdbinit</FONT></B></TT>.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">parallel </FONT></B><I><FONT SIZE=4 FACE="Courier New">device
+<BR>
+</FONT></I></TT>Downloads using <TT><I><FONT SIZE=4 FACE="Courier New">device</FONT></I></TT>
+rather than the serial device specified with <TT><B><FONT SIZE=4 FACE="Courier New">r</FONT></B></TT>.
+This option affects downloads only. Other debugger/monitor communications
+use the serial device.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">pci<BR>
+</FONT></B></TT>(DOS / PCI / Cyclone baseboard only) Uses the
+PCI bus for downloading, and for debugger/monitor communication,
+if <TT><B><FONT SIZE=4 FACE="Courier New">r</FONT></B></TT> is
+not also used. The default target is the Cyclone/PLX baseboard.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">pcib </FONT></B><I><FONT SIZE=4 FACE="Courier New">busno
+devno funcno<BR>
+</FONT></I></TT>(DOS / PCI / Cyclone baseboard only) Uses the
+PCI bus for downloading, and for debugger/monitor communication,
+if <TT><B><FONT SIZE=4 FACE="Courier New">r</FONT></B></TT> is
+not also used. Select the target by specifying a PCI address.
+The arguments must be specified in hex.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">pcic io<BR>
+</FONT></B></TT>(DOS / PCI / Cyclone baseboard only) Uses I/O
+instructions when communicating with the PCI device. This is the
+default PCI configuration.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">pcic mmap<BR>
+</FONT></B></TT>(DOS / PCI / Cyclone baseboard only) Uses memory
+instructions when communicating with the PCI device. This allows
+faster target access, but may not work with all PCI system configurations.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">pciv </FONT></B><I><FONT SIZE=4 FACE="Courier New">vendorid</FONT></I><FONT SIZE=4 FACE="Courier New">
+<I>deviceid<BR>
+</I></FONT></TT>(DOS / PCI / Cyclone baseboard only) Uses the
+PCI bus for downloading, and for debugger/monitor communication,
+if <TT><B><FONT SIZE=4 FACE="Courier New">r</FONT></B></TT> is
+not also used. Select the PCI target by specifying a PCI vendor
+and device ID. The arguments must be specified in hex.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">pc</FONT></B></TT>
+<TT><I><FONT SIZE=4 FACE="Courier New">picoffset<BR>
+</FONT></I></TT>Debugs position-independent code. The code will
+be downloaded at <TT><I><FONT SIZE=4 FACE="Courier New">link-time-address
+</FONT></I><B><FONT SIZE=4 FACE="Courier New">+</FONT></B><I><FONT SIZE=4 FACE="Courier New">
+picoffset</FONT></I></TT> instead of the usual <TT><I><FONT SIZE=4 FACE="Courier New">link-time-address</FONT></I></TT>.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">pd</FONT></B></TT>
+<TT><I><FONT SIZE=4 FACE="Courier New">pidoffset<BR>
+</FONT></I></TT>Debugs position-independent data. Data and bss
+sections will be downloaded at <TT><I><FONT SIZE=4 FACE="Courier New">link-time-address
+</FONT></I><B><FONT SIZE=4 FACE="Courier New">+</FONT></B><I><FONT SIZE=4 FACE="Courier New">
+pidoffset</FONT></I></TT> instead of the usual <TT><I><FONT SIZE=4 FACE="Courier New">link-time-address</FONT></I></TT>.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">px </FONT></B><I><FONT SIZE=4 FACE="Courier New">offset
+<BR>
+</FONT></I></TT>Debugs position-independent code and data. Code,
+data and bss sections will be downloaded at <TT><I><FONT SIZE=4 FACE="Courier New">link-time-address
++ offset</FONT></I></TT> instead of the usual <TT><I><FONT SIZE=4 FACE="Courier New">link-time-address</FONT></I></TT>.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">quiet<BR>
+</FONT></B></TT>Suppresses the normal (verbose) startup messages.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">r <I><B>device<BR>
+</B></I></FONT></B></TT>Opens communications with the target board
+using serial device <TT><I><FONT SIZE=4 FACE="Courier New">device</FONT></I></TT>.
+On UNIX hosts, device <TT><FONT SIZE=4 FACE="Courier New">/dev/tty<I>nn</I></FONT></TT>
+can be abbreviated as <TT><I><FONT SIZE=4 FACE="Courier New">nn</FONT></I></TT>.
+On DOS hosts, use the serial port name (typically COM1 or COM2)
+instead of <TT><FONT SIZE=4 FACE="Courier New">/dev/tty<I>nn</I></FONT></TT>.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">readnow<BR>
+</FONT></B></TT>Fully reads symbol files on the first access.
+This defeats gdb960's symbol read-on-demand algorithm and is not
+recommended.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">se </FONT></B><I><FONT SIZE=4 FACE="Courier New">file
+<BR>
+</FONT></I></TT>Loads symbolic debug information from <TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>,
+marks it as the file to debug, and downloads it for debugging.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">symbols </FONT></B><I><FONT SIZE=4 FACE="Courier New">file
+<BR>
+</FONT></I></TT>Loads symbolic debug information from <TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">t mon960<BR>
+</FONT></B></TT>Specifies MON960 as gdb960's target. MON960 is
+the default target, and currently the only supported target. Therefore,
+this option is not needed.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">v960<BR>
+</FONT></B></TT>Prints version information about gdb960 on <TT><B><FONT SIZE=4 FACE="Courier New">stdout</FONT></B></TT>
+and exits.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">x </FONT></B><I><FONT SIZE=4 FACE="Courier New">file
+<BR>
+</FONT></I></TT>Executes gdb960 commands from <TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>
+as soon as this option is encountered on the invocation line.
+This works as a synonym for <TT><B><FONT SIZE=4 FACE="Courier New">command</FONT></B></TT>.
+
+</UL>
+
+<HR>
+
+<H2><A NAME="files">Specifying gdb960's Input Files</A> </H2>
+
+<HR>
+
+<P>
+Normally, gdb960 is given its file names as command-line arguments.
+You can also change to a different file while running gdb960 using
+gdb960's file specification commands, listed below.
+<DL>
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">exec-file </FONT></B><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>
+
+<DD>Specifies <TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>
+as the object file for future downloads, start address, and disassembly.
+Can be abbreviated: <TT><B><FONT SIZE=4 FACE="Courier New">exec</FONT></B><FONT SIZE=4 FACE="Courier New">
+<I>file</I></FONT></TT> 
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">symbol-file </FONT></B><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>
+
+<DD>Reads symbols from <TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>.
+Can be abbreviated: <TT><B><FONT SIZE=4 FACE="Courier New">sym</FONT></B><FONT SIZE=4 FACE="Courier New">
+<I>file</I></FONT></TT> 
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">file </FONT></B><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>
+
+<DD>Shorthand for <TT><B><FONT SIZE=4 FACE="Courier New">exec</FONT></B><FONT SIZE=4 FACE="Courier New">
+<I>file</I></FONT></TT> or <TT><B><FONT SIZE=4 FACE="Courier New">sym</FONT></B><FONT SIZE=4 FACE="Courier New">
+<I>file</I></FONT></TT>.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">load </FONT></B><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>
+
+<DD>Downloads <TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>.
+If <TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>
+is omitted, downloads the file specified by the last<B> </B><TT><B><FONT SIZE=4 FACE="Courier New">exec</FONT></B><FONT SIZE=4 FACE="Courier New">
+<I>file</I></FONT></TT> command. Fails if no <TT><B><FONT SIZE=4 FACE="Courier New">exec</FONT></B></TT>
+command was executed. 
+</DL>
+
+<HR>
+
+<P>
+<A HREF="#top"><IMG SRC="../icons/uparw.gif" ALIGN="BOTTOM"></A><I>Return
+to the top of this page.</I> 
+<P>
+<A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the ic960 Interface Index.</I> 
+<P>
+<A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the gcc960 Interface Index.</I> 
+</BODY>
+
+</HTML>
+

@@ -1,0 +1,173 @@
+<HTML>
+
+<HEAD>
+
+<TITLE>Macro Processor (mpp960)</TITLE>
+
+<META NAME="AUTHOR" CONTENT="David M. Gaffney">
+<META NAME="GENERATOR" CONTENT="Internet Assistant for Microsoft Word 2.0z Beta">
+</HEAD>
+
+<BODY>
+
+<H1>
+<CENTER>
+mpp960 Macro Processor 
+</CENTER>
+</H1>
+
+<HR>
+
+<P>
+The mpp960 macro processor copies its input to the output, expanding
+macros as it goes. Macros are either built-in or user-defined,
+and can take any number of arguments. mpp960 also has built-in
+functions for including named files, running UNIX commands, doing
+integer arithmetic, manipulating text in various ways, recursion,
+and others.
+<P>
+mpp960 can be used either as a front end to the compiler or assembler,
+or as a macro processor in its own right.
+<P>
+The invocation command is:
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">mpp960</FONT></B><FONT SIZE=4 FACE="Courier New">
+[ <B>-</B><I>option</I> ]... [ <I>macro_def</I> ]... [ <I>file</I>
+]... </FONT></TT>
+<P>
+Each option must be preceded by a <TT><B><FONT SIZE=4 FACE="Courier New">-</FONT></B></TT>
+character. (On DOS, you can also use a <TT><B><FONT SIZE=4 FACE="Courier New">/</FONT></B></TT>
+character.) The options are listed below.
+<P>
+The remaining arguments on the command line are taken to be input
+file names. If no names are present, the standard input is read.
+A file name of <TT><B><FONT SIZE=4 FACE="Courier New">-</FONT></B></TT>
+is taken to mean the standard input. The input files are read
+in the sequence given. The standard input can be read only once,
+so the filename <TT><B><FONT SIZE=4 FACE="Courier New">-</FONT></B></TT>
+should appear only once on the command line.
+<HR>
+
+<H3>Options </H3>
+
+<HR>
+
+<UL>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">D</FONT></B><I><FONT SIZE=4 FACE="Courier New">name</FONT></I><FONT SIZE=4 FACE="Courier New">
+[ <B>=</B><I>value </I>] <BR>
+</FONT></TT>Enters <TT><I><FONT SIZE=4 FACE="Courier New">name</FONT></I></TT>
+into the symbol table, before any input files are read. If <TT><B><FONT SIZE=4 FACE="Courier New">=</FONT></B><I><FONT SIZE=4 FACE="Courier New">value</FONT></I></TT>
+is missing, the value is taken to be the empty string. The value
+can be any string, and the macro can be defined to take arguments,
+just as if defined from within the input.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">d</FONT></B><FONT SIZE=4 FACE="Courier New">[<I>flag</I>]<I>...<B>
+<BR>
+</B></I></FONT></TT>Sets the debug-level according to <TT><I><FONT SIZE=4 FACE="Courier New">flag</FONT></I></TT>.
+The debug-level controls the format and amount of information
+presented by the debugging functions. If no flags are specified,
+the default is <TT><B><FONT SIZE=4 FACE="Courier New">aeq</FONT></B></TT>.<TT><I><B><FONT SIZE=4 FACE="Courier New">
+</FONT></B><FONT SIZE=4 FACE="Courier New">flag</FONT></I></TT>
+can be:
+<UL>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">a</FONT></B></TT> Shows
+the actual arguments in each macro call.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">c</FONT></B></TT> Shows
+several trace lines for each macro call.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">e</FONT></B></TT> Shows
+the expansion of each macro call, if it is not void.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">f</FONT></B></TT> Shows
+the name of the current input file in each trace output line.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">i</FONT></B></TT> Prints
+a message each time the current input file is changed.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">l</FONT></B></TT> Shows
+the current input line number in each trace output line.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">p</FONT></B></TT> Prints
+a message when a named file is found through the path search mechanism,
+giving the actual filename used.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">q</FONT></B></TT> Quotes
+actual arguments and macro expansions in the display with the
+current quotes.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">t</FONT></B></TT> Traces
+all macro calls made in this invocation of mpp960.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">x</FONT></B></TT> Adds
+a unique macro call id to each line of the trace output.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">V</FONT></B></TT> Shorthand
+for all the flags. 
+</UL>
+
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">e</FONT></B><I><FONT SIZE=4 FACE="Courier New">file
+<BR>
+</FONT></I></TT>Redirects debug and trace output to the named
+file. Error messages are still printed on <TT><B><FONT SIZE=4 FACE="Courier New">stderr</FONT></B></TT>.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">G<BR>
+</FONT></B></TT>Suppresses all extensions in mpp960 that are not
+in the UNIX System V m4 tool.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">H</FONT></B><I><FONT SIZE=4 FACE="Courier New">n
+<BR>
+</FONT></I></TT>Makes the internal hash table for symbol lookup
+be <TT><I><FONT SIZE=4 FACE="Courier New">n</FONT></I></TT> entries
+big. The number should be prime. The default is 509 entries.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">i<BR>
+</FONT></B></TT>Makes this invocation of mpp960 interactive. All
+output will be unbuffered, and interrupts will be ignored.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">I</FONT></B><I><FONT SIZE=4 FACE="Courier New">dir
+<BR>
+</FONT></I></TT>Makes mpp960 search <TT><I><FONT SIZE=4 FACE="Courier New">dir</FONT></I></TT>
+for included files that are not found in the current working directory.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">l</FONT></B><I><FONT SIZE=4 FACE="Courier New">num
+<BR>
+</FONT></I></TT>Restricts the size of the output generated by
+macro tracing.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">N</FONT></B><I><FONT SIZE=4 FACE="Courier New">n
+<BR>
+</FONT></I></TT>Allows for up to <TT><I><FONT SIZE=4 FACE="Courier New">n</FONT></I></TT>
+diversions to be used at the same time. The default is 10 diversions.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">o</FONT></B><I><FONT SIZE=4 FACE="Courier New">file
+<BR>
+</FONT></I></TT>Directs output to <TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">Q<BR>
+</FONT></B></TT>Suppresses warnings about missing or superfluous
+arguments in macro calls.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">s<BR>
+</FONT></B></TT>Generates synchronization lines, for use by the
+C preprocessor or other similar tools. Source file name and line
+number information is conveyed by lines of the form <TT><B><FONT SIZE=4 FACE="Courier New">#</FONT></B><I><FONT SIZE=4 FACE="Courier New">line
+linenum</FONT></I><FONT SIZE=4 FACE="Courier New"> <B>&quot;</B><I>filename</I><B>&quot;</B></FONT></TT>,
+which are inserted as needed into the middle of the input (but
+always on complete lines by themselves). Such lines mean that
+the following line originated or was expanded from the contents
+of input file filename at line <TT><I><FONT SIZE=4 FACE="Courier New">linenum</FONT></I></TT>.
+The <TT><B><FONT SIZE=4 FACE="Courier New">&quot;</FONT></B><I><FONT SIZE=4 FACE="Courier New">filename</FONT></I><B><FONT SIZE=4 FACE="Courier New">&quot;</FONT></B></TT>
+part is often omitted when the file name does not change from
+the previous synchronization line.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">t</FONT></B><I><FONT SIZE=4 FACE="Courier New">name
+<BR>
+</FONT></I></TT>Enters <TT><I><FONT SIZE=4 FACE="Courier New">name</FONT></I></TT>
+into the symbol table, as undefined but traced. The macro consequently
+is traced from the point it is defined.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">u</FONT></B><I><FONT SIZE=4 FACE="Courier New">name
+<BR>
+</FONT></I></TT>Deletes any predefined meaning <TT><I><FONT SIZE=4 FACE="Courier New">name</FONT></I></TT>
+might have.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">V<BR>
+</FONT></B></TT>Prints the version number of the program.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">v960<BR>
+</FONT></B></TT>Prints the version information to <TT><B><FONT SIZE=4 FACE="Courier New">stdout</FONT></B></TT>
+and exits. 
+</UL>
+
+<HR>
+
+<P>
+<A HREF="#top"><IMG SRC="../icons/uparw.gif" ALIGN="BOTTOM"></A><I>Return
+to the top of this page.</I> 
+<P>
+<A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the ic960 Interface Index.</I> 
+<P>
+<A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the gcc960 Interface Index.</I> 
+</BODY>
+
+</HTML>
+

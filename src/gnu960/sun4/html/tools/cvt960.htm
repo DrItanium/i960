@@ -1,0 +1,120 @@
+<HTML>
+
+<HEAD>
+
+<TITLE>COFF to IEEE-695 Converter (cvt960)</TITLE>
+
+<META NAME="GENERATOR" CONTENT="Internet Assistant for Microsoft Word 2.0z Beta">
+</HEAD>
+
+<BODY>
+
+<H1>
+<CENTER>
+COFF to IEEE-695 <A NAME="top">Converter </A>(cvt960) 
+</CENTER>
+</H1>
+
+<HR>
+
+<P>
+The cvt960 utility converts a COFF file to IEEE-695 format.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">cvt960 </FONT></B><FONT SIZE=4 FACE="Courier New">[
+<B>-</B><I>option</I><B> </B>]...<B> i </B><I>file</I><B> </B>[
+<B>o </B><I>file</I><B> </B>]</FONT></TT> 
+<P>
+Each option must be preceded by a <TT><B><FONT SIZE=4 FACE="Courier New">-</FONT></B></TT>
+character. (On DOS, you can also use a <TT><B><FONT SIZE=4 FACE="Courier New">/</FONT></B></TT>
+character.) The options are listed below.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">i </FONT></B><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>
+specifies the name of the COFF file to be converted. The input
+file must be in host-endian byte order.
+<HR>
+
+<H2>Options </H2>
+
+<HR>
+
+<UL>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">a<BR>
+</FONT></B></TT>Converts files for use with the MRI Xray user
+interface. Use this option when converting files to be used with
+XICE production release 5.00 and earlier and XICE engineering
+release x263 and earlier. Later XICE versions do not need this
+option, and may not tolerate its effects.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">A</FONT></B><I><FONT SIZE=4 FACE="Courier New">arch</FONT></I></TT>
+<BR>
+Specifies a specific 80960 architecture tag for the IEEE-695 output
+file. <TT><I><FONT SIZE=4 FACE="Courier New">arch</FONT></I></TT>
+can be <TT><B><FONT SIZE=4 FACE="Courier New">CORE</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">KA</FONT></B></TT>, <TT><B><FONT SIZE=4 FACE="Courier New">SA</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">KB</FONT></B></TT>, <TT><B><FONT SIZE=4 FACE="Courier New">SB</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">CA</FONT></B></TT>, <TT><B><FONT SIZE=4 FACE="Courier New">CF</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">JA</FONT></B></TT>, <TT><B><FONT SIZE=4 FACE="Courier New">JD</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">JF</FONT></B></TT>, <TT><B><FONT SIZE=4 FACE="Courier New">HA</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">HD</FONT></B></TT>, <TT><B><FONT SIZE=4 FACE="Courier New">HT</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">RP</FONT></B></TT>.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">c</FONT></B></TT> 
+<BR>
+Specifies emitting column zero instead of column 1 when translating
+COFF line numbers into IEEE-695 line numbers.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">h</FONT></B></TT> 
+<BR>
+Displays help information about the converter and exits.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">o </FONT></B><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>
+<BR>
+Puts the output of the conversion in <TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>.
+By default, the output file is given the name of the input file
+with the suffix<TT><B><FONT SIZE=4 FACE="Courier New">.x</FONT></B></TT>.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">s<BR>
+</FONT></B></TT>Stops conversion of debug information. The converted
+file contains no IEEE-695 line number, symbol table, or debugging
+information.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">V</FONT></B></TT> 
+<BR>
+Displays version information about the converter and continues
+with the conversion.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">v960</FONT></B></TT>
+<BR>
+Displays version information about the converter and exits without
+doing anything else.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">w<BR>
+</FONT></B></TT>Suppresses warning messages; does not affect error
+messages. 
+</UL>
+
+<HR>
+
+<H2>Limitations </H2>
+
+<HR>
+
+<UL>
+<LI>The cvt960 converter translates position-independent code
+and data correctly, but the position-independent code symbols
+and position-independent data symbols lose the flags that mark
+them as position-independent.
+<LI>Use cvt960 only on COFF absolute-executable load modules.
+cvt960 does not translate archives or relocatable objects.
+<LI>The cvt960 converter does not translate symbolic information
+about parameters passed via the i960 processor's argument passing
+block. IEEE-695 does not provide a means of specifying the processor's
+argument passing convention. 
+</UL>
+
+<HR>
+
+<P>
+<A HREF="#top"><IMG SRC="../icons/uparw.gif" ALIGN="BOTTOM"></A><I>Return
+to the top of this page.</I> 
+<P>
+<A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the ic960 Interface Index.</I> 
+<P>
+<A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the gcc960 Interface Index.</I> 
+</BODY>
+
+</HTML>

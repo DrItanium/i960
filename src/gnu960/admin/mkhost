@@ -1,0 +1,287 @@
+: Start with ":" line because sys V Unix csh does not understand "#!/bin/sh"
+
+#------------------------------------------------------------------------------
+#	CREATE DIRECTORIES/MAKEFILES FOR THE GNU/960 TOOLS ON A SPECIFIC HOST
+#
+# Gives help message if invoked without arguments.
+#
+# Runs off information in files on the 'admin' subdirectory:
+#    HOSTS: names of supported hosts; subdirectories with the same names
+#	    will be created.
+#    TOOLS: directories containing source code for tools.
+#		Entries are paths relative to the $G960ROOT/src directory.
+#    LIBS:  directories containing source code for native 960 libraries.
+#		Entries are paths relative to the $G960ROOT/src/lib directory.
+# Files may contain blank lines and '#'-delimited comments.
+#------------------------------------------------------------------------------
+
+PATH=/bin:/usr/bin:/usr/ucb; export PATH
+# 'wc' is on /usr/ucb under sunos and bsd
+
+TOOLPATH=src
+LIBPATH=src/lib
+LIB_BUILD=build
+
+umask 002
+MYNAME=`basename $0`
+MKMAKE=admin/mkmake
+
+if test ! -d admin ; then
+	if test x"$G960ROOT" = x; then
+		echo "$MYNAME: cd to the tools root directory (or set G960ROOT) first"
+		exit 1
+	else
+		echo 'cd $G960ROOT ('$G960ROOT')'
+		cd $G960ROOT
+		if test ! -d admin ; then
+			echo "$MYNAME: can't find 'admin' subdirectory"
+			exit 1
+		fi
+	fi
+fi
+G960ROOT=`pwd`
+
+HOSTS=`sed 's/#.*//' admin/HOSTS`
+SRC=`sed 's/#.*//' admin/TOOLS admin/LIBS`
+
+#------------------------------------------------------------------------------
+# PARSE ARGS
+#------------------------------------------------------------------------------
+if test $# = 0  ; then
+	echo "Usage:	$MYNAME [-t tool] ... host ..."
+	echo
+	echo "host may be 'all' or a list of 1 or more of:"
+	NLINES=`echo $HOSTS | wc -w`
+	NLINES=`expr \( $NLINES / 3 \) + 1`
+	echo $HOSTS | sed 's/ /\
+/g' |  pr -t -3 -l$NLINES -w52 | sed 's/^/		/'
+	echo
+	echo "If '-t' options are specified, only the indicated tool(s)"
+	echo "will be updated for the specified hosts.  Known tools:"
+	NLINES=`echo $SRC | wc -w`
+	NLINES=`expr \( $NLINES / 3 \) + 1`
+	echo $SRC | sed 's/ /\
+/g' |  pr -t -3 -l$NLINES -w52 | sed 's/^/		/'
+	echo
+	echo "You must be in the tools root directory or have G960ROOT set"
+	exit 1;
+fi
+
+TOOLLIST=
+ALLTOOLS=1
+HOSTLIST=
+ALLHOSTS=
+while test $# != 0 ; do
+	case "$1" in
+	-t)
+		shift
+		TOOLLIST="$TOOLLIST $1"
+		ALLTOOLS=
+		;;
+	-*)
+		echo "$MYNAME:  unknown switch"
+		echo "Enter '$MYNAME' without arguments for usage info"
+		exit 1
+		;;
+	all)
+		ALLHOSTS=1
+		;;
+	*)
+		HOSTLIST="$HOSTLIST $1"
+		;;
+	esac
+
+	shift
+done
+
+if test "$ALLHOSTS" ; then
+	HOSTLIST=$HOSTS
+elif test "x$HOSTLIST" = x ; then
+	echo "$MYNAME:  must specify a host"
+	echo "Enter '$MYNAME' without arguments for usage info"
+	exit 1
+fi
+
+if test "x$TOOLLIST" = x ; then
+	TOOLLIST=$SRC
+fi
+
+for h in $HOSTLIST; do
+	MKMAKE="$MKMAKE -h $h"
+done
+
+#------------------------------------------------------------------------------
+# DETERMINE TYPES OF LINKS THAT WORK ON THIS SYSTEM
+#------------------------------------------------------------------------------
+if touch foo$$; then
+	if ln -s foo$$ bar$$ >/dev/null 2>&1 ; then
+		LN="ln -s"
+	elif ln foo$$ bar$$ >/dev/null 2>&1 ; then
+		LN="ln"
+	else
+		echo "$MYNAME: can't make ln work!"
+		rm -f foo$$ bar$$
+		exit 1;
+	fi
+	rm -f foo$$ bar$$
+else
+	echo "$MYNAME: you don't have write permission here!"
+	exit 1;
+fi
+
+#------------------------------------------------------------------------------
+# CREATE BINARY DIRECTORIES ('bin', 'include', 'man', 'lib')
+#------------------------------------------------------------------------------
+if test "$ALLTOOLS" ; then
+	echo "+ MAKING BINARY DIRECTORIES"
+	for h in $HOSTLIST; do
+		echo "+	$h"
+		cd $G960ROOT
+		mkdir $h $h/bin $h/lib
+		#
+		# Set up ctools names only if the host supports sym links.
+		#
+		if cd $h/bin ; then
+			if [ "$h" = "dos" -o "$h" = "win95" ]; then
+				EXE=".exe"
+				GSTRIPSRC="gstrip96"
+			else
+				EXE=""
+				GSTRIPSRC="gstrip960"
+			fi
+			if [ "$LN" = "ln -s" ]; then
+				ln -s gar960$EXE     arc960$EXE
+				ln -s gas960c$EXE    asm960$EXE
+				ln -s objcopy$EXE    cof960$EXE
+				ln -s gdmp960$EXE    dmp960$EXE
+				ln -s gld960$EXE     lnk960$EXE
+				ln -s gnm960$EXE     nam960$EXE
+				ln -s gsize960$EXE   siz960$EXE
+				ln -s $GSTRIPSRC$EXE str960$EXE
+				cd $G960ROOT
+			fi
+		fi
+		
+		#--------------------------------------------------------------
+		# include & man directories are shared among hosts via links.
+		#--------------------------------------------------------------
+
+		if test "$LN" = "ln -s" ; then
+			cd $h && ( $LN ../html . ; $LN ../include . )
+
+		else	# HARD LINKS
+			mkdir $h/html $h/html/icons $h/html/tools
+			mkdir $h/include $h/include/sys
+
+			if cd $h/html/icons ; then
+				for f in $G960ROOT/html/icons/*; do
+					$LN $f .
+				done
+			fi
+			cd $G960ROOT
+			if cd $h/html/tools ; then
+				for f in $G960ROOT/html/tools/*; do
+					$LN $f .
+				done
+			fi
+			cd $G960ROOT
+
+			if cd $h/include ; then
+				for f in $G960ROOT/include/*.h; do
+					$LN $f .
+				done
+
+				if cd sys ; then
+					for f in $G960ROOT/include/sys/*.h; do
+						$LN $f .
+					done
+				fi
+			fi
+		fi
+	done
+fi
+
+#------------------------------------------------------------------------------
+# FOR EACH TOOL, CREATE SOURCE DIRECTORIES FOR THE SPECIFIED HOSTS.
+#	If source is not installed, we have nothing left to do.
+#------------------------------------------------------------------------------
+cd $G960ROOT
+if test ! -d src ; then		# source not installed
+	exit 0
+fi
+
+for t in $TOOLLIST ; do
+	echo "+ MAKING $t SOURCE DIRECTORIES"
+	cd $G960ROOT
+
+	#------------------------------------------------------------
+	# Check for existence of installed tool or library.
+	# If neither is found, source is not installed for this item.
+	#------------------------------------------------------------
+	if test -d $TOOLPATH/$t/common ; then
+		SRCDIR=$TOOLPATH/$t
+	elif test -d $LIBPATH/$t/common ; then
+		echo "+	$LIB_BUILD"
+		cd $G960ROOT/$LIBPATH/$t
+		rm -rf $LIB_BUILD
+		mkdir $LIB_BUILD
+		if cd $LIB_BUILD ; then
+			for file in ../common/* ; do
+				case "$file" in
+				*/RCS | */ver960.c )
+					# Never touch RCS.
+					# ver960.c must be generated by makefile
+					;;
+				*)
+					# Ignore subdirectories, link in others
+					if test ! -d $file ; then
+						$LN $file .
+					fi
+					;;
+				esac
+			done
+		fi
+		continue
+	else
+		echo "+	source not installed"
+		continue
+	fi
+
+	for h in $HOSTLIST; do
+		echo "+	$h"
+		cd $G960ROOT/$SRCDIR
+		mkdir $h
+		if cd $h ; then
+			for file in ../common/* ; do
+				case "$file" in
+				*/RCS | */[Mm]akefile | */ver960.c )
+					# Never touch RCS.
+					# Local makefiles must be generated.
+					# ver960.c must be generated by makefile
+					;;
+				*)
+					# Ignore subdirectories, link in others
+					if test ! -d $file ; then
+						$LN $file .
+					fi
+					;;
+				esac
+			done
+		fi
+	done
+
+	cd $G960ROOT
+
+	#------------------------------------------------
+	# Generate host-specific makefiles for this tool.
+	#------------------------------------------------
+	echo "+	Makefile(s)"
+	$MKMAKE $t
+done
+
+#------------------------------------------------------------------------------
+# MAKE TOP-LEVEL MAKEFILE
+#------------------------------------------------------------------------------
+echo "+ MAKING TOP-LEVEL MAKEFILE"
+cd $G960ROOT
+$MKMAKE -t

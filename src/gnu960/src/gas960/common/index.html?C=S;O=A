@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+ <head>
+  <title>Index of /afs/cs/project/cmcl/link.vcnectar/gnu960/src/gas960/common</title>
+ </head>
+ <body>
+<h1>Index of /afs/cs/project/cmcl/link.vcnectar/gnu960/src/gas960/common</h1>
+<pre><img src="/icons/blank.gif" alt="Icon "> <a href="?C=N;O=A">Name</a>                    <a href="?C=M;O=A">Last modified</a>      <a href="?C=S;O=D">Size</a>  <a href="?C=D;O=A">Description</a><hr><img src="/icons/back.gif" alt="[DIR]"> <a href="/afs/cs/project/cmcl/link.vcnectar/gnu960/src/gas960/">Parent Directory</a>                             -   
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="_version">_version</a>                04-Jun-1996 11:27    4   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="ho-sun4.h">ho-sun4.h</a>               04-Jun-1996 11:27  107   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="ho-sun3.h">ho-sun3.h</a>               04-Jun-1996 11:27  130   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="ho-sun86.h">ho-sun86.h</a>              04-Jun-1996 11:27  133   
+<img src="/icons/script.gif" alt="[   ]"> <a href="assem.sh">assem.sh</a>                04-Jun-1996 11:27  184   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="encoding.c">encoding.c</a>              04-Jun-1996 11:27  414   
+<img src="/icons/script.gif" alt="[   ]"> <a href="runem.sh">runem.sh</a>                04-Jun-1996 11:27  656   
+<img src="/icons/script.gif" alt="[   ]"> <a href="runraw.sh">runraw.sh</a>               04-Jun-1996 11:27  770   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="ho-sunos.h">ho-sunos.h</a>              04-Jun-1996 11:27  897   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="ho-ap400.h">ho-ap400.h</a>              04-Jun-1996 11:27  904   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="ho-gen.h">ho-gen.h</a>                04-Jun-1996 11:27  905   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="ho-i386.h">ho-i386.h</a>               04-Jun-1996 11:27  912   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="ho-68020.h">ho-68020.h</a>              04-Jun-1996 11:27  946   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="ho-vax.h">ho-vax.h</a>                04-Jun-1996 11:27  1.0K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="ho-dec31.h">ho-dec31.h</a>              04-Jun-1996 11:27  1.0K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="ho-gcc.h">ho-gcc.h</a>                04-Jun-1996 11:27  1.1K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="ho-sysv.h">ho-sysv.h</a>               04-Jun-1996 11:27  1.1K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="ho-sol.h">ho-sol.h</a>                04-Jun-1996 11:27  1.1K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="ho-hpux.h">ho-hpux.h</a>               04-Jun-1996 11:27  1.2K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="ho_dos.h">ho_dos.h</a>                04-Jun-1996 11:27  1.2K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="out_file.h">out_file.h</a>              04-Jun-1996 11:27  1.2K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="ho-rs6k.h">ho-rs6k.h</a>               04-Jun-1996 11:27  1.2K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="gcc960hk.ld">gcc960hk.ld</a>             04-Jun-1996 11:27  1.5K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="gcc960tc.ld">gcc960tc.ld</a>             04-Jun-1996 11:27  1.5K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="xmalloc.c">xmalloc.c</a>               04-Jun-1996 11:27  1.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="xrealloc.c">xrealloc.c</a>              04-Jun-1996 11:27  1.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="bignum.h">bignum.h</a>                04-Jun-1996 11:27  1.8K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="obj.h">obj.h</a>                   04-Jun-1996 11:27  1.9K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="reloc.h">reloc.h</a>                 04-Jun-1996 11:27  1.9K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="symbols.h">symbols.h</a>               04-Jun-1996 11:27  2.0K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="hash.h">hash.h</a>                  04-Jun-1996 11:27  2.1K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="frags.h">frags.h</a>                 04-Jun-1996 11:27  2.1K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="hex_val.c">hex_val.c</a>               04-Jun-1996 11:27  2.3K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="bnumcopy.c">bnumcopy.c</a>              04-Jun-1996 11:27  2.3K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="fp_copy.c">fp_copy.c</a>               04-Jun-1996 11:27  2.3K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="debug.c">debug.c</a>                 04-Jun-1996 11:27  2.6K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="expr.h">expr.h</a>                  04-Jun-1996 11:27  2.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="in_file.h">in_file.h</a>               04-Jun-1996 11:27  2.8K  
+<img src="/icons/script.gif" alt="[   ]"> <a href="flt_test.sh">flt_test.sh</a>             04-Jun-1996 11:27  3.0K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="cmphost.c">cmphost.c</a>               04-Jun-1996 11:27  3.0K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="failline.c">failline.c</a>              04-Jun-1996 11:27  3.1K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="tc.h">tc.h</a>                    04-Jun-1996 11:27  3.4K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="read.h">read.h</a>                  04-Jun-1996 11:27  3.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="strucsym.h">strucsym.h</a>              04-Jun-1996 11:27  3.8K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="flt_test.c">flt_test.c</a>              04-Jun-1996 11:27  3.8K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="write.h">write.h</a>                 04-Jun-1996 11:27  4.0K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="flonum.h">flonum.h</a>                04-Jun-1996 11:27  4.3K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="cc_finfo.c">cc_finfo.c</a>              04-Jun-1996 11:27  4.4K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="in_file.c">in_file.c</a>               04-Jun-1996 11:27  4.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="fp_mult.c">fp_mult.c</a>               04-Jun-1996 11:27  5.1K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="out_file.c">out_file.c</a>              04-Jun-1996 11:27  5.5K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="alloca.c">alloca.c</a>                04-Jun-1996 11:27  5.9K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="fp_util.c">fp_util.c</a>               04-Jun-1996 11:27  6.0K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="tc_i960.h">tc_i960.h</a>               04-Jun-1996 11:27  6.4K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="cond.c">cond.c</a>                  04-Jun-1996 11:27  6.6K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="obj_bout.h">obj_bout.h</a>              04-Jun-1996 11:27  6.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="segs.h">segs.h</a>                  04-Jun-1996 11:27  8.1K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="obj_elf.h">obj_elf.h</a>               04-Jun-1996 11:27  8.3K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="fp_const.c">fp_const.c</a>              04-Jun-1996 11:27  8.4K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="messages.c">messages.c</a>              16-Oct-1996 17:51  8.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="obstack.c">obstack.c</a>               04-Jun-1996 11:27  9.4K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="segs.c">segs.c</a>                  04-Jun-1996 11:27  9.8K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="frags.c">frags.c</a>                 04-Jun-1996 11:27   10K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="make_tbl.c">make_tbl.c</a>              04-Jun-1996 11:27   12K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="COPYING">COPYING</a>                 04-Jun-1996 11:27   12K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="app.c">app.c</a>                   04-Jun-1996 11:27   14K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="symbols.c">symbols.c</a>               04-Jun-1996 11:27   14K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="as.h">as.h</a>                    04-Jun-1996 11:27   15K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="in_scrub.c">in_scrub.c</a>              04-Jun-1996 11:27   16K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="obstack.h">obstack.h</a>               04-Jun-1996 11:27   16K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="atofieee.c">atofieee.c</a>              04-Jun-1996 11:27   16K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="as.c">as.c</a>                    04-Jun-1996 11:27   17K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="obj_coff.h">obj_coff.h</a>              04-Jun-1996 11:27   17K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="atof_gen.c">atof_gen.c</a>              04-Jun-1996 11:27   17K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="Makefile">Makefile</a>                04-Jun-1996 11:27   18K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="write.c">write.c</a>                 04-Jun-1996 11:27   24K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="i960_opc.h">i960_opc.h</a>              04-Jun-1996 11:27   26K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="obj_bout.c">obj_bout.c</a>              04-Jun-1996 11:27   27K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="hash.c">hash.c</a>                  04-Jun-1996 11:27   30K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="listing.c">listing.c</a>               04-Jun-1996 11:27   34K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="expr.c">expr.c</a>                  04-Jun-1996 11:27   35K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="obj_elf.c">obj_elf.c</a>               04-Jun-1996 11:27   48K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="read.c">read.c</a>                  04-Jun-1996 11:27   71K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="obj_coff.c">obj_coff.c</a>              04-Jun-1996 11:27   73K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="tc_i960.c">tc_i960.c</a>               04-Jun-1996 11:27  103K  
+<hr></pre>
+</body></html>

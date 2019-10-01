@@ -1,0 +1,573 @@
+<HTML>
+
+<HEAD>
+
+<TITLE>Decision Maker Option (gcdm960) </TITLE>
+
+<META NAME="AUTHOR" CONTENT="David M. Gaffney">
+<META NAME="GENERATOR" CONTENT="Internet Assistant for Microsoft Word 2.0z Beta">
+</HEAD>
+
+<BODY>
+
+<H1>
+<CENTER>
+gcdm Decision Maker <A NAME="top">Option</A> 
+</CENTER>
+</H1>
+
+<HR>
+
+<P>
+The <TT><B><FONT SIZE=4 FACE="Courier New">gcdm</FONT></B></TT>
+option invokes the gcdm960 global optimization decision maker
+during the link process. The decision maker then invokes the compiler
+and linker as necessary to perform program-wide optimizations.
+<P>
+The <TT><B><FONT SIZE=4 FACE="Courier New">gcdm</FONT></B></TT>
+option has the following syntax:
+<P>
+<TT><FONT SIZE=4 FACE="Courier New">{ <B>-</B> | <B>/</B> } <B>gcdm,</B><I>argument</I>[<B>,</B><I>argument</I>]...</FONT></TT>
+<P>
+As with other options, you can use the <TT><B><FONT SIZE=4 FACE="Courier New">/</FONT></B></TT>
+delimiter only on DOS. The <TT><B><FONT SIZE=4 FACE="Courier New">gcdm</FONT></B></TT>
+option <TT><I><FONT SIZE=4 FACE="Courier New">arguments</FONT></I></TT>
+and the sections that describe them are described below. There
+are several classes of <TT><B><FONT SIZE=4 FACE="Courier New">gcdm</FONT></B></TT>
+option arguments, called <I>controls</I> in this hypertext.
+<P>
+<A HREF="#substitution_controls">Substitution Controls</A> (<TT><B><FONT SIZE=4 FACE="Courier New">subst,</FONT></B><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I><FONT SIZE=4 FACE="Courier New">[<B>,</B><I>arg</I>]...</FONT></TT>
+and <TT><B><FONT SIZE=4 FACE="Courier New">nosubst,</FONT></B><I><FONT SIZE=4 FACE="Courier New">module-set</FONT></I></TT>)
+<P>
+where <TT><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I></TT>
+is <TT><FONT SIZE=4 FACE="Courier New">{<I>module-set</I>}{<I>option-list</I>}</FONT></TT>
+
+<DL>
+<DT><TT><I><FONT SIZE=4 FACE="Courier New">module-set</FONT></I></TT>
+is
+<DD><TT><FONT SIZE=4 FACE="Courier New">[ <I>archive </I>] <B>:</B>
+<I>module</I></FONT></TT> 
+<DT><TT><I><FONT SIZE=4 FACE="Courier New">option-list</FONT></I></TT>
+is 
+<DD><TT><FONT SIZE=4 FACE="Courier New">{<B>+O5</B>} | {<B>+fprof</B>
+| <B>+O0</B> | <B>+O1</B> | <B>+O2</B> | <B>+O3</B> | <B>+O4</B>}
+[<B>+g</B> | <B>+asm_pp+</B><I>prog</I> | <B>+clist+</B><I>arg</I>
+| <B>+f</B><I>string</I>]</FONT></TT> 
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">+O5</FONT></B></TT>
+
+<DD>specifies program-wide optimization. 
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">+fprof</FONT></B></TT>
+
+<DD>identifies a profile. 
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">+O0</FONT></B><FONT SIZE=4 FACE="Courier New">
+| <B>+O1</B> | <B>+O2</B> | <B>+O3</B> | <B>+O4</B></FONT></TT>
+
+<DD>specify module-local optimization. 
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">+g</FONT></B></TT>
+
+<DD>specifies debug information.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">+asm_pp+</FONT></B><I><FONT SIZE=4 FACE="Courier New">prog</FONT></I></TT>
+
+<DD>identifies a program.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">+clist+</FONT></B><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I></TT>
+
+<DD>specifies a listing.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">+f</FONT></B><I><FONT SIZE=4 FACE="Courier New">string</FONT></I></TT>
+
+<DD>specifies an optimization. 
+</DL>
+
+<P>
+<A HREF="#reference_controls">External Reference Controls</A>
+(<TT><FONT SIZE=4 FACE="Courier New">[<B>no</B>]<B>ref=</B><I>module-set</I></FONT></TT>)
+<P>
+<A HREF="#inline_control">Inlining Control</A> (<TT><B><FONT SIZE=4 FACE="Courier New">inline=</FONT></B><I><FONT SIZE=4 FACE="Courier New">n</FONT></I></TT>)
+<P>
+<A HREF="#profile_control">Profile Control</A> (<TT><B><FONT SIZE=4 FACE="Courier New">iprof=</FONT></B><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>)
+<P>
+<A HREF="#memory_control">Memory Controls</A> (<TT><B><FONT SIZE=4 FACE="Courier New">sram=</FONT></B><I><FONT SIZE=4 FACE="Courier New">start</FONT></I><B><FONT SIZE=4 FACE="Courier New">,</FONT></B><I><FONT SIZE=4 FACE="Courier New">end</FONT></I><FONT SIZE=4 FACE="Courier New">[<B>,</B><I>start</I>,<I>end</I>]...</FONT></TT>
+and <TT><B><FONT SIZE=4 FACE="Courier New">m=</FONT></B><I><FONT SIZE=4 FACE="Courier New">start</FONT></I><B><FONT SIZE=4 FACE="Courier New">,</FONT></B><I><FONT SIZE=4 FACE="Courier New">len</FONT></I><FONT SIZE=4 FACE="Courier New">[<B>,</B><I>start</I>,<I>len</I>]...</FONT></TT>)
+<P>
+<A HREF="#dryrun_control">Dryrun Control</A> (<TT><B><FONT SIZE=4 FACE="Courier New">dryrun</FONT></B></TT>)
+<P>
+<A HREF="#report_controls">Report Controls</A> (<TT><B><FONT SIZE=4 FACE="Courier New">dec=</FONT></B><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">rdecisions</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">rcall-graph</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">rprofile</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">rreverse</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">rsummary</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">rvariables</FONT></B></TT>)
+<HR>
+
+<P>
+As shown above, <TT><B><FONT SIZE=4 FACE="Courier New">gcdm</FONT></B></TT>
+option arguments are a mixture of keywords and user-supplied identifiers.
+In this hypertext node, <TT><B><FONT SIZE=4 FACE="Courier New">gcdm</FONT></B></TT>
+option arguments are called <I>controls</I> unless this causes
+ambiguity.
+<H3><A NAME="substitution_controls">Substitution Controls</A>
+</H3>
+
+<P>
+The substitution controls allow you to substitute optimized modules
+in your application (<TT><B><FONT SIZE=4 FACE="Courier New">subst</FONT></B></TT>),
+and to suppress unintended substitutions (<TT><B><FONT SIZE=4 FACE="Courier New">nosubst</FONT></B></TT>).
+The complete substitution specification and substitution suppression
+syntax is:
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">subst,</FONT></B><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I><FONT SIZE=4 FACE="Courier New">[<B>,</B><I>arg</I>]...</FONT></TT>
+and <TT><B><FONT SIZE=4 FACE="Courier New">nosubst,</FONT></B><I><FONT SIZE=4 FACE="Courier New">module-set</FONT></I></TT>
+
+<P>
+where <TT><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I></TT>
+is <TT><FONT SIZE=4 FACE="Courier New">{<I>module-set</I>}{<I>option-list</I>}</FONT></TT>
+
+<DL>
+<DT><TT><I><FONT SIZE=4 FACE="Courier New">module-set</FONT></I></TT>
+is
+<DD><TT><FONT SIZE=4 FACE="Courier New">[ <I>archive </I>] <B>:</B>
+<I>module</I></FONT></TT> 
+<DT><TT><I><FONT SIZE=4 FACE="Courier New">option-list</FONT></I></TT>
+is 
+<DD><TT><FONT SIZE=4 FACE="Courier New">{<B>+O5</B>} | {<B>+fprof</B>
+| <B>+O0</B> | <B>+O1</B> | <B>+O2</B> | <B>+O3</B> | <B>+O4</B>}
+[<B>+g</B> | <B>+asm_pp+</B><I>prog</I> | <B>+clist+</B><I>arg</I>
+| <B>+f</B><I>string</I>]</FONT></TT> 
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">+O5</FONT></B></TT>
+
+<DD>specifies program-level optimization. 
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">+fprof</FONT></B></TT>
+
+<DD>identifies a profile. 
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">+O0</FONT></B><FONT SIZE=4 FACE="Courier New">
+| <B>+O1</B> | <B>+O2</B> | <B>+O3</B> | <B>+O4</B></FONT></TT>
+
+<DD>specify module-local optimization. 
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">+g</FONT></B></TT>
+
+<DD>specifies debug information.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">+asm_pp+</FONT></B><I><FONT SIZE=4 FACE="Courier New">prog</FONT></I></TT>
+
+<DD>identifies a program.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">+clist+</FONT></B><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I></TT>
+
+<DD>specifies a listing.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">+f</FONT></B><I><FONT SIZE=4 FACE="Courier New">string</FONT></I></TT>
+
+<DD>specifies an optimization. 
+</DL>
+
+<P>
+This syntax is discussed in the following paragraphs.
+<P>
+If a given object module is named in multiple <TT><B><FONT SIZE=4 FACE="Courier New">subst</FONT></B></TT>
+or <TT><B><FONT SIZE=4 FACE="Courier New">nosubst</FONT></B><FONT SIZE=4 FACE="Courier New">
+</FONT></TT>options, the last <TT><B><FONT SIZE=4 FACE="Courier New">subst</FONT></B></TT>
+or <TT><B><FONT SIZE=4 FACE="Courier New">nosubst</FONT></B></TT>
+which names that module applies. In addition to providing for
+control over which modules are affected, the substitution controls
+allow fine control of how affected modules are optimized. The
+following subsections describe substitution and substitution suppression.
+Detailed information on controlling optimizations is presented
+in the discussion of <TT><I><FONT SIZE=4 FACE="Courier New">option-list</FONT></I></TT>
+in the immediately following subsection.
+<H4>Substitution Specifications </H4>
+
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">subst=</FONT></B><FONT SIZE=4 FACE="Courier New">{<I>module-set</I>}{<I>option-list</I>}</FONT></TT>
+
+<P>
+In the linked program, <TT><B><FONT SIZE=4 FACE="Courier New">gcdm,subst=</FONT></B><FONT SIZE=4 FACE="Courier New">{<I>module-set</I>}{<I>option-list</I>}</FONT></TT>
+causes substitution of modules optimized according to the <TT><I><FONT SIZE=4 FACE="Courier New">option-list</FONT></I></TT>
+for all of the modules in <A HREF="#module_set_spec"><I>module-set</I></A>.
+<P>
+Note that no space is allowed between <TT><I><FONT SIZE=4 FACE="Courier New">module-set</FONT></I></TT>
+and <TT><I><FONT SIZE=4 FACE="Courier New">option-list</FONT></I></TT>.
+<P>
+A <TT><I><FONT SIZE=4 FACE="Courier New">module-set </FONT></I></TT>specification
+is a string supplied by the user that names the modules to be
+operated on by the <TT><B><FONT SIZE=4 FACE="Courier New">gcdm</FONT></B></TT>
+option. For a description of how to specify a <TT><I><FONT SIZE=4 FACE="Courier New">module-set</FONT></I></TT>,
+see the <A HREF="#module_set_spec">Module-Set Specification</A>
+section.
+<P>
+An <TT><I><FONT SIZE=4 FACE="Courier New">option-list</FONT></I></TT>
+consists of a single <TT><B><FONT SIZE=4 FACE="Courier New">+</FONT></B></TT>,
+meaning to perform no substitution, or it consists of one or more
+of the substitution options discussed in three categories:
+<OL>
+<LI><A HREF="#cat1">Whole-program optimization option</A> 
+<LI><A HREF="#cat2">Module-local optimization options</A> 
+<LI><A HREF="#cat3">Miscellaneous optimization options</A> 
+</OL>
+
+<P>
+Note that the first two categories are mutually exclusive; but
+you can use substitution options from the third category with
+those from either of the first two categories.
+<H5><A NAME="cat1">Whole-program optimization option (Category
+1)</A> </H5>
+
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">+O5</FONT></B></TT>
+<P>
+This whole-program optimization substitution option selects program-wide
+optimizations, including global function inlining, superblock
+formation, and global alias analysis. The whole-program optimization
+option is not allowed in an <TT><I><FONT SIZE=4 FACE="Courier New">option-list</FONT></I></TT>
+with module-local (Category 2) options.
+<H5><A NAME="cat2">Module-local optimization options (Category
+2)</A> </H5>
+
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">+fprof | +O0 | +O1 | +O2
+| +O3 | +O4</FONT></B></TT>
+<P>
+These module-local substitution options correspond to the gcc960
+and ic960 drivers' <TT><B><FONT SIZE=4 FACE="Courier New">-fprof</FONT></B></TT>
+(Instrument) and <TT><B><FONT SIZE=4 FACE="Courier New">-O</FONT></B><I><FONT SIZE=4 FACE="Courier New">n</FONT></I></TT>
+(Optimize) options. The module-local substitution options are
+not allowed in an <TT><I><FONT SIZE=4 FACE="Courier New">option-list</FONT></I></TT>
+with the whole-program optimization (Category 1) option.
+<DL>
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">+fprof</FONT></B></TT>
+
+<DD>causes generation of profile counting code, as described for
+the <TT><B><FONT SIZE=4 FACE="Courier New">-fprof</FONT></B></TT>
+compiler option. When the <TT><B><FONT SIZE=4 FACE="Courier New">+fprof</FONT></B></TT>
+substitution option is used (instead of the <TT><B><FONT SIZE=4 FACE="Courier New">-fprof</FONT></B></TT>
+compiler driver option), only the substitution modules in the
+PDB contain the actual extra counting code. This is useful in
+some cases. For example, a library compiled with <TT><B><FONT SIZE=4 FACE="Courier New">-fdb</FONT></B></TT>
+but without <TT><B><FONT SIZE=4 FACE="Courier New">-fprof</FONT></B></TT>
+is suitable both for users who do <I>not</I> want to use program-wide
+optimizations, and for those who do, as follows:
+<DT>
+<DD>All program database information required to support program-wide
+optimizations is present in the library, since it is compiled
+with <TT><B><FONT SIZE=4 FACE="Courier New">-fdb</FONT></B></TT>.
+<DT>
+<DD>To collect a full program profile (including the library)
+for use with program-wide optimizations, a substitution such as
+<TT><B><FONT SIZE=4 FACE="Courier New">-gcdm,subst=*:*+fprof</FONT></B></TT>
+will generate a program which is appropriately instrumented.
+<DT>
+<DD>If you do not use program-wide optimizations (that is, you
+do not use <TT><B><FONT SIZE=4 FACE="Courier New">gcdm,subst</FONT></B></TT><I><B>
+</B></I>options), there is no extra runtime overhead, and the
+program can be optimized to any module-local optimization level
+higher than <TT><B><FONT SIZE=4 FACE="Courier New">-O0</FONT></B></TT>.
+<BR>
+
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">+O0 +O1 +O2 +O3 +O4</FONT></B></TT>
+
+<DD>allow substitutions of modules with various levels of module-local
+optimization. These are typically used for the following purposes:
+
+</DL>
+
+<UL>
+<LI>to substitute a few non-optimized modules into a program built
+with program-wide optimizations in order to help debug it.
+<LI>to specify a module-local optimization level other than <TT><B><FONT SIZE=4 FACE="Courier New">O1</FONT></B></TT>
+with a <TT><B><FONT SIZE=4 FACE="Courier New">+fprof</FONT></B></TT>
+substitution<I>.</I> 
+</UL>
+
+<H5><A NAME="cat3">Miscellaneous substitution options (Category
+3)</A> </H5>
+
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">+g | +asm_pp+</FONT></B><I><FONT SIZE=4 FACE="Courier New">prog</FONT></I><B><FONT SIZE=4 FACE="Courier New">
+| +clist+</FONT></B><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I><B><FONT SIZE=4 FACE="Courier New">
+| +f</FONT></B><I><FONT SIZE=4 FACE="Courier New">string</FONT></I></TT>
+<P>
+These can be used with either the whole-program or module-local
+substitution options in Categories 2 and 3, above.
+<DL>
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">+g</FONT></B></TT>
+
+<DD>enables debug information generation for substitution modules.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">+asm_pp+</FONT></B><I><FONT SIZE=4 FACE="Courier New">prog</FONT></I></TT>
+
+<DD>causes <TT><I><FONT SIZE=4 FACE="Courier New">prog</FONT></I></TT>
+to be invoked<B> </B>after the assembly code for a substitution
+module is generated, with the name of the file containing the
+substitution assembly code as its argument. This allows the post-processing
+of substitution assembly code by user-supplied tools.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">+clist+</FONT></B><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I></TT>
+
+<DD>generates an assembly code listing of each module selected
+by the substitution into a file named <TT><I><FONT SIZE=4 FACE="Courier New">name</FONT></I><B><FONT SIZE=4 FACE="Courier New">.L</FONT></B></TT>
+in the current working directory, where <TT><I><FONT SIZE=4 FACE="Courier New">name</FONT></I></TT>
+is the base file name of the object module being substituted for.
+<TT><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I></TT> is
+a string consisting of one of more of the following characters:
+<TT><B><FONT SIZE=4 FACE="Courier New">s</FONT></B></TT>, <TT><B><FONT SIZE=4 FACE="Courier New">i</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">o</FONT></B></TT>, <TT><B><FONT SIZE=4 FACE="Courier New">m</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">c</FONT></B></TT>. These
+characters control the content and format of the listing, as described
+for gcc960's <TT><B><FONT SIZE=4 FACE="Courier New">clist</FONT></B></TT>
+(Listing) option and ic960's <TT><B><FONT SIZE=4 FACE="Courier New">z</FONT></B></TT>
+(Listing) options in Chapters 2 and 3 of your compiler manual.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">+f</FONT></B><I><FONT SIZE=4 FACE="Courier New">string</FONT></I></TT>
+
+<DD>The <TT><B><FONT SIZE=4 FACE="Courier New">+f</FONT></B><I><FONT SIZE=4 FACE="Courier New">string</FONT></I></TT>
+substitution options listed below apply the corresponding individual
+<TT><B><FONT SIZE=4 FACE="Courier New">-f</FONT></B><I><FONT SIZE=4 FACE="Courier New">string</FONT></I></TT>
+optimizations. The <TT><B><FONT SIZE=4 FACE="Courier New">no</FONT></B></TT>
+form of these options (e.g., <TT><B><FONT SIZE=4 FACE="Courier New">+fno-unroll-loops</FONT></B></TT>)
+is also accepted.
+<DT>
+<DD><TT><B><FONT SIZE=4 FACE="Courier New">+fbbr</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+fcoalesce</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+fcondfrm</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+fconstprop</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+fcopyprop</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+fcse-follow-jumps</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+fcse-skip-blocks</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+fdead-elim</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+fexpensive-optimizations</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+ffunction-cse</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+fmarry_mem</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+fpeephole</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+frerun-cse-after-loop</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+fsblock</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+fsched-sblock</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+fschedule-insns</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+fschedule-insns2</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+fshadow-globals</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+fshadow-mem</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+fspace-opt</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+fsplit_mem</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+fstrength-reduce</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+fthread-jumps</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+funroll-all-loops</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">+funroll-loops</FONT></B></TT>.
+<DT>
+<DD>These options automatically default appropriately based on
+the selected optimization level. 
+</DL>
+
+<H4>Substitution Suppression </H4>
+
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">nosubst=</FONT></B><I><FONT SIZE=4 FACE="Courier New">module-set</FONT></I></TT>
+
+<P>
+The <TT><B><FONT SIZE=4 FACE="Courier New">nosubst=</FONT></B><I><FONT SIZE=4 FACE="Courier New">module-set</FONT></I></TT>
+argument suppresses substitution for the named modules. This is
+equivalent to <TT><B><FONT SIZE=4 FACE="Courier New">subst=</FONT></B><I><FONT SIZE=4 FACE="Courier New">module-set</FONT></I><B><FONT SIZE=4 FACE="Courier New">+</FONT></B></TT>
+(the <TT><I><FONT SIZE=4 FACE="Courier New">option-list</FONT></I></TT>
+consists of only a <TT><B><FONT SIZE=4 FACE="Courier New">+</FONT></B></TT>
+character). <TT><B><FONT SIZE=4 FACE="Courier New">nosubst</FONT></B></TT>
+is typically used to exclude a subset of modules from a previous
+<TT><B><FONT SIZE=4 FACE="Courier New">subst</FONT></B></TT>.
+<HR>
+
+<H3><A NAME="reference_controls">External Reference Controls </A>
+</H3>
+
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">ref=</FONT></B><I><FONT SIZE=4 FACE="Courier New">module-set</FONT></I></TT>
+
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">noref=</FONT></B><I><FONT SIZE=4 FACE="Courier New">module-set</FONT></I></TT>
+
+<P>
+These reference controls cause gcdm960<I> </I>to<I> </I>assume/not
+assume that functions or data defined in the objects named by
+<TT><I><FONT SIZE=4 FACE="Courier New">module-set</FONT></I></TT><I>
+</I>are referenced outside the set of object files presented to
+the linker.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">ref</FONT></B></TT> would
+normally be used to keep the global decision making and optimization
+step from discarding modules that appear to be unused.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">noref</FONT></B></TT> is
+typically used to exclude a subset of modules from a previous<I><B>
+</B></I><TT><B><FONT SIZE=4 FACE="Courier New">ref</FONT></B></TT>.
+<P>
+The last <TT><B><FONT SIZE=4 FACE="Courier New">ref</FONT></B></TT>
+or <TT><B><FONT SIZE=4 FACE="Courier New">noref</FONT></B></TT>
+to name a given module applies.
+<HR>
+
+<H3><A NAME="inline_control">Inlining Control </A></H3>
+
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">inline=</FONT></B><I><FONT SIZE=4 FACE="Courier New">n</FONT></I></TT>
+
+<P>
+This <TT><B><FONT SIZE=4 FACE="Courier New">gcdm</FONT></B></TT>
+option argument controls how aggressively global inlining decisions
+are made.
+<P>
+<TT><I><FONT SIZE=4 FACE="Courier New">n</FONT></I></TT> defaults
+to 3, and <TT><I><FONT SIZE=4 FACE="Courier New">n</FONT></I></TT>
+must be <TT><FONT SIZE=4 FACE="Courier New">&gt;= </FONT></TT>0
+and less than 5.
+<HR>
+
+<H3><A NAME="profile_control">Profile Control </A></H3>
+
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">iprof=</FONT></B><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>
+
+<P>
+This control causes the profile information in <TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>
+to be incorporated into program-wide optimization decisions.
+<P>
+<TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT> is
+a raw profile or a self-contained profile.
+<HR>
+
+<H3><A NAME="memory_control">Memory Controls </A></H3>
+
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">sram=</FONT></B><I><FONT SIZE=4 FACE="Courier New">hexstart</FONT></I><B><FONT SIZE=4 FACE="Courier New">,</FONT></B><I><FONT SIZE=4 FACE="Courier New">hexend</FONT></I><FONT SIZE=4 FACE="Courier New">[<B>,</B><I>hexstart</I><B>,</B><I>hexend</I>]...</FONT></TT>
+
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">m=</FONT></B><I><FONT SIZE=4 FACE="Courier New">hexstart</FONT></I><FONT SIZE=4 FACE="Courier New">,<I>hexlen</I>[<B>,</B><I>hexstart</I>,<I>hexlen</I>]...</FONT></TT>
+
+<P>
+These <TT><B><FONT SIZE=4 FACE="Courier New">gcdm</FONT></B></TT>
+option arguments cause global variables to be automatically allocated
+to the indicated SRAM area available in some 80960 processor models,
+but could be any fast memory region reserved for this purpose.
+<HR>
+
+<H3><A NAME="dryrun_control">Dryrun Control </A></H3>
+
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">dryrun</FONT></B></TT>
+
+<P>
+The <TT><B><FONT SIZE=4 FACE="Courier New">dryrun</FONT></B></TT>
+argument echoes the commands which would be executed to implement
+all specified <TT><B><FONT SIZE=4 FACE="Courier New">subst</FONT></B></TT>
+options into the report file, without actually doing the optimization
+work.
+<HR>
+
+<H3><A NAME="report_controls">Report Controls </A></H3>
+
+<P>
+The <TT><B><FONT SIZE=4 FACE="Courier New">gcdm</FONT></B></TT>
+option arguments listed here allow for creation of various optimization
+reports and naming the report file.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">dec=</FONT></B><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>
+
+<P>
+Causes<I> </I>the optimization decisions report file to be <TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>,
+instead of <TT><B><FONT SIZE=4 FACE="Courier New">stdout</FONT></B></TT>.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">dryrun</FONT></B></TT>
+
+<P>
+Echoes the commands which would be executed to implement all specified
+<TT><B><FONT SIZE=4 FACE="Courier New">subst</FONT></B></TT> options
+into the report file, without actually doing the optimization
+work.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">rsummary</FONT></B></TT>
+
+<P>
+Prints a summary of program-wide optimization decisions to the
+report file.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">rdecisions</FONT></B></TT>
+
+<P>
+Prints information about program-wide optimization decisions to
+the report file.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">rcall-graph</FONT></B></TT>
+
+<P>
+Prints a call graph to the report file.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">rreverse</FONT></B></TT>
+
+<P>
+Prints a reversed call graph to the report file<I>.</I> 
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">rprofile</FONT></B></TT>
+
+<P>
+Prints the profile counts for the basic blocks which were hit
+to the report file.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">rvariables</FONT></B></TT>
+
+<P>
+Lists the variables allocated to fast memory with <TT><B><FONT SIZE=4 FACE="Courier New">-m</FONT></B></TT>
+or <TT><B><FONT SIZE=4 FACE="Courier New">-sram</FONT></B></TT>
+to the report file.
+<HR>
+
+<H2><A NAME="module_set_spec">Module-Set Specification </A></H2>
+
+<P>
+A module-set selects a subset of zero or more modules from the
+set consisting of all <I>eligible</I> modules in the program.
+A module-set specification has the format:
+<P>
+<TT><FONT SIZE=4 FACE="Courier New">[ <I>archive</I> ] <B>:</B>
+<I>module</I></FONT></TT> 
+<P>
+The following rules govern module-set selection.
+<OL>
+<LI>The set of eligible modules are those linked into the program
+that were compiled with the <TT><FONT SIZE=4 FACE="Courier New">-fdb</FONT></TT>
+compiler driver option.
+<LI>If either of the characters <TT><B><FONT SIZE=4 FACE="Courier New">:</FONT></B></TT>
+or <TT><B><FONT SIZE=4 FACE="Courier New">+</FONT></B></TT> appears
+twice in succession, that character is <I>quoted</I> and the meaning
+is a single <TT><B><FONT SIZE=4 FACE="Courier New">:</FONT></B></TT>
+or <TT><B><FONT SIZE=4 FACE="Courier New">+</FONT></B></TT> character.
+<LI>If a module-set contains an <I>unquoted</I> <TT><B><FONT SIZE=4 FACE="Courier New">:</FONT></B></TT>
+character, it is interpreted as a pair of <I>regular expression</I>
+strings in the style of the UNIX Bourne shell, with the string
+to the left of the <TT><B><FONT SIZE=4 FACE="Courier New">:</FONT></B></TT>
+matching object file archives and the string to the right of the
+<TT><B><FONT SIZE=4 FACE="Courier New">:</FONT></B></TT> matching
+individual object files. For example:<BR>
+<TT><B><FONT SIZE=4 FACE="Courier New">*:*</FONT></B></TT> matches
+all eligible modules<BR>
+<TT><B><FONT SIZE=4 FACE="Courier New">:*</FONT></B></TT> matches
+only eligible modules not linked in from libraries <BR>
+<TT><B><FONT SIZE=4 FACE="Courier New">a:b.o</FONT></B></TT> matches
+<TT><B><FONT SIZE=4 FACE="Courier New">b.o</FONT></B></TT> from
+library <TT><B><FONT SIZE=4 FACE="Courier New">a</FONT></B></TT>,
+provided the module is eligible.
+<LI>If a module-set contains no unquoted <TT><B><FONT SIZE=4 FACE="Courier New">:</FONT></B></TT>
+characters, it is assumed to be the name of a function or variable
+in the program. In this case, the module-set refers to the object
+file that contains the definition of the variable or the body
+of the function, provided the module containing the variable definition
+or function body is eligible.
+<LI>If a module-set is empty (that is, no characters occur between
+the option and the <TT><B><FONT SIZE=4 FACE="Courier New">=</FONT></B></TT>
+character) the module-set defaults to <TT><B><FONT SIZE=4 FACE="Courier New">:*</FONT></B></TT>,
+which refers to all eligible modules in the program not linked
+in from libraries. 
+</OL>
+
+<HR>
+
+<P>
+<A HREF="#top"><IMG SRC="../icons/uparw.gif" ALIGN="BOTTOM"></A><I>Return
+to the top of this page.</I> 
+<P>
+<A HREF="gcc960.htm"><IMG SRC="../icons/page.gif" ALIGN="BOTTOM"></A><I>Go
+to the gcc960 compiler driver page.</I>
+<P>
+<A HREF="ic960.htm"><IMG SRC="../icons/page.gif" ALIGN="BOTTOM"></A><I>Go
+to the ic960 compiler driver page.</I> 
+</BODY>
+
+</HTML>
+

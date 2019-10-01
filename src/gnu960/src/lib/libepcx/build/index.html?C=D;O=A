@@ -1,0 +1,28 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+ <head>
+  <title>Index of /afs/cs/project/cmcl/link.vcnectar/gnu960/src/lib/libepcx/build</title>
+ </head>
+ <body>
+<h1>Index of /afs/cs/project/cmcl/link.vcnectar/gnu960/src/lib/libepcx/build</h1>
+<pre><img src="/icons/blank.gif" alt="Icon "> <a href="?C=N;O=A">Name</a>                    <a href="?C=M;O=A">Last modified</a>      <a href="?C=S;O=A">Size</a>  <a href="?C=D;O=D">Description</a><hr><img src="/icons/back.gif" alt="[DIR]"> <a href="/afs/cs/project/cmcl/link.vcnectar/gnu960/src/lib/libepcx/">Parent Directory</a>                             -   
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="Makefile">Makefile</a>                04-Jun-1996 11:31  5.4K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="_version">_version</a>                04-Jun-1996 11:31   10   
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="eat_time.as">eat_time.as</a>             04-Jun-1996 11:31  2.0K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="ep960cx.ld">ep960cx.ld</a>              04-Jun-1996 11:31  1.6K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="ep960cxb.ld">ep960cxb.ld</a>             04-Jun-1996 11:31  1.7K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="ep960cxp.ld">ep960cxp.ld</a>             04-Jun-1996 11:31  2.3K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="ep_wait.c">ep_wait.c</a>               04-Jun-1996 11:31  3.5K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="epcxasm.as">epcxasm.as</a>              04-Jun-1996 11:31  6.0K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="i_minrev">i_minrev</a>                04-Jun-1996 11:31    4   
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="makelibs.dos">makelibs.dos</a>            04-Jun-1996 11:31  4.1K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="mepcx.gld">mepcx.gld</a>               04-Jun-1996 11:31  322   
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="mepcx.ld">mepcx.ld</a>                04-Jun-1996 11:31  1.4K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="noint_tm.c">noint_tm.c</a>              04-Jun-1996 11:31  6.5K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="prof_isr.as">prof_isr.as</a>             04-Jun-1996 11:31  2.5K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="profepcx.c">profepcx.c</a>              04-Jun-1996 11:31  7.9K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="t82c54.h">t82c54.h</a>                04-Jun-1996 11:31  3.3K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="time.c">time.c</a>                  04-Jun-1996 11:31  2.4K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="time_ep.c">time_ep.c</a>               04-Jun-1996 11:31  7.4K  
+<hr></pre>
+</body></html>

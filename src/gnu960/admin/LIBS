@@ -1,0 +1,26 @@
+# $Id: LIBS,v 1.27 1995/08/11 17:08:43 kevins Exp $
+
+# Directories containing source code for native 960 libraries.
+# Entries in this file should be paths relative to the 'BASE/src/lib' directory
+# (where BASE represents the top-level directory of the GNU/960 tools).
+#
+# Comments (such as these) and blank lines are allowed in this file.
+
+libc
+libm
+libmstub
+libafp
+libfp
+libqf
+libll
+librom
+libhis
+libepcx
+libcy
+libmon
+
+# libevca - no longer supported
+# libevsx - no longer supported
+# libhk - no longer supported
+# libqt - no longer supported
+# libtc - no longer supported

@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+ <head>
+  <title>Index of /afs/cs/project/cmcl/link.vcnectar/gnu960/src/lib/libafp/common</title>
+ </head>
+ <body>
+<h1>Index of /afs/cs/project/cmcl/link.vcnectar/gnu960/src/lib/libafp/common</h1>
+<pre><img src="/icons/blank.gif" alt="Icon "> <a href="?C=N;O=A">Name</a>                    <a href="?C=M;O=A">Last modified</a>      <a href="?C=S;O=D">Size</a>  <a href="?C=D;O=A">Description</a><hr><img src="/icons/back.gif" alt="[DIR]"> <a href="/afs/cs/project/cmcl/link.vcnectar/gnu960/src/lib/libafp/">Parent Directory</a>                             -   
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="i_minrev">i_minrev</a>                04-Jun-1996 11:30    4   
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="_version">_version</a>                04-Jun-1996 11:30   10   
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="fpem_ac.as">fpem_ac.as</a>              04-Jun-1996 11:30  1.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="faultins.c">faultins.c</a>              04-Jun-1996 11:30  1.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="faultovs.c">faultovs.c</a>              04-Jun-1996 11:30  1.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="faultind.c">faultind.c</a>              04-Jun-1996 11:30  1.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="faultuns.c">faultuns.c</a>              04-Jun-1996 11:30  1.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="faultovd.c">faultovd.c</a>              04-Jun-1996 11:30  1.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="faultund.c">faultund.c</a>              04-Jun-1996 11:30  1.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="faultint.c">faultint.c</a>              04-Jun-1996 11:30  1.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="faultovt.c">faultovt.c</a>              04-Jun-1996 11:30  1.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="faultunt.c">faultunt.c</a>              04-Jun-1996 11:30  1.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="faultzds.c">faultzds.c</a>              04-Jun-1996 11:30  1.8K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="faultzdd.c">faultzdd.c</a>              04-Jun-1996 11:30  1.8K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="faultios.c">faultios.c</a>              04-Jun-1996 11:30  1.8K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="faultres.c">faultres.c</a>              04-Jun-1996 11:30  1.8K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="faultiod.c">faultiod.c</a>              04-Jun-1996 11:30  1.8K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="faultred.c">faultred.c</a>              04-Jun-1996 11:30  1.8K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="faultzdt.c">faultzdt.c</a>              04-Jun-1996 11:30  1.9K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="faultiot.c">faultiot.c</a>              04-Jun-1996 11:30  1.9K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="faultret.c">faultret.c</a>              04-Jun-1996 11:30  1.9K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="trng960.as">trng960.as</a>              04-Jun-1996 11:30  2.4K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="fltsitf.as">fltsitf.as</a>              04-Jun-1996 11:30  2.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="asmopt.h">asmopt.h</a>                04-Jun-1996 11:30  3.1K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="fixsfsi.as">fixsfsi.as</a>              04-Jun-1996 11:30  3.5K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="fixtfsi.as">fixtfsi.as</a>              04-Jun-1996 11:30  3.6K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="fltsidf.as">fltsidf.as</a>              04-Jun-1996 11:30  3.8K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="fltsisf.as">fltsisf.as</a>              04-Jun-1996 11:30  3.9K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="rndusfsi.as">rndusfsi.as</a>             04-Jun-1996 11:30  4.0K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="scalesf.as">scalesf.as</a>              04-Jun-1996 11:30  4.2K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="fixdfsi.as">fixdfsi.as</a>              04-Jun-1996 11:30  4.3K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="rndutfsi.as">rndutfsi.as</a>             04-Jun-1996 11:30  4.4K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="afpnans.as">afpnans.as</a>              04-Jun-1996 11:30  4.4K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="rndsfsi.as">rndsfsi.as</a>              04-Jun-1996 11:30  4.6K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="rndtfsi.as">rndtfsi.as</a>              04-Jun-1996 11:30  4.9K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="scaletf.as">scaletf.as</a>              04-Jun-1996 11:30  4.9K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="extsftf.as">extsftf.as</a>              04-Jun-1996 11:30  5.0K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="afpnand.as">afpnand.as</a>              04-Jun-1996 11:30  5.1K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="rndudfsi.as">rndudfsi.as</a>             04-Jun-1996 11:30  5.1K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="afpnant.as">afpnant.as</a>              04-Jun-1996 11:30  5.1K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="scaledf.as">scaledf.as</a>              04-Jun-1996 11:30  5.2K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="logbsf2.as">logbsf2.as</a>              04-Jun-1996 11:30  5.3K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="cmpsf2.as">cmpsf2.as</a>               04-Jun-1996 11:30  5.4K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="logbdf2.as">logbdf2.as</a>              04-Jun-1996 11:30  5.7K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="extdftf.as">extdftf.as</a>              04-Jun-1996 11:30  5.7K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="rnddfsi.as">rnddfsi.as</a>              04-Jun-1996 11:30  5.7K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="trntfsf.as">trntfsf.as</a>              04-Jun-1996 11:30  5.7K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="logbtf2.as">logbtf2.as</a>              04-Jun-1996 11:30  5.8K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="extsfdf.as">extsfdf.as</a>              04-Jun-1996 11:30  5.9K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="trntfdf.as">trntfdf.as</a>              04-Jun-1996 11:30  6.1K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="trndfsf.as">trndfsf.as</a>              04-Jun-1996 11:30  6.2K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="cmpdf2.as">cmpdf2.as</a>               04-Jun-1996 11:30  6.3K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="cmptf2.as">cmptf2.as</a>               04-Jun-1996 11:30  6.7K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="makelibs.dos">makelibs.dos</a>            04-Jun-1996 11:30  7.1K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="environ.as">environ.as</a>              04-Jun-1996 11:30  8.2K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="roundsf2.as">roundsf2.as</a>             04-Jun-1996 11:30  8.4K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="Makefile">Makefile</a>                04-Jun-1996 11:30  8.8K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="rounddf2.as">rounddf2.as</a>             04-Jun-1996 11:30   10K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="multf3.as">multf3.as</a>               04-Jun-1996 11:30   10K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="roundtf2.as">roundtf2.as</a>             04-Jun-1996 11:30   11K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="remsf3.as">remsf3.as</a>               04-Jun-1996 11:30   11K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="afprrcs.as">afprrcs.as</a>              04-Jun-1996 11:30   11K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="afprrct.as">afprrct.as</a>              04-Jun-1996 11:30   12K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="divtf3.as">divtf3.as</a>               04-Jun-1996 11:30   12K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="afprrcd.as">afprrcd.as</a>              04-Jun-1996 11:30   13K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="remdf3.as">remdf3.as</a>               04-Jun-1996 11:30   15K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="remtf3.as">remtf3.as</a>               04-Jun-1996 11:30   16K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="addtf3.as">addtf3.as</a>               04-Jun-1996 11:30   19K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="opnsf3.as">opnsf3.as</a>               04-Jun-1996 11:30   22K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="opndf3.as">opndf3.as</a>               04-Jun-1996 11:30   38K  
+<hr></pre>
+</body></html>

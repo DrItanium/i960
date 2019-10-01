@@ -1,0 +1,141 @@
+<HTML>
+
+<HEAD>
+
+<TITLE>Name Lister (gnm960/nam960)</TITLE>
+
+<META NAME="AUTHOR" CONTENT="David M. Gaffney">
+<META NAME="GENERATOR" CONTENT="Internet Assistant for Microsoft Word 2.0z Beta">
+</HEAD>
+
+<BODY>
+
+<H1>
+<CENTER>
+gnm960/nam960 Name Lister 
+</CENTER>
+</H1>
+
+<HR>
+
+<P>
+The gnm960/nam960 name lister is a symbol dumper: it prints the
+name list (symbol table entries) of each specified object or object
+library file. For libraries, a symbol table listing is produced
+for each member of the library. The information listed includes,
+for each symbol: value, class, type, size, line number, and section
+name.
+<P>
+The invocation command is:
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">gnm960</FONT></B><FONT SIZE=4 FACE="Courier New">
+| <B>nam960</B> [ <B>-</B><I>option</I> ]... [ <I>file </I>]...
+</FONT></TT>
+<P>
+<A NAME="DDE_LINK2">Each option must be preceded by a </A><TT><B><FONT SIZE=4 FACE="Courier New">-</FONT></B></TT>
+character. (On DOS, you can also use a <TT><B><FONT SIZE=4 FACE="Courier New">/</FONT></B></TT>
+character.) The options are listed below. 
+<P>
+<TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT> specifies
+the file or library to be operated on. If <TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>
+is omitted, <TT><B><FONT SIZE=4 FACE="Courier New">a.out</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">b.out</FONT></B></TT>,
+and <TT><B><FONT SIZE=4 FACE="Courier New">e.out</FONT></B></TT>
+are tried, in that order.
+<HR>
+
+<H3>Options </H3>
+
+<HR>
+
+<UL>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">a <BR>
+</FONT></B></TT>Prints the debug symbols.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">d <BR>
+</FONT></B></TT>Displays numbers in decimal.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">e <BR>
+</FONT></B></TT>Prints only global (external) symbols.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">f <BR>
+</FONT></B></TT>Produces full output, including .text, .data,
+and .bss symbols, which are normally suppressed.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">g <BR>
+</FONT></B></TT>Prints only global (external) symbols. This is
+equivalent to the <TT><B><FONT SIZE=4 FACE="Courier New">e</FONT></B></TT>
+option.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">h <BR>
+</FONT></B></TT>Removes header information in the listing.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">help <BR>
+</FONT></B></TT>Displays help information.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">n <BR>
+</FONT></B></TT>Sorts symbols alphabetically.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">o <BR>
+</FONT></B></TT>Displays numbers in octal.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">p <BR>
+</FONT></B></TT>Prints symbol value, type code and name in three-column
+format. Each symbol name is preceded by its value (blanks if undefined)
+and a letter, listed below. If the symbol is local (non-external),
+the type letter is in lower case. 
+<UL>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">U</FONT></B></TT> undefined
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">A</FONT></B></TT> absolute
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">T</FONT></B></TT> text
+section symbol
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">D</FONT></B></TT> data
+section symbol
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">B</FONT></B></TT> bss
+section symbol
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">C</FONT></B></TT> common
+symbol
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">O</FONT></B></TT> any
+other section; COFF files only
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">f</FONT></B></TT> file
+name
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">?</FONT></B></TT> debugger
+symbol table entries (see <TT><B><FONT SIZE=4 FACE="Courier New">a</FONT></B></TT>)
+
+</UL>
+
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">R <BR>
+</FONT></B></TT>Sorts symbols in reverse (downward alphabetic
+or numeric) order.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">r <BR>
+</FONT></B></TT>Prepends the file or library element name to each
+output line.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">s <BR>
+</FONT></B></TT>Describes the archive symbol map data in any input
+libraries.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">T <BR>
+</FONT></B></TT>Truncates names to keep symbol names within column
+widths.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">u <BR>
+</FONT></B></TT>Prints undefined symbols only.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">V <BR>
+</FONT></B></TT>Prints version information about gnm960 or nam960
+on <TT><B><FONT SIZE=4 FACE="Courier New">stdout</FONT></B></TT>
+and proceeds in processing the rest of the options specified.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">v <BR>
+</FONT></B></TT>Sorts by numerical value.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">v960 <BR>
+</FONT></B></TT>Prints version information about gnm960 or nam960
+on <TT><B><FONT SIZE=4 FACE="Courier New">stdout</FONT></B></TT>
+and exits.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">x <BR>
+</FONT></B></TT>Displays numbers in hexadecimal (this is the default).
+
+</UL>
+
+<HR>
+
+<P>
+<A HREF="#top"><IMG SRC="../icons/uparw.gif" ALIGN="BOTTOM"></A><I>Return
+to the top of this page.</I> 
+<P>
+<A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the ic960 Interface Index.</I> 
+<P>
+<A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the gcc960 Interface Index.</I> 
+</BODY>
+
+</HTML>
+

@@ -1,0 +1,200 @@
+<HTML>
+
+<HEAD>
+
+<TITLE>Assembler (asm960/gas960/gas960c/gas960e)</TITLE>
+
+<META NAME="GENERATOR" CONTENT="Internet Assistant for Microsoft Word 2.0z Beta">
+</HEAD>
+
+<BODY>
+
+<H1>
+<CENTER>
+asm960/gas960[c|e] <A NAME="top">Assembler</A> 
+</CENTER>
+</H1>
+
+<HR>
+
+<P>
+The assembler can be invoked with four invocation commands, which
+determine the output file format (b.out, COFF, or ELF). The invocation
+syntax is:
+<P>
+<TT><B><FONT SIZE=4 COLOR=#000000 FACE="Courier New">asm960</FONT><FONT SIZE=4 FACE="Courier New">
+</FONT></B><FONT SIZE=4 FACE="Courier New">|<B> </B></FONT><B><FONT SIZE=4 COLOR=#000000 FACE="Courier New">gas960</FONT><FONT SIZE=4 FACE="Courier New">
+</FONT></B><FONT SIZE=4 FACE="Courier New">[ </FONT><B><FONT SIZE=4 COLOR=#000000 FACE="Courier New">c</FONT><FONT SIZE=4 FACE="Courier New">
+</FONT></B><FONT SIZE=4 FACE="Courier New">|<B> </B></FONT><B><FONT SIZE=4 COLOR=#000000 FACE="Courier New">e</FONT><FONT SIZE=4 FACE="Courier New">
+</FONT></B><FONT SIZE=4 FACE="Courier New">]<B> </B></FONT><I><FONT SIZE=4 COLOR=#000000 FACE="Courier New">-option</FONT></I><FONT SIZE=4 FACE="Courier New">...<B>
+</B></FONT><I><FONT SIZE=4 COLOR=#000000 FACE="Courier New">file</FONT></I><B><FONT SIZE=4 FACE="Courier New">
+</FONT></B><FONT SIZE=4 FACE="Courier New">[...]</FONT></TT> 
+<DL>
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">asm960</FONT></B></TT>
+and <TT><B><FONT SIZE=4 FACE="Courier New">gas960c</FONT></B></TT>
+
+<DD>invoke the assembler to generate COFF output.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">gas960</FONT></B></TT>
+
+<DD>invokes the assembler to generate b.out output.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">gas960e</FONT></B></TT>
+
+<DD>invokes the assembler to generate ELF output. 
+</DL>
+
+<P>
+Assembler options affect assembler input, operation and output.
+Each option must be preceded by a <TT><B><FONT SIZE=4 FACE="Courier New">-</FONT></B></TT>
+character. (On DOS, you can also use a <TT><B><FONT SIZE=4 FACE="Courier New">/</FONT></B></TT>
+character.) The options are listed below.
+<P>
+Assembler input files can contain assembly language instructions
+and assembler directives.
+<HR>
+
+<P>
+The assembler invocation options are listed below.
+<UL>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">A </FONT></B><I><FONT SIZE=4 FACE="Courier New">arch</FONT></I></TT>
+(<B>Architecture</B>) <BR>
+Assemble instructions for the specified i960 architecture. <TT><I><FONT SIZE=4 FACE="Courier New">arch</FONT></I></TT>
+can be: <TT><B><FONT SIZE=4 FACE="Courier New">KA</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">SA</FONT></B></TT>, <TT><B><FONT SIZE=4 FACE="Courier New">KB</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">SB</FONT></B></TT>, <TT><B><FONT SIZE=4 FACE="Courier New">CA</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">CF</FONT></B></TT>, <TT><B><FONT SIZE=4 FACE="Courier New">JA</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">JD</FONT></B></TT>, <TT><B><FONT SIZE=4 FACE="Courier New">JF</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">HA</FONT></B></TT>, <TT><B><FONT SIZE=4 FACE="Courier New">HD</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">HT</FONT></B></TT>, <TT><B><FONT SIZE=4 FACE="Courier New">RP</FONT></B></TT>
+and <TT><B><FONT SIZE=4 FACE="Courier New">ANY</FONT></B></TT>.
+The default architecture is <TT><B><FONT SIZE=4 FACE="Courier New">KB</FONT></B></TT>.
+Use the <TT><B><FONT SIZE=4 FACE="Courier New">G960ARCH</FONT></B></TT>
+or <TT><B><FONT SIZE=4 FACE="Courier New">I960ARCH</FONT></B></TT>
+environment variable to override the default. <TT><B><FONT SIZE=4 FACE="Courier New">ANY</FONT></B></TT>
+means allow any valid i960 instruction. <BR>
+Opcode mnemonics and special function register operands that are
+illegal in the specified architecture are flagged as errors. Exceptions:
+<UL>
+<LI>With <TT><B><FONT SIZE=4 FACE="Courier New">AANY</FONT></B></TT>,
+all architecture checking is disabled.
+<LI>With <TT><B><FONT SIZE=4 FACE="Courier New">x</FONT></B><FONT SIZE=4 FACE="Courier New">,</FONT></TT>
+architecture mismatches are warnings, not errors.
+<LI>Branch-prediction bits are always assembled, since they are
+ignored by architectures that don't support them. 
+</UL>
+
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">D </FONT></B><I><FONT SIZE=4 FACE="Courier New">symbolname</FONT></I><B><FONT SIZE=4 FACE="Courier New">
+</FONT></B><FONT SIZE=4 FACE="Courier New">[<B>=</B><I>expression</I>]<B>
+</B></FONT></TT><B>(Define symbol) <BR>
+</B>Define the symbol <TT><I><FONT SIZE=4 FACE="Courier New">symbolname</FONT></I></TT>
+and set its value to <TT><I><FONT SIZE=4 FACE="Courier New">expression</FONT></I></TT>.
+If <TT><B><FONT SIZE=4 FACE="Courier New">=</FONT></B><I><FONT SIZE=4 COLOR=#000000 FACE="Courier New">express</FONT><FONT SIZE=4 FACE="Courier New">ion</FONT></I></TT>
+is not specified, the value of <TT><I><FONT SIZE=4 FACE="Courier New">symbolname</FONT></I></TT>
+is 1.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">d </FONT></B></TT><B>(Debug
+symbols)<BR>
+</B>Retain symbol information about local labels beginning with
+<TT><B><FONT SIZE=4 FACE="Courier New">L</FONT></B></TT> or <TT><B><FONT SIZE=4 FACE="Courier New">.</FONT></B></TT>
+(dot). Such labels are typically compiler-generated for local
+symbols, and are normally discarded to save space.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">G </FONT></B></TT><B>(Big-endian)
+<BR>
+</B>Assemble the file to run in a big-endian memory region. Not
+valid when assembler is invoked as <TT><B><FONT SIZE=4 FACE="Courier New">gas960</FONT></B></TT>.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">h </FONT></B></TT><B>(Help)
+<BR>
+</B>Display help information about the assembler and exit without
+doing anything else.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">I </FONT></B><I><FONT SIZE=4 FACE="Courier New">pathname</FONT></I><B><FONT SIZE=4 FACE="Courier New">
+</FONT></B></TT><B>(Include-file search path)<BR>
+</B>Add <TT><I><FONT SIZE=4 FACE="Courier New">pathname</FONT></I></TT>
+to the list of pathnames to search for source files included with
+the <TT><FONT SIZE=4 FACE="Courier New">.<B>include</B></FONT></TT>
+directive. The default is to search only the current directory
+for include files. You can specify any number of <TT><B><FONT SIZE=4 FACE="Courier New">I</FONT></B></TT>
+<TT><I><FONT SIZE=4 FACE="Courier New">pathname</FONT></I></TT>
+pairs.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">i </FONT></B></TT><B>(Interactive)
+<BR>
+</B>Read source from standard input instead of from a file. For
+keyboard input, terminate interactive mode with a CTRL-D. (On
+DOS hosts, use CTRL-Z.)
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">L</FONT></B></TT> <TT><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I><FONT SIZE=4 FACE="Courier New">
+</FONT></TT>(Listing) <BR>
+Generate a listing and print it on standard output. Accept all
+listing defaults. <TT><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I></TT>
+is:<BR>
+<TT><B><FONT SIZE=4 FACE="Courier New">a</FONT></B></TT> List
+all the code, ignoring <TT><B><FONT SIZE=4 FACE="Courier New">.nolist</FONT></B></TT>
+directives. <BR>
+<TT><B><FONT SIZE=4 FACE="Courier New">e</FONT></B></TT><B> </B>Print
+all machine code in the listing with target-endian byte order.
+<BR>
+<TT><B><FONT SIZE=4 FACE="Courier New">f </FONT></B><I><FONT SIZE=4 FACE="Courier New">listfilename</FONT></I><B><FONT SIZE=4 FACE="Courier New">
+</FONT></B></TT>Create a listing file with the specified filename.
+<BR>
+<TT><B><FONT SIZE=4 FACE="Courier New">n</FONT></B></TT> Do not
+expand include files in the listing. <BR>
+<TT><B><FONT SIZE=4 FACE="Courier New">t </FONT></B><I><FONT SIZE=4 FACE="Courier New">title</FONT></I><B><FONT SIZE=4 FACE="Courier New">
+</FONT></B></TT>Use<TT><FONT SIZE=4 FACE="Courier New"> <I>title</I></FONT></TT>
+as listing title; must be quoted if it contains embedded spaces.
+<BR>
+<TT><B><FONT SIZE=4 FACE="Courier New">z</FONT></B></TT> Do not
+print the listing header. 
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">n </FONT></B></TT><B>(No
+compare-and-branch-replacements) <BR>
+</B>(No relax) Normally, the assembler replaces each such instruction
+with two instructions: an equivalent compare instruction and an
+equivalent branch instruction. Note that this option has no effect
+on the processing of the Intel Compare-and-Jump pseudo-instructions
+(e.g., <TT><B><FONT SIZE=4 FACE="Courier New">cmpijne</FONT></B></TT>).
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">o </FONT></B><I><FONT SIZE=4 FACE="Courier New">objfilename</FONT></I></TT><B>
+(Object filename) <BR>
+</B>Use the specified filename for the output file.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">p </FONT></B><FONT SIZE=4 FACE="Courier New">{<B>
+c </B>|<B> d </B>|<B> b </B>}</FONT></TT><B> (Position independence)
+<BR>
+</B>Set a flag in the output file header to mark the file as containing
+position-independent code or data or both, respectively. The default
+is to not mark the file header in this way. The argument must
+be exactly one of the letters shown. Not valid when assembler
+is invoked as <TT><B><FONT SIZE=4 FACE="Courier New">gas960</FONT></B></TT>.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">V</FONT></B></TT><B>
+(Version)<BR>
+</B>Display version information about the assembler and continue
+with the assembly.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">v960</FONT></B></TT><B>
+(Version)<BR>
+</B>Display version information about the assembler and exit without
+doing anything else.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">W </FONT></B></TT><B>(Warnings)
+<BR>
+</B>Suppress warning messages. Normally, both warnings and errors
+print their messages on standard error. With this option, only
+error messages are printed.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">x</FONT></B></TT><B>
+(Allow mixed architecture) <BR>
+</B>Treat architecture mismatches (e.g., opcode not in target
+architecture) as warnings, not errors.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">z </FONT></B></TT><B>(Time
+stamp)<BR>
+</B>(COFF format only) Suppress the time/date stamp in the output
+COFF file header. Normally, the time and date of the assembly
+is written into the file header. With this option, the time/date
+field is set to &quot;Date Zero.&quot; 
+</UL>
+
+<HR>
+
+<P>
+<A HREF="#top"><IMG SRC="../icons/uparw.gif" ALIGN="BOTTOM"></A><I>Return
+to the top of this page.</I>
+<P>
+<A HREF="Ctoolshm.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the ic960 Interface Index.</I>
+<P>
+<A HREF="Gnuhome.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the gcc960 Interface Index.</I> 
+</BODY>
+
+</HTML>
+

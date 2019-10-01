@@ -1,0 +1,34 @@
+
+# START OF PROTOMAKE.
+
+# Essential for System V Unix, doesn't hurt elsewhere
+SHELL		= /bin/sh
+SNAPSHOT	=
+LIB_BUILD	= build
+INSTALL_ALL	= TRUE
+IC		= gcc960
+
+MK	= make -f $(MFILE) LIB_BUILD=$(LIB_BUILD) HOST=$(HOST) CLEAN=$(CLEAN) SNAPSHOT=$(SNAPSHOT) DOSXP=$(DOSXP) DOSXN=$(DOSXN) G960BASE=$(G960BASE) G960ROOT=$(G960ROOT) LIB_DEBUG=$(LIB_DEBUG) LIB_INSTALL=$(LIB_INSTALL) INSTALL_ALL=$(INSTALL_ALL) IC=$(IC)
+
+# To rebuild tool(s) without first removing all object files (e.g., to
+# continue after fixing a syntax error), invoke as "make <target> CLEAN="
+#
+CLEAN	= clean
+
+all:	tools libs
+tools:	$(TOOLS)
+
+libs:	$(LIBS)
+	@if test -z "$(LIB_INSTALL)"; then\
+		$(G960ROOT)/admin/mklinks $(G960ROOT);\
+	fi
+
+bfd:	libbfd binutils gcdm960 gdmp960 gld960 gmpf960 gmung960 grom960 rom960 ghist960
+
+ats:	libbfd toolib libld960 libccinf libld960 gas960 binutils gld960 gdmp960 rom960 cvt960 gcov960 mpp960 ghist960 gmung960 grom960
+
+gdb: 	gdbbfd readline liberty libdwarf hdil hdilcomm toolib gdb960
+
+monats:	hdil hdilcomm mondb
+
+# END OF PROTOMAKE.

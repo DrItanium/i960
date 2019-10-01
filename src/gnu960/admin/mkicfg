@@ -1,0 +1,114 @@
+: Start with ":" line because sys V Unix csh does not understand "#!/bin/sh"
+
+#----------------------------------------------------------------------------
+# RECORD REVISION NUMBERS OF FILES IN A DIRECTORY HAVING AN RCS SUBDIRECTORY
+#
+# Generally the directory is 'common', but it may be 'include'
+# or 'include/sys'. 
+# This is a support script used by 'mksnap', it is not intended
+# to be invoked directly.  The revision info is appended to a file
+# given as an argument to this script.
+#----------------------------------------------------------------------------
+
+PATH=/bin:/usr/bin:/usr/ucb; export PATH
+# 'wc' is on /usr/ucb under sunos and bsd
+# RCS stuff is under /usr/local/bin on some hosts
+if [ -d /usr/local/bin ] ; then
+	PATH=$PATH:/usr/local/bin
+fi
+
+umask 002
+MYNAME=`basename $0`
+
+if [ ! -d admin ] ; then
+	if [ x"$G960ROOT" = x ] ; then
+		echo "$MYNAME: cd to the tools root directory (or set G960ROOT) first"
+		exit 1
+	fi
+	echo 'cd $G960ROOT ('$G960ROOT')'
+	cd $G960ROOT
+	if test ! -d admin ; then
+		echo "$MYNAME: can't find 'admin' subdirectory"
+		exit 1
+	fi
+fi
+
+G960ROOT=`pwd`
+
+#---------------------------------------------------------------------------
+# PARSE ARGS
+#---------------------------------------------------------------------------
+if [ $# -ne 2 ] ; then
+	echo "Usage:	$MYNAME dir configfile"
+	echo
+	echo "For example:   $MYNAME src/gcc960/common G960ROOT/1234.tmp"
+	echo
+	echo "  You must be in the tools root directory or have G960ROOT set."
+	echo "  dir must be relative to G960ROOT: G960ROOT/dir/RCS must exist."
+	echo "  configfile can be an absolute or relative file name."
+	echo "  File revision numbers are appended to configfile."
+	exit 1
+fi
+
+DIR=$1
+RCSDIR=$G960ROOT/$DIR/RCS
+CONFIG_FILE=$2
+
+if [ ! -d "$RCSDIR" ] ; then
+	echo "$MYNAME: Cannot find directory $RCSDIR"
+	exit 1
+fi
+
+if [ ! -f "$CONFIG_FILE" ] ; then
+	touch $CONFIG_FILE
+fi
+
+#---------------------------------------------------------------------------
+# Record the file revision numbers
+#---------------------------------------------------------------------------
+
+# Several files should not have their revisions recorded.
+
+SKIP_LIST=$G960ROOT/$$.skp
+export SKIP_LIST
+rm -f $SKIP_LIST
+touch $SKIP_LIST
+echo i_config,v >> $SKIP_LIST
+echo CHANGE.LOG,v >> $SKIP_LIST
+echo COPYING,v >> $SKIP_LIST
+
+# List all files in the RCS directory.
+# Use sed to eliminate the initial "./" in file names, and
+# to discard files in nested subdirectories.
+
+(
+	cd $RCSDIR
+	find . -type f -name '*,v' -print
+) \
+| sed -e 's/^\.\///' -e '/\//d' \
+| fgrep -v -f $SKIP_LIST \
+| while read fv
+do
+	f=`basename $fv ,v`
+	if [ ! -f "$G960ROOT/$DIR/$f" ] ; then
+		echo "$MYNAME REMARK:  No revision recorded for file $RCSDIR/$fv"
+		continue
+	fi
+	rev=`rlog -h $RCSDIR/$fv | awk '$1 ~ /^head:/ { print $2 }'`
+	if [ "x$?" != "x0" ] ; then
+		echo "$MYNAME ERROR:  Could not find revision for file $RCSDIR/$fv"
+		# exit this while loop
+		exit 1
+	fi
+	echo "$DIR/$f $rev" >> $CONFIG_FILE
+done
+
+FAILURE=$?
+rm -f $SKIP_LIST
+
+if [ "$FAILURE" != "0" ] ; then
+	echo "$MYNAME ERROR: failure obtaining config file."
+	exit 1
+fi
+
+exit 0

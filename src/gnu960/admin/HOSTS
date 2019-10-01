@@ -1,0 +1,14 @@
+# $Id: HOSTS,v 1.22 1995/06/30 16:29:26 kevins Exp $
+
+# Hosts for which the GNU/960 tools are supported.
+#
+# Comments (such as these) and blank lines are allowed in this file.
+
+dos
+hp700
+rs6000
+sol-sun4
+sun4
+win95
+i386_nbsd1
+

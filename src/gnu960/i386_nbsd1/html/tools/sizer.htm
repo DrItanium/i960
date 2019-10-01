@@ -1,0 +1,86 @@
+<HTML>
+
+<HEAD>
+
+<TITLE>Section Size Printer (gsize960/siz960) </TITLE>
+
+<META NAME="AUTHOR" CONTENT="David M. Gaffney">
+<META NAME="GENERATOR" CONTENT="Internet Assistant for Microsoft Word 2.0z Beta">
+</HEAD>
+
+<BODY>
+
+<H1>
+<CENTER>
+gsize960/siz960 Section Size Printer 
+</CENTER>
+</H1>
+
+<HR>
+
+<P>
+The gsize960/siz960 section size printer (&quot;sizer&quot;) prints
+the number of bytes required for each section of an object file,
+and their sum. It also displays the address for each of the sections.
+<P>
+The invocation command is:
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">gsize960</FONT></B><FONT SIZE=4 FACE="Courier New">
+| <B>siz960</B> [ <B>-</B><I>option</I> ]... [ <I>file </I>]</FONT></TT>
+
+<P>
+<A NAME="DDE_LINK2">Each option must be preceded by a </A><TT><B><FONT SIZE=4 FACE="Courier New">-</FONT></B></TT>
+character. (On DOS, you can also use a <TT><B><FONT SIZE=4 FACE="Courier New">/</FONT></B></TT>
+character.) The options are listed below. If no options are specified,
+sizes are displayed in decimal and addresses are displayed in
+hex.
+<P>
+<TT><I><FONT SIZE=4 FACE="Courier New">file<I><B> </B></I></FONT></I></TT>identifies
+an object file. If the file is an object library, the sizer reports
+the size for each member of the library. If <TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT>
+is omitted, the sizer reports the size of <TT><B><FONT SIZE=4 FACE="Courier New">a.out</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">b.out</FONT></B></TT>,
+or <TT><B><FONT SIZE=4 FACE="Courier New">e.out</FONT></B></TT>.
+<HR>
+
+<UL>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">c</FONT></B></TT> 
+<BR>
+Displays total size of COMMON symbols.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">d <BR>
+</FONT></B></TT>Displays size in decimal radix (this is the default).
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">h <BR>
+</FONT></B></TT>Sends help information to <TT><B><FONT SIZE=4 FACE="Courier New">stdout</FONT></B></TT>
+and exits.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">o</FONT></B></TT> 
+<BR>
+Displays size in octal radix.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">p <BR>
+</FONT></B></TT>Suppresses header display.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">V</FONT></B></TT> 
+<BR>
+Sends version information to <TT><B><FONT SIZE=4 FACE="Courier New">stdout</FONT></B></TT>
+and then processes the rest of the specified operations.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">v960</FONT></B></TT>
+<BR>
+Sends version information to <TT><B><FONT SIZE=4 FACE="Courier New">stdout</FONT></B></TT>
+and exits.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">x <BR>
+</FONT></B></TT>Displays size in hex radix. 
+</UL>
+
+<HR>
+
+<P>
+<A HREF="#top"><IMG SRC="../icons/uparw.gif" ALIGN="BOTTOM"></A><I>Return
+to the top of this page.</I> 
+<P>
+<A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the ic960 Interface Index.</I> 
+<P>
+<A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the gcc960 Interface Index.</I> 
+</BODY>
+
+</HTML>
+

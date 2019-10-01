@@ -1,0 +1,986 @@
+<HTML>
+
+<HEAD>
+
+<TITLE>ReleaseNotes</TITLE>
+
+<META NAME="GENERATOR" CONTENT="Internet Assistant for Microsoft Word 2.0z Beta">
+</HEAD>
+
+<BODY>
+
+<TABLE>
+
+<TR><TD WIDTH=314></TD><TD WIDTH=352><I><FONT SIZE=7 FACE="Tms Rmn">Release<BR>
+Notes</FONT></I>
+</TD></TR>
+
+</TABLE>
+
+<P>
+<I>CTOOLS Release 5.0</I>
+<HR>
+
+<P>
+<FONT FACE="Times New Roman">These Release Notes describe CTOOLS
+Release 5.0.  The notes are divided into the following sections:</FONT>
+<UL>
+<LI><FONT FACE="Times New Roman">Product Checklist</FONT>
+<LI><FONT FACE="Times New Roman">Product Enhancements and New
+Features</FONT>
+<LI><FONT FACE="Times New Roman">Compatibility Note for gcc960
+Users</FONT>
+<LI><FONT FACE="Times New Roman">Compatability Note for ic960
+Users</FONT>
+<LI><FONT FACE="Times New Roman">Support for the 80960 Application
+Binary Interface</FONT>
+<LI><FONT FACE="Times New Roman">Hypertext Documentation</FONT>
+<LI><FONT FACE="Times New Roman">Summary of Changes and Known
+Problems for Each Component<BR>
+(in the order shown on page 6)</FONT>
+</UL>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Product Checklist</FONT></B>
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Item Description</FONT></B>
+<OL>
+<LI>Maintenance and Support Information
+<LI><I>Release Notes</I>
+<LI><I>Getting Started with the i960<FONT SIZE=1 FACE="Symbol">&acirc;</FONT>
+Processor Development Tools </I>
+<LI><I>i960<FONT SIZE=1 FACE="Symbol">&acirc;</FONT> Processor
+Compiler User's Guide</I>
+<LI><I>i960<FONT SIZE=1 FACE="Symbol">&acirc;</FONT> Processor
+Assembler User's Guide</I>
+<LI><I>i960<FONT SIZE=1 FACE="Symbol">&acirc;</FONT> Processor
+Software Utilities User's Guide</I>
+<LI><I>i960<FONT SIZE=1 FACE="Symbol">&acirc;</FONT> Processor
+Library Supplement</I>
+<LI><I>gdb960 User's Manual</I>
+<LI><I>i960<FONT SIZE=1 FACE="Symbol">&acirc;</FONT> Processor
+Tools License Guide</I>
+<LI>Tape, CD-ROM or diskettes containing CTOOLS
+</OL>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Product Enhancements and New Features</FONT></B>
+<P>
+Release 5.0 of the development tools provides support for the
+Hx and RP processors, implements the 80960 Application Binary
+Interface (ABI), and improves the program development process
+in several ways. 
+<UL>
+<LI>Code generation can be tailored to the new i960 HA, HD, HT
+or RP processors by selecting the appropriate architecture option.
+<LI>The tools can use the ELF object module format and DWARF Version
+2 debug information format as specified in the 80960 ABI.  The
+new formats enable more accurate mapping between source and object
+code at higher optimization levels and ease debugging of production
+code.
+<LI>The linker can consume files in COFF, b.out and/or ELF object
+formats in the same invocation and produce any of the three formats
+as output.
+<LI>The runtime libraries are shipped in only one format: ELF.
+ The ELF format libraries consume less disk space than the COFF
+and b.out versions.
+<LI>A new user interface to profile-driven compilation enables
+this advanced capability to be easily introduced into existing
+program development environments.  In addition, profiling has
+been enhanced to allow incremental profiling, partial program
+profiling and whole-program optimization with and without an actual
+runtime profile.
+<LI>A new feature allows non-critical parts of an application's
+machine code to be stored in memory in compressed form resulting
+in reduced target memory requirements.  The code is expanded into
+native machine code on demand for execution.
+<LI>New on-line hypertext summarizes the invocation options of
+all the tools.  The information is in Hyper Text Markup Language
+(HTML) format. HTML is in widespread use on the Internet.  A World
+Wide Web browser such as Microsoft's Internet Explorer, Netscape
+Navigator or Mosaic can be used to read the hypertext. 
+<LI>Parallel download has been added to UNIX-hosted gdb960, and
+serial baud rates of up to 115200 baud are supported on selected
+UNIX hosts.
+</UL>
+
+<P>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Compatibility Note for gcc960 Users</FONT></B>
+<P>
+The libraries in this release have been renamed using a standard
+scheme described in the library manual.  For compatibility with
+older releases of GNU/960 the installation procedure offers a
+compatibility option under which the libraries are installed under
+their older names.  See your GNU/960 R4.x library manual for information
+on the old names.
+<P>
+Code generation by Release <FONT SIZE=2 FACE="Times New Roman">5.0</FONT>
+is fully compatible with Release 4.6. Source programs compiled
+with Release 4.6 will be accepted by Release <FONT SIZE=2 FACE="Times New Roman">5.0</FONT>
+without change.  All environment variables and invocation options
+are unchanged.  Object modules generated with Release 4.6 can
+be linked with objects created with Release <FONT SIZE=2 FACE="Times New Roman">5.0</FONT>.
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Compatibility Note for ic960 Users</FONT></B>
+<P>
+Release 5.0 is fully compatible with Release 4.6.
+<P>
+Source programs compiled with Release 4.6 will be accepted by
+Release 5.0 without change. All environment variables and invocation
+options continue to be supported. Object modules generated with
+Release 4.6 can be linked with objects created with Release 5.0.
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Support for the 80960 Application
+Binary Interface</FONT></B>
+<P>
+The 80960 Application Binary Interface (literature order number
+631999) specifies the ELF and DWARF 2.0 object module formats
+as the new standard for 80960 object file interchange.  The tools
+continue to generate previously supported formats.  In addition,
+new options support generation of ELF and DWARF object modules.
+ The notes on the compiler, assembler and linker describe the
+new options.
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Hypertext Documentation</FONT></B>
+<P>
+Release <FONT SIZE=2 FACE="Times New Roman">5.0</FONT> contains
+on-line hypertext documentation with the invocation syntax and
+brief description of all the tools in the product.  This documentation
+is installed in the <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">html</FONT></TT>
+subdirectory.  The hypertext is in Hyper Text Markup Language
+(HTML), the standard for information exchange on the World Wide
+Web.  To view the documentation use the Open File command of a
+standard WWW browser such as Internet Explorer, Netscape Navigator
+or Mosaic and specify the file <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">start.htm</FONT></TT>.
+ It is located in the directory <TT><FONT SIZE=1 FACE="Courier">$6960BASE/html/tools</FONT></TT>.
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Summary of Changes and Known Problems
+for Each Component</FONT></B>
+<P>
+<B><FONT SIZE=4 COLOR=#00FF00>Installation Changes from Release
+4.6</FONT></B>
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Compatible-Mode Library Names</FONT></B>
+<P>
+GNU/960 users will notice that the runtime libraries and linker
+directive files in this release have been renamed using a standard
+scheme described in the library manual.  However, the libraries
+and linker directive files can be installed under their old names
+for compatibility with older releases of GNU/960.  The installation
+procedure prompts for the library naming convention to be used.
+<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>CD-ROM Contains Both DOS and Windows
+95 Products</FONT></B>
+<P>
+The CD-ROM and diskette versions of Release 5.0 contain the CTOOLS
+products for DOS and Windows 95 hosts.  The installation script
+prompts for the set of tools to be installed.<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>CD-ROM Contains Source Code for
+the Tools</FONT></B>
+<P>
+The DOS and Windows 95 installation instructions in the <I>Getting
+Started</I> manual state that you must contact Customer Support
+to obtain source code for the tools. This is not necessary. The
+product CD-ROM contains the source code for all the tools, though
+they are not accessible through the installation script. See the
+file <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">readme.dos</FONT></TT>
+in the root directory of the CD-ROM for instructions on extracting
+the source code from the CD-ROM and building all the tools on
+DOS and Windows 95 hosts. <BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#00FF00>Changes to Tools from Release 4.6
+<BR>
+</FONT></B>
+<TABLE BORDERCOLOR=#FFFF00 BORDER=1>
+
+<TR><TD WIDTH=312><B>Tool</B></TD><TD WIDTH=132><B>Page</B></TD>
+</TR>
+
+<TR><TD WIDTH=312>Archiver (arc960 / gar960)</TD><TD WIDTH=132>6
+</TD></TR>
+
+<TR><TD WIDTH=312>Assembler (asm960 / gas960)</TD><TD WIDTH=132>7
+</TD></TR>
+
+<TR><TD WIDTH=312>Compiler (cc1) and Drivers (gcc960, ic960)</TD>
+<TD WIDTH=132>7</TD></TR>
+
+<TR><TD WIDTH=312>Converters (cof960 / objcopy, cvt960)</TD><TD WIDTH=132>9
+</TD></TR>
+
+<TR><TD WIDTH=312>Coverage Analyzer (gcov960)</TD><TD WIDTH=132>9
+</TD></TR>
+
+<TR><TD WIDTH=312>Debugger (gdb960)</TD><TD WIDTH=132>10</TD>
+</TR>
+
+<TR><TD WIDTH=312>Dumper/Disassembler (dmp960 / gdmp960)</TD>
+<TD WIDTH=132>12</TD></TR>
+
+<TR><TD WIDTH=312>Examples</TD><TD WIDTH=132>12</TD></TR>
+
+<TR><TD WIDTH=312>Libraries</TD><TD WIDTH=132>12</TD></TR>
+
+<TR><TD WIDTH=312>Linker (gld960 / lnk960)</TD><TD WIDTH=132>14
+</TD></TR>
+
+<TR><TD WIDTH=312>Macro Processor (mpp960)</TD><TD WIDTH=132>15
+</TD></TR>
+
+<TR><TD WIDTH=312>Munger (gmung960)</TD><TD WIDTH=132>15</TD>
+</TR>
+
+<TR><TD WIDTH=312>Name Lister (gnm960 / nam960)</TD><TD WIDTH=132>15
+</TD></TR>
+
+<TR><TD WIDTH=312><A NAME="toc">Profile Merger (gmpf960)</A></TD>
+<TD WIDTH=132>15</TD></TR>
+
+<TR><TD WIDTH=312>Profiling Decision Maker (gcdm960)</TD><TD WIDTH=132>16
+</TD></TR>
+
+<TR><TD WIDTH=312>Rommers (grom960, rom960)</TD><TD WIDTH=132>16
+</TD></TR>
+
+<TR><TD WIDTH=312>Section Sizer (gsize960/siz960)</TD><TD WIDTH=132>16
+</TD></TR>
+
+<TR><TD WIDTH=312>Statistical Profiler (ghist960)</TD><TD WIDTH=132>16
+</TD></TR>
+
+<TR><TD WIDTH=312>Stripper (gstrip960 / str960)</TD><TD WIDTH=132>16
+</TD></TR>
+
+<TR><TD WIDTH=312>Version Printer (gver960)</TD><TD WIDTH=132>16
+</TD></TR>
+
+<TR><TD WIDTH=312>Hypertext</TD><TD WIDTH=132>17</TD></TR>
+
+</TABLE>
+
+<P>
+<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Archiver (arc960 / gar960)</FONT></B>
+<P>
+No changes or problems are known at this time.<BR>
+<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Assembler (asm960 / gas960 / gas960c
+/ gas960e)</FONT></B>
+<P>
+<B><FONT SIZE=4 COLOR=#00FF00>Changes from Release 4.6</FONT></B>
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Architecture Option</FONT></B>
+<P>
+The assembler now supports the i960 RP architecture, via the <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">ARP</FONT></TT>
+option and argument.  <BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>ELF Object Module Format Supported</FONT></B>
+<P>
+The COFF assembler is invoked by the name <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">asm960</FONT></TT>
+or <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">gas960c</FONT></TT>.
+The ELF assembler is invoked by the name <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">gas960e</FONT></TT>.
+ The compiler option <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">-Felf</FONT></TT>
+selects the appropriate assembler for ELF object module generation.
+<P>
+ 
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Assembler .lomem Directive Supported</FONT></B>
+<P>
+The assembler will use the MEMA format for any MEM format instruction
+that references a symbol previously declared <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">.lomem</FONT></TT>.
+<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Assembler .quad and .octa Directives
+No Longer Supported</FONT></B>
+<P>
+The assembler no longer accepts the <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">.quad</FONT></TT>
+and <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">.octa</FONT></TT>
+directives.<BR>
+<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Compiler (cc1) and Drivers (gcc960,
+ic960)</FONT></B>
+<P>
+This section describes changes and known problems for the compiler
+drivers gcc960 and ic960, and for the cc1 compiler.<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#00FF00>Changes from Release 4.6</FONT></B>
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>New 80960 RP Architecture Support
+Options</FONT></B>
+<P>
+The compiler supports the <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">ARP</FONT></TT>
+architecture option and defines the corresponding <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">__i960RP</FONT></TT>
+macro.<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>ELF Object Module Format Supported</FONT></B>
+<P>
+The <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">-Felf</FONT></TT>
+option selects code generation in ELF and DWARF 2.0 object module
+format.<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Two-Pass Compilation Options </FONT></B>
+<P>
+A new simplified two-pass compilation model is supported via the
+<TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">-fdb</FONT></TT>,
+<TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">-fprof</FONT></TT>
+and <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">-gcdm</FONT></TT>
+compiler options.  See the compiler documentation for details.
+<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Compressed Object Code Options and
+Pragma</FONT></B>
+<P>
+A new feature has been added for saving code space in target memory.
+ Rarely used functions can be stored in target memory in compressed
+form and decompressed on the fly before execution.  The gcc960
+<TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">-mcave</FONT></TT>
+option, ic960 <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">-Gcave</FONT></TT>
+option and <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">#pragma
+cave</FONT></TT> have been added to control this feature.  See
+the compiler documentation for details.<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#00FF00>Known Problems</FONT></B>
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Duplicate and/or Missing Symbols
+During Program-Wide Optimization Link</FONT></B>
+<P>
+When two or more source file names have the same first eight alphanumeric
+characters to the left of the first . (&quot;dot&quot;) in their
+names, the gcdm960 optimization decision maker improperly assigns
+the same names to their object files in the PDB.  This causes
+the same substitution module to be used for these source files,
+and multiple definitions appear for symbols exported from one
+of the objects and all the code from the other objects is missing.
+<BR>
+
+<P>
+The workaround is to make source file names unique in their first
+eight characters.<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Using Space Optimization with Whole-program
+Optimization</FONT></B>
+<P>
+If you use <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">-fspace-opt</FONT></TT>
+with the <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">-gcdm,subst</FONT></TT>
+option you may get the message:
+<P>
+<TT><FONT SIZE=1 FACE="Courier">&lt;<I>file</I>&gt;:&lt;<I>line</I>&gt;:
+fatal: first pass compilation of function &lt;<I>name</I>&gt;
+uses different options than this compilation.<BR>
+</FONT></TT>
+<P>
+In order to work around this problem add <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">-fspace-opt</FONT></TT>
+to the <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">-gcdm,subst</FONT></TT>
+option as follows:
+<P>
+<TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">-gcdm,subst=+fspace-opt+[
+<I>your other substitution options</I> ]<BR>
+</FONT></TT>
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Renaming Global Variables in Object
+Modules</FONT></B>
+<P>
+If you use the gcc960 asm extension to name a global variable
+as in:
+<P>
+<TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier"> int var1 asm (&quot;my_var1&quot;);</FONT></TT>
+<P>
+and use the b.out object format, the debug information for <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">var1</FONT></TT>
+is not correct, and you will not be able to examine <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">var1</FONT></TT>
+using the gdb960 debugger.<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Invalid Command-line Options not
+Diagnosed</FONT></B>
+<P>
+The gcc960 compiler driver does not check the command line options
+for validity.  Invalid options are ignored without producing a
+warning message.<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Memory References at Absolute Addresses
+Handled Incorrectly</FONT></B>
+<P>
+The compiler incorrectly handles references to absolute addresses
+such as<TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier"> *((char*)0x1000000</FONT></TT>.
+ If an application makes such references both above and below
+address <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">0x80000000</FONT></TT>,
+the compilation may terminate with an assertion failure at line
+1687.  Other unpredictable compilation terminations are possible,
+but have not been observed.<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Converter for b.out, COFF and ELF
+(cof960 / objcopy)</FONT></B>
+<P>
+<B><FONT SIZE=4 COLOR=#00FF00>Changes from Release 4.6</FONT></B>
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Relocation and Symbol Table Directives</FONT></B>
+<P>
+If you objcopy a relocatable COFF, b.out, or ELF file to another
+OMF, objcopy keeps relocation and symbol table directives, if
+possible. <BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Converter to IEEE 695 (cvt960)</FONT></B>
+<P>
+<B><FONT SIZE=4 COLOR=#00FF00>Changes from Release 4.6</FONT></B>
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Architecture Option</FONT></B>
+<P>
+The cvt960 converter now supports the i960 RP architecture, via
+the <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">ARP</FONT></TT>
+option and argument.<BR>
+<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Coverage Analyzer (gcov960)</FONT></B>
+<P>
+<B><FONT SIZE=4 COLOR=#00FF00>Known Problems</FONT></B>
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Execution Counts for a Function
+that Is Inlined</FONT></B>
+<P>
+The reports produced by gcov960 may give misleading information
+about functions that are inlined.  The reports may indicate that
+the code of the inlined function has never been executed, or may
+show execution counts that are unexpectedly low.  This happens
+because the inlined code fragments are treated as part of the
+function they are inlined into and not as part of the original
+function.<BR>
+<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Debugger (gdb960)</FONT></B>
+<P>
+<B><FONT SIZE=4 COLOR=#00FF00>Changes from Release 4.6</FONT></B>
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Symbolic Debug Information in DWARF
+Version 2.0 Format</FONT></B>
+<P>
+Symbolic debug information in DWARF Version 2.0 format is processed
+by the debugger.  DWARF 2.0 permits better association between
+source and object code when higher levels of compiler optimization
+are enabled.  See the gdb960 manual for details.<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Command-line Editing</FONT></B>
+<P>
+The DOS and Windows 95 versions of gdb960 now support command
+line recall and editing.<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Watch Command</FONT></B>
+<P>
+The <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">watch</FONT></TT>
+command automatically assigns a hardware-assisted watchpoint if
+hardware resources are available.  Otherwise, it assigns a software
+watchpoint.<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Download Option</FONT></B>
+<P>
+The <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">-download</FONT></TT>
+option has been changed to <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">-parallel</FONT></TT>.
+<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Support for Function Calls</FONT></B>
+<P>
+gdb960 expressions may now contain calls to functions defined
+in the user program (<I>e.g.</I>,  <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">print
+foo(12)</FONT></TT><FONT SIZE=2 FACE="Tms Rmn"> ).<BR>
+</FONT>
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>NINDY Monitor No Longer Supported</FONT></B>
+<P>
+The NINDY monitor is no longer supported.  MON960 is the only
+supported target.<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#00FF00>Known Problems</FONT></B>
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Long Double Type Not Fully Supported</FONT></B>
+<P>
+The C type <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">long
+double</FONT></TT> is implemented internally as <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">double</FONT></TT>.
+ Variables of <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">long
+double</FONT></TT> type are stored in IEEE-extended format on
+the target, but when examining their values in gdb960, or when
+setting a new value manually, gdb960 stores them internally as
+type <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">double</FONT></TT>.
+ This is of concern only if a variable value is too large, too
+small, or has too much precision to be represented as a <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">double</FONT></TT>.
+ (Also see the following note.)<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Floating-point Infinities Not Reported</FONT></B>
+<P>
+From the gdb960 command line, if you assign a value to a variable
+with <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">float</FONT></TT>,
+<TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">double</FONT></TT>,
+or <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">long double</FONT></TT>
+type, and the value is too large, too small, or has too much precision
+to represent the variable's type, the variable will appear to
+hold a legal value and no error will be reported.  The variable's
+value will be meaningless.<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>CTRL-C Disabled During Target Connect</FONT></B>
+<P>
+While gdb960 is attempting to connect to a remote MON960 target
+it is not possible to break with CTRL-C.  If the debugger cannot
+connect with the target for some reason (<I>e.g.</I>, cable not
+physically connected) the operation will time-out after about
+20 seconds, and the gdb960 prompt will return.<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Jx, Hx and RP Memory-mapped Registers
+Must Be Read as Words</FONT></B>
+<P>
+The memory-mapped registers provided by the J-series, H-series
+and RP processors must be read and written in 4-byte quantities.
+ Larger or smaller accesses will be flagged as errors by gdb960
+and the access will not be attempted.<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Some JX, Hx and RP Memory-mapped
+Registers Cannot Be Read or Written</FONT></B>
+<P>
+A few of the J-series, H-series and RP memory-mapped registers
+can not be written at all by gdb960.  These are IPB0, IPB1, DAB0,
+DAB1 and BPCON.  Attempts to modify them directly will cause an
+HDIL (MON960) error.  These registers are modified by MON960 when
+a hardware breakpoint or hardware watchpoint command is used.
+ Additionally, IPB0 and IPB1 cannot be read directly by gdb960.
+ The value will always appear to be 0.<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Absolute symbols are relocated under
+-pd option </FONT></B>
+<P>
+For ELF/DWARF files only, when the file contains position-independent
+data, and when gdb960 is invoked with the <TT><FONT SIZE=1 FACE="Courier">-pd</FONT></TT>
+option, absolute symbols are erroneously relocated along with
+data symbols.  This does not affect the runtime behavior of the
+program being debugged, but it makes it difficult to print or
+set the values of the absolute symbols.<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Dumper/Disassembler (dmp960 / gdmp960)</FONT></B>
+<P>
+<B><FONT SIZE=4 COLOR=#00FF00>Changes from Release 4.6</FONT></B>
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>.debug_* Section Display</FONT></B>
+<P>
+The new <TT><FONT SIZE=1 FACE="Courier">-g</FONT></TT> option
+displays one or more <TT><FONT SIZE=1 FACE="Courier">.debug_*</FONT></TT>
+sections in an ELF/DWARF object module.<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Memory Map Display</FONT></B>
+<P>
+The new <TT><FONT SIZE=1 FACE="Courier">-m</FONT></TT> option
+displays the memory map of a file.<BR>
+<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Examples</FONT></B>
+<P>
+The examples directory that used to be shipped with the CTOOLS960
+product has been deleted.  Examples targeted to older evaluation
+boards were rendered obsolete.  The old profiling example has
+been replaced with an updated example in the compiler manual that
+illustrates the new user interface.<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Libraries</FONT></B>
+<P>
+The Hx processor is supported by the Cx libraries in this release.
+ However, linker directive files tailored for the Hx Cyclone evaluation
+board have been added.<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#00FF00>Changes from Release 4.6</FONT></B>
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Compatible-Mode Library Names for
+GNU/960 Users</FONT></B>
+<P>
+The runtime libraries and linker directive files in this release
+have been renamed using a standard scheme described in the library
+manual.  The libraries and directive files can also be installed
+under their older GNU/960 names if so desired.  The installation
+script prompts for a choice of naming convention.<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Floating-point Stub Library Added</FONT></B>
+<P>
+A second copy of the floating-point stub library, <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">libmstub.a</FONT></TT>,
+has been added.  The copy is named <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">libmstb.a</FONT></TT>.
+<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Linker Directive Files for Hx Processor
+Added</FONT></B>
+<P>
+New linker directive files for the Hx processor are included with
+this release:
+<TABLE>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">cyhx.ld</FONT></TT>
+</TD><TD WIDTH=480>Linker directive file for Cyclone Hx evaluation board.
+</TD></TR>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">cyhxfls.ld</FONT></TT>
+</TD><TD WIDTH=480>Linker directive file for Cyclone Hx flash.
+</TD></TR>
+
+</TABLE>
+
+<P>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Big-endian and PIC/PID Libraries
+Added</FONT></B>
+<P>
+Big-endian, PIC/PID versions of some libraries have been added:
+<BR>
+
+<TABLE>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">crt960_e.o</FONT></TT>
+</TD><TD WIDTH=555>Initialization (start-up) library.</TD></TR>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">libcca_e.a</FONT></TT>
+</TD><TD WIDTH=555>High-level C library for Cx processor.</TD>
+</TR>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">libepcxe.a</FONT></TT>
+</TD><TD WIDTH=555>Board library for EPCx evaluation board.</TD>
+</TR>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">libfp_e.a</FONT></TT>
+</TD><TD WIDTH=555>US Software floating-point library.</TD></TR>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">libhca_e.a</FONT></TT>
+</TD><TD WIDTH=555>Accelerated floating-point library for Cx and Hx processors.
+</TD></TR>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">libhis_e.a</FONT></TT>
+</TD><TD WIDTH=555>Profiling library for ghist960.</TD></TR>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">libhjx_e.a</FONT></TT>
+</TD><TD WIDTH=555>Accelerated floating-point library for Jx processor.
+</TD></TR>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">libll_e.a</FONT></TT>
+</TD><TD WIDTH=555>Low-level library.</TD></TR>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">libmca_e.a</FONT></TT>
+</TD><TD WIDTH=555>Math library for Cx and Hx processors.</TD>
+</TR>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">libmon_e.a</FONT></TT>
+</TD><TD WIDTH=555>Interface to board-specific functions in MON960. 
+</TD></TR>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">libmstbe.a</FONT></TT>
+</TD><TD WIDTH=555>Stub math library.</TD></TR>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">libq_e.a</FONT></TT>
+</TD><TD WIDTH=555>Profiling library when no file system is available.
+</TD></TR>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">libqf_e.a</FONT></TT>
+</TD><TD WIDTH=555>Profiling library when a file system is available.
+</TD></TR>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">librom_e.a</FONT></TT>
+</TD><TD WIDTH=555>Library for supporting serially-reusable programs.
+</TD></TR>
+
+</TABLE>
+
+<P>
+
+<P>
+A big-endian version of the US Software floating-point library
+has been added:<BR>
+
+<TABLE>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">libfp_b.a</FONT></TT>
+</TD><TD WIDTH=555>US Software floating-point library.</TD></TR>
+
+</TABLE>
+
+<P>
+
+<P>
+PIC/PID versions of some libraries have been added:<BR>
+
+<TABLE>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">libfp_p.a</FONT></TT>
+</TD><TD WIDTH=555>US Software floating-point library.</TD></TR>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">libhca_p.a</FONT></TT>
+</TD><TD WIDTH=555>Accelerated floating-point library for Cx and Hx processors.
+</TD></TR>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">libmstbp.a</FONT></TT>
+</TD><TD WIDTH=555>Stub math library.</TD></TR>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">libhjx_p.a</FONT></TT>
+</TD><TD WIDTH=555>Accelerated floating-point library for Jx processor.
+</TD></TR>
+
+<TR><TD WIDTH=121><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">libhka_p.a</FONT></TT>
+</TD><TD WIDTH=555>Accelerated floating-point library for Kx and Sx processors.
+</TD></TR>
+
+</TABLE>
+
+<P>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Older Boards No Longer Supported</FONT></B>
+<P>
+The EVA, EVCA, QT, TomCAT, and Heurikon evaluation boards and
+CADIC are no longer supported. All libraries and linker directive
+files associated with these older products have been removed.
+<BR>
+<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Linker (gld960 / lnk960)</FONT></B>
+<P>
+<B><FONT SIZE=4 COLOR=#00FF00>Changes from Release 4.6</FONT></B>
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Architecture Option</FONT></B>
+<P>
+The linker now supports the i960 RP architecture via the <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">ARP</FONT></TT>
+option and argument.<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>ELF Object Module Format Supported</FONT></B>
+<P>
+The linker is able to process input object modules in COFF, b.out
+or ELF formats in the same invocation.  The output object module
+format is selected with the <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">-F</FONT></TT>
+option.  <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">Felf</FONT></TT>
+selects an ELF output module.<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Two-Pass Compilation Option</FONT></B>
+<P>
+The linker now supports a new and simplified two-pass compilation
+model via the -<TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">gcdm</FONT></TT>
+option.  See the compiler and linker documentation for details.
+<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Setting Named BSS Sections to Zero</FONT></B>
+<P>
+The tools now support named .bss sections.  If you use the startup
+(crt) files shipped with the tools, named .bss sections are set
+to zero automatically.  If you have your own startup file, to
+use named .bss sections you must add a call in your initialization
+code to the function <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">___clear_named_bss_sections</FONT></TT>.
+<BR>
+
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Library Search Order When RP or
+Hx Architecture Is Selected</FONT></B>
+<P>
+If the linker is invoked with the RP or any of the Hx architecture
+options, the search order for a library named <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier New">try</FONT></TT>,
+specified as <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier New">-ltry</FONT></TT>,
+is the following:
+<TABLE>
+
+<TR><TD WIDTH=159>Jx architecture</TD><TD WIDTH=187>Hx architecture
+</TD></TR>
+
+<TR><TD WIDTH=159><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier New">libtry.a</FONT></TT>
+</TD><TD WIDTH=187><FONT SIZE=1 COLOR=#FF0000 FACE="Courier New">libtry.a</FONT>
+</TD></TR>
+
+<TR><TD WIDTH=159><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier New">libtryja.a</FONT></TT>
+</TD><TD WIDTH=187><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier New">libtryha.a</FONT></TT>
+</TD></TR>
+
+<TR><TD WIDTH=159><TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier New">libtryca.a</FONT></TT>
+</TD><TD WIDTH=187><FONT SIZE=1 COLOR=#FF0000 FACE="Courier New">libtryca.a</FONT>
+</TD></TR>
+
+</TABLE>
+
+<P>
+
+<P>
+<B><FONT SIZE=4 COLOR=#00FF00>Known Problems</FONT></B>
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Inappropriate Error Messages When
+Sections Overlap</FONT></B>
+<P>
+The linker emits inappropriate error messages when sections overlap.
+ For example, in the linker directive file:
+<PRE>
+<FONT SIZE=1 COLOR=#FF0000>SECTIONS {
+    .text 0 : {}
+    .data 0x10 : {}
+}</FONT>
+</PRE>
+
+<P>
+if the sum of the <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">.text</FONT></TT>
+sections is greater than <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">0x10</FONT></TT>,
+but the <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">.data</FONT></TT>
+section size is less than <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">0x10</FONT></TT>,
+the linker emits the following error message:
+<PRE>
+<FONT SIZE=1 COLOR=#FF0000>Section .data (start 16: size: 0) won't fit into defined memory.</FONT>
+</PRE>
+
+<P>
+This is misleading as it is the sum of the <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">.text</FONT></TT>
+sections causing the overlap, not the size of the <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">.data
+</FONT></TT>section.<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Macro Processor (mpp960)</FONT></B>
+<P>
+No changes or problems are known at this time.<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Munger (gmung960)</FONT></B>
+<P>
+No changes or problems are known at this time.<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Name Lister (gnm960 / nam960)</FONT></B>
+<P>
+No changes or problems are known at this time.<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Profile Merger (gmpf960)</FONT></B>
+<P>
+<B><FONT SIZE=4 COLOR=#00FF00>Changes from Release 4.6</FONT></B>
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Self-contained Profiles</FONT></B>
+<P>
+The profile merger now supports the <TT><FONT SIZE=1 COLOR=#FF0000 FACE="Courier">-spf</FONT></TT>
+option for generating self-contained profiles.<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Profile Decision Maker (gcdm960)</FONT></B>
+<P>
+<B><FONT SIZE=4 COLOR=#00FF00>Changes from Release 4.6</FONT></B>
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>New Two-pass Compilation Model</FONT></B>
+<P>
+The profile decision maker now supports many additional options
+to control the new and simplified two-pass compilation model.
+<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Rommers (grom960, rom960)</FONT></B>
+<P>
+No changes or problems are known at this time.<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Section Size Printer (gsize960 /
+siz960)</FONT></B>
+<P>
+No changes or problems are known at this time.<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Statistical Profiler (ghist960)
+</FONT></B>
+<P>
+<B><FONT SIZE=4 COLOR=#00FF00>Known Problems</FONT></B>
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Not Suitable for Use with PIC/PIC
+Applications</FONT></B>
+<P>
+This tool is not suitable for use with PIC/PID applications. 
+The documentation does not clearly indicate this fact.<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Stripper (gstrip960 / str960)</FONT></B>
+<P>
+No changes or problems are known at this time.<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Version Printer (gver960)</FONT></B>
+<P>
+No changes or problems are known at this time.<BR>
+
+<P>
+<B><FONT SIZE=4 COLOR=#0000FF>Hypertext</FONT></B>
+<P>
+<B><FONT SIZE=4 COLOR=#00FF00>Known Problems</FONT></B>
+<P>
+<B><FONT SIZE=2 COLOR=#FF00FF>Decision Maker Syntax Error</FONT></B>
+<P>
+The syntax for the gcdm Substitution Controls should read:
+<P>
+<TT><B><FONT SIZE=1 FACE="Courier">subst=</FONT></B><FONT SIZE=1 FACE="Courier">arg[,arg]...</FONT></TT>
+and <TT><B><FONT SIZE=1 FACE="Courier">nosubst=</FONT></B><FONT SIZE=1 FACE="Courier">module-set
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+</FONT></TT>
+<P>
+i960 and Intel are registered trademarks of Intel Corporation.
+<P>
+<FONT SIZE=1>UNIX is a registered trademark of UNIX System Laboratories,
+Inc.</FONT>
+</BODY>
+
+</HTML>

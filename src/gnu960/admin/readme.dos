@@ -1,0 +1,287 @@
+Building the 960 Tools from Source on DOS or Windows 95
+-------------------------------------------------------
+
+CTOOLS Version 5.0
+
+These instructions describe the build procedure followed by the Intel
+960 Software Lab when building on DOS and Windows 95.  Individual steps
+may vary depending on your specific setup.
+
+Hardware Requirements:
+----------------------
+
+1. Unix system with at least 120 megabytes of disk space and a network
+   connection from the Unix system using PC-NFS, or Novell NetWare
+   to your DOS or Windows 95 based PC.
+
+2. PC with at least DOS 5.0.  Windows 95 is required for building the
+   Windows 95 version of the tools, and can also be used to build
+   the DOS version of the tools.
+
+Software Requirements and Preparation:
+-------------------------------------
+
+Before building the 960 tools, you will need to install several
+pieces of software.  When installing, you should select the default
+destination directory names, unless otherwise specified.
+
+
+  1.  Read, understand, and agree to the License Guide.
+
+  2.  Install PC-NFS version 4.0 or Novell Netware 3.11.
+
+  3.  Install Metaware High C/C++ version 3.2 (or later) for DOS, or
+      Microsoft's Visual C++ 2.2 (C 9.10) (or later) for Windows 95.
+
+  4.  Install Phar Lap TNT DOS Extender Software Development Kit (SDK)
+      version 7.0 and the Phar Lap Virtual Memory Manager, version 7.0
+      (DOS only; unneeded for Windows 95).
+
+  5.  Install Opus Make version 6.04 (or later).
+
+  6.  Install Thompson Toolkit version 2.2a (or later).
+
+  7.  Create a PC-NFS drive using NFSCONF, or map a drive using
+      Novell.  This new drive needs to reference a file-system that
+      is accessible on your UNIX host, and in which you can create
+      a directory.  Create a new directory on this drive.
+
+  8.  Install CTOOLS R5.0, but don't install the library source that
+      is available.  Install CTOOLS R5.0 onto the drive and directory
+      created in Step 7 above.
+
+  9.  Install the sources onto your Unix host. To do this, you will need
+      to go to the directory created in Step 7 above on the Unix host, and
+      then copy the files admin.Z, include.Z, rtl.Z, and tools.Z from the
+      CD to this directory on the Unix host.  On the Unix system, perform
+      the following commands while in this directory.
+
+        mkdir src
+        zcat admin.Z | tar -xf -
+        rm admin.Z
+        zcat include.Z | (cd src; tar -xf -)
+        rm include.Z
+        zcat rtl.Z | (cd src; tar -xf -)
+        rm rtl.Z
+        zcat tools.Z | (cd src; tar -xf -)
+        rm tools.Z
+  
+  10. Install MON960 for DOS or Windows 95.  Install MON960 onto the drive
+      and directory created in Step 7 above.
+
+To Build the executables
+------------------------
+
+  On your UNIX host:
+
+      1. Determine where you have installed the sources.  You will
+         need to set the G960ROOT environment variable to this
+         directory, for example /ffs/my_tools.  You will also need
+         to put $G960ROOT/admin into your PATH environment variable.
+         Here are examples of how to do this.
+
+         For csh use:
+           setenv G960ROOT /ffs/my_tools
+           setenv G960BASE $G960ROOT/HOST
+           setenv PATH :$G960ROOT/admin:$PATH
+
+         For sh or ksh use:
+           G960ROOT=/ffs/my_tools; export G960ROOT
+           G960BASE=$G960ROOT/HOST; export G960BASE
+           PATH=:$G960ROOT/admin:$PATH; export PATH
+
+         HOST must be one of sun4, rs6000, hp700, or sol-sun4.
+         This specifies the type of Unix host you are running on.
+
+      2. Go to the $G960ROOT directory and perform
+         the following commands to build toolib.a and 
+         initialize the directories for a dos/win95 build:
+
+         admin/mkhost HOST
+         cd $G960ROOT/src/toolib/HOST
+         make install
+         cd $G960ROOT
+         admin/mkhost dos
+         admin/mkhost win95
+         admin/buildprep.sh HOST
+         
+         Specifying the UNIX HOST is necessary to transform the 
+         sources for DOS and Windows 95.
+
+         If building for Windows 95 then do:
+
+         cd $G960ROOT/src/hdil/win95
+         cp makefile.w95 makefile
+         cd $G960ROOT/src/hdilcomm/win95
+         cp makefile.w95 makefile
+         cd $G960ROOT/src/mondb/win95
+         cp makefile.w95 makefile
+
+         If building for DOS then do:
+
+         cd $G960ROOT/src/hdil/dos
+         cp makefile.dos makefile
+         cd $G960ROOT/src/hdilcomm/dos
+         cp makefile.dos makefile
+         cd $G960ROOT/src/mondb/dos
+         cp makefile.dos makefile
+
+  On your DOS or Windows 95 Host:
+
+      1. Start up Thompson Toolkit.  The simplest way to do this
+         is perform the following command:
+
+         sh
+
+         This will start up Thompson Toolkit and you will now be
+         typing commands to the Thompson Toolkit shell.
+
+      2. Now set your G960ROOT and G960BASE environment variables.
+         G960ROOT must be set to the drive and directory name that
+         you mapped in step 7.  G960BASE must be set to 
+         $G960ROOT/dos or $G960ROOT/win95 directory as appropriate.
+         From here on, the $G960ROOT directory will be referred to
+         as the "top-level" directory and $G960BASE will refer to
+         either $G960ROOT/dos or $G960ROOT/win95.  For example if
+         the drive and directory mapped in step 1 was G:\MY_TOOLS
+         and you want to build the Windows 95 tools, then the following
+         commands will set the G960ROOT and G960BASE environment
+         variables properly.
+
+         G960ROOT=G:\MY_TOOLS; export G960ROOT
+         G960BASE=$G960ROOT\win95; export G960BASE
+
+         
+      4. Now you are ready to build the executables.  Change to your
+         G960ROOT directory:
+
+         cd $G960ROOT 
+
+         And build all executables with one command:
+
+         For DOS:
+
+         make -f makefile.dos G960ROOT=$G960ROOT G960BASE=$G960BASE
+                 HOST=dos tools > log.dos 2>&1
+
+         For Windows 95:
+
+         make -f makefile.dos G960ROOT=$G960ROOT G960BASE=$G960BASE
+                 HOST=win95 tools > log.w95 2>&1
+
+      8. Any abnormal termination in the build can be examined by 
+         looking at any OPUS make errors at the end of the log file
+         (log.dos or log.w95) residing in the top-level directory.
+
+      9. Once everything has been built, examine the date
+         stamps of the executables in the subdirectory $G960BASE\bin.
+
+     10. Now you need to move the new executables back into the same
+         directory where they were installed, and change G960BASE
+         to point to this.
+
+         For Windows 95:
+
+         cd $G960ROOT
+         cp win95/bin/* bin
+         cp win95/lib/* lib
+         G960BASE=$G960ROOT; export G960BASE
+
+         For DOS:
+
+         cd $G960ROOT
+         cp dos/bin/* bin
+         cp dos/lib/* lib
+         G960BASE=$G960ROOT; export G960BASE
+
+To Build the run-time libraries
+-------------------------------
+
+Now that you have successfully built the executables, they can be
+used to build to runtime libraries.  You have the option of building
+all of the libraries, or the individual COFF, b.out, or big-endian libraries
+separately.  Before you start the build make sure that $G960BASE/bin is in
+your PATH.
+
+Note that the following instructions use the $(VAR) notation to indicate a set
+of possible values that the VAR can hold. The DOS shell does not support
+expansion of variables on the command line. So when typing a DOS command,
+just replace variables in the generation instructions with appropriate values.
+
+The generation procedure consists of a root makefile in
+
+        $(X960ROOT)\admin\makelibs.dos
+
+and a set of local make files in every library's directory
+
+        $(X960BASE)\src\lib\libafp\makelibs.dos
+        ...
+        ...
+        ...
+        $(X960BASE)\src\lib\librom\makelibs.dos
+
+to which the root make file will refer to. Here X960BASE refers to whichever
+of I960BASE or G960BASE is set in your environment, depending on your CTOOLS
+or GNU preference.
+
+The following are the root make parameters you can specify:
+
+        Parameter       Default           Explanation
+        -----------------------------------------------------------------------
+        CLEAN           do cleaning       del *.a and *.o  before building
+        IC              gcc960            gcc960 or ic960 tools to be used
+        LIBS            build all         LIBS="libc libm" to build some libs
+        LIB_INSTALL     $(X960BASE)\lib   installation directory
+        LIB_DEBUG       no debug info     LIB_DEBUG=-g to build with debug info
+
+The local makefiles can be invoked directly or through the toplevel makefile.
+When invoked directly, the local makefiles take the following parameters:
+
+        Parameter       Default           Explanation
+        -----------------------------------------------------------------------
+        IC              gcc960            gcc960 or ic960 tools to be used
+        LIB_INSTALL     $(X960BASE)\lib   installation directory
+        LIB_DEBUG       no debug info     LIB_DEBUG=-g to build with debug info
+
+For example to build all the libraries from scratch with ic960, from
+within Thopson Toolkit type:
+
+        cd $(I960BASE)\admin
+        make -f makelibs.dos IC=ic960 LIB_INSTALL=$I960BASE\my_lib
+
+If you changed some source files and want only to rebuild the object
+files within the libraries that are older than their sources:
+
+        cd $(I960BASE)\admin
+        make -f makelibs.dos IC=ic960 LIBS="libc libafp" CLEAN=
+
+The empty CLEAN string tells make to do the incremental build.
+
+If you want to build a library (libc for example) with gcc960 using a local
+make file:
+
+        cd $(G960BASE)\src\lib\libc\build
+        make -f makelibs.dos install            # install in $G960BASE\lib
+or
+        make -f makelibs.dos install LIB_INSTALL=my_dir_path
+or
+        make -f makelibs.dos                    # no installation, leave in
+                                                # current dir under internal
+                                                # names.
+
+All libraries built locally are built in an incremental way.
+You have to say:
+
+         make -f makelibs.dos clean install
+
+explicitly, to build them from scratch.
+
+If an installation directory specified via LIB_INSTALL does not exist
+it will be created by the generation. Any old files in the install directory
+having the same names as the generated ones will be replaced.
+
+
+CAVEATS and Things to know:
+
+1. You will potentially see numerous WARNINGS when building the executables;
+   These can be safely ignored.  ERRORS should not be ignored, however.

@@ -1,0 +1,89 @@
+<HTML>
+
+<HEAD>
+
+<TITLE>Munger (mung960)</TITLE>
+
+<META NAME="GENERATOR" CONTENT="Internet Assistant for Microsoft Word 2.0z Beta">
+</HEAD>
+
+<BODY>
+
+<H1>
+<CENTER>
+gmung960 Munger 
+</CENTER>
+</H1>
+
+<HR>
+
+<P>
+The gmung960 utility modifies text section and/or data section
+load address(es) in an object file.
+<P>
+gmung960 is useful when you need to load text and/or data at an
+address other than where it was linked. A common case is where
+code must copy its data to RAM before execution. In this case,
+the data will be linked at the RAM address, but it must be loaded
+at a ROM address from where it will be copied.
+<P>
+The invocation command is:
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">gmung960</FONT></B><FONT SIZE=4 FACE="Courier New">
+[ <B>-</B><I>option</I> ]... <I>file</I></FONT></TT> 
+<P>
+Each option must be preceded by a <TT><B><FONT SIZE=4 FACE="Courier New">-</FONT></B></TT>
+character. (On DOS, you can also use a <TT><B><FONT SIZE=4 FACE="Courier New">/</FONT></B></TT>
+character.) The options are listed below.
+<P>
+<TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT> identifies
+the object file to be &quot;munged.&quot; It must be a linked,
+executable file. 
+<HR>
+
+<UL>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">D</FONT></B><FONT SIZE=4 FACE="Courier New">
+[ <I>addr</I> ]<BR>
+</FONT></TT>Changes the load address of file's data section to
+<TT><I><FONT SIZE=4 FACE="Courier New">addr</FONT></I></TT>. <TT><I><FONT SIZE=4 FACE="Courier New">addr</FONT></I></TT>
+is interpreted as a decimal number, unless preceded by 0x (hex
+indicator). If <TT><I><FONT SIZE=4 FACE="Courier New">addr</FONT></I></TT>
+is omitted, the load address is the first available address following
+a previously specified address. (See the <TT><B><FONT SIZE=4 FACE="Courier New">T</FONT></B><FONT SIZE=4 FACE="Courier New">
+[ <I>addr</I> ]</FONT></TT> option, below.)
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">h</FONT></B></TT> 
+<BR>
+Gives a help message.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">T</FONT></B><FONT SIZE=4 FACE="Courier New">
+[ <I>addr</I> ]<BR>
+</FONT></TT>Changes the load address of file's text section to
+<TT><I><FONT SIZE=4 FACE="Courier New">addr</FONT></I></TT>. <TT><I><FONT SIZE=4 FACE="Courier New">addr</FONT></I></TT>
+is interpreted as adecimal number, unless preceded by 0x (hex
+indicator). If <TT><I><FONT SIZE=4 FACE="Courier New">addr</FONT></I></TT>
+is omitted, the load address is the first available address following
+a previously specified address. (See the <TT><B><FONT SIZE=4 FACE="Courier New">D</FONT></B><FONT SIZE=4 FACE="Courier New">
+[ <I>addr</I> ]</FONT></TT> option, above.)
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">v960<BR>
+</FONT></B></TT>Writes gmung960 version information to <TT><B><FONT SIZE=4 FACE="Courier New">stdout</FONT></B></TT>
+and exits without doing anything. 
+</UL>
+
+<P>
+Note that the section specification options <TT><B><FONT SIZE=4 FACE="Courier New">T</FONT></B></TT>
+and <TT><B><FONT SIZE=4 FACE="Courier New">D</FONT></B></TT> are
+processed in the order they appear in the invocation.
+<HR>
+
+<P>
+<A HREF="#top"><IMG SRC="../icons/uparw.gif" ALIGN="BOTTOM"></A><I>Return
+to the top of this page.</I> 
+<P>
+<A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the ic960 Interface Index.</I> 
+<P>
+<A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the gcc960 Interface Index.</I> 
+</BODY>
+
+</HTML>
+

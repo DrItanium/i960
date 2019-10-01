@@ -1,0 +1,110 @@
+: Start with ":" line because sys V Unix csh does not understand "#!/bin/sh"
+# $Id: rmhost,v 1.13 1993/09/17 15:06:07 paulr Exp $
+
+#------------------------------------------------------------------------------
+#	REMOVE THE GNU/960 DIRECTORIES/MAKEFILES FOR A SPECIFIC HOST OR HOSTS
+#
+# Gives help message if invoked without arguments.
+#
+# Runs off information in files on the 'admin' subdirectory:
+#    HOSTS: names of supported hosts; subdirectories with the same names
+#	    will be removed.
+#    TOOLS: directories containing source code for tools.
+#    LIBS:  directories containing source code for native 960 libraries.
+# Entries in TOOLS/LIBS are paths relative to the $G960ROOT/src directory.
+# Files may contain blank lines and '#'-delimited comments.
+#------------------------------------------------------------------------------
+
+PATH=/bin:/usr/bin; export PATH
+MYNAME=`basename $0`
+
+if test ! -d admin ; then
+	if test x"$G960ROOT" = x; then
+		echo "$MYNAME: cd to the tools root directory (or set G960ROOT) first"
+		exit 1
+	else
+		echo 'cd $G960ROOT ('$G960ROOT')'
+		cd $G960ROOT
+		if test ! -d admin ; then
+			echo "$MYNAME: can't find 'admin' subdirectory"
+			exit 1
+		fi
+	fi
+fi
+
+HOSTS=`sed 's/#.*//' admin/HOSTS`
+TOOLS=`sed 's/#.*//' admin/TOOLS`
+LIBS=`sed 's/#.*//' admin/LIBS`
+
+#------------------------------------------------------------------------------
+# Parse arguments
+#------------------------------------------------------------------------------
+if test $# = 0  ; then
+	echo "Usage:	$MYNAME [-s] <hosts>"
+	echo
+	echo "-s	removes source subdirectories only (leaves binaries)"
+	echo
+	echo "<hosts>	'all' or one or more of:"
+	echo "		" $HOSTS
+	exit 1;
+fi
+
+SRCONLY=
+LIST=
+while test $# != 0 ; do
+	case "$1" in
+	-s)
+		SRCONLY=1
+		;;
+	-*)
+		echo "$MYNAME:  unknown switch: $1"
+		echo "Enter '$MYNAME' without arguments for help"
+		exit 1
+		;;
+	all) 
+		LIST="$HOSTS"
+		;;
+	*)
+		LIST="$LIST $1"
+	esac
+
+	shift
+done
+
+
+#------------------------------------------------------------------------------
+# Remove host-specific binary directories ('bin', 'include', 'man', 'lib')
+#------------------------------------------------------------------------------
+if test x"$SRCONLY" = x ; then
+	echo "+ DELETING BINARY DIRECTORIES"
+	for h in $LIST; do
+		if test -d $h; then
+			echo "+	$h"
+			rm -rf $h
+		fi
+	done
+fi
+	
+#------------------------------------------------------------------------------
+# Remove host-specific source directories.
+#------------------------------------------------------------------------------
+if test ! -d src ; then		# source not installed
+	echo "+ NO SOURCE TO REMOVE"
+	exit 0
+fi;
+
+SRC="$TOOLS"
+for l in $LIBS ; do
+	SRC="$SRC lib/$l"
+done
+
+for s in $SRC; do
+	echo "+ DELETING $s SOURCE DIRECTORIES"
+	for h in $LIST; do
+		DIR=src/$s/$h
+		if test -d $DIR ; then
+			echo "+	$h"
+			rm -rf $DIR
+		fi
+	done
+done

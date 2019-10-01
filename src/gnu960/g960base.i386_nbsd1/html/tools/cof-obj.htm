@@ -1,0 +1,123 @@
+<HTML>
+
+<HEAD>
+
+<TITLE>b.out/COFF Converter (cof960/objcopy)</TITLE>
+
+<META NAME="GENERATOR" CONTENT="Internet Assistant for Microsoft Word 2.0z Beta">
+</HEAD>
+
+<BODY>
+
+<H1>
+<CENTER>
+b.out/COFF/ELF <A NAME="top">Converter </A>(cof960/objcopy) 
+</CENTER>
+</H1>
+
+<HR>
+
+<P>
+The b.out/COFF/ELF object converter copies its input file to an
+output file, performing any specified conversions. There are three
+kinds of conversion: byte order, object format, and stripping.
+<UL>
+<LI>If no byte order options are given, output byte order matches
+input byte order. Actual 80960 code is always in target order,
+but the headers, symbol information, and relocation directives
+can vary.
+<LI>If no object format options are given, the object format is
+not changed.
+<LI>If the output format is does not match the input format, a
+strip (<TT><B><FONT SIZE=4 FACE="Courier New">S</FONT></B></TT>
+option) is performed automatically. 
+</UL>
+
+<P>
+The invocation command is:
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">cof960</FONT></B><FONT SIZE=4 FACE="Courier New">
+| <B>objcopy</B> <B>-</B><I>option</I> ... <I>infile</I> [ <I>outfile</I>
+]</FONT></TT> 
+<P>
+Each option must be preceded by a <TT><B><FONT SIZE=4 FACE="Courier New">-</FONT></B></TT>
+character. (On DOS, you can also use a <TT><B><FONT SIZE=4 FACE="Courier New">/</FONT></B></TT>
+character.) The options are listed below.
+<P>
+The <TT><I><FONT SIZE=4 FACE="Courier New">infile</FONT></I></TT>
+is an object file or an object file archive. If <TT><I><FONT SIZE=4 FACE="Courier New">outfile</FONT></I></TT>
+is omitted, or if the <TT><B><FONT SIZE=4 FACE="Courier New">p</FONT></B></TT>
+option is used, the converter transforms the file in place.
+<HR>
+
+<UL>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">b <BR>
+</FONT></B></TT>Outputs in big-endian byte order.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">C <BR>
+</FONT></B></TT>Strips <TT><B><FONT SIZE=4 FACE="Courier New">CCINFO</FONT></B></TT>
+from output file.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">c <BR>
+</FONT></B></TT>Copies the file rather than moving it.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">Fbout <BR>
+</FONT></B></TT>Outputs in b.out format.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">Fcoff <BR>
+</FONT></B></TT>Outputs in COFF format.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">Felf<BR>
+</FONT></B></TT>Outputs in ELF format.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">h <BR>
+</FONT></B></TT>Outputs in host's byte order.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">help <BR>
+</FONT></B></TT>Displays help information and exits.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">J <BR>
+</FONT></B></TT>Removes unneeded COFF storage class tags from
+output symbol table with System V R3.2-style compression (<TT><B><FONT SIZE=4 FACE="Courier New">cprs</FONT></B></TT>).
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">l <BR>
+</FONT></B></TT>Outputs in little-endian byte order.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">p <BR>
+</FONT></B></TT>Converts in place. Overwrites the input file with
+output (the converted file). This option allows you to specify
+a list of files (for example, <TT><B><FONT SIZE=4 FACE="Courier New">*.o</FONT></B></TT>)
+to be converted in place.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">q <BR>
+</FONT></B></TT>Suppresses printed information about current processing.
+This is the default.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">r <BR>
+</FONT></B></TT>Converts a little-endian file to a big-endian
+file.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">S <BR>
+</FONT></B></TT>Strips the file. This is performed automatically
+if the input file format differs from the specified output file
+format. The <TT><B><FONT SIZE=4 FACE="Courier New">S</FONT></B></TT>
+option generates an error if used for an object file archive.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">V <BR>
+</FONT></B></TT>Displays version information and then processes
+the rest of the specified options.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">v <BR>
+</FONT></B></TT>Prints information about current processing.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">v960</FONT></B></TT>
+<BR>
+Displays version information and exits.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">x <BR>
+</FONT></B></TT>Reduces the size of an object file by stripping
+global symbols that were promoted from locals. <B>Do not use this
+option with two-pass compilation.</B> 
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">z <BR>
+</FONT></B></TT>Suppresses writing a time stamp in the COFF file
+header. 
+</UL>
+
+<HR>
+
+<P>
+<A HREF="#top"><IMG SRC="../icons/uparw.gif" ALIGN="BOTTOM"></A><I>Return
+to the top of this page.</I> 
+<P>
+<A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the ic960 Interface Index.</I> 
+<P>
+<A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the gcc960 Interface Index.</I> 
+</BODY>
+
+</HTML>
+

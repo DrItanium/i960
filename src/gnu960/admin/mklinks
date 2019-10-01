@@ -1,0 +1,44 @@
+
+
+ROOTDIR="alfie"
+for i in "$1" "$G960ROOT" ./ ; do
+	if [ -d "$i" -a -d "$i/admin" ]; then
+		ROOTDIR="$i"
+		break
+	fi
+done
+
+if [ "$ROOTDIR" = "alfie" ]; then
+	echo "Usage: $0 [G960ROOT directory]"
+	echo "or set env. var.: G960ROOT, or envoke $0 from the G960ROOT directory."
+	exit 1
+fi
+
+G960ROOT="$ROOTDIR"
+
+HOSTS=`sed 's/#.*//' $G960ROOT/admin/HOSTS`
+LIBS=../../lib_i960
+
+if test ! -d $G960ROOT/lib_i960
+then
+	exit 0
+fi
+
+for h in $HOSTS
+do	
+    if test -d $G960ROOT/$h/lib; then
+	cd $G960ROOT/$h/lib
+	echo Updating soft links in $G960ROOT/$h/lib
+	rmdir $G960ROOT/$h/lib/libcoff > /dev/null 2>&1
+	rmdir $G960ROOT/$h/lib/libcfbe > /dev/null 2>&1
+	rmdir $G960ROOT/$h/lib/libbout > /dev/null 2>&1
+	for i in `find . -type l -print`		# for every soft link
+	do
+		if test ! -s $i -o -s $LIBS/$i		# dangling or old link?
+		then
+			rm -f $i			# remove it
+		fi
+	done
+	ln -s $LIBS/* .
+    fi
+done

@@ -1,0 +1,302 @@
+: Start with ":" line because sys V Unix csh does not understand "#!/bin/sh"
+
+#----------------------------------------------------------------------------
+# RECORD THE RCS VERSIONS OF FILES IN A TOOL OR LIBRARY'S COMMON DIRECTORY
+#
+# The revision information is checked in to a file called 'i_config'
+# in the common directory (unless it exactly matches the previous
+# configuration, in which case we do not check in a new configuration).
+#
+# Then, a minor revision number is derived from the RCS revision of i_config,
+# and stored in a file called 'i_minrev' in the common directory.  The
+# i_minrev file is NOT checked in to RCS, but rather it is each tool/library's
+# responsibility to incorporate i_minrev into its version number.
+#
+# WARNING:  There is no database access synchronization.  The source database
+# must be untouched during this procedure.  The intended use of this
+# configuration script is as follows:
+#
+#	-) Announce that dev tree is frozen for purposes of cfg management.
+#	-) Determine which hosts and which tools/libraries you want
+#	   a configuration for.  Generally this will be all of them.
+#	-) Run $G960ROOT/admin/mkhost to ensure that each host's workspace
+#	   is either a link to the common directory, or an exact copy
+#	   of the common directory.  (There is no automated enforcement
+#	   here).
+#	-) Run this script to create i_config and i_minrev for each
+#	   tool/library you are interested in.
+#	-) Do a top-level make to build each tool you are interested in.
+#	   Invoke make with "SNAPSHOT=1".  "SNAPSHOT=1" is propagated to
+#	   each tool/library's make, informing it that this build has
+#	   an official record of its configuration.  Generally each
+#	   tool/library will do something special with its version number
+#	   in this case.
+#	   WARNING:  If you use SNAPSHOT=1 without having a configuration,
+#	   you may build a tool that signs on as if it is "official", when
+#	   in reality it is not.
+#	-) Announce that dev tree is available.
+#
+#----------------------------------------------------------------------------
+
+PATH=/bin:/usr/bin:/usr/ucb; export PATH
+if [ -d /usr/local/bin ] ; then
+	PATH=$PATH:/usr/local/bin
+fi
+# 'wc' is on /usr/ucb under sunos and bsd
+# RCS stuff is in /usr/local/bin on some hosts
+
+umask 002
+MYNAME=`basename $0`
+
+if [ ! -d admin ] ; then
+	if [ x"$G960ROOT" = x ] ; then
+		echo "$MYNAME: cd to the tools root directory (or set G960ROOT) first"
+		exit 1
+	else
+		echo 'cd $G960ROOT ('$G960ROOT')'
+		cd $G960ROOT
+		if test ! -d admin ; then
+			echo "$MYNAME: cannot find 'admin' subdirectory"
+			exit 1
+		fi
+	fi
+fi
+G960ROOT=`pwd`
+export G960ROOT
+
+#------------------------------------------------------------------------------
+# PARSE ARGS
+#------------------------------------------------------------------------------
+
+USAGE=0
+TOOLS=
+ALL_TOOLS=0
+SUB_TOOLS=0
+ALL_LIBS=0
+
+while test $# != 0 ; do
+	case "$1" in
+	-t) ALL_TOOLS=1 ; SUB_TOOLS=0 ; ;;
+	-T) ALL_TOOLS=0 ; SUB_TOOLS=1 ; ;;
+	-l) ALL_LIBS=1 ; ;;
+	-*)
+		echo "$MYNAME: bad option: '$1'"
+		USAGE=1
+		;;
+	*)
+		if [ -z "$TOOLS" ] ; then
+			TOOLS="$1"
+		else
+			TOOLS="$TOOLS $1"
+		fi
+		;;
+	esac;
+	shift
+done
+
+if [ $ALL_TOOLS -ne 0 -o $SUB_TOOLS -ne 0 -o $ALL_LIBS -ne 0 ] ; then
+	if [ ! -z "$TOOLS" ] ; then
+		# Cannot specify explicit tools and -[tTl]
+		USAGE=1
+	else
+		if [ $ALL_TOOLS -ne 0 ] ; then
+			TOOLS=`sed -e '/^#.*/d' -e '/^[ ]*$/d' $G960ROOT/admin/TOOLS`
+		elif [ $SUB_TOOLS -ne 0 ] ; then
+			TOOLS="toolib libbfd libld960 ghist960 gld960 gmpf960 gmung960 grom960 binutils sx coffbout gver960 comm960 rom960 cvt960 gas960 prnieee gcc960 gcdm960 gdb960 gdmp960"
+		fi
+		if [ $ALL_LIBS -ne 0 ] ; then
+			# add all libraries to $TOOLS
+			lll=`sed -e '/^#.*/d' -e '/^[ ]*$/d' $G960ROOT/admin/LIBS`
+			if [ -z "$TOOLS" ] ; then
+				TOOLS="$lll"
+			else
+				TOOLS="$TOOLS $lll"
+			fi
+		fi
+	fi
+elif [ -z "$TOOLS" ] ; then
+		USAGE=1
+fi
+
+if [ $USAGE -ne 0 ] ; then
+	echo "Usage:    $MYNAME [-{t|T}] [-l]"
+	echo "          or"
+	echo "          $MYNAME {tool|library}"
+	echo
+	echo "  -t      do all tools"
+	echo "  -T      for development, do subset of tools known to work"
+	echo "  -l      do all libraries"
+	echo
+	echo "For example:   $MYNAME gcc960"
+	echo "         or:   $MYNAME libc"
+	echo
+	echo "You must be in the tools root directory or have G960ROOT set"
+	exit 1
+fi
+
+# Do some prechecking to ensure all directories exist
+
+for TOOL in $TOOLS ; do
+	if [ -d "$G960ROOT/src/$TOOL" ] ; then
+		COMMON=src/$TOOL/common
+	elif [ -d "$G960ROOT/src/lib/$TOOL" ] ; then
+		COMMON=src/lib/$TOOL/common
+	else
+		echo "$MYNAME ERROR: cannot find directory $G960ROOT/src/$TOOL nor $G960ROOT/src/lib/$TOOL"
+		exit 1
+	fi
+
+	if [ ! -d "$G960ROOT/$COMMON/RCS" ] ; then
+		echo "$MYNAME ERROR: cannot find directory $G960ROOT/$COMMON/RCS"
+		exit 1
+	fi
+done
+
+
+for TOOL in $TOOLS ; do
+
+	# $TOOL is either a library or a tool.  All tools reside in
+	# $G960ROOT/src.  Most libraries reside in $G960ROOT/src/lib.
+	# Exceptions are toolib, libbfd and libld960, which are libraries
+	# residing in $G960ROOT/src.
+
+	IS_TOOL=YES
+
+	if [ -d "$G960ROOT/src/$TOOL" ] ; then
+		if [ "$TOOL" = "toolib" -o "$TOOL" = "libbfd" -o "$TOOL" = "libld960" ]
+		then
+			IS_TOOL=NO
+		fi
+		COMMON=src/$TOOL/common
+	elif [ -d "$G960ROOT/src/lib/$TOOL" ] ; then
+		IS_TOOL=NO
+		COMMON=src/lib/$TOOL/common
+	else
+		echo "$MYNAME ERROR: cannot find directory $G960ROOT/src/$TOOL nor $G960ROOT/src/lib/$TOOL"
+		exit 1
+	fi
+
+	if [ ! -d "$G960ROOT/$COMMON/RCS" ] ; then
+		echo "$MYNAME ERROR: cannot find directory $G960ROOT/$COMMON/RCS"
+		exit 1
+	fi
+
+	#
+	# Determine the RCS revision of each file used to build $TOOL.
+	# Record the revisions in file $G960ROOT/$COMMON/i_config
+	#
+
+	MINREV=$G960ROOT/$COMMON/i_minrev
+	CONFIG=$G960ROOT/$COMMON/i_config
+	rm -f $CONFIG
+	touch $CONFIG
+
+	status=0
+
+	if [ "$IS_TOOL" = "YES" ] ; then
+
+		# Record revisions of src/include, src/include/sys,
+		# toolib and libbfd.
+
+		$G960ROOT/admin/mkicfg src/include $CONFIG
+		if [ "$?" != "0" ] ; then status=1 ; fi
+		$G960ROOT/admin/mkicfg src/include/sys $CONFIG
+		if [ "$?" != "0" ] ; then status=1 ; fi
+		$G960ROOT/admin/mkicfg src/toolib/common $CONFIG
+		if [ "$?" != "0" ] ; then status=1 ; fi
+		$G960ROOT/admin/mkicfg src/libbfd/common $CONFIG
+		if [ "$?" != "0" ] ; then status=1 ; fi
+	else
+		# Record revisions of include and include/sys.
+
+		$G960ROOT/admin/mkicfg include $CONFIG
+		if [ "$?" != "0" ] ; then status=1 ; fi
+		$G960ROOT/admin/mkicfg include/sys $CONFIG
+		if [ "$?" != "0" ] ; then status=1 ; fi
+	fi
+
+	# NOTE: If a tool depends on sources other than those recorded above,
+	# as I suspect gdb960 might, simply special case the tool here, as in:
+	# if [ "$TOOL" = gdb960 ] ; then
+	#	$G960ROOT/admin/mkicfg src/liberty $CONFIG
+	#	if [ "$?" != "0" ] ; then status=1 ; fi
+	# fi
+
+	if [ $status -ne 0 ] ; then
+		echo "$MYNAME ERROR: failed getting configuration of shared directories"
+		rm -f $CONFIG
+		exit 1
+	fi
+
+	$G960ROOT/admin/mkicfg $COMMON $CONFIG
+	if [ "$?" != "0" ] ; then status=1 ; fi
+
+	if [ $status -ne 0 ] ; then
+		echo "$MYNAME ERROR: failed getting configuration for $G960ROOT/$COMMON"
+		rm -f $CONFIG
+		exit 1
+	fi
+
+	sort -u -o $CONFIG $CONFIG
+
+	#
+	# Now check if config matches the latest configuration in i_config,v.
+	#
+
+	MATCHES=NO
+
+	if [ -f "$G960ROOT/$COMMON/RCS/i_config,v" ] ; then
+		if co -p $G960ROOT/$COMMON/RCS/i_config,v 2>/dev/null | cmp -s - $CONFIG ; then
+			MATCHES=YES
+		fi
+	fi
+
+	# If it does not match, check in the new i_config file
+
+	rrr=`pwd`
+	cd $G960ROOT/$COMMON
+
+	if [ "$MATCHES" = "NO" ] ; then
+		if [ ! -f RCS/i_config,v ] ; then
+			# Initial check in of i_config
+			ttt=ci$$.tmp
+			rm -f $ttt
+			echo "Configuration file for $TOOL" > $ttt
+			chmod 444 i_config
+			ci -r4.1 -t$ttt -m"Created new revision list" i_config > /dev/null 2>&1
+			if [ "$?" != "0" ] ; then
+				echo "$MYNAME ERROR: could not check in $COMMON/i_config"
+				rm -f $ttt
+				exit 1
+			fi
+			rm -f $ttt
+		else
+			co -l -p i_config > /dev/null 2>&1
+			ci -m"Created new revision list" i_config > /dev/null 2>&1
+			if [ "$?" != "0" ] ; then
+				echo "$MYNAME ERROR: could not check in $COMMON/i_config"
+				exit 1
+			fi
+		fi
+	fi
+
+	rm -f $CONFIG
+	# Do not leave i_config checked out in common.
+	# Otherwise it may inadvertantly get shipped as part
+	# of the product.
+	cd $rrr
+
+
+	# Now create $G960ROOT/$COMMON/i_minrev, containing a minor revision
+	# number obtained from i_config's revision number.
+	# For example, if i_config's rev number is 5.72, minrev will be 5072.
+
+	irev=`rlog -h $G960ROOT/$COMMON/RCS/i_config,v | awk '$1 ~ /^head:/ { print $2 ; }'`
+	major=`expr substr $irev 1 \( index $irev . - 1 \)`
+	minor=`expr substr $irev \( index $irev . + 1 \) \( length $irev - \( index $irev . \) \)`
+	rev=`expr 1000 \* $major + $minor`
+	rm -f $MINREV
+	echo $rev > $MINREV
+done
+
+exit 0

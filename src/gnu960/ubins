@@ -1,0 +1,462 @@
+#!/bin/sh
+#
+# ubins installs a package made by ubins_mkpkg.sh to update customer's
+# I960BASE or G960BASE.  The package is a tar file.
+#
+# Who: | When:                        | Why:
+#------+------------------------------+----------------------------------
+# paulr| Tue Mar  7 08:59:47 PST 1995 | Initial script.
+#------+------------------------------+----------------------------------
+#
+
+#
+# Set PATH to known value:
+#
+PATH=/bin:/usr/bin:/usr/ucb
+export PATH
+
+#
+# Initialize global variables:
+#
+givehelp=0
+if [ $# -eq 0 ]; then
+	givehelp=1  # The givehelp variable is used also as 'give help and exit'.
+fi
+
+#
+# The following global variable is set by ubins_mkpkg.sh
+#
+HOST="sun4"
+tarfile=""
+quiet=0
+ctools=0
+gnu=0
+dir=""
+backup=1
+
+#
+# Parse command line:
+#
+while [ $# -ne 0 ]; do
+	case "$1" in
+		-b)
+			backup=0
+			;;
+		-q)
+			quiet=1
+			;;
+		-h)
+			givehelp=1
+			;;
+		-ctools)
+			shift
+			ctools=1
+			if [ -d $1 ]; then
+				dir=$1
+			else
+				echo ERR: $1 is not a directory
+				givehelp=1
+			fi
+			;;
+		-gnu)
+			shift
+			gnu=1
+			if [ -d $1 ]; then
+				dir=$1
+			else
+				echo ERR: $1 is not a directory
+				givehelp=1
+			fi
+			;;
+		*)
+			if [ "$tarfile" = "" ]; then
+				tarfile=$1
+			else
+				echo ERR: only give one tarfile to ubins: $tarfile or $1
+				givehelp=1
+			fi
+			;;
+	esac
+	shift
+done
+
+#
+# Here, we barf the help message and bug out because something did not
+# jive.
+#
+if [ $givehelp -eq 1 -o "$HOST" = "" -o "$dir" = "" -o ! -d "$dir" -o ! -f "$tarfile" ]; then
+	cat <<EOF
+
+Synopsis:
+	$0 [-b] [-h] [-q] {-ctools dir | -gnu dir} tarfile
+
+Options:
+
+-b            Do not backup files (default is back them up to file.ub.n as you
+              install file).
+
+-h            Gives this useful help message.
+
+-q            Be quiet when working (default is verbose).
+
+-ctools <dir> Update the files in <dir>, and use the ctools naming
+	      scheme.
+
+-gnu <dir>    Update the files in <dir>, and use the gnu naming scheme.
+
+EOF
+	exit 1
+fi
+
+#
+# Ok, the command line is ok.  Let's install it.
+#
+
+#
+# Make a temporary directory and root ourselves there:
+#
+tempdir=.td.$$
+mkdir $tempdir
+olddir=`pwd`
+cd $tempdir
+
+echo
+echo ... invoking tar extracting files from the tar archive ...
+echo
+
+if [ $quiet -eq 1 ]; then
+	taropts=xf
+else
+	taropts=xvf
+fi
+
+if tar $taropts $olddir/$tarfile ; then
+	continue
+else
+	echo ERR: tar exitted with a non-zero exit status.
+	cd $olddir
+	rm -fr $tempdir
+	exit 1
+fi
+
+#
+# Get rid of a clearly useless file:
+#
+rm -f ubins
+
+#
+# First, massage the files into either a gnu or ctools name flavoring.
+#
+if [ $ctools -eq 1 ]; then
+	#
+	# Change filenames to a ctools flavor.
+	#
+	toplevel=`pwd`
+	echo
+	echo ... changing names of binaries from gnu to ctools names ...
+	echo
+	if [ -d $HOST ]; then
+		cd $HOST
+		if [ -d bin ]; then
+			cd bin
+			#
+			# Get rid of useless tools to a ctools user:
+			#
+			rm -f gas960 comm960 coffbout gcc960 gmung960 grom960 gver960
+			echo
+			echo ... bin directory ...
+			echo
+			mkdir $toplevel/bin
+			#
+			# Rename the given tools to the ctools names:
+			#
+			binnames="gar960    arc960
+				     gas960c   asm960
+				     objcopy   cof960
+				     gdmp960   dmp960
+				     gld960    lnk960
+				     gnm960    nam960
+				     gsize960  siz960
+				     gstrip960 str960"
+			set $binnames
+			while [ $# -ne 0 ]; do
+				if [ -f $1 ]; then
+					mv $1 $toplevel/bin/$2
+				fi
+				shift
+				shift
+			done
+			#
+			# This is important.  We move everything else that is in there
+			# un-adorned.
+			#
+			mv * $toplevel/bin/$2 2> /dev/null
+			cd ..
+			rm -fr bin
+		fi # if [ -d bin ] ...
+		if [ -d lib ]; then
+			cd lib
+			echo
+			echo ... lib directory ...
+			echo
+			mkdir $toplevel/lib
+			#
+			# We only take the three files from this directory:
+			#
+			for i in cc1.960 cpp.960 libld960.a ; do
+				if [ -f $i ]; then
+					mv $i $toplevel/lib
+				fi
+			done
+			cd ..
+			rm -fr lib
+		fi
+		cd ..
+		#
+		# We remove anything else that might be in the $HOST
+		# directory.
+		#
+		rm -fr $HOST
+	fi # if [ -d $HOST ] ...
+	if [ -d lib.ic960 ]; then
+		echo
+		echo "... lib.ic960 directory ..."
+		echo
+		if [ ! -d lib ]; then
+			mkdir lib
+		fi
+		mv lib.ic960/* lib 2> /dev/null
+		rm -fr lib.ic960
+	fi # if [ -d lib.ic960 ] ...
+	if [ -d admin ]; then
+		if [ -d $dir/src ]; then
+			echo
+			echo "... admin directory ..."
+			echo
+		else
+			rm -fr admin
+		fi
+	fi
+	if [ -d lib_i960 ]; then
+		#
+		# Now, we rename all of the runtime libararies.
+		#
+		cd lib_i960
+		echo
+		echo "... run time libaries ..."
+		echo
+		SC=./libcoff
+		SB=./libcfbe
+		names1="
+			$SC/crt960g.o	crt960.o
+			$SC/crt960gp.o	crt960_p.o
+			$SC/libcgca.a	libcca.a
+			$SC/libcgcap.a	libcca_p.a"
+		names2="
+			$SC/libcgka.a	libcka.a
+			$SC/libcgkap.a	libcka_p.a
+			$SC/libcgkb.a	libckb.a
+			$SC/libcgkbp.a	libckb_p.a"
+		names3="
+			$SC/libfpg.a	libfp.a
+			$SC/libqfg.a	libqf.a
+			$SC/libqfgp.a	libqf_p.a
+			$SC/libhgca.a	libhca.a"
+		names4="
+			$SC/libhgka.a	libhka.a
+			$SC/libmgca.a	libmca.a
+			$SC/libmgcap.a	libmca_p.a
+			$SC/libmgka.a	libmka.a"
+		names5="
+			$SC/libmgkap.a	libmka_p.a
+			$SC/libmgkb.a	libmkb.a
+			$SC/libmgkbp.a	libmkb_p.a
+			$SC/libqg.a	libq.a"
+		names6="
+			$SC/libqgp.a	libq_p.a
+			$SC/libevcag.a	libevca.a
+			$SC/libevcap.a	libevcap.a
+			$SC/libhisg.a	libhis.a"
+		names7="
+			$SC/libhisgp.a	libhis_p.a
+			$SC/libqtg.a	libqt.a
+			$SC/libqtgp.a	libqt_p.a
+			$SC/libevsag.a	libevsa.a"
+		names8="
+			$SC/libevsap.a	libevsap.a
+			$SC/libhkg.a	libhk.a
+			$SC/libhkgp.a	libhk_p.a
+			$SC/libromg.a	librom.a"
+		names9="
+			$SC/libromgp.a	librom_p.a
+			$SC/libmstub.a	libmstub.a
+			$SC/libevsbg.a	libevsb.a
+			$SC/libevsbp.a	libevsbp.a"
+		namesa="
+			$SC/libllg.a	libll.a
+			$SC/libllgp.a	libll_p.a
+			$SC/libtcg.a	libtc.a
+			$SC/libtcgp.a	libtc_p.a"
+		namesb="
+			$SC/libepcxg.a   libepcx.a
+			$SC/libepcxp.a   libepcxp.a
+			$SB/libcgca.a	libcca_b.a
+			$SB/libevcag.a	libevcab.a"
+		namesc="
+			$SB/libhgca.a	libhca_b.a
+			$SB/libhisg.a	libhis_b.a
+			$SB/libhkg.a	libhk_b.a
+			$SB/libllg.a	libll_b.a"
+		namesd="
+			$SB/libmgca.a	libmca_b.a
+			$SB/libmstub.a	libmstbb.a
+			$SB/libqg.a	libq_b.a
+			$SB/libqfg.a	libqf_b.a"
+		namese="
+			$SB/libromg.a	librom_b.a
+			$SB/libtcg.a	libtc_b.a
+			$SB/crt960g.o	crt960_b.o
+			$SB/libepcxg.a   libepcxb.a"
+		namesf="
+			$SC/libhgjx.a    libhjx.a
+			$SB/libhgjx.a    libhjx_b.a
+			$SC/libmong.a    libmon.a
+			$SB/libmong.a    libmon_b.a
+			$SC/libmongp.a   libmon_p.a"
+		if [ ! -d ../lib ]; then
+			mkdir ../lib
+		fi		
+		for i in 1 2 3 4 5 6 7 8 9 a b c d e f ; do
+			x="set \$names$i"
+			eval $x
+			while [ $# -gt 0 ]; do
+				if [ -f $1 ]; then
+					if [ -f ../lib/$2 ]; then
+						rm -f ../lib/$2
+					fi
+					mv $1 ../lib/$2
+				fi
+				shift
+				shift
+			done
+		done
+		
+		cd ..
+		echo
+		echo "... house cleaning ..."
+		echo
+		#
+		# This removes *.gld gnu *.ld files etc.
+		#
+		rm -fr lib_i960
+	fi # if [ -d lib_i960 ] ...
+	if [ -d man ]; then
+		cd man
+		echo
+		echo "... man directory ..."
+		echo
+		#
+		# Remove useless (to a ctools user) man pages.
+		#
+		rm -f gcc960.1gnu comm960* coffbout gmung960* grom960* \
+			gver960* coffbout*
+		#
+		# Rename the man pages to useful names.
+		#
+		mannames="gcov960.1gnu   gcov960.1
+			gas960.1gnu    asm960.1
+			gnm960.1gnu    nam960.1
+			objcopy.1gnu   cof960.1
+			cvt960.1gnu    cvt960.1
+			gdmp960.1gnu   dmp960.1
+			gsize960.1gnu  siz960.1
+			rom960.1gnu    rom960.1
+			gar960.1gnu    arc960.1
+			gld960.1gnu    lnk960.1
+			gstrip960.1gnu str960.1
+			sx.1gnu        sx.1
+			mpp960.1gnu    mpp960.1
+			ic960.1gnu     ic960.1
+			gcdm960.1gnu   gcdm960.1
+			gdb960.1gnu    gdb960.1
+			ghist960.1gnu  ghist960.1
+			gmpf960.1gnu   gmpf960.1"
+		set $mannames
+		while [ $# -ne 0 ]; do
+			if [ -f $1 ]; then
+				mv $1 $2
+			fi
+			shift
+			shift
+		done
+		cd ..
+	fi # if [ -d man ] ...
+else
+	#
+	# Let's change filenames to a gnu flavor.  The job is already done.
+	# Just remove the following files from the distribution if
+	# supplied:
+	#
+	rm -fr examples $HOST/bin/ic960 lib.ic960 man/ic960.1gnu
+fi
+
+#
+# Now, let's copy all of the the files into the destination directory keeping
+# backups as we go:
+#
+
+#
+# FIXME: Need to add error checking for mv and mkdir commands below.
+#
+
+echo
+echo ... installing new files into $dir ...
+echo
+for i in `find . -print | sort` ; do
+	if [ -d $i ]; then
+		if [ ! -d $dir/$i ]; then
+			if [ $quiet -ne 1 ]; then
+				echo new directory: $i
+			fi
+			if [ $quiet -ne 1 ]; then
+				echo mkdir $dir/$i | sh -x
+			else
+				mkdir $dir/$i
+			fi
+		fi
+	else
+		if [ -f $dir/$i ]; then
+			if [ $backup -eq 1 ]; then
+				j=1
+				while [ -f $dir/$i.ub.$j ]; do
+					j=`expr $j + 1`
+				done
+				if [ $quiet -ne 1 ]; then
+					echo mv $dir/$i $dir/$i.ub.$j | sh -x
+				else
+					mv $dir/$i $dir/$i.ub.$j
+				fi
+			else
+				if [ $quiet -ne 1 ]; then
+					echo rm -f $dir/$i | sh -x
+				else
+					rm -f $dir/$i
+				fi
+			fi
+		fi
+		if [ $quiet -ne 1 ]; then
+			echo mv $i $dir/$i | sh -x
+		else
+			mv $i $dir/$i
+		fi
+	fi
+done
+
+cd $olddir
+rm -fr $tempdir
+
+echo
+echo ... Done. ...
+echo
+
+exit 0

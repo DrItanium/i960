@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+ <head>
+  <title>Index of /afs/cs/project/cmcl/link.vcnectar/gnu960/src/liberty/i386_nbsd1</title>
+ </head>
+ <body>
+<h1>Index of /afs/cs/project/cmcl/link.vcnectar/gnu960/src/liberty/i386_nbsd1</h1>
+<pre><img src="/icons/blank.gif" alt="Icon "> <a href="?C=N;O=D">Name</a>                    <a href="?C=M;O=A">Last modified</a>      <a href="?C=S;O=A">Size</a>  <a href="?C=D;O=A">Description</a><hr><img src="/icons/back.gif" alt="[DIR]"> <a href="/afs/cs/project/cmcl/link.vcnectar/gnu960/src/liberty/">Parent Directory</a>                             -   
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="COPYING">COPYING</a>                 04-Jun-1996 11:32   18K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="FILES">FILES</a>                   04-Jun-1996 11:32  595   
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="Makefile">Makefile</a>                16-Oct-1996 13:59  7.5K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="alloca-botch.h">alloca-botch.h</a>          04-Jun-1996 11:32  188   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="alloca-norm.h">alloca-norm.h</a>           04-Jun-1996 11:32  217   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="alloca.c">alloca.c</a>                04-Jun-1996 11:32   13K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="argv.c">argv.c</a>                  04-Jun-1996 11:32  7.6K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="basename.c">basename.c</a>              04-Jun-1996 11:32  1.4K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="bcmp.c">bcmp.c</a>                  04-Jun-1996 11:32  1.5K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="bcopy.c">bcopy.c</a>                 04-Jun-1996 11:32  1.5K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="bzero.c">bzero.c</a>                 04-Jun-1996 11:32  1.3K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="clock.c">clock.c</a>                 04-Jun-1996 11:32  1.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="concat.c">concat.c</a>                04-Jun-1996 11:32  3.8K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="copysign.c">copysign.c</a>              04-Jun-1996 11:32  2.4K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="cplus-dem.c">cplus-dem.c</a>             04-Jun-1996 11:32   65K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="dosify.lst">dosify.lst</a>              04-Jun-1996 11:32  1.1K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="dosify.sed">dosify.sed</a>              04-Jun-1996 11:32  356   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="dummy.c">dummy.c</a>                 04-Jun-1996 11:32  1.4K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="fdmatch.c">fdmatch.c</a>               04-Jun-1996 11:32  2.0K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="floatformat.c">floatformat.c</a>           04-Jun-1996 11:32   11K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="getcwd.c">getcwd.c</a>                04-Jun-1996 11:32  1.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="getopt.c">getopt.c</a>                04-Jun-1996 11:32   21K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="getopt1.c">getopt1.c</a>               04-Jun-1996 11:32  4.4K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="getpagesize.c">getpagesize.c</a>           04-Jun-1996 11:32  2.2K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="getruntime.c">getruntime.c</a>            04-Jun-1996 11:32  2.2K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="index.c">index.c</a>                 04-Jun-1996 11:32  143   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="insque.c">insque.c</a>                04-Jun-1996 11:32  1.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="memchr.c">memchr.c</a>                04-Jun-1996 11:32  1.2K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="memcmp.c">memcmp.c</a>                04-Jun-1996 11:32  1.5K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="memcpy.c">memcpy.c</a>                04-Jun-1996 11:32  1.3K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="memmove.c">memmove.c</a>               04-Jun-1996 11:32  334   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="memset.c">memset.c</a>                04-Jun-1996 11:32  1.1K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="msdos.c">msdos.c</a>                 04-Jun-1996 11:32  177   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="obstack.c">obstack.c</a>               04-Jun-1996 11:32   15K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="random.c">random.c</a>                04-Jun-1996 11:32   13K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="rename.c">rename.c</a>                04-Jun-1996 11:32  1.1K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="rindex.c">rindex.c</a>                04-Jun-1996 11:32  147   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="sigsetmask.c">sigsetmask.c</a>            04-Jun-1996 11:32  1.4K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="spaces.c">spaces.c</a>                04-Jun-1996 11:32  1.6K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="strcasecmp.c">strcasecmp.c</a>            04-Jun-1996 11:32  3.2K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="strchr.c">strchr.c</a>                04-Jun-1996 11:32  1.3K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="strdup.c">strdup.c</a>                04-Jun-1996 11:32  172   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="strerror.c">strerror.c</a>              04-Jun-1996 11:32   21K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="strncasecmp.c">strncasecmp.c</a>           04-Jun-1996 11:32  3.2K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="strrchr.c">strrchr.c</a>               04-Jun-1996 11:32  1.3K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="strsignal.c">strsignal.c</a>             04-Jun-1996 11:32   15K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="strstr.c">strstr.c</a>                04-Jun-1996 11:32  1.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="strtod.c">strtod.c</a>                04-Jun-1996 11:32  2.6K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="strtol.c">strtol.c</a>                04-Jun-1996 11:32  1.2K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="strtoul.c">strtoul.c</a>               04-Jun-1996 11:32  1.9K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="tmpnam.c">tmpnam.c</a>                04-Jun-1996 11:32  619   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="vasprintf.c">vasprintf.c</a>             04-Jun-1996 11:32  3.1K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="vfork.c">vfork.c</a>                 04-Jun-1996 11:32  916   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="vfprintf.c">vfprintf.c</a>              04-Jun-1996 11:32  212   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="vprintf.c">vprintf.c</a>               04-Jun-1996 11:32  188   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="vsprintf.c">vsprintf.c</a>              04-Jun-1996 11:32  1.5K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="waitpid.c">waitpid.c</a>               04-Jun-1996 11:32  178   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="xatexit.c">xatexit.c</a>               04-Jun-1996 11:32  1.6K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="xexit.c">xexit.c</a>                 04-Jun-1996 11:32  1.1K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="xmalloc.c">xmalloc.c</a>               04-Jun-1996 11:32  1.9K  
+<hr></pre>
+</body></html>

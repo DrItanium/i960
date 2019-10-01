@@ -1,0 +1,63 @@
+
+G960BASE= $(G960ROOT)/$(HOST)
+MFILE	= Makefile
+SNAPSHOT=
+SLASH=/
+
+# Build a single tool or library.  "Subroutine" target, not to be invoked
+# directly.  "Arguments" passed in:
+#	DIR	Name of src subdirectory
+#	HOST	Name of host
+#	CLEAN	"clean" cleans before/after building; "" skips cleaning
+#
+# Note that two environment variables are set in the invocation of the lower-
+# level makefile (G960BASE and PATH) so the GNU tools (hopefully already built)
+# can be used in building the libraries.  The other G960 environment variables
+# are turned off so they don't over-ride G960BASE.  G960BASE is also passed as
+# a make macro so the lower-level makefile can know where to install the tools
+# or libraries it builds.
+# 
+tool:
+	@case $(HOST)y in \
+	y) \
+	   echo "Specify 'HOST=' on make invocation";\
+	   exit 1 ;; \
+	esac
+	@echo "=============== $(DIR): install ==============="
+	@if test "$(CLEAN)" != "" ; then \
+		cd src/$(DIR)/$(HOST) && make $(CLEAN); \
+	fi
+	cd src/$(DIR)/$(HOST) && \
+	G960BASE=$(G960BASE) PATH="$(G960BASE)/bin:$$PATH" \
+	G960BIN= G960LIB= G960INC= G960AS= G960CPP= G960CC1= \
+		make SNAPSHOT=$(SNAPSHOT) G960BASE=$(G960BASE) install $(CLEAN)
+
+library:
+	@case $(HOST)y in \
+	y) \
+	   echo "Specify 'HOST=' on make invocation";\
+	   exit 1 ;; \
+	esac
+	@echo "=============== $(DIR): install ==============="
+	@if test "$(CLEAN)" != "" ; then \
+		cd src/$(DIR)/$(LIB_BUILD) && make $(CLEAN); \
+	fi
+	cd src/$(DIR)/$(LIB_BUILD) && \
+	G960BASE=$(G960BASE) PATH="$(G960BASE)/bin:$$PATH" \
+	G960BIN= G960LIB= G960INC= G960AS= G960CPP= G960CC1= \
+		make SNAPSHOT=$(SNAPSHOT) G960BASE=$(G960BASE) LIB_DEBUG=$(LIB_DEBUG) LIB_INSTALL=$(LIB_INSTALL) INSTALL_ALL=$(INSTALL_ALL) IC=$(IC) install $(CLEAN)
+
+clean:
+	-@cwd=`pwd`; \
+	for T in $(TOOLS); do \
+		echo "=============== $$T ==============="; \
+		cd src/$$T/$(HOST); make clean; cd $$cwd; \
+	done; \
+	for L in $(LIBS) ; do \
+		echo "=============== $$L ==============="; \
+		cd src/lib/$$L/$(LIB_BUILD); make clean; cd $$cwd; \
+	done
+
+prerelease:
+	echo "Please use new admin tool mkprerelease"
+	exit 1

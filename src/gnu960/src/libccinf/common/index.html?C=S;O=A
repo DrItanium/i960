@@ -1,0 +1,23 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+ <head>
+  <title>Index of /afs/cs/project/cmcl/link.vcnectar/gnu960/src/libccinf/common</title>
+ </head>
+ <body>
+<h1>Index of /afs/cs/project/cmcl/link.vcnectar/gnu960/src/libccinf/common</h1>
+<pre><img src="/icons/blank.gif" alt="Icon "> <a href="?C=N;O=A">Name</a>                    <a href="?C=M;O=A">Last modified</a>      <a href="?C=S;O=D">Size</a>  <a href="?C=D;O=A">Description</a><hr><img src="/icons/back.gif" alt="[DIR]"> <a href="/afs/cs/project/cmcl/link.vcnectar/gnu960/src/libccinf/">Parent Directory</a>                             -   
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="_version">_version</a>                04-Jun-1996 11:32    4   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="assert.h">assert.h</a>                04-Jun-1996 11:32  254   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="cc_pinfo.h">cc_pinfo.h</a>              04-Jun-1996 11:32  797   
+<img src="/icons/text.gif" alt="[TXT]"> <a href="cc_linfo.c">cc_linfo.c</a>              04-Jun-1996 11:32  1.7K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="cc_dinfo.c">cc_dinfo.c</a>              04-Jun-1996 11:32  3.2K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="cc_finfo.c">cc_finfo.c</a>              04-Jun-1996 11:32  4.5K  
+<img src="/icons/unknown.gif" alt="[   ]"> <a href="Makefile">Makefile</a>                04-Jun-1996 11:32  7.8K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="cc_x960.c">cc_x960.c</a>               16-Oct-1996 16:23  8.4K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="cc_stran.c">cc_stran.c</a>              04-Jun-1996 11:32   12K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="cc_pinfo.c">cc_pinfo.c</a>              04-Jun-1996 11:32   24K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="cc_rdwrt.c">cc_rdwrt.c</a>              04-Jun-1996 11:32   25K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="cc_strpf.c">cc_strpf.c</a>              04-Jun-1996 11:32   35K  
+<img src="/icons/text.gif" alt="[TXT]"> <a href="cc_info.c">cc_info.c</a>               16-Oct-1996 15:32   70K  
+<hr></pre>
+</body></html>

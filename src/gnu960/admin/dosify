@@ -1,0 +1,122 @@
+:
+# A shell script to DOS-ify file names.  Source files are copied from
+# a directory you specify into the current directory, using sed as a
+# filter during the copy.
+# 
+# This is currently used only by gdb960 and its support libraries,
+# but it could be adapted by any tool that needs to build on both
+# Unix and DOS.
+#
+# Usage: dosify srcdir [-m] [-s file ...]
+#
+# -m means process RCS/Makefile -> ./makefile also.
+# -s file ... means process only the files listed.  The default is to process
+# all the files found in srcdir/dosify.lst.
+#
+# The file srcdir/dosify.lst must exist.  The format is simply
+#    "oldname newname", one filename per line.
+# The file srcdir/dosify.sed must exist.  This file will be given as an
+#    argument to sed.
+# If -m is given, the file srcdir/RCS/Makefile,v must exist, and RCS must
+#    be available on your system.
+
+pairlist=`basename $0`.lst
+sedfile=`basename $0`.sed
+makefile=Makefile.sav
+destdir=.
+domake=false
+
+usage1="usage: $0 srcdir [-m] [-s file ...]"
+usage2="with -s, only the specified files will be copied to current directory."
+usage3="Otherwise all files in srcdir/$pairlist will be copied to current directory."
+
+if [ $# -lt 1 ] ; then
+    echo $usage1 ; echo $usage2 ; echo $usage3
+    exit 0
+fi
+
+srcdir=$1
+shift
+
+if [ "$srcdir" = "." -o "$srcdir" = "`pwd`" ] ; then
+    echo srcdir can not be the current directory.
+    echo $usage1 ; echo $usage2 ; echo $usage3
+    exit 0
+fi
+
+if [ -f $srcdir/$pairlist ] ; then
+    pairlist=$srcdir/$pairlist
+else
+    echo File not found: $srcdir/$pairlist
+    echo $usage1 ; echo $usage2 ; echo $usage3
+    exit 0
+fi
+
+if [ -f $srcdir/$sedfile ] ; then
+    sedfile=$srcdir/$sedfile
+else
+    echo File not found: $srcdir/$sedfile
+    echo $usage1 ; echo $usage2 ; echo $usage3
+    exit 0
+fi
+
+while [ $# -gt 0 ]
+do
+    case $1 in
+    -m)
+	domake=true
+	shift ;;
+    -s)
+	shift 
+	filelist=$* 
+	break ;;
+    *)
+        echo $usage1 ; echo $usage2 ; echo $usage3
+	exit 0 ;;
+    esac
+done
+
+# For each pair in the pairlist, if the user gave a file list on the 
+# command line, check to see if the first file of the pair was specified
+# on the command line.  If so, (or if using the default list, then it is
+# always so) then do the copy, using sed as an intermediate filter.
+set `cat $pairlist`
+while [ $# -gt 0 ] ; do
+    if [ "$filelist" != "" ]
+    then
+	match=false
+	for i in $filelist
+	do
+	    if [ $1 = $i ]
+	    then
+		match=true
+		break
+	    fi
+	done
+	if [ "$match" = "false" ]
+	then
+	    shift
+	    shift
+	    continue
+	fi
+    fi
+    echo "sed -f $sedfile < $srcdir/$1 > $destdir/$2"
+    sed -f $sedfile < $srcdir/$1 > $destdir/$2
+    shift
+    shift
+done
+
+if [ "$domake" = "true" ]
+then
+    # sed the sed script.  Remove .c's and .h's.
+    echo "sed 's/\\\.c//g;s/\\\.h//g' < $sedfile > $destdir/sed.tmp"
+    sed 's/\\\.c//g;s/\\\.h//g' < $sedfile > $destdir/sed.tmp
+    cp $srcdir/Makefile $destdir/Makefile.dos
+    echo "sed -f $destdir/sed.tmp < $destdir/Makefile.dos > $destdir/Makefile"
+    sed -f $destdir/sed.tmp < $destdir/Makefile.dos > $destdir/Makefile
+    rm -f sed.tmp
+    rm -f makefile
+    rm -f Makefile.dos
+    echo "make make HOST=dos"
+    make make HOST=dos
+fi

@@ -1,0 +1,165 @@
+<HTML>
+
+<HEAD>
+
+<TITLE>Dumper (dmp960/gdmp960) </TITLE>
+
+<META NAME="GENERATOR" CONTENT="Internet Assistant for Microsoft Word 2.0z Beta">
+</HEAD>
+
+<BODY>
+
+<H1>
+<CENTER>
+dmp960/gdmp960 <A NAME="top">Dumper</A>/Disassembler 
+</CENTER>
+</H1>
+
+<HR>
+
+<P>
+The dumper/disassembler provides access to binary information
+in executable or relocatable object files. The dmp960/gdmp960
+utility combines the features of traditional disassemblers and
+dumpers.
+<P>
+The invocation command is:
+<DL>
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">dmp960</FONT></B><FONT SIZE=4 FACE="Courier New">
+| <B>gdmp960</B> [ <I>option</I> ]... <I>file</I>... </FONT></TT>
+</DL>
+
+<P>
+The options (listed below) either select which part of the object
+file to display, or control the formatting of the display. The
+default selection option is <TT><B><FONT SIZE=4 FACE="Courier New">d</FONT></B></TT>,
+which dumps the sections of an object file that are loaded in
+target memory. Each option must be preceded by a <TT><B><FONT SIZE=4 FACE="Courier New">-</FONT></B></TT>
+character. (On DOS, you can also use a <TT><B><FONT SIZE=4 FACE="Courier New">/</FONT></B></TT>
+character.)
+<HR>
+
+<H3><A NAME="options">Options</A> </H3>
+
+<HR>
+
+<UL>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">a<BR>
+</FONT></B></TT>Dump (disassemble) all the sections in an object
+file. Use this to examine the raw DWARF information in a file.
+The default is to dump only those sections loaded in target memory.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">c<BR>
+</FONT></B></TT>Dump the string table.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">D<BR>
+</FONT></B></TT>Dump section contents as if it were a data section,
+in hexadecimal bytes. Applies only to the <TT><B><FONT SIZE=4 FACE="Courier New">d</FONT></B></TT>
+option.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">d</FONT></B><FONT SIZE=4 FACE="Courier New">
+<BR>
+</FONT></TT>Dump the contents of all sections loaded into target
+memory. This is the default. In the absence of conflicting formatting
+options, text sections are disassembled into assembly language
+instructions, and data sections are dumped as hexadecimal bytes.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">F </FONT></B><I><FONT SIZE=4 FACE="Courier New">function
+<BR>
+</FONT></I></TT>Disassemble only the named COFF or ELF function.
+Applies only to the <TT><B><FONT SIZE=4 FACE="Courier New">d</FONT></B></TT>
+option.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">f<BR>
+</FONT></B></TT>Display the file header.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">g</FONT></B><FONT SIZE=4 FACE="Courier New">[<I>arg</I>]<B>&#133;
+<BR>
+</B></FONT></TT>Display one or more <TT><B><FONT SIZE=4 FACE="Courier New">.debug_*</FONT></B></TT>
+sections. <TT><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I></TT>
+can be:<BR>
+<TT><B><FONT SIZE=4 FACE="Courier New">i</FONT></B></TT> dump
+<TT><B><FONT SIZE=4 FACE="Courier New">.debug_info</FONT></B></TT>
+<BR>
+<TT><B><FONT SIZE=4 FACE="Courier New">l</FONT></B></TT> dump
+<TT><B><FONT SIZE=4 FACE="Courier New">.debug_line <BR>
+f</FONT></B></TT> dump <TT><B><FONT SIZE=4 FACE="Courier New">.debug_frame</FONT></B></TT>
+<BR>
+<TT><B><FONT SIZE=4 FACE="Courier New">p</FONT></B></TT> dump
+<TT><B><FONT SIZE=4 FACE="Courier New">.debug_pubnames</FONT></B></TT>
+<BR>
+<TT><B><FONT SIZE=4 FACE="Courier New">a</FONT></B></TT> dump
+<TT><B><FONT SIZE=4 FACE="Courier New">.debug_aranges</FONT></B></TT>
+<BR>
+<TT><B><FONT SIZE=4 FACE="Courier New">m</FONT></B></TT> dump
+<TT><B><FONT SIZE=4 FACE="Courier New">.debug_macinfo</FONT></B></TT>
+<BR>
+<TT><B><FONT SIZE=4 FACE="Courier New">A</FONT></B></TT> dump
+all <TT><B><FONT SIZE=4 FACE="Courier New">.debug_*</FONT></B></TT>
+sections
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">h<BR>
+</FONT></B></TT>Displays the COFF section headers.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">help<BR>
+</FONT></B></TT>Prints help information to <TT><B><FONT SIZE=4 FACE="Courier New">stdout</FONT></B></TT>
+and exits.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">i<BR>
+</FONT></B></TT>Display the COFF optional header.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">l<BR>
+</FONT></B></TT>Displays COFF line number entries.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">m<BR>
+</FONT></B></TT>Displays the memory map (section layout) of the
+file.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">n </FONT></B><I><FONT SIZE=4 FACE="Courier New">section
+<BR>
+</FONT></I></TT>Dumps only the named section. Applies to whatever
+option is in effect.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">o<BR>
+</FONT></B></TT>Prints addresses in octal instead of hexadecimal.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">p<BR>
+</FONT></B></TT>Suppresses headers. Prints just the information
+requested.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">q<BR>
+</FONT></B></TT>Queries the file and display its type.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">r<BR>
+</FONT></B></TT>Dumps relocation entries.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">s<BR>
+</FONT></B></TT>Performs symbolic disassembly. Displays labels
+symbolically instead of numerically whenever possible. Applies
+only to the <TT><B><FONT SIZE=4 FACE="Courier New">d</FONT></B></TT>
+option.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">T<BR>
+</FONT></B></TT>Dumps section contents as if it were a text section.
+(Disassembles it into assembly language instructions.) Applies
+only to the <TT><B><FONT SIZE=4 FACE="Courier New">d</FONT></B></TT>
+option.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">t</FONT></B></TT> 
+<BR>
+Dumps the b.out or COFF symbol table.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">V<BR>
+</FONT></B></TT>Prints version information to <TT><B><FONT SIZE=4 FACE="Courier New">stdout</FONT></B></TT>
+and continues.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">v960<BR>
+</FONT></B></TT>Prints version information to <TT><B><FONT SIZE=4 FACE="Courier New">stdout</FONT></B></TT>
+and exits.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">x<BR>
+</FONT></B></TT>Suppresses symbolic translation of COFF symbol
+types and storage classes. Prints a symbol's type and storage
+class numerically. Applies only to the <TT><B><FONT SIZE=4 FACE="Courier New">t</FONT></B></TT>
+option.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">z<BR>
+</FONT></B></TT>Suppresses zeros when displaying text section
+contents. The default is to translate zeros into <TT><B><FONT SIZE=4 FACE="Courier New">.word</FONT></B></TT>
+directives when disassembling text sections. Applies only to the
+<TT><B><FONT SIZE=4 FACE="Courier New">d</FONT></B></TT> option.
+
+</UL>
+
+<HR>
+
+<P>
+<A HREF="#top"><IMG SRC="../icons/uparw.gif" ALIGN="BOTTOM"></A><I>Return
+to the top of this page.</I> 
+<P>
+<A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the ic960 Interface Index.</I> 
+<P>
+<A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the gcc960 Interface Index.</I> 
+</BODY>
+
+</HTML>
+

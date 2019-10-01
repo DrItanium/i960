@@ -1,0 +1,89 @@
+<HTML>
+
+<HEAD>
+
+<TITLE>Statistical Profiler (ghist960)</TITLE>
+
+<META NAME="GENERATOR" CONTENT="Internet Assistant for Microsoft Word 2.0z Beta">
+</HEAD>
+
+<BODY>
+
+<H1>
+<CENTER>
+ghist960 Statistical Profiler 
+</CENTER>
+</H1>
+
+<HR>
+
+<P>
+The ghist960 statistical profiler facilitates statistical analysis
+of the execution behavior of programs containing debug information.
+To use ghist960, compile your program with the <TT><B><FONT SIZE=4 FACE="Courier New">g</FONT></B></TT>
+(Debug) option and link it with the <TT><B><FONT SIZE=4 FACE="Courier New">libhis</FONT></B></TT>
+profiling library. Executing the program with representative inputs
+causes a profile data file to be created. Specify this file when
+invoking ghist960.
+<P>
+The ghist960 invocation command is:
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">ghist960</FONT></B><FONT SIZE=4 FACE="Courier New">
+[ <B>-</B><I>option</I> ]...<B> </B><I>program</I><B> </B>[<B>
+</B><I>data_file<B> </B></I>]</FONT></TT>
+<P>
+<A NAME="DDE_LINK2">Each option must be preceded by a </A><TT><B><FONT SIZE=4 FACE="Courier New">-</FONT></B></TT>
+character. (On DOS, you can also use a <TT><B><FONT SIZE=4 FACE="Courier New">/</FONT></B></TT>
+character.) The options are listed below. 
+<P>
+<TT><I><FONT SIZE=4 FACE="Courier New">program</FONT></I></TT>
+identifies your application.
+<P>
+<TT><I><FONT SIZE=4 FACE="Courier New">data_file</FONT></I></TT>
+identifies the execution profile data file (<TT><B><FONT SIZE=4 FACE="Courier New">ghist.dat</FONT></B></TT>
+by default).
+<HR>
+
+<UL>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">a<BR>
+</FONT></B></TT>Print all buckets with one or more hits. Normally,
+ghist960 prints only buckets with 1% or greater of the total hits.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">d<BR>
+</FONT></B></TT>Prints a complete dump of ghist960's internal
+symbol table in addition to the standard data.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">f<BR>
+</FONT></B></TT>Tallies the number of hits for each of the line
+numbers of the functions in the application, and associates them
+with the function itself.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">h<BR>
+</FONT></B></TT>Writes help information to <TT><B><FONT SIZE=4 FACE="Courier New">stdout</FONT></B></TT>
+and exits without doing anything.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">n<BR>
+</FONT></B></TT>Prints the absolute number of hits for each bucket
+in addition to the standard data.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">s<BR>
+</FONT></B></TT>Suppresses printing of miscellaneous header and
+footer information and format lines.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">V<BR>
+</FONT></B></TT>Writes version information to <TT><B><FONT SIZE=4 FACE="Courier New">stdout</FONT></B></TT>
+and continues.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">v960<BR>
+</FONT></B></TT>Writes version information to <TT><B><FONT SIZE=4 FACE="Courier New">stdout</FONT></B></TT>
+and exits without doing anything. 
+</UL>
+
+<HR>
+
+<P>
+<A HREF="#top"><IMG SRC="../icons/uparw.gif" ALIGN="BOTTOM"></A><I>Return
+to the top of this page.</I>
+<P>
+<A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the ic960 Interface Index.</I>
+<P>
+<A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the gcc960 Interface Index.</I> 
+</BODY>
+
+</HTML>
+

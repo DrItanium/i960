@@ -1,0 +1,51 @@
+# $Id: TOOLS,v 1.49 1995/10/25 17:01:31 kevins Exp $
+#
+# Directories containing source code for the GNU/960 tools.
+# Entries in this file should be paths relative to the 'BASE/src' directory
+# (where BASE represents the top-level directory of the GNU/960 tools).
+#
+# Comments (such as these) and blank lines are allowed in this file.
+#
+
+#
+# Tool Libraries
+#	THESE *MUST* PRECEDE ALL TOOLS IN THE LIST, SO THEY GET BUILT FIRST
+#	BY THE TOP-LEVEL MAKEFILE
+#
+toolib
+gdbbfd
+hdil
+hdilcomm
+libbfd		
+libccinf
+libdwarf
+liberty
+libld960
+readline
+
+#
+# Tools
+#
+binutils
+cvt960
+gas960
+gcc960
+gcdm960
+gcov960
+gdb960
+gdmp960
+ghist960
+gld960
+gmpf960
+gmung960
+grom960
+gver960
+mpp960
+rom960
+
+#NOSHIP_BEGIN
+# the following are used internally and not shipped to customers
+mondb
+prnieee
+ccdmp960
+#NOSHIP_END

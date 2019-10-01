@@ -1,0 +1,953 @@
+<HTML>
+
+<HEAD>
+
+<TITLE>ic960 Compiler Driver</TITLE>
+
+<META NAME="AUTHOR" CONTENT="David M. Gaffney">
+<META NAME="GENERATOR" CONTENT="Internet Assistant for Microsoft Word 2.0z Beta">
+</HEAD>
+
+<BODY>
+
+<H1>
+<CENTER>
+ic960 Compiler<A NAME="top"> Driver </A>
+</CENTER>
+</H1>
+
+<HR>
+
+<P>
+ic960 is a driver program that manages invocation of the preprocessor,
+compiler proper, assembler and linker. The invocation syntax is:
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">ic960</FONT></B><FONT SIZE=4 FACE="Courier New">
+{ <B>-</B> | <B>/</B> } [ <B>-</B><I>option</I><B> </B>]<B> ...
+</B><I>file</I> ...</FONT></TT> 
+<P>
+Each invocation option must be preceded by a <B>-</B> character.
+(On DOS, you can also use a <B>/</B> character.) Click on <A HREF="#options">option</A>
+for information on compiler driver options. All options that take
+an argument allow optional white space between the option and
+the argument. When conflicting options are given, the last one
+specified is used. The compiler driver passes the following <A HREF="#linker_options">linker options</A>
+and their arguments to the linker: <TT><B><FONT SIZE=4 FACE="Courier New">gcdm</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">L</FONT></B></TT>, <TT><B><FONT SIZE=4 FACE="Courier New">l</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">m</FONT></B></TT>, <TT><B><FONT SIZE=4 FACE="Courier New">r</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">s</FONT></B></TT>, <TT><B><FONT SIZE=4 FACE="Courier New">T</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">u</FONT></B></TT> and <TT><B><FONT SIZE=4 FACE="Courier New">x</FONT></B></TT>.
+<P>
+The compilation system determines each input file's type by its
+filename extension:
+<UL>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">.c</FONT></B></TT>
+indicates a C source file.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">.i</FONT></B></TT>
+indicates a preprocessed C source file.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">.s</FONT></B></TT>
+indicates an assembly language source file. 
+</UL>
+
+<P>
+The compilation system passes any other filename to the linker,
+which determines whether the file is an object file, library or
+configuration file by its contents.
+<P>
+Other invocation command elements are taken to be either linker
+options or object modules, typically produced by an earlier ic960
+invocation, or perhaps libraries of compatible routines. These
+modules, together with the result of any compilations specified,
+are linked (in the order given) to produce an executable program.
+<P>
+When generating COFF modules, the default output filename is <TT><B><FONT SIZE=4 FACE="Courier New">a.out</FONT></B></TT>.
+When generating ELF/DWARF modules, the default filename is <TT><B><FONT SIZE=4 FACE="Courier New">e.out</FONT></B></TT>.
+<HR>
+
+<H2><A NAME="options">ic960 Driver Options</A> </H2>
+
+<P>
+Each option requires an option delimiter (<TT><B><FONT SIZE=4 FACE="Courier New">-</FONT></B></TT>
+or <TT><B><FONT SIZE=4 FACE="Courier New">/</FONT></B></TT>).
+All options that take an argument allow optional white space between
+the option and argument. When conflicting options are given, the
+last one specified is used. For information about an option, click
+on the option name (underlined).
+<UL>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">A </FONT></B><I><FONT SIZE=4 FACE="Courier New">arch</FONT></I><FONT SIZE=4 FACE="Courier New">
+<A HREF="#architecture">Architecture</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">a</FONT></B><FONT SIZE=4 FACE="Courier New">
+<A HREF="#ansi">ANSI</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">b </FONT></B><I><FONT SIZE=4 FACE="Courier New">size</FONT></I><FONT SIZE=4 FACE="Courier New">
+<A HREF="#bsize">Limit Optimizations</A><I> </I></FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">C</FONT></B><FONT SIZE=4 FACE="Courier New">
+<A HREF="#comments">Keep Comments</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">D </FONT></B><I><FONT SIZE=4 FACE="Courier New">symbol</FONT></I><FONT SIZE=4 FACE="Courier New">[<B>=</B><I>value</I>]
+<A HREF="#define">Define</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">Fcoff</FONT></B><FONT SIZE=4 FACE="Courier New">
+| <B>Felf</B> <A HREF="#omf">OMF</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">F </FONT></B><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I><FONT SIZE=4 FACE="Courier New">[,<I>arg</I>]...
+<A HREF="#finetune">Fine Tune Optimization</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">fdb</FONT></B><FONT SIZE=4 FACE="Courier New">
+<A HREF="#fdb">Program Database</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">fprof</FONT></B><FONT SIZE=4 FACE="Courier New">
+<A HREF="#instrument">Instrument</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">f</FONT></B><FONT SIZE=4 FACE="Courier New">[<B>no-</B>]<I>arg</I>
+<A HREF="#enable">Enable Optimization</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">G </FONT></B><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I><FONT SIZE=4 FACE="Courier New">[<B>,</B><I>arg</I>]...
+<A HREF="#generate">Generate</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">g</FONT></B></TT><B>
+</B><TT><FONT SIZE=4 FACE="Courier New">[<I>level</I>] <A HREF="#debug">Debug</A>
+</FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">gcdm</FONT></B><FONT SIZE=4 FACE="Courier New">
+<A HREF="#gcdm">Decision Maker</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">h</FONT></B><FONT SIZE=4 FACE="Courier New">
+<A HREF="#help">Help</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">I </FONT></B><I><FONT SIZE=4 FACE="Courier New">dir</FONT></I><FONT SIZE=4 FACE="Courier New">
+<A HREF="#searchinclude">Searchinclude</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">i </FONT></B><I><FONT SIZE=4 FACE="Courier New">filename</FONT></I><FONT SIZE=4 FACE="Courier New">
+<A HREF="#preinclude">Preinclude</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">J</FONT></B><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I><FONT SIZE=4 FACE="Courier New">[<I><B>,</B>arg</I>]...
+<A HREF="#miscellaneous">Miscellaneous</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">j</FONT></B><I><FONT SIZE=4 FACE="Courier New">num</FONT></I><FONT SIZE=4 FACE="Courier New">
+<A HREF="#jnum">Errata</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">M</FONT></B><FONT SIZE=4 FACE="Courier New">
+<A HREF="#mix">Mix</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">n</FONT></B><FONT SIZE=4 FACE="Courier New">
+| <B>Q</B> | <B>P</B> | <B>E</B> | <B>S</B> | <B>c</B> <A HREF="#nqpesc">Stop-After</A>
+</FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">O </FONT></B><I><FONT SIZE=4 FACE="Courier New">level</FONT></I><FONT SIZE=4 FACE="Courier New">
+<A HREF="#optimize">Optimize</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">o </FONT></B><I><FONT SIZE=4 FACE="Courier New">filename</FONT></I><FONT SIZE=4 FACE="Courier New">
+<A HREF="#output">Output</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">U </FONT></B><I><FONT SIZE=4 FACE="Courier New">symbol</FONT></I><FONT SIZE=4 FACE="Courier New">
+<A HREF="#undefine">Undefine</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">V</FONT></B><FONT SIZE=4 FACE="Courier New">
+<A HREF="#version">Version</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">v960</FONT></B><FONT SIZE=4 FACE="Courier New">
+<A HREF="#v960">Version, terminate</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">v</FONT></B><FONT SIZE=4 FACE="Courier New">
+<A HREF="#verbose">Verbose</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">W </FONT></B><I><FONT SIZE=4 FACE="Courier New">phase</FONT></I><B><FONT SIZE=4 FACE="Courier New">,</FONT></B><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I><FONT SIZE=4 FACE="Courier New">[<B>,</B><I>arg</I>]...
+<A HREF="#pass">Pass</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">W </FONT></B><FONT SIZE=4 FACE="Courier New">[<B>no-</B>]<I>arg</I>
+<A HREF="#warnings">Warnings</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">w </FONT></B><I><FONT SIZE=4 FACE="Courier New">level</FONT></I><FONT SIZE=4 FACE="Courier New">
+<A HREF="#diagnostics">Diagnostic level</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">Yd,</FONT></B><I><FONT SIZE=4 FACE="Courier New">dir</FONT></I><FONT SIZE=4 FACE="Courier New">
+<A HREF="#specify_pdb">Specify PDB</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">Z </FONT></B><I><FONT SIZE=4 FACE="Courier New">filename</FONT></I><FONT SIZE=4 FACE="Courier New">
+<A HREF="#Listname">Listname</A> </FONT></TT>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">z </FONT></B><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I><FONT SIZE=4 FACE="Courier New">...
+<A HREF="#Listname">List</A> </FONT></TT>
+</UL>
+
+<P>
+The ic960 driver also accepts certain <A HREF="#linker_options">linker options</A>.
+<HR>
+
+<P>
+<A NAME="architecture"><TT><B><FONT SIZE=4 FACE="Courier New">A
+</FONT></B><FONT SIZE=4 FACE="Courier New">{<B> CA </B>|<B> CF
+</B>|<B> HA </B>|<B> HD </B>|<B> HT </B>|<B> JA </B>|<B> JD </B>|<B>
+JF </B>|<B> KA </B>|<B> KB </B>|<B> RP </B>|<B> SA </B>|<B> SB
+</B>}<B> </B></FONT></TT></A>
+<P>
+<B>(Architecture)</B> 
+<P>
+Compile code for a particular model of the i960 processor. If
+the environment variable <TT><B><FONT SIZE=4 FACE="Courier New">I960ARCH</FONT></B></TT>
+is set and non-empty, its value is the default architecture. Otherwise
+the default is <TT><B><FONT SIZE=4 FACE="Courier New">KB</FONT></B></TT>.
+
+<HR>
+
+<P>
+<A NAME="ansi"><TT><B><FONT SIZE=4 FACE="Courier New">a</FONT></B></TT><B>
+(ANSI)<BR>
+</B>Flag non-standard (that is, non-ANSI) constructs. Using <TT><B><FONT SIZE=4 FACE="Courier New">a</FONT></B></TT>
+disables inline assembly language statements and can override
+the <TT><B><FONT SIZE=4 FACE="Courier New">w</FONT></B></TT> (Diagnostic)
+option. This option causes the preprocessor macros <TT><B><FONT SIZE=4 FACE="Courier New">__STRICT_ANSI__</FONT></B></TT>
+and <TT><B><FONT SIZE=4 FACE="Courier New">__STRICT_ANSI</FONT></B></TT>
+to be defined.</A>
+<HR>
+
+<P>
+<A NAME="bsize"><TT><B><FONT SIZE=4 FACE="Courier New">b </FONT></B><I><FONT SIZE=4 FACE="Courier New">size</FONT></I></TT><B>
+(Limit Optimizations)<BR>
+</B>Limit global optimizations for functions exceeding <TT><I><FONT SIZE=4 FACE="Courier New">size</FONT></I></TT>
+instructions. <TT><I><FONT SIZE=4 FACE="Courier New">size</FONT></I></TT>
+is a positive decimal integer. </A>
+<HR>
+
+<P>
+<A NAME="comments"><TT><B><FONT SIZE=4 FACE="Courier New">C</FONT></B></TT><B>
+(Keep Comments)<BR>
+</B>Keep comments in preprocessor output. Works only with <TT><B><FONT SIZE=4 FACE="Courier New">E</FONT></B></TT>
+or <TT><B><FONT SIZE=4 FACE="Courier New">P</FONT></B></TT>.</A>
+<HR>
+
+<P>
+<A NAME="define"><TT><B><FONT SIZE=4 FACE="Courier New">D</FONT></B><I><FONT SIZE=4 FACE="Courier New">symbol</FONT></I><FONT SIZE=4 FACE="Courier New">[<B>=</B><I>value</I>]</FONT></TT><B>
+(Define)<BR>
+</B>Define a macro with a given value. If <B>=</B><TT><I><FONT SIZE=4 FACE="Courier New">value</FONT></I></TT>
+is omitted, <TT><I><FONT SIZE=4 FACE="Courier New">symbol</FONT></I></TT>
+is defined to be 1.</A>
+<HR>
+
+<P>
+<A NAME="omf"><TT><B><FONT SIZE=4 FACE="Courier New">Fcoff</FONT></B><FONT SIZE=4 FACE="Courier New">
+| <B>Felf</B></FONT></TT><B> (OMF) <BR>
+</B>Generate COFF or ELF objects. <TT><B><FONT SIZE=4 FACE="Courier New">Fcoff</FONT></B></TT>
+is the default. </A>
+<HR>
+
+<P>
+<A NAME="finetune"><TT><B><FONT SIZE=4 FACE="Courier New">F </FONT></B><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I><FONT SIZE=4 FACE="Courier New">[<B>,</B><I>arg</I>]<B>...
+<BR>
+</B></FONT></TT><B>(Fine-Tune Optimization)<BR>
+</B>Enable or disable selected optimizations. <TT><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I></TT>
+is one of:</A>
+<DL>
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">ai</FONT></B><FONT SIZE=4 FACE="Courier New">
+| <B>noai</B></FONT></TT> 
+<DD>Enables/disables procedure in-lining. Performed only at optimization
+level 2. Suppressing in-lining can reduce code size and increase
+compilation speed.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">ca</FONT></B><FONT SIZE=4 FACE="Courier New">
+| <B>noca </B></FONT></TT>
+<DD>Enables/disables code alignment; generate (do not generate)
+alignment directives prior to labels that are not entered from
+above.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">cb</FONT></B><FONT SIZE=4 FACE="Courier New">
+| <B>nocb </B></FONT></TT>
+<DD>Enables/disables use of compare and branch instructions.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">lp </FONT></B></TT>
+<DD>Leaf procedures. Enables code generation of functions using
+the bal calling sequence at optimization level 1 or 2. Default
+at level 1.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">nolp </FONT></B></TT>
+<DD>Disables code generation of functions using the bal calling
+sequence at optimization level 1 or 2. Default at level 2.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">sa</FONT></B><FONT SIZE=4 FACE="Courier New">
+| <B>nosa</B></FONT></TT> 
+<DD>Determines whether or not the compiler will risk generating
+memory references which are not provably aligned. If <TT><B><FONT SIZE=4 FACE="Courier New">nosa</FONT></B></TT>
+is in effect, the compiler occasionally generates potentially
+unaligned references when it seems advantageous to do so. When
+<TT><B><FONT SIZE=4 FACE="Courier New">sa</FONT></B></TT> is enabled,
+sequences of smaller memory references are used instead of larger
+ones which might not be correctly aligned. The default is <TT><B><FONT SIZE=4 FACE="Courier New">sa</FONT></B></TT>
+for C-series and J-series processors.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">sb </FONT></B></TT>
+<DD>Superblock formation; enabled by default under program-wide
+optimization.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">nosb </FONT></B></TT>
+<DD>Disables superblock formation.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">space</FONT></B><FONT SIZE=4 FACE="Courier New">
+| <B>nospace</B></FONT></TT> 
+<DD>Enable/disable optimizations for memory space savings.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">tce</FONT></B></TT>
+
+<DD>Enables conversion of tail calls into branch instructions
+at optimization level 1 or 2.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">notce</FONT></B></TT>
+
+<DD>Disables conversion of tail calls at level 1 or 2. This is
+the default at optimization level 1. 
+</DL>
+
+<HR>
+
+<P>
+<A NAME="fdb"><TT><B><FONT SIZE=4 FACE="Courier New">fdb</FONT></B></TT><B>
+(Program Database)<BR>
+</B>All modules subject to program-wide optimization must be initially
+compiled with the <TT><B><FONT SIZE=4 FACE="Courier New">fdb</FONT></B></TT>
+option. This option causes the insertion of program database information
+in the object modules, and it implies a minimum module-local optimization
+level of <TT><B><FONT SIZE=4 FACE="Courier New">O1</FONT></B></TT>
+(although higher module-local optimization levels are allowed).</A>
+<P>
+This option does not otherwise change the code or data generated
+for the object modules in any way; it simply makes available to
+the global decision making and optimization process information
+collected during initial compilation of the modules.
+<P>
+Before using the <TT><B><FONT SIZE=4 FACE="Courier New">fdb</FONT></B></TT>
+option, you should read Chapter 4, Program-Wide Analysis and Optimization,
+and Chapter 6, gcdm Decision Maker Option, in the <I>i960 Processor
+Compiler User's Guide</I>.
+<P>
+If you intend to use execution profiles when optimizing your application,
+you should read Chapter 5, Profile Data Merging and Data Format,
+in the <I>i960 Processor Compiler User's Guide</I>.
+<HR>
+
+<P>
+<A NAME="instrument"><TT><B><FONT SIZE=4 FACE="Courier New">fprof</FONT></B></TT><B>
+(Instrument) <BR>
+</B>This option inserts execution profile instrumentation code
+into the module(s) during compilation, so that when the linked
+program is executed, a profile can be collected.</A>
+<P>
+It also implies <TT><B><FONT SIZE=4 FACE="Courier New">fdb</FONT></B></TT>,
+which causes the insertion of program database information in
+the object modules, and it implies a minimum module-local optimization
+level of <TT><B><FONT SIZE=4 FACE="Courier New">O1</FONT></B></TT>.
+<P>
+When you compile with the <TT><B><FONT SIZE=4 FACE="Courier New">fprof</FONT></B></TT>
+option, a special profiling library required for profile collection
+(<TT><B><FONT SIZE=4 FACE="Courier New">libqf</FONT></B></TT>)
+is linked automatically. If your target environment does not support
+file I/O, you must explicitly link an alternate profiling library
+(<TT><B><FONT SIZE=4 FACE="Courier New">libq</FONT></B></TT>).
+The profiling libraries provided are identified in Chapter 2 of
+the <I>i960 Processor Library Supplement</I>.
+<P>
+Note that when the <TT><B><FONT SIZE=4 FACE="Courier New">fprof</FONT></B></TT>
+compiler option is used in this manner (as distinct from the corresponding
+<TT><B><FONT SIZE=4 FACE="Courier New">+fprof</FONT></B></TT>
+gcdm Decision Maker option) the generated object module contains
+code that is unsuitable for linking into programs which are not
+supposed to collect profile information. To solve this problem,
+and avoid having inappropriate instrumentation in widely used
+libraries, for example, use <TT><B><FONT SIZE=4 FACE="Courier New">+fprof</FONT></B></TT>
+with the <TT><B><FONT SIZE=4 FACE="Courier New">gcdm,subst</FONT></B></TT>
+option. (The <TT><B><FONT SIZE=4 FACE="Courier New">gcdm</FONT></B></TT>
+option is described in the gcdm Decision Maker Option section
+of this hypertext.)
+<P>
+Before using the <TT><B><FONT SIZE=4 FACE="Courier New">fprof</FONT></B></TT>
+option, you should read Chapter 4, Program-Wide Analysis and Optimization,
+and Chapter 5, Profile Data Merging and Data Format, in the <I>i960
+Processor Compiler User's Guide</I>.
+<HR>
+
+<P>
+<A NAME="enable"><TT><B><FONT SIZE=4 FACE="Courier New">f</FONT></B><FONT SIZE=4 FACE="Courier New">[<B>no-</B>]<I>arg</I><B>
+</B></FONT></TT><B>(Enable/Disable Optimization)</B> </A>
+<P>
+Enable/disable optimization. <TT><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I></TT>
+is one of:
+<DL>
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">bbr</FONT></B></TT>
+
+<DD>enable basic block rearrangement.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">coalesce</FONT></B></TT>
+
+<DD>coalesce adjacent memory references.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">coerce</FONT></B></TT>
+
+<DD>enable byte/short optimization.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">cond-mismatch</FONT></B></TT>
+
+<DD>allow type mismatch in operands of the <TT><B><FONT SIZE=4 FACE="Courier New">?:</FONT></B></TT>
+operator.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">condxform</FONT></B></TT>
+
+<DD>enable 80960 conditional instructions.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">constprop</FONT></B></TT>
+
+<DD>enable constant propagation and folding.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">copyprop</FONT></B></TT>
+
+<DD>enable copy propagation.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">cse-follow-jumps</FONT></B></TT>
+
+<DD>enable a limited form of global CSE.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">cse-skip-blocks</FONT></B></TT>
+
+<DD>enable a limited form of global CSE.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">expensive-optimizations</FONT></B></TT>
+
+<DD>enable some minor optimizations.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">force-addr</FONT></B></TT>
+
+<DD>place address constants in registers before use. 
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">int-alias-ptr</FONT></B></TT>
+
+<DD>indicates to the compiler that pointer objects may be referenced
+as 32-bit integers and vice versa. 
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">int-alias-real</FONT></B></TT>
+
+<DD>indicates to the compiler that <TT><B><FONT SIZE=4 FACE="Courier New">float</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">double</FONT></B></TT>
+and <TT><B><FONT SIZE=4 FACE="Courier New">long double</FONT></B></TT>
+objects (or parts thereof) may be referenced as 32-bit integers
+and vice versa. 
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">int-alias-short</FONT></B></TT>
+
+<DD>indicates to the compiler that four-byte integer objects may
+be referenced as two-byte objects and vice versa. 
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">keep-inline-functions</FONT></B></TT>
+
+<DD>emit out-of-line code for inlined functions<STRONG>.</STRONG>
+
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">marry_mem</FONT></B></TT>
+
+<DD>rejoin multi-word moves split by <TT><B><FONT SIZE=4 FACE="Courier New">fsplit_mem</FONT></B></TT>.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">rerun-cse-after-loop</FONT></B></TT>
+
+<DD>reiterate CSE after loop optimization.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">schedule-insns</FONT></B></TT>
+
+<DD>perform pre-register-allocation scheduling.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">schedule-insns2</FONT></B></TT>
+
+<DD>perform post-register-allocation scheduling.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">shadow-globals</FONT></B></TT>
+
+<DD>shadow memory locations in registers.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">shadow-mem</FONT></B></TT>
+
+<DD>like <TT><B><FONT SIZE=4 FACE="Courier New">shadow-globals</FONT></B></TT>,
+but more thorough.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">space-opt</FONT></B></TT>
+
+<DD>optimize for code size.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">split_mem</FONT></B></TT>
+
+<DD>split multi-word moves for copy propagation.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">strength-reduce</FONT></B></TT>
+
+<DD>enable loop strength reduction.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">thread-jumps</FONT></B></TT>
+
+<DD>enable an advanced branch optimization.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">unroll-all-loops</FONT></B></TT>
+
+<DD>unroll all loops.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">unroll-loops</FONT></B></TT>
+
+<DD>unroll loops where deemed beneficial.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">volatile</FONT></B></TT>
+
+<DD>treat indirect memory references as volatile.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">volatile-global</FONT></B></TT>
+
+<DD>treat all memory references as volatile.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">writable-strings</FONT></B></TT>
+
+<DD>place string literals in <TT><B><FONT SIZE=4 FACE="Courier New">.data</FONT></B></TT>
+section. 
+</DL>
+
+<HR>
+
+<P>
+<A NAME="generate"><TT><B><FONT SIZE=4 FACE="Courier New">G </FONT></B><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I><FONT SIZE=4 FACE="Courier New">[<B>,</B>arg]<B>...</B></FONT></TT><B>
+(Generate)<BR>
+</B>Specifies a code generation option. <TT><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I></TT>
+is one of:</A>
+<DL>
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">abi</FONT></B></TT>
+
+<DD>Generate ABI-conformant code.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">ac=</FONT></B><I><FONT SIZE=4 FACE="Courier New">n</FONT></I></TT>
+
+<DD>Align structures on the byte boundary specified by <TT><I><FONT SIZE=4 FACE="Courier New">n</FONT></I></TT>,
+where <TT><I><FONT SIZE=4 FACE="Courier New">n</FONT></I></TT>
+is either 1, 2, 4, 8, or 16.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">bc</FONT></B></TT>
+
+<DD>Generate code that is backward-compatible with releases of
+ic960 before Release 3.0.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">be</FONT></B></TT>
+
+<DD>Generate code to run in big-endian memory. This option causes
+the preprocessor symbol <TT><B><FONT SIZE=4 FACE="Courier New">__i960_BIG_ENDIAN__</FONT></B><FONT SIZE=4 FACE="Courier New">
+</FONT></TT>to be defined. 
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">cave</FONT></B></TT>
+
+<DD>Generate all functions as CAVE secondary. 
+<DT><TT><FONT SIZE=4 FACE="Courier New">{<B>cs</B> | <B>cu</B>}</FONT></TT>
+
+<DD>Treat <TT><B><FONT SIZE=4 FACE="Courier New">char</FONT></B></TT>
+data types as signed or unsigned, respectively. If signed (the
+default), the preprocessor symbol<TT><FONT SIZE=4 FACE="Courier New">
+<B>__SIGNED_CHARS__</B></FONT></TT> is defined. If unsigned, the
+preprocessor symbol <TT><B><FONT SIZE=4 FACE="Courier New">__CHAR_UNSIGNED__</FONT></B></TT>
+is defined.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">dc</FONT></B></TT>
+
+<DD>Employ the relaxed (common) ref-def model for defining uninitialized
+data. This is the default.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">ds </FONT></B></TT>
+<DD>Employ the strict ref-def model for defining uninitialized
+data.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">pc </FONT></B></TT>
+<DD>Generates position-independent code. Causes <TT><B><FONT SIZE=4 FACE="Courier New">__PIC</FONT></B></TT>
+to be defined.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">pd </FONT></B></TT>
+<DD>Generates position-independent data. Causes <TT><B><FONT SIZE=4 FACE="Courier New">__PID</FONT></B></TT>
+to be defined.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">pr </FONT></B></TT>
+<DD>Reserves register <TT><B><FONT SIZE=4 FACE="Courier New">g12</FONT></B></TT>
+containing the position-independent data (PID) bias value.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">wait=</FONT></B><I><FONT SIZE=4 FACE="Courier New">n</FONT></I><B><FONT SIZE=4 FACE="Courier New">
+</FONT></B></TT>
+<DD>Specifies wait-state for memory accesses. <TT><I><FONT SIZE=4 FACE="Courier New">n</FONT></I></TT>
+is 0..32.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">xc </FONT></B></TT>
+<DD>Specifies that all external calls in the module use the extended-call
+mechanism. 
+</DL>
+
+<HR>
+
+<P>
+<A NAME="debug"><TT><B><FONT SIZE=4 FACE="Courier New">g</FONT></B></TT><B>
+</B><TT><FONT SIZE=4 FACE="Courier New">[<I>level</I>]</FONT></TT><B>
+(Debug)<BR>
+</B>Put symbolic debug information into the object module. <TT><I><FONT SIZE=4 FACE="Courier New">level</FONT></I></TT>
+is:</A>
+<DL>
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">0</FONT></B></TT> 
+<DD>disables debug information (default).
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">1</FONT></B><FONT SIZE=4 FACE="Courier New">
+or <B>2</B></FONT></TT>
+<DD>minimal debug information. (Same as <TT><B><FONT SIZE=4 FACE="Courier New">g</FONT></B></TT>
+with no argument.)
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">3</FONT></B></TT> 
+<DD>verbose debug information (ELF/DWARF only). 
+</DL>
+
+<HR>
+
+<P>
+<A NAME="gcdm"><TT><B><FONT SIZE=4 FACE="Courier New">gcdm,</FONT></B><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I><FONT SIZE=4 FACE="Courier New">[<B>,</B><I>arg</I>]...</FONT></TT><B>
+(Decision Maker)</B> </A>
+<P>
+Invoke gcdm960 decision maker to perform optimization or related
+tasks. Click <A HREF="gcdm.htm">gcdm option</A> for information
+on this option.
+<HR>
+
+<P>
+<A NAME="help"><TT><B><FONT SIZE=4 FACE="Courier New">h</FONT></B></TT><B>
+(Help)<BR>
+</B>Print a summary of ic960 driver options and exit without processing
+any files.</A>
+<HR>
+
+<P>
+<A NAME="searchinclude"><TT><B><FONT SIZE=4 FACE="Courier New">I
+</FONT></B><I><FONT SIZE=4 FACE="Courier New">dir</FONT></I></TT><B>
+(Searchinclude) <BR>
+</B>Add the directory <TT><I><FONT SIZE=4 FACE="Courier New">dir</FONT></I></TT>
+to the search list for <TT><B><FONT SIZE=4 FACE="Courier New">#include</FONT></B></TT>
+files.</A>
+<HR>
+
+<P>
+<A NAME="preinclude"><TT><B><FONT SIZE=4 FACE="Courier New">i
+</FONT></B><I><FONT SIZE=4 FACE="Courier New">filename</FONT></I></TT><B>
+(Preinclude)<BR>
+</B>Include the specified source file as if a <TT><B><FONT SIZE=4 FACE="Courier New">#include</FONT></B></TT>
+of that file existed at line zero of each primary source file.</A>
+<HR>
+
+<P>
+<A NAME="miscellaneous"><TT><B><FONT SIZE=4 FACE="Courier New">J</FONT></B><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I><FONT SIZE=4 FACE="Courier New">[<B>,</B><I>arg</I>]...</FONT></TT><B>
+(Miscellaneous)<BR>
+</B>Use the <TT><B><FONT SIZE=4 FACE="Courier New">J</FONT></B></TT>
+(Miscellaneous) option to specify miscellaneous controls. Two
+such controls are <TT><B><FONT SIZE=4 FACE="Courier New">gd</FONT></B></TT>
+(issue gcc960-style diagnostics) and <TT><B><FONT SIZE=4 FACE="Courier New">nogd</FONT></B></TT>
+(issue ic960-style diagnostics). </A>
+<HR>
+
+<P>
+<A NAME="jnum"><TT><B><FONT SIZE=4 FACE="Courier New">j</FONT></B><I><FONT SIZE=4 FACE="Courier New">num</FONT></I></TT><B>
+(Errata) <BR>
+</B>Use the <TT><B><FONT SIZE=4 FACE="Courier New">j</FONT></B></TT>
+(Errata) option to cause the compilation system to generate code
+with workarounds for specified processor errata. A <TT><I><FONT SIZE=4 FACE="Courier New">num</FONT></I></TT>
+argument of 1 generates code to work around the Cx processors'
+DMA errata. </A>
+<HR>
+
+<P>
+<A NAME="mix"><TT><B><FONT SIZE=4 FACE="Courier New">M</FONT></B></TT><B>
+(Mix)<BR>
+</B>Mix C source text as comments in the assembly language output.
+Works only with <TT><B><FONT SIZE=4 FACE="Courier New">S</FONT></B></TT>.</A>
+<HR>
+
+<P>
+<A NAME="nqpesc"><TT><B><FONT SIZE=4 FACE="Courier New">n</FONT></B><FONT SIZE=4 FACE="Courier New">
+| <B>Q</B> | <B>P</B> | <B>E</B> | <B>S</B> | <B>c</B></FONT></TT><B>
+(Stop-After)<BR>
+</B>Stop after the specified compilation phase. These options
+are used as follows:</A>
+<DL>
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">n</FONT></B></TT> 
+<DD>Terminate after syntax and semantic checking.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">Q</FONT></B></TT> 
+<DD>Terminate after preprocessing; produce an include file dependency
+list.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">P</FONT></B></TT> 
+<DD>Terminate after preprocessing. Write preprocessor output without
+line number directives to a file.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">E</FONT></B></TT> 
+<DD>Terminate after preprocessing. Write preprocessor output with
+line number directives to standard output.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">S</FONT></B></TT> 
+<DD>Terminate after generating assembly code.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">c</FONT></B></TT> 
+<DD>Terminate after generating an object file. 
+</DL>
+
+<HR>
+
+<P>
+<A NAME="optimize"><TT><B><FONT SIZE=4 FACE="Courier New">O <I><B>level</B></I></FONT></B></TT><B>
+(Optimize)<BR>
+</B>Specify the optimization level to be used. Supported <TT><I><B><FONT SIZE=4 FACE="Courier New">level</FONT></B></I></TT>s
+are 0, 1 and 2.</A>
+<DL>
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">0</FONT></B></TT> 
+<DD>Turns optimization off, and additionally disables default
+optimizations that may interfere with debugging. This is the default
+setting if you use the <TT><B><FONT SIZE=4 FACE="Courier New">g</FONT></B></TT>
+(Debug) option with a non-zero debug level argument.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">1</FONT></B></TT> 
+<DD>This option turns on basic optimizations, including: advanced
+register allocation, common subexpression elimination, loop invariant
+code motion, expression simplification and instruction combination,
+jump optimization, dead-code elimination, tail-call elimination,
+leaf-procedure optimization, and i960 processor-specific peephole
+optimization. This is the default setting if you do not use the
+<TT><B><FONT SIZE=4 FACE="Courier New">g</FONT></B></TT> (Debug)
+option and when you use the <TT><B><FONT SIZE=4 FACE="Courier New">fdb</FONT></B></TT>
+(Program Database) or <TT><B><FONT SIZE=4 FACE="Courier New">fprof</FONT></B></TT>
+(Instrument) options.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">2</FONT></B></TT> 
+<DD>This level includes the <TT><B><FONT SIZE=4 FACE="Courier New">O1</FONT></B></TT>
+optimizations described above, and the following additional optimizations:
+<DT>
+<DD><TT><B><FONT SIZE=4 FACE="Courier New">fcoalesce</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">fcoerce</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">fcondxform</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">fconstprop</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">fcopyprop</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">fcse-follow-jumps</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">fcse-skip-blocks</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">fexpensive-optimizations</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">finline-functions</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">fmarry_mem</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">frerun-cse-after-loop</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">fschedule-insns</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">fschedule-insns2</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">fshadow-globals</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">fshadow-mem</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">fsplit_mem</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">fstrength-reduce</FONT></B></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">funroll-loops</FONT></B></TT>.
+</DL>
+
+<HR>
+
+<P>
+<A NAME="output"><TT><B><FONT SIZE=4 FACE="Courier New">o </FONT></B><I><FONT SIZE=4 FACE="Courier New">filename</FONT></I></TT><B>
+(Output)<BR>
+</B>Names the output file, which can be either preprocessing output,
+assembly code, an object module, or linker output.</A>
+<HR>
+
+<P>
+<A NAME="undefine"><TT><B><FONT SIZE=4 FACE="Courier New">U </FONT></B><I><FONT SIZE=4 FACE="Courier New">symbol</FONT></I></TT><B>
+(Undefine)<BR>
+</B>Undefine a preprocessor symbol. By default, no symbols are
+undefined.</A>
+<HR>
+
+<P>
+<A NAME="version"><TT><B><FONT SIZE=4 FACE="Courier New">V</FONT></B></TT><B>
+(Version)<BR>
+</B>Display a version message and other information. By default,
+the compiler does not display version information.</A>
+<HR>
+
+<P>
+<A NAME="v960"><TT><B><FONT SIZE=4 FACE="Courier New">v960</FONT></B></TT><B>
+(Version, terminate) <BR>
+</B>Display version and terminate.</A>
+<HR>
+
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">v</FONT></B></TT><B> (<A NAME="verbose">Verbose</A>)
+<BR>
+</B>Display the driver's invocation command, and the preprocessor,
+compiler, assembler, and linker phase invocations. By default,
+the driver does not display individual phase invocations.
+<HR>
+
+<P>
+<A NAME="diagnostics"><TT><B><FONT SIZE=4 FACE="Courier New">w
+</FONT></B><I><FONT SIZE=4 FACE="Courier New">level</FONT></I></TT><B>
+(Diagnostic Level)<BR>
+</B>Control the level of diagnostics produced by the compiler.
+Choose one of the following for <TT><I><FONT SIZE=4 FACE="Courier New">level</FONT></I></TT>:
+use 0 to enable remark, warning and error messages; use 1 to enable
+warning and error messages and suppress remark messages; and use
+2 to enable error messages and suppress remark and warning messages.
+The default level is 1.</A>
+<HR>
+
+<P>
+<A NAME="pass"><TT><B><FONT SIZE=4 FACE="Courier New">W </FONT></B><I><FONT SIZE=4 FACE="Courier New">phase</FONT></I><B><FONT SIZE=4 FACE="Courier New">,</FONT></B><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I><FONT SIZE=4 FACE="Courier New">[<B>,</B><I>arg</I>]<B>...</B></FONT></TT><B>
+(Pass)<BR>
+</B>Pass arguments to the preprocessor, compiler, assembler or
+linker. For <TT><I><B><FONT SIZE=4 FACE="Courier New">phase</FONT></B></I></TT>,
+<TT><B><FONT SIZE=4 FACE="Courier New">p</FONT></B></TT> indicates
+the preprocessor, <TT><B><FONT SIZE=4 FACE="Courier New">c</FONT></B></TT>
+indicates the compiler, <TT><B><FONT SIZE=4 FACE="Courier New">a</FONT></B></TT>
+indicates the assembler and <TT><B><FONT SIZE=4 FACE="Courier New">l</FONT></B></TT>
+indicates the linker. <TT><I><B><FONT SIZE=4 FACE="Courier New">arg</FONT></B></I></TT>
+is an argument to be passed. If the argument contains spaces,
+you must enclose the argument in quotation characters (<TT><FONT SIZE=4 FACE="Courier New">&quot;
+&quot;</FONT></TT>). </A>
+<HR>
+
+<P>
+<A NAME="warnings"><TT><B><FONT SIZE=4 FACE="Courier New">W </FONT></B><FONT SIZE=4 FACE="Courier New">[<B>no-</B>]<I>arg</I></FONT></TT><B>
+(Warnings) <BR>
+</B>Enables/disables warnings. With no <TT><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I></TT>,
+this option prints extra warning messages for certain events,
+including:</A>
+<DL>
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">longjmp()</FONT></B></TT>
+warnings
+<DD>Warn if a nonvolatile automatic variable might be changed
+by a call to <TT><B><FONT SIZE=4 FACE="Courier New">longjmp()</FONT></B></TT>.
+These warnings are possible only in an optimizing compilation.
+<DT>
+<DD>The compiler sees only the calls to <TT><B><FONT SIZE=4 FACE="Courier New">setjmp()</FONT></B></TT>.
+It cannot know where <TT><B><FONT SIZE=4 FACE="Courier New">longjmp()</FONT></B></TT>
+will be called; in fact a signal handler could call it at any
+point in the code. As a result, you may get a warning even when
+there is in fact no problem because <TT><B><FONT SIZE=4 FACE="Courier New">longjmp()</FONT></B></TT>
+cannot actually be called at the place that would cause a problem.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">return</FONT></B></TT>
+and <TT><B><FONT SIZE=4 FACE="Courier New">return(</FONT></B><I><FONT SIZE=4 FACE="Courier New">value</FONT></I><B><FONT SIZE=4 FACE="Courier New">)</FONT></B></TT>
+
+<DD>Warn if a function can return either with or without a value.
+(Falling off the end of the function body is considered returning
+with a value.)
+<DT>null effect
+<DD>Warn if an expression-statement contains no side effects.
+<DT>no-op comparison
+<DD>Warn if an unsigned value is compared against zero with <TT><B><FONT SIZE=4 FACE="Courier New">&lt;</FONT></B></TT>
+or <TT><B><FONT SIZE=4 FACE="Courier New">&lt;=</FONT></B></TT>.
+<DT>between-ness comparison
+<DD>Warn if a comparison like <TT><B><FONT SIZE=4 FACE="Courier New">x&lt;=y&lt;=z</FONT></B></TT>
+is used; this is equivalent to <TT><B><FONT SIZE=4 FACE="Courier New">{(x&lt;=y
+? 1 : 0) &lt;=z}</FONT></B></TT>, which is a different interpretation
+from that of ordinary mathematical notation.
+<DT>obsolete storage class specification
+<DD>Warn if storage-class specifiers like <TT><B><FONT SIZE=4 FACE="Courier New">static</FONT></B></TT>
+are not the first things in a declaration. According to the ANSI
+C standard, this usage is obsolescent.
+<DT>partially bracketed initializer
+<DD>Warn if an aggregate has a partly bracketed initializer. 
+</DL>
+
+<P>
+<TT><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I></TT> can
+be:
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">aggregate-return<BR>
+</FONT></B></TT>Warn if any functions return structs or unions.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">all<BR>
+</FONT></B></TT>Enable several useful warnings, as indicated in
+the list below. Has no <TT><B><FONT SIZE=4 FACE="Courier New">Wno-all</FONT></B></TT>
+form.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">cast-align<BR>
+</FONT></B></TT>Warn if a pointer cast may not have required alignment.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">cast-qual<BR>
+</FONT></B></TT>Warn if a pointer cast removes a type qualifier.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">char-subscripts<BR>
+</FONT></B></TT>Warn if an array subscript has type <TT><B><FONT SIZE=4 FACE="Courier New">char</FONT></B></TT>.
+Enabled by <TT><B><FONT SIZE=4 FACE="Courier New">Wall</FONT></B></TT>.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">comment<BR>
+</FONT></B></TT>Warn whenever <B>/*</B> occurs within a comment.
+Enabled by <TT><B><FONT SIZE=4 FACE="Courier New">Wall</FONT></B></TT>.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">conversion<BR>
+</FONT></B></TT>Warn if a prototyped parameter causes a different
+conversion than if not prototyped.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">error<BR>
+</FONT></B></TT>Treat all warnings as errors.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">format<BR>
+</FONT></B></TT>Check types of <TT><B><FONT SIZE=4 FACE="Courier New">printf</FONT></B></TT>
+family arguments at compile time. Enabled by <TT><B><FONT SIZE=4 FACE="Courier New">Wall</FONT></B></TT>.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">id-clash-</FONT></B><I><FONT SIZE=4 FACE="Courier New">n</FONT></I></TT><B>
+<BR>
+</B>Warn if two identifiers match in the first <TT><I><FONT SIZE=4 FACE="Courier New">n</FONT></I></TT>
+characters. Has no <TT><B><FONT SIZE=4 FACE="Courier New">Wno-all</FONT></B></TT>
+form.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">implicit<BR>
+</FONT></B></TT>Warn if a function is used before being declared.
+Enabled by <TT><B><FONT SIZE=4 FACE="Courier New">Wall</FONT></B></TT>.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">missing-braces<BR>
+</FONT></B></TT>Warn if an aggregate initializer is not fully
+braced.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">missing-prototypes<BR>
+</FONT></B></TT>Warn if a function is defined before it is prototyped.
+Enabled by <TT><B><FONT SIZE=4 FACE="Courier New">Wall</FONT></B></TT>.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">nested-externs<BR>
+</FONT></B></TT>Warn if an extern declaration is seen within a
+function.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">parentheses<BR>
+</FONT></B></TT>Warn if parentheses are suggested around an expression.
+Enabled by <TT><B><FONT SIZE=4 FACE="Courier New">Wall</FONT></B></TT>.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">pointer-arith<BR>
+</FONT></B></TT>Warn if the size of a function type or type void
+is used.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">redundant-decls<BR>
+</FONT></B></TT>Warn if an object is declared twice in the same
+scope.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">return-type<BR>
+</FONT></B></TT>Warn if any function implicitly returns <TT><B><FONT SIZE=4 FACE="Courier New">int</FONT></B></TT>,
+and if a non-void function does not return a value. Enabled by
+<TT><B><FONT SIZE=4 FACE="Courier New">Wall</FONT></B></TT>.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">shadow<BR>
+</FONT></B></TT>Warn if a local variable shadows another local
+variable.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">strict-prototypes<BR>
+</FONT></B></TT>Warn if a function is declared without a prototype.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">switch<BR>
+</FONT></B></TT>Warn if a switch statement on an enumeration type
+does not have a case for each enumerator. Enabled by <TT><B><FONT SIZE=4 FACE="Courier New">Wall</FONT></B></TT>.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">traditional<BR>
+</FONT></B></TT>Warn about constructs that behave differently
+under traditional C and ANSI C.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">trigraphs<BR>
+</FONT></B></TT>Warn if any trigraphs are encountered. Enabled
+by <TT><B><FONT SIZE=4 FACE="Courier New">Wall</FONT></B></TT>.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">uninitialized<BR>
+</FONT></B></TT>Warn if use of an uninitialized local variable
+is detected. Enabled by <TT><B><FONT SIZE=4 FACE="Courier New">Wall</FONT></B></TT>.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">unused<BR>
+</FONT></B></TT>Warn about objects that are never used. Enabled
+by <TT><B><FONT SIZE=4 FACE="Courier New">Wall</FONT></B></TT>.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">write-strings<BR>
+</FONT></B></TT>Warn if string constants are used in a writable
+context.
+<HR>
+
+<P>
+<A NAME="specify_pdb"><TT><B><FONT SIZE=4 FACE="Courier New">Yd,</FONT></B><I><FONT SIZE=4 FACE="Courier New">dir</FONT></I></TT><B>
+(Specify PDB)<BR>
+</B>Specifies the name of a program database directory.</A>
+<HR>
+
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">Z </FONT></B><I><FONT SIZE=4 FACE="Courier New">filename</FONT></I></TT><B>
+(<A NAME="Listname">Listname</A>) <BR>
+</B>Directs the listing to the named file. This option implies
+the <TT><B><FONT SIZE=4 FACE="Courier New">z</FONT></B><FONT SIZE=4 FACE="Courier New">
+</FONT></TT>(List) option and <TT><B><FONT SIZE=4 FACE="Courier New">s</FONT></B></TT>
+argument.
+<HR>
+
+<P>
+<A NAME="errata"><TT><B><FONT SIZE=4 FACE="Courier New">z<I><B>
+</B></I></FONT></B><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I><B><FONT SIZE=4 FACE="Courier New">...</FONT></B></TT><B>
+(List) <BR>
+</B>Create a listing file with the suffix <TT><B><FONT SIZE=4 FACE="Courier New">.L</FONT></B></TT>
+for each C source file. <TT><I><FONT SIZE=4 FACE="Courier New">arg</FONT></I></TT>
+is a string containing one or more of the following letters:</A>
+<DL>
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">c</FONT></B></TT> 
+<DD>Add conditionally noncompiled source text to the primary source
+text listing.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">i</FONT></B></TT> 
+<DD>Add included source text to the primary source text listing.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">m</FONT></B></TT> 
+<DD>Add macro-expanded preprocessor lines to the primary source
+text listing.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">o </FONT></B></TT>
+<DD>Add assembly language code generated by the compiler to the
+listing file.
+<DT><TT><B><FONT SIZE=4 FACE="Courier New">s</FONT></B></TT> 
+<DD>List the primary source text. 
+</DL>
+
+<HR>
+
+<H3><A NAME="linker_options">Linker Options</A> </H3>
+
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">L </FONT></B><I><FONT SIZE=4 FACE="Courier New">dir</FONT></I><B><FONT SIZE=4 FACE="Courier New">
+<BR>
+</FONT></B></TT>Add the directory <TT><I><B><FONT SIZE=4 FACE="Courier New">dir</FONT></B></I></TT>
+to the linker's search list for libraries.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">l </FONT></B><I><FONT SIZE=4 FACE="Courier New">lib</FONT></I><B><FONT SIZE=4 FACE="Courier New">
+<BR>
+</FONT></B></TT>Add the library <TT><I><B><FONT SIZE=4 FACE="Courier New">lib</FONT></B></I></TT>
+to the linker's list of input libraries.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">m <BR>
+</FONT></B></TT>Create a linker map file.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">r<BR>
+</FONT></B></TT>Retain relocation information in the object file
+produced by the linker.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">s<BR>
+</FONT></B></TT>Strip line number and symbol table entries from
+the object file produced by the linker.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">T </FONT></B><I><FONT SIZE=4 FACE="Courier New">target
+<BR>
+</FONT></I></TT>Select a configuration file that names a startup
+routine, system call library, and linker directive file for a
+specific run-time environment.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">u </FONT></B><I><FONT SIZE=4 FACE="Courier New">symbol
+<BR>
+</FONT></I></TT>Introduce an undefined symbol to the linker.
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">x<BR>
+</FONT></B></TT>Remove local symbols from the symbol table in
+the linker's output.
+<HR>
+
+<P>
+<A HREF="#top"><IMG SRC="../icons/uparw.gif" ALIGN="BOTTOM"></A><I>Return
+to the top of this page.</I> 
+<P>
+<A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Return
+to the ic960 Interface Index.</I> 
+</BODY>
+
+</HTML>

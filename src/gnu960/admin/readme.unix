@@ -1,0 +1,701 @@
+
+BUILDING THE 960 TOOLS FROM SOURCE
+
+Overview
+
+This readme is divided into the following sections:
+
+	Overview	An overview of the problems facing 960 tool 
+			developers, and the methodology devised to solve 
+			them.
+	960 Directory Structure	
+			Detailed information about the 960 directory 
+			structure and how to develop within it.
+	Makefiles	Information on creating and using Makefiles.
+	Procedures	A quick reference "cookbook" of common development 
+			procedures.
+
+The 960 tools are a cross-development tool set that must run on a wide
+variety of host systems.  Two classes of code are distributed in 960
+releases, each with its own brand of host-dependency problems:
+
+	o Cross-development tools that run on the host.
+	  Every host requires executables appropriate for its CPU. Hosts
+	  with the same CPU may have operating system differences
+	  (in libraries, include files, system calls, etc.) that must be
+	  taken into account when building the tools.
+
+	o Application libraries containing code targeted for the i960.
+	  Although the object code in these libraries is host-independent,
+	  the tool, cvt960, requires the byte-ordering of header, symbol,
+          and relocation information to be compatible with that of the
+          host on which it is executing.  You must use some host-specific
+          versions of the tools to regenerate libraries from source.
+	  
+Development in networked environments usually implies a single server that
+must maintain the source and object code for multiple heterogeneous hosts.
+Some issues affecting development of the 960 tool set are:
+ 	
+	o how to maintain a single set of source code that can support all
+	  hosts?
+	o how to keep separate binaries and libraries for different
+	  (heterogeneous) hosts online and accessible simultaneously?
+	o how to take operating system dependencies into account when
+	  building the tools for different hosts? 
+	o how to make (re-)building the tools as transparent and automatic
+	  as possible for a diverse user community? (Some users will be
+	  doing tool development; some will want to build for a previously
+  	  unsupported host; and some will just want to load and go.) 
+
+The approach taken with the 960 tools is to:
+
+	o distribute ready-to-run binaries for all of the currently supported
+	  hosts.
+	o use a simple, consistent directory structure, letting you access
+	  binaries for a specific host by setting a single environment
+  	  variable. This also makes it easier to write development aids. 
+	o use symbolic links (copies under DOS) to share a single copy of
+	  source code while developing object 
+	  code for multiple hosts.  The source code directory for each tool or 
+	  library contains a subdirectory named common, which contains the
+	  actual source code.  For each supported host, a subdirectory at
+  	  the same level as common is created, with symbolic links to the
+	  files on the common directory. Host-specific objects are built in
+	  the corresponding host-specific directory for each tool. Using
+	  NFS, tools for various hosts can be built in the same directory 
+	  structure.
+	o automatically modify Makefiles to take into account operating
+	  system dependencies (enable the appropriate conditional
+	  compilations, link the correct libraries, etc.).  The Makefile in
+	  the common directory contains all of the known host-specific
+  	  variations, as specially-delimited comments.  Unlike the other
+	  source files in the common directory, the Makefile is not 
+	  symbolically linked into the host-specific directories; instead,
+	  a separate copy of it is made to each host-specific subdirectory,
+	  with the appropriate lines uncommented in each case.
+	o provide a top-level Makefile for building any or all of the
+	  individual tools and libraries for any of the supported hosts. 
+
+
+960 Tools Directory Structure
+
+Table 1 summarizes the 960 directory structure on UNIX hosts.  
+	
+	admin/
+	host_specific_binary_directory/	
+	lib_i960/
+	html/
+	ROMS/
+	src/
+		<tool source directories >/
+		<mon960 source directory >/
+		gdbbfd/
+		hdil/     - This is part of MON960 release.
+		hdilcomm/ - This is part of MON960 release.
+		include/
+		libbfd/
+		liberty/
+		libld960/
+		readline/
+		toolib/
+		lib/
+			<run-time library source directories>
+	
+
+	Table 1.  960 UNIX Directory Structure
+
+This tree can be loaded from the distribution media into any directory on
+the host development system.  The path of the base of this tree is called
+the G960ROOT directory. The environment variable G960ROOT is normally set
+to the full path of the root directory for development purposes.
+
+The src directory contains all of the source code for the 960 tools and
+libraries.  It is also the site where tools and libraries are rebuilt for
+specific hosts, prior to installation into the appropriate host-specific
+binary directories.  
+
+
+admin Directory
+ 
+The admin directory contains data and shell scripts that simplify maintaining
+and building the 960 tool set.  If you are planning to do much development,
+you should probably place $G960ROOT/admin in your PATH.
+ 
+Data Files
+ 
+Data files in the admin directory drive the scripts, so they should be kept
+up-to-date at all times.  admin includes the following data files:
+ 
+        TOOLS           A list of the tools in the 960 tool set.  Each name
+                        on this list should correspond to a subdirectory of
+                        $G960ROOT/src.
+ 
+        HOSTS           A list of the supported host systems.  Each name on
+                        this list should correspond to a (potential)
+                        host-specific binary subdirectory of $G960ROOT.
+ 
+admin Scripts
+ 
+The following scripts should all be run from the tools root directory.  If the
+G960ROOT environment variable is set, they will automatically change to the
+root directory.  If they find an admin directory, they will assume you are
+already in the root directory (and ignore G960ROOT).
+ 
+Most of these scripts have options not discussed here; for complete usage
+information, invoke the script without any arguments.
+ 
+        mkhost          Creates all directories and files needed to rebuild
+                        the tools for a specified host.  This includes creating
+                        host-specific binary and source directories; setting
+                        up all symbolic links to
+                        include files, and source files; and
+                        editing/copying each tool and Makefile from the common
+                        directory to the corresponding host-specific directory.
+                        This script also creates links between the ctools and
+                        gnu tool names (i.e. gld960 == lnk960), so a make from
+                        the top level will successfully both ctools and gnu tools.
+ 
+        rmhost          Removes the directories and links created by the
+                        mkhost script.
+
+	mkmake		Builds makefiles for each specified tool in the source
+        		directories for the specified hosts.  Also has options to
+			build the top-level makefile.	 
+
+	mklinks		Recreates links to lib_i960 directory from the 
+			$G960ROOT/host/lib directory.
+
+Host-Specific Binary Directories
+
+Each installed host has an appropriately-named host-specific binary
+directory (e.g., sun4). Each host-specific binary directory contains three 
+subdirectories:
+
+	bin	Contains the executable cross-development tools, built for the
+		specific host. 
+	lib	Contains the libraries of functions shared by two or more tools
+		(e.g. toolib.a, libbfd.a).  There is also 960 runtime library code
+		stored in this directory.  (These are actually links to the
+	        lib_i960 directory. 
+	include	Contains the include (.h) files to be used by i960 application
+		code. include is
+		a subdirectory containing symbolic links to each of the individual
+		.h files.
+
+Tools and libraries built in the src directory are installed into the bin and
+lib subdirectories of the appropriate host.
+
+The tools for a given host are accessed by setting the environment variable
+G960BASE (or I960BASE) to the full path of the appropriate host-specific binary
+directory and
+by adding $G960BASE/bin to the users PATH (for example, $G960BASE might be
+$G960ROOT/hp9000).
+
+
+lib_i960 Directory
+
+The lib_i960 directory contains run-time libraries and directive files for 
+all the supported targets.  These files are generic for all hosts, and thus
+the host/lib directories contains links back to it.
+
+
+html Directory
+
+The html directory contains the on-line help files for all the tools.
+Use an HTML browser to view these files.
+
+
+ROMS Directory
+
+The ROMS directory contains the mon960 hex images for all supported targets.
+
+
+src Directory
+
+Tool Source Directories
+
+Each tool has its own subdirectory in the src directory. The directory for a
+given tool is further subdivided into a common directory and a host-specific
+directory for each installed host.  For example:
+
+	src/
+		gas960/
+			common/
+			hp700/
+			hp9000/
+			sun4/
+
+		gdmp960/
+			common/
+			hp700/
+			hp9000/
+			sun4/
+		etc...
+
+The common subdirectory contains the following items:
+
+	_version	A file containing the tool revision number.  This
+			number and a time/date stamp are automatically
+			incorporated into the file ver960.o whenever the tool
+			is rebuilt.  All tools should recognize the switch
+			-v960, which causes them to display this version
+			string. 
+
+	Makefile	A Makefile for the tool.  See Makefiles, below, for
+			details. 
+
+	source code	The actual source code used to build the tool.  Include
+			files used only by the tool in question should reside
+			here.  Shared include files should reside in
+			src/include.  The common directory should always
+			contain the most current version of the source code
+			for the tool.  All changes to the source code should
+			be made here.  Object code should not be built in the
+			common directory. 
+
+Each host-specific subdirectory contains:
+
+	o a copy of the Makefile from the common directory, edited for the
+	  specific host, and 
+
+	o symbolic links to each of the other source files on the common
+	  directory. (On hosts which do not support symbolic links, hard links
+	  or actual copies are used instead.)  
+
+On UNIX hosts, you can use the mkhost script to create host-specific
+subdirectories; see the description of the admin directory, above.  
+
+A tool can be rebuilt for a specific host by invoking the Makefile in the
+appropriate host-specific subdirectory for the tool.  The top-level Makefile
+for the 960 tool set can also do this for you and install the result in the
+appropriate binary directory; see Makefiles, below.  When doing development
+work, it is wise not to modify the common directory until the modifications
+are complete and tested.
+
+
+Mon960 Source Directory
+
+This directory contains the mon960 source code and makefile neccessary for
+building the mon960 monitor.  For detailed information on building, retargeting,
+or using the debug monitor, please see the MON960 Debug Monitor Users Manual.  
+
+Mon960 can be built with either the GNU or CTOOLS toolset.  Here are the steps 
+needed to build a standard mon960 monitor using the GNU960 tool set.
+ 
+	o Make sure the GNU960 tools are referenced in your PATH variable.
+  	  This is done by adding G960BASE/bin to you PATH varible.
+ 
+	o Make a new source directory parallel to mon960/common and cd there. 
+  	  For example:
+ 
+	  mkdir mon960/my_mon
+    	  cd mon960/my_mon
+ 
+	o Make symbolic links (or hard links if symbolic links are not 
+  	  supported on your host) to the source files in mon960/common:
+ 
+    	  ln  -s ../common/* .
+ 
+	o Customize the Makefile for the GNU960 tool set:
+ 
+    	  make make TOOL=gnu960
+ 
+	o Build the monitor of your choice, for example, the TomCAt board:
+ 
+    	  make tcat
+ 
+	o The file tcat.hex will contain Intel HEX records which can be used to
+  	  program a ROM for your TomCAt board.
+
+
+Other Directories
+
+A brief explaination of each of the remaining directories under src/
+follows. 
+
+src/gdbbfd Directory
+
+The src/gdbbfd directory contains the source code for the library gdbbfd.a, a
+collection of routines used by gdb960.
+
+
+src/hdil Directory
+
+This contains the source for the hdil library.  It is shipped with the
+MON960, but is required to build some of the tools shipped with CTOOLS.
+
+
+src/hdilcomm Directory
+
+This contains the source for the hdil communication library.  It is
+shipped with the MON960, but is required to build some of the tools
+shipped with CTOOLS.
+
+
+src/include Directory
+
+The src/include directory contains .h files needed by more than one tool 
+or library.
+
+
+src/lib Dirctory
+
+The 960 runtime library source code.
+
+
+src/libbfd Directory
+
+The src/libbfd directory contains the source code for the Binary File
+Descriptor Library libbfd.a, whose routines attempt to hide object file format
+differences from the 960 tools.
+
+
+src/liberty Directory
+
+The src/liberty directory contains the source code for the library liberty.a, a
+collection of routines used by gdb960.
+
+
+src/libld960 Directory
+
+The src/libld960 directory contains the source code for COFL, the COFF
+interface library.  COFL is described in detail in the i960 Processor Software
+Utilities Guide.
+
+
+src/readline Directory
+
+The src/readline directory contains the source code for the library readline.a, a
+collection of routines used by gdb960.
+
+
+src/toolib Directory
+
+The src/toolib directory contains the source code for the library toolib.a, a
+collection of routines shared by more than one tool, such as the routines that
+provide communication with the NINDY ROM monitor.
+
+
+Makefiles
+
+Tool Makefiles
+
+All tool makefiles must be named Makefile.  
+
+Because of operating system differences, a tool's Makefile may vary from host
+to host.  This is handled as follows:
+
+	(1) In the common directory's Makefile, all host-specific lines are
+	commented out with the delimiter "#__hostname__#", beginning in the
+	first column of the line.
+
+	(2) When a host-specific directory is created, common/Makefile is
+	passed through a filter which uncomments the relevant host-specific
+	lines. This filtering is done implicitly when the mkhost script is
+	run; or it can be done explicitly by invoking the "make make" target
+	in the Makefile (see below).
+
+
+All tool makefiles contain the following standard targets:
+
+	default target	If 'make' is invoked without arguments, the default
+			target builds the tool and leaves a copy of it in the
+			local directory.  All compilation and linking is done
+			with the -g switch, to include debugging information.
+
+	ver960.o	This target, which is automatically invoked each time
+			the tool is built, builds a C source file containing a
+			time/date stamp and the version number (or other
+			identifying text) from the local file _version.  The
+			object file ver960.o should be linked into the tool,
+			which should print the string in response to the -v960
+			switch. 
+
+	install		Builds the tool using GNU/960 naming conventions.  All
+			compilations are optimized, and the resulting
+			executable file is stripped to save disk space.  The
+			tool is then placed in the host-specific bin and/or
+			lib subdirectories. The latter are located via a
+			Makefile variable, G960BASE, that should be set to
+			$G960BASE on the 'make' invocation line; the 960
+			top-level Makefile does this appropriately, and is the
+			preferred way to rebuild and re-install tools
+			(discussed below).
+
+	install_ctools	Like the install target, install_ctools builds and
+			PLACEs the tool, but names it according to CTOOLS960
+			naming conventions. 
+
+	clean		Removes all object and intermediate files normally
+			created in building the tool.  
+
+	make		When invoked as
+
+				make make HOST=host
+
+			this target filters the Makefile, uncommenting
+			host-specific lines for the specified host.  The
+			original Makefile file is backed up in a copy called
+			'Makefile.old'.   
+
+Library Makefiles
+
+All library makefiles must be named Makefile.  These makefiles follow the
+same paradigm as the tool makefiles discussed above, with the following 
+additions.  In addition, a parallel file called makelibs.dos exists which
+will build the libraries on DOS hosts, and must be kept up-to-date with
+Makefile.
+
+You must have G960BASE set to I960BASE when compiling with ic960 or G960BASE
+when building with the gcc960 compiler.
+
+The following are the make parameters that can be set by the user from the 
+top-level.
+
+
+	Parameter	Default		   Explanation
+	------------------------------------------------------------------------
+	CLEAN		do cleaning	   del *.a and *.o  before building
+	IC		gcc960		   gcc960 or ic960 tools to be used
+	LIBS		build all	   LIBS="libc libm" to build some libs
+	LIB_INSTALL	$(G960BASE)/lib	   installation directory
+	LIB_DEBUG	no debug info	   LIB_DEBUG=-g to build with debug info
+	INSTALL_ALL	compiler specific  INSTALL_ALL="" to build all libraries
+
+The local make files can be invoked directly or through the top-level makefile.
+When invoked directly, the local makefiles accept the following parameters:
+
+	Parameter	Default		   Explanation
+	------------------------------------------------------------------------
+	IC		gcc960		   gcc960 or ic960 tools to be used
+	LIB_INSTALL	$(G960BASE)/lib	   installation directory
+	LIB_DEBUG	no debug info	   LIB_DEBUG=-g to build with debug info
+	INSTALL_ALL	compiler specific  INSTALL_ALL="" to build all libraries
+
+
+All library makefiles contain the following standard targets:
+ 
+        default target  If 'make' is invoked without arguments at the local 
+			level, the default target builds the library and 
+			leaves a copy of it in the local directory.  
+			Compilation and linking is done with the -g switch 
+			only if LIB_DEBUG is set to -g, which is different 
+			behavior from the other tools.
+ 
+        ver960.o        This target, which is automatically invoked each time
+                        the library is built, builds a C source file containing a
+                        time/date stamp and the version number (or other
+                        identifying text) from the local file _version.  The
+                        object file ver960.o should be linked into the library.
+ 
+        install         Builds the libraries needed for the appropriate 
+			compiler (ic960/gcc960).  The decision as to which
+			libraries are built is determined by which compiler
+			is being used to build them.  All compilations are 
+			optimized.  The library is then placed in the host-
+			specific lib subdirectories.  The latter are located 
+			via a Makefile variable, G960BASE, that should be set 
+			to $G960BASE on the 'make' invocation line; the 960 
+			top-level Makefile does this appropriately, and is the 
+			preferred way to rebuild and re-install libraries 
+			(discussed below).
+ 
+	clean           Removes all object and intermediate files normally
+                        created in building the library.
+
+See the individual Makefiles for a complete list of targets.
+
+ 
+Top-level Makefile
+
+For UNIX releases, the top-level Makefile is named Makefile.  Makefile
+must be invoked from the $G960ROOT directory.  This is the preferred way to
+rebuild and re-install some or all of the 960 tools and libraries.
+
+The top-level makefile, Makefile, can be  invoked directly and will build
+only GNU/960 tools.  The mkhost script (see above) will have already created
+symbolic links between CTOOLS and GNU/960 naming conventions, so when the build
+finishes both CTOOLS and GNU/960 named tools will be available.     
+
+The top-level Makefile contains the following targets.  Most targets build
+one or more tools or libraries and install them in the binary (G960BASE/bin)
+directory for the specified host.  To specify these targets, add them to the
+toplevel make invocation.
+	
+	TOOLS	All of the tools and libraries neccessary to build
+		them.
+	
+	LIBS	All of the run-time libraries.
+			
+	all	TOOLS and LIBS
+	
+	bfd	The bfd-based tools and libraries.	
+
+	ats	The assembler tool set.
+
+
+	<individual tools>	
+		A target exists for each tool listed in the
+		admin/TOOLS file at the time Makefile was
+		created.  See the TOOLS macro at the head of
+		Makefile for a full list. 
+	
+	<individual libs>	
+		A target exists for each library listed in the
+		admin/LIBS file at the time Makefile was
+		created.  See the LIBS macro at the head of
+		Makefile for a full list. 
+
+	clean	Removes all object and intermediate files from all of
+		the directories for the specified host under src.   
+
+By default, Makefile performs a 'clean' before building any tool or
+library, so that the build runs from scratch.  You can suppress this clean and
+continue a failed make from the point where if failed by invoking make
+with the additional argument 'CLEAN=' This sets the CLEAN macro to null.
+
+
+Procedures
+
+This section of the document provides a "cookbook" of the most common
+procedures carried out by people doing 960 tool development.  For more
+detailed information, read the preceding sections of this document.
+
+We are assuming that:
+
+	o the environment variable G960ROOT has been set to the full path of the
+	  top-level directory into which the 960 tools have been loaded.
+	o the pathname $G960ROOT/admin has been added to your PATH. 
+	o host is the name of the host system on which you are running.
+
+Run the 960 Tools
+
+Under Bourne shell: 
+	G960BASE=$G960ROOT/host	(or whatver is appropriate for your
+		environment) 
+	export G960BASE
+	add $G960BASE/bin to PATH
+
+Under C shell:
+	setenv G960BASE $G960ROOT/host	(or whatver is appropriate for your
+		environment) 
+	add $G960BASE/bin to PATH
+
+Add a New Host
+	Add host name to file $G960ROOT/admin/HOSTS
+	Create directories and links:
+		mkhost host
+	Build tools and libraries as described below.
+
+Build the Tools and Libraries for a Host
+	If necessary, add host as described above.
+	Rebuild all tools and libraries:
+		cd $G960ROOT
+		make HOST=host > log.host 2>&1
+	That is all that is required for any of the hosts normally supported
+	by the 960 tools.  This will give you a log of your build in the 
+	log.host file.  If you are attempting to build for a new host
+	and the build fails because of operating system dependencies, you will
+	have to modify the tool-specific Makefile and/or source files on the
+	common directory of the tool(s)/library(s) that failed.  Carefully read 
+	this entire document, make your modifications, and try the build again. 
+
+Delete a Host
+	Delete host name from file $G960ROOT/admin/HOSTS:
+		rmhost host
+
+Add a New Tool
+	Create new source directories: 
+		mkdir $G960ROOT/src/tool
+		mkdir $G960ROOT/src/tool/common
+		mkdir $G960ROOT/src/tool/common/RCS
+	Add tool name to $G960ROOT/admin/TOOLS
+	Add tool name to the TOOLS macro in $G960ROOT/Makefile
+	Build host-specific directories:
+		mkhost -t tool all
+	Follow instructions below to (re)build the tool.
+
+Rebuild a Tool/Library
+	cd $G960ROOT
+	make tool/library
+
+Delete a Tool
+	cd $G960ROOT/src; rm -rf tool
+	cd $G960ROOT/admin
+	Delete tool name from TOOLS file
+	Remove the tool name from the TOOLS macro in $G960ROOT/Makefile
+
+Modify a Tool Makefile
+	cd src/tool/common
+	Modify the Makefile there.
+	Distribute host-specific copies of the Makefile for each host you
+	support: 
+		cd src/tool/host
+		rm -f Makefile
+		cp ../common/Makefile .
+		make make HOST=host
+
+Building all the Libraries
+	To build all the libraries from scratch at the top-level,
+	with the ic960 compiler:
+ 
+        cd $G960ROOT
+        make ic=ic960 lib_install=$I960BASE/my_lib
+ 
+	With the gcc960 compiler:
+ 
+        cd $G960ROOT
+        make ic=gcc960 lib_install=$G960BASE/my_lib
+
+	To build all the libraries using a local make file
+	with the gcc960 compiler:
+
+        cd $G960BASE/src/lib/libc/build
+        make install            # install in $G960BASE/lib
+or
+        make install LIB_INSTALL=my_dir_path	# install in my_dir_path
+or
+        make                    # no installation, leave in
+                                # current dir  
+
+Delete a Library
+	cd $G960ROOT/src; rm -rf lib
+	cd $G960ROOT/admin
+	Delete tool name from LIBS file
+	Remove the library name from the LIBS macro in $G960ROOT/Makefile
+
+Update a library
+	If you changed some source files in libc and libafp and 
+	want only to rebuild the object files within the libraries 
+	that are older than their sources:
+ 
+        cd $I960BASE/src/lib
+        make -f makelibs.dos ic=ic960 LIBS="libc libafp" CLEAN=
+ 
+	The empty CLEAN string tells make to do the incremental 
+	(not from scratch) build.
+ 
+
+Doing Development Work
+	The following might be a typical development scenario when working on
+	the tool "tool" for the host "host":  
+
+	(1) Create a temporary working subdirectory under the source directory
+	    of the tool in question (for example, $G960ROOT/src/tool/work).  
+	(2) Change to the working directory.
+	(3) Copy all of the source files and the Makefile from the common
+	    directory to the working directory.  (If the common directory
+	    contains a revision control directory, a good approach is to create
+	    a symbolic link to it on the working directory and check out all of
+	    the files there, locking the ones to be modified.) 
+	(4) Type "make make HOST=host" to tailor the Makefile for the host on
+	    which you are running.   
+	(5) Modify the source files.
+	(6) Type "make G960BASE=$G960BASE" to build a local copy of the tool;
+	    test it.   
+	(7) When the modifications have been debugged, copy the modified files
+	    back to the common directory (and/or check them back into your
+	    revision control directory).
+	(8) Remove the working directory.   
+	(9) Use 'make install' or do a make at the top-level to invoke Makefile 
+	    and rebuild and re-install the tool.

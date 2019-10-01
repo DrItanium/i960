@@ -1,0 +1,87 @@
+<HTML>
+
+<HEAD>
+
+<TITLE>Stripper (gstrip96[0]/str960)</TITLE>
+
+<META NAME="GENERATOR" CONTENT="Internet Assistant for Microsoft Word 2.0z Beta">
+</HEAD>
+
+<BODY>
+
+<H1>
+<CENTER>
+gstrip96[0]/str960 Stripper 
+</CENTER>
+</H1>
+
+<HR>
+
+<P>
+The gstrip960/str960 object stripper removes symbols and relocations
+from an object file. The invocation command is:
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">gstrip96</FONT></B><FONT SIZE=4 FACE="Courier New">[<B>0</B>]
+| <B>str960</B> [ <B>-</B><I>option</I> ]... <I>file<B> </B></I>...</FONT></TT>
+
+<P>
+On DOS, gstrip960 is named gstrip96, because of the eight-character
+filename limit.
+<P>
+<A NAME="DDE_LINK2">Each option must be preceded by a </A><TT><B><FONT SIZE=4 FACE="Courier New">-</FONT></B></TT>
+character. (On DOS, you can also use a <TT><B><FONT SIZE=4 FACE="Courier New">/</FONT></B></TT>
+character.) The options are listed below. 
+<P>
+<TT><I><FONT SIZE=4 FACE="Courier New">file</FONT></I></TT> identifies
+a linked object file to be stripped.
+<HR>
+
+<UL>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">a<BR>
+</FONT></B></TT>Strips all symbols. This option makes files unlinkable.
+Use only on fully linked files and only after the program has
+been debugged. This is the default.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">b<BR>
+</FONT></B></TT>Strips all local symbols and line numbers, leaving
+only block information (<B>.</B><TT><B><FONT SIZE=4 FACE="Courier New">bb</FONT></B></TT>,
+<B>.</B><TT><B><FONT SIZE=4 FACE="Courier New">eb</FONT></B></TT>,
+<B>.</B><TT><B><FONT SIZE=4 FACE="Courier New">bf</FONT></B></TT>,
+and <B>.</B><TT><B><FONT SIZE=4 FACE="Courier New">ef</FONT></B></TT>).
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">C<BR>
+</FONT></B></TT>Strips CCINFO only.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">h</FONT></B></TT> 
+<BR>
+Prints help information to <TT><B><FONT SIZE=4 FACE="Courier New">stdout</FONT></B></TT>
+and exits.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">l<BR>
+</FONT></B></TT>Strips line information only.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">r<BR>
+</FONT></B></TT>Strips all except relocation information.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">V<BR>
+</FONT></B></TT>Prints version informat to <TT><B><FONT SIZE=4 FACE="Courier New">stdout</FONT></B></TT>
+and processes the rest of the specified operations.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">v960<BR>
+</FONT></B></TT>Prints version information to <TT><B><FONT SIZE=4 FACE="Courier New">stdout</FONT></B></TT>
+and exits.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">x<BR>
+</FONT></B></TT>Strip all except static and external symbol information.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">z<BR>
+</FONT></B></TT>Suppress writing a time-stamp in the COFF file
+header. 
+</UL>
+
+<HR>
+
+<P>
+<A HREF="#top"><IMG SRC="../icons/uparw.gif" ALIGN="BOTTOM"></A><I>Return
+to the top of this page.</I> 
+<P>
+<A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the ic960 Interface Index.</I> 
+<P>
+<A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the gcc960 Interface Index.</I> 
+</BODY>
+
+</HTML>
+
