@@ -109,8 +109,17 @@ namespace i960::Opcode {
 		const Description& getDescription(const Instruction& inst) noexcept;
 } // end namespace i960::Opcode
 namespace i960::Operation {
+    template<typename T>
+    constexpr auto IsCTRLFormat = false;
+    template<typename T>
+    constexpr auto IsREGFormat = false;
+    template<typename T>
+    constexpr auto IsMEMFormat = false;
+    template<typename T>
+    constexpr auto IsCOBRFormat = false;
 #define X(name, code, kind) \
-        struct name final { }; 
+        struct name final { }; \
+        template<> constexpr auto Is ## kind ## Format <name> = true; 
 #define reg(name, code, __) X(name, code, REG)
 #define mem(name, code, __) X(name, code, MEM)
 #define cobr(name, code, __) X(name, code, COBR)
