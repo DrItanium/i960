@@ -534,6 +534,7 @@ namespace i960 {
 		return address & 0b1;
 	}
     void Core::performOperation(const MEMFormatInstruction& , Operation::ld) noexcept {
+        generateFault(OperationFaultSubtype::Unimplemented);
 	//void Core::ld(SourceRegister src, DestinationRegister dest) noexcept {
 		// this is the base operation for load, src contains the fully computed value
 		// so this will probably be an internal register in most cases.
@@ -558,11 +559,13 @@ namespace i960 {
 		return value & 0xFFFF;
 	}
     void Core::performOperation(const MEMFormatInstruction& , Operation::ldob) noexcept {
+        generateFault(OperationFaultSubtype::Unimplemented);
 #if 0
 		dest.set<Ordinal>(maskToByteOrdinal(load(src.get<Ordinal>())));
 #endif
 	}
     void Core::performOperation(const MEMFormatInstruction& , Operation::ldos) noexcept {
+        generateFault(OperationFaultSubtype::Unimplemented);
 #if 0
 		auto effectiveAddress = src.get<Ordinal>();
 		auto value = maskToShortOrdinal(load(effectiveAddress));
@@ -573,6 +576,7 @@ namespace i960 {
 #endif
 	}
     void Core::performOperation(const MEMFormatInstruction& , Operation::ldib) noexcept {
+        generateFault(OperationFaultSubtype::Unimplemented);
 #if 0
 		auto effectiveAddress = src.get<Ordinal>();
 		auto result = (maskToByteOrdinal(load(effectiveAddress)));
@@ -584,6 +588,7 @@ namespace i960 {
 	}
 
     void Core::performOperation(const MEMFormatInstruction& , Operation::ldis) noexcept {
+        generateFault(OperationFaultSubtype::Unimplemented);
 #if 0
 		auto effectiveAddress = src.get<Ordinal>();
 		auto value = maskToShortOrdinal(load(effectiveAddress));
@@ -601,6 +606,7 @@ namespace i960 {
 	}
 
     void Core::performOperation(const MEMFormatInstruction&, Operation::ldl) noexcept {
+        generateFault(OperationFaultSubtype::Unimplemented);
 #if 0
 		if ((srcDestIndex % 2) != 0) {
 			generateFault(OperationFaultSubtype::InvalidOperand);
@@ -618,6 +624,7 @@ namespace i960 {
 		return value & 0b1111;
 	}
     void Core::performOperation(const MEMFormatInstruction&, Operation::ldt) noexcept {
+        generateFault(OperationFaultSubtype::Unimplemented);
 #if 0
 		if ((srcDestIndex % 4) != 0) {
 			generateFault(OperationFaultSubtype::InvalidOperand);
@@ -632,6 +639,7 @@ namespace i960 {
 #endif
 	}
     void Core::performOperation(const MEMFormatInstruction&, Operation::ldq) noexcept {
+        generateFault(OperationFaultSubtype::Unimplemented);
 #if 0
 		if ((index % 4) != 0) {
 			generateFault(OperationFaultSubtype::InvalidOperand);
