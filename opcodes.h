@@ -21,6 +21,30 @@ namespace i960::Opcode {
 #undef o
             Undefined = 0xFFFF,
 		};
+        template<Id id>
+        constexpr auto IsMEMFormat = false;
+        template<Id id>
+        constexpr auto IsREGFormat = false;
+        template<Id id>
+        constexpr auto IsCTRLFormat = false;
+        template<Id id>
+        constexpr auto IsCOBRFormat = false;
+
+#define o(name, code, arg, kind) \
+        template<> \
+        constexpr auto Is ## kind ## Format < Id :: name > = true; 
+#define reg(name, code, arg) o(name, code, arg, REG)
+#define cobr(name, code, arg) o(name, code, arg, COBR) 
+#define mem(name, code, arg) o(name, code, arg, MEM) 
+#define ctrl(name, code, arg) o(name, code, arg, CTRL)
+#include "opcodes.def"
+#undef reg
+#undef cobr
+#undef mem
+#undef ctrl
+#undef o
+
+
 		struct Description final {
 			enum class Class : Ordinal {
 				Undefined,
@@ -110,16 +134,18 @@ namespace i960::Opcode {
 } // end namespace i960::Opcode
 namespace i960::Operation {
     template<typename T>
-    constexpr auto IsCTRLFormat = false;
+    constexpr auto IsCTRLFormat = i960::Opcode::IsCTRLFormat<T::Opcode>;
     template<typename T>
-    constexpr auto IsREGFormat = false;
+    constexpr auto IsREGFormat = i960::Opcode::IsREGFormat<T::Opcode>;
     template<typename T>
-    constexpr auto IsMEMFormat = false;
+    constexpr auto IsMEMFormat = i960::Opcode::IsMEMFormat<T::Opcode>;
     template<typename T>
-    constexpr auto IsCOBRFormat = false;
+    constexpr auto IsCOBRFormat = i960::Opcode::IsCOBRFormat<T::Opcode>;
 #define X(name, code, kind) \
-        struct name final { }; \
-        template<> constexpr auto Is ## kind ## Format <name> = true; 
+        struct name final { \
+            static constexpr auto Opcode = static_cast<i960::Opcode::Id>(code); \
+            constexpr auto getOpcode() noexcept { return Opcode; } \
+        };
 #define reg(name, code, __) X(name, code, REG)
 #define mem(name, code, __) X(name, code, MEM)
 #define cobr(name, code, __) X(name, code, COBR)
