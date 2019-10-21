@@ -677,6 +677,7 @@ namespace i960 {
     void Core::performOperation(const MEMFormatInstruction&, Operation::stl) noexcept {
 		/// @todo check for valid register
         /// @todo reimplement and compute effective address
+        generateFault(OperationFaultSubtype::Unimplemented);
 #if 0
 		LongRegister src = makeLongRegister(ind);
 		store(dest.get<Ordinal>() + RegisterIndex<0>, src.getLowerHalf());
@@ -687,6 +688,7 @@ namespace i960 {
     void Core::performOperation(const MEMFormatInstruction&, Operation::stt) noexcept {
         /// @todo reimplement and compute effective address
         /// @todo validate operand for wide register
+        generateFault(OperationFaultSubtype::Unimplemented);
 #if 0
 		TripleRegister src = makeTripleRegister(ind);
 		auto addr = dest.get<Ordinal>();
@@ -698,6 +700,7 @@ namespace i960 {
 
     void Core::performOperation(const MEMFormatInstruction&, Operation::stq) noexcept {
         /// @todo reimplement and compute effective address
+        generateFault(OperationFaultSubtype::Unimplemented);
 #if 0
 		QuadRegister src = makeQuadRegister(ind);
 		auto addr = dest.get<Ordinal>();
@@ -1006,6 +1009,7 @@ namespace i960 {
 	}
     void Core::performOperation(const MEMFormatInstruction&, Operation::lda) noexcept {
         /// @todo finish this
+        generateFault(OperationFaultSubtype::Unimplemented);
 #if 0
 		dest.move(src);
 #endif
@@ -1349,27 +1353,33 @@ namespace i960 {
     void
     Core::performOperation(const MEMFormatInstruction&, Operation::balx) noexcept {
         /// @todo implement this
+        generateFault(OperationFaultSubtype::Unimplemented);
     }
     void
     Core::performOperation(const MEMFormatInstruction&, Operation::st) noexcept {
         /// @todo implement computation of effective address
+        generateFault(OperationFaultSubtype::Unimplemented);
     }
 
     void
     Core::performOperation(const MEMFormatInstruction&, Operation::stib) noexcept {
         /// @todo implement computation of effective address
+        generateFault(OperationFaultSubtype::Unimplemented);
     }
     void
     Core::performOperation(const MEMFormatInstruction&, Operation::stob) noexcept {
         /// @todo implement computation of effective address
+        generateFault(OperationFaultSubtype::Unimplemented);
     }
     void
     Core::performOperation(const MEMFormatInstruction&, Operation::stis) noexcept {
         /// @todo implement computation of effective address
+        generateFault(OperationFaultSubtype::Unimplemented);
     }
     void
     Core::performOperation(const MEMFormatInstruction&, Operation::stos) noexcept {
         /// @todo implement computation of effective address
+        generateFault(OperationFaultSubtype::Unimplemented);
     }
       
 } // end namespace i960
