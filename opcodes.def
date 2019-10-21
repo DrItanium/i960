@@ -1,17 +1,128 @@
+#define flag(name, flagTitle)
+#define compareOperation(name) flag(name, IsCompareOperation)
+#define arithmeticOperation(name) flag(name, IsArithmeticOperation)
 #define creg(baseName, baseAddress, arg) \
 		reg(baseName ## e, (baseAddress | 0x0a0), arg) \
+        compareOperation(baseName ## e) \
 		reg(baseName ## g, (baseAddress | 0x090), arg) \
+        compareOperation(baseName ## g) \
 		reg(baseName ## ge, (baseAddress | 0x0b0), arg) \
+        compareOperation(baseName ## ge) \
 		reg(baseName ## l, (baseAddress | 0x0c0), arg) \
+        compareOperation(baseName ## l) \
 		reg(baseName ## le, (baseAddress | 0x0e0), arg) \
+        compareOperation(baseName ## le) \
 		reg(baseName ## ne, (baseAddress | 0x0d0), arg) \
+        compareOperation(baseName ## ne) \
 		reg(baseName ## no, (baseAddress | 0x080), arg) \
-		reg(baseName ## o, (baseAddress | 0x0f0), arg)
-creg(addi, 0x701, RegLit_RegLit_Reg)
-reg(addc, 0x5b0, RegLit_RegLit_Reg)
+        compareOperation(baseName ## no) \
+		reg(baseName ## o, (baseAddress | 0x0f0), arg) \
+        compareOperation(baseName ## o)
+#define cregFlag(baseName, flagTitle) \
+        flag(baseName ## e, flagTitle) \
+        flag(baseName ## g, flagTitle) \
+        flag(baseName ## ge, flagTitle) \
+        flag(baseName ## l, flagTitle) \
+        flag(baseName ## le, flagTitle) \
+        flag(baseName ## ne, flagTitle) \
+        flag(baseName ## no, flagTitle) \
+        flag(baseName ## o, flagTitle)
+        
 reg(addi, 0x591, RegLit_RegLit_Reg)
+flag(addi, IsAddOperation)
+arithmeticOperation(addi)
 reg(addo, 0x590, RegLit_RegLit_Reg)
+flag(addo, IsAddOperation)
+arithmeticOperation(addo)
+reg(addc, 0x5b0, RegLit_RegLit_Reg)
+flag(addc, IsAddOperation)
+arithmeticOperation(addc)
 creg(addo, 0x700, RegLit_RegLit_Reg)
+cregFlag(addo, IsAddOperation)
+cregFlag(addo, IsArithmeticOperation)
+cregFlag(addo, IsOrdinalOperation)
+creg(addi, 0x701, RegLit_RegLit_Reg)
+cregFlag(addi, IsAddOperation)
+cregFlag(addi, IsArithmeticOperation)
+cregFlag(addi, IsIntegerOperation)
+
+
+// compare operations
+reg(concmpo, 0x5a2, RegLit_RegLit)
+compareOperation(concmpo)
+reg(concmpi, 0x5a3, RegLit_RegLit)
+compareOperation(concmpi)
+reg(cmpob, 0x594, RegLit_RegLit)
+compareOperation(cmpob)
+reg(cmpib, 0x595, RegLit_RegLit)
+compareOperation(cmpib)
+reg(cmpos, 0x596, RegLit_RegLit)
+compareOperation(cmpos)
+reg(cmpis, 0x597, RegLit_RegLit)
+compareOperation(cmpis)
+reg(cmpo,  0x5a0, RegLit_RegLit)
+compareOperation(cmpo)
+reg(cmpi,  0x5a1, RegLit_RegLit)
+compareOperation(cmpi)
+reg(cmpinci, 0x5a5, RegLit_RegLit_Reg)
+compareOperation(cmpinci)
+reg(cmpinco, 0x5a4, RegLit_RegLit_Reg)
+compareOperation(cmpinco)
+reg(cmpdeco, 0x5a6, RegLit_RegLit_Reg)
+compareOperation(cmpdeco)
+reg(cmpdeci, 0x5a7, RegLit_RegLit_Reg)
+compareOperation(cmpdeci)
+
+reg(eshro, 0x5D8, RegLit_RegLit_Reg) // extended shift right ordinal
+arithmeticOperation(eshro)
+reg(divo, 0x70b, RegLit_RegLit_Reg)
+arithmeticOperation(divo)
+reg(divi, 0x74b, RegLit_RegLit_Reg)
+arithmeticOperation(divi)
+
+reg(emul, 0x670, RegLit_RegLit_Reg)
+arithmeticOperation(emul)
+reg(ediv, 0x671, RegLit_RegLit_Reg)
+arithmeticOperation(ediv)
+
+reg(mulo, 0x701, RegLit_RegLit_Reg)
+arithmeticOperation(mulo)
+reg(remo, 0x708, RegLit_RegLit_Reg)
+arithmeticOperation(remo)
+reg(muli, 0x741, RegLit_RegLit_Reg)
+arithmeticOperation(muli)
+reg(remi, 0x748, RegLit_RegLit_Reg)
+arithmeticOperation(remo)
+
+reg(shro,  0x598, RegLit_RegLit_Reg)
+arithmeticOperation(shro)
+reg(shrdi, 0x59a, RegLit_RegLit_Reg)
+arithmeticOperation(shrdi)
+reg(shri,  0x59b, RegLit_RegLit_Reg)
+arithmeticOperation(shri)
+reg(shlo,  0x59c, RegLit_RegLit_Reg)
+arithmeticOperation(shlo)
+reg(rotate, 0x59d, RegLit_RegLit_Reg)
+arithmeticOperation(rotate)
+reg(shli,  0x59e, RegLit_RegLit_Reg)
+arithmeticOperation(shli)
+
+reg(subc, 0x5b2, RegLit_RegLit_Reg)
+arithmeticOperation(subc)
+reg(subi, 0x593, RegLit_RegLit_Reg)
+arithmeticOperation(subi)
+creg(subi, 0x703, RegLit_RegLit_Reg)
+cregFlag(subi, IsSubtractOperation)
+cregFlag(subi, IsArithmeticOperation)
+cregFlag(subi, IsIntegerOperation)
+reg(subo, 0x592, RegLit_RegLit_Reg)
+arithmeticOperation(subo)
+creg(subo, 0x702, RegLit_RegLit_Reg)
+cregFlag(subo, IsSubtractOperation)
+cregFlag(subo, IsArithmeticOperation)
+cregFlag(subo, IsOrdinalOperation)
+
+
 reg(alterbit, 0x58f, RegLit_RegLit_Reg)
 reg(opand, 0x581, RegLit_RegLit_Reg )
 reg(andnot, 0x582, RegLit_RegLit_Reg)
@@ -21,25 +132,8 @@ reg(bswap, 0x5ad, RegLit_Reg)
 reg(calls, 0x660, RegLit)
 reg(chkbit, 0x5ae, RegLit_RegLit)
 reg(clrbit, 0x58c, RegLit_RegLit_Reg)
-reg(cmpdeci, 0x5a7, RegLit_RegLit_Reg)
-reg(cmpdeco, 0x5a6, RegLit_RegLit_Reg)
-reg(cmpinci, 0x5a5, RegLit_RegLit_Reg)
-reg(cmpinco, 0x5a4, RegLit_RegLit_Reg)
-reg(cmpi, 0x5a1, RegLit_RegLit)
-reg(cmpib, 0x595, RegLit_RegLit)
-reg(cmpis, 0x597, RegLit_RegLit)
-reg(cmpo,  0x5a0, RegLit_RegLit)
-reg(cmpob, 0x594, RegLit_RegLit)
-reg(cmpos, 0x596, RegLit_RegLit)
-reg(concmpi, 0x5a3, RegLit_RegLit)
-reg(concmpo, 0x5a2, RegLit_RegLit)
-reg(dcctl, 0x65c, RegLit_Reg)
-reg(divi, 0x74b, RegLit_RegLit_Reg)
-reg(divo, 0x70b, RegLit_RegLit_Reg)
-reg(ediv, 0x671, RegLit_RegLit_Reg)
-reg(emul, 0x670, RegLit_RegLit_Reg)
-reg(eshro, 0x5D8, RegLit_RegLit_Reg) // extended shift right ordinal
 reg(extract, 0x651, RegLit_RegLit_Reg)
+reg(dcctl, 0x65c, RegLit_Reg)
 reg(flushreg, 0x66d, None)
 reg(fmark, 0x66c, None)
 reg(halt, 0x65d, RegLit)
@@ -57,8 +151,6 @@ reg(mov,  0x5cc, RegLit_Reg)
 reg(movl, 0x5dc, RegLit_Reg) 
 reg(movq, 0x5fc, RegLit_Reg)
 reg(movt, 0x5ec, RegLit_Reg)
-reg(muli, 0x741, RegLit_RegLit_Reg)
-reg(mulo, 0x701, RegLit_RegLit_Reg)
 reg(nand, 0x58e, RegLit_RegLit_Reg)
 reg(nor, 0x588, RegLit_RegLit_Reg)
 reg(opnot, 0x58a, RegLit_Reg)
@@ -67,24 +159,11 @@ reg(notbit, 0x580, RegLit_RegLit_Reg)
 reg(notor, 0x58d, RegLit_RegLit_Reg)
 reg(opor, 0x587, RegLit_RegLit_Reg)
 reg(ornot, 0x58b, RegLit_RegLit_Reg)
-reg(remi, 0x748, RegLit_RegLit_Reg)
-reg(remo, 0x708, RegLit_RegLit_Reg)
-reg(rotate, 0x59d, RegLit_RegLit_Reg)
 reg(scanbit, 0x641, RegLit_Reg)
 reg(scanbyte, 0x5ac, RegLit_RegLit)
 creg(sel, 0x704, RegLit_RegLit_Reg) // select based on ...
 reg(setbit, 0x583, RegLit_RegLit_Reg)
-reg(shli,  0x59e, RegLit_RegLit_Reg)
-reg(shlo,  0x59c, RegLit_RegLit_Reg)
-reg(shrdi, 0x59a, RegLit_RegLit_Reg)
-reg(shri,  0x59b, RegLit_RegLit_Reg)
-reg(shro,  0x598, RegLit_RegLit_Reg)
 reg(spanbit, 0x640, RegLit_Reg)
-reg(subc, 0x5b2, RegLit_RegLit_Reg)
-reg(subi, 0x593, RegLit_RegLit_Reg)
-creg(subi, 0x703, RegLit_RegLit_Reg)
-reg(subo, 0x592, RegLit_RegLit_Reg)
-creg(subo, 0x702, RegLit_RegLit_Reg)
 reg(syncf, 0x66f, None)
 reg(sysctl, 0x659, RegLit_RegLit_Reg)
 reg(xnor, 0x589, RegLit_RegLit_Reg)
@@ -157,3 +236,5 @@ ctrl(faultle, (0x1e << 4), None)
 ctrl(faultne, (0x1d << 4), None)
 ctrl(faulto,  (0x1f << 4), None)
 #undef creg
+#undef compareOperation
+#undef cregFlag
