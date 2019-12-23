@@ -3,7 +3,7 @@
 
 
 // i960SB/SA pins according to the datasheet
-constexpr auto SystemClock = -1; // unsure what to do with this yet so we'll ignore it
+constexpr auto SystemClock = 13; // unsure what to do with this yet so we'll ignore it
 constexpr auto AddressBus16 = 39;
 constexpr auto AddressBus17 = 40;
 constexpr auto AddressBus18 = 41;
@@ -109,6 +109,66 @@ constexpr decltype(AddressBus31) AddressLines[] = {
     AddressBus30,
     AddressBus31,
 };
+constexpr auto OpenDrainLines[] = {
+    Lock_,
+};
+constexpr auto ThreeStateLines[] = {
+    AddressBus1Copy,
+    AddressBus2Copy,
+    AddressBus3Copy,
+    AddressLatchEnable,
+    AddressStatus_,
+    Write_Read_,
+    DataEnable_,
+    DataTransmit_Recieve_,
+    Ready_,
+    ByteEnable0_,
+    ByteEnable1_,
+    HoldAcknowledge,
+    BurstLast_,
+    Interrupt3__InterruptAcknowledge_,
+    DataBus0,
+    AddressDataBus1,
+    AddressDataBus2,
+    AddressDataBus3,
+    AddressDataBus4,
+    AddressDataBus5,
+    AddressDataBus6,
+    AddressDataBus7,
+    AddressDataBus8,
+    AddressDataBus9,
+    AddressDataBus10,
+    AddressDataBus11,
+    AddressDataBus12,
+    AddressDataBus13,
+    AddressDataBus14,
+    AddressDataBus15,
+    AddressBus16,
+    AddressBus17,
+    AddressBus18,
+    AddressBus19,
+    AddressBus20,
+    AddressBus21,
+    AddressBus22,
+    AddressBus23,
+    AddressBus24,
+    AddressBus25,
+    AddressBus26,
+    AddressBus27,
+    AddressBus28,
+    AddressBus29,
+    AddressBus30,
+    AddressBus31,
+};
+constexpr auto InputPins[] {
+    Interrupt0_,
+    Interrupt1_,
+    Reset_,
+    Interrupt2_,
+    Hold,
+    // SystemClock,
+    Ready_,
+};
 void tristatePin(decltype(DataBus0) pin) noexcept {
     pinMode(pin, INPUT);
     digitalWrite(pin, LOW);
@@ -138,7 +198,6 @@ void disableDataLines() noexcept {
 void setup() {
     disableAddressLines();
     disableDataLines();
-    pinMode(Ready_, INPUT);
     tristatePin(AddressBus1Copy);
     tristatePin(AddressBus2Copy);
     tristatePin(AddressBus3Copy);
@@ -150,7 +209,12 @@ void setup() {
     tristatePin(Write_Read_);
     tristatePin(DataEnable_);
     tristatePin(DataTransmit_Recieve_);
-
+    // this pin is open drain
+    pinMode(BusLock_, OUTPUT);
+    digitalWrite(BusLock_, HIGH);
+    for (const auto& pin : InputPins) {
+        pinMode(pin, INPUT);
+    }
 }
 
 void loop() {
