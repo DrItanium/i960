@@ -10,7 +10,7 @@ namespace i960 {
             static constexpr Ordinal TraceFaultPendingMask = 0x0000'0400;
             static constexpr Ordinal StateMask = 0x0000'2000;
             static constexpr Ordinal PriorityMask = 0x001F'0000;
-            static constexpr Ordinal CoreArchitectureExtractMask = TraceEnableMask | ExecutionModeMask | ResumeMask | TraceFaultPendingMask | StateMask | PriorityMask;
+            static constexpr Ordinal CoreArchitectureExtractMask = constructOrdinalMask(TraceEnableMask, ExecutionModeMask, ResumeMask, TraceFaultPendingMask, StateMask, PriorityMask);
             static constexpr Ordinal CoreArchitectureReservedMask = ~CoreArchitectureExtractMask;
             static_assert(CoreArchitectureReservedMask == 0xFFE0'D9FC);
             static constexpr bool extractTraceEnable(Ordinal value) noexcept {

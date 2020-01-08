@@ -7,6 +7,15 @@ namespace i960 {
     using ByteOrdinal = std::uint8_t;
     using ShortOrdinal = std::uint16_t;
     using Ordinal = std::uint32_t;
+    constexpr auto getMostSignificantBit(Ordinal value) noexcept {
+        return value & 0x8000'0000;
+    }
+    constexpr auto mostSignificantBitSet(Ordinal value) noexcept { 
+        return getMostSignificantBit(value) != 0;
+    }
+    constexpr auto mostSignificantBitClear(Ordinal value) noexcept {
+        return getMostSignificantBit(value) == 0;
+    }
     using LongOrdinal = std::uint64_t;
     using InstructionPointer = Ordinal;
     using ByteInteger = std::int8_t;
@@ -135,6 +144,11 @@ namespace i960 {
     // false_v taken from https://quuxplusone.github.io/blog/2018/04/02/false-v/
     template<typename...>
     inline constexpr bool false_v = false;
+
+    template<typename ... Args>
+    inline constexpr Ordinal constructOrdinalMask(Args&& ... masks) noexcept {
+        return (... | masks);
+    }
 
     /**
      *

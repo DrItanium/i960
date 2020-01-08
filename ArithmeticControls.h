@@ -82,22 +82,12 @@ namespace i960 {
              */
             bool _noImpreciseFaults = false;
         public:
-            static constexpr Ordinal CoreArchitectureReservedMask = 0xFFFF'6EF8;
-            static constexpr Ordinal CoreArchitectureExtractMask = ~CoreArchitectureReservedMask;
-#if 0
-                struct {
-                    // Core architecture AC
-                    Ordinal _conditionCode : 3; // 0x0000'0003
-                    Ordinal reserved0 : 5;      // ~0x0000'00F8
-                    Ordinal _integerOverflowFlag : 1; // 0x0000'0100
-                    Ordinal reserved1 : 3;            // ~0x0000'0E00
-                    Ordinal _integerOverflowMask : 1; // 0x0000'1000
-                    Ordinal reserved2 : 2;            // ~0x0000'6000
-                    Ordinal _noImpreciseFaults : 1;   // 0x0000'8000
-                    Ordinal reserved3 : 16;           // ~0xFFFF'0000
-                    // ~0xFFFF'6EF8 
-                };
-#endif
+            static constexpr Ordinal ConditionCodeMask       = 0x0000'0007;
+            static constexpr Ordinal IntegerOverflowFlagMask = 0x0000'0100;
+            static constexpr Ordinal IntegerOverflowMaskMask = 0x0000'1000;
+            static constexpr Ordinal NoImpreciseFaultsMask   = 0x0000'8000;
+            static constexpr Ordinal CoreArchitectureExtractMask = constructOrdinalMask(ConditionCodeMask, IntegerOverflowFlagMask, IntegerOverflowMaskMask, NoImpreciseFaultsMask);
+            static constexpr Ordinal CoreArchitectureReservedMask = ~CoreArchitectureExtractMask;
         public:
             class CoreArchitecture { 
                 constexpr CoreArchitecture() = default;
