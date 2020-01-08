@@ -55,7 +55,18 @@ namespace i960 {
             }
             constexpr bool carrySet() const noexcept { return conditionCodeBitSet<0b010>(); }
             constexpr Ordinal getCarryValue() const noexcept { return carrySet() ? 1 : 0; }
+            constexpr Ordinal getRawValue() const noexcept { return create(_conditionCode, _integerOverflowFlag, _integerOverflowMask, _noImpreciseFaults); }
+            void setRawValue(Ordinal value) noexcept {
+                _conditionCode = extractConditionCode(value);
+                _integerOverflowFlag = extractIntegerOverflowFlag(value);
+                _integerOverflowMask = extractIntegerOverflowMask(value);
+                _noImpreciseFaults = extractNoImpreciseFaults(value);
+            }
         private:
+            // core architecture arithmetic controls
+            /**
+             * The condition code computed by compare operations
+             */
             Ordinal _conditionCode = 0;
             /**
              * Denotes an integer overflow happened
@@ -91,18 +102,12 @@ namespace i960 {
             class CoreArchitecture { 
                 constexpr CoreArchitecture() = default;
             };
-            template<typename T>
-            static constexpr Ordinal create(Ordinal cc, bool integerOverflowFlag, bool integerOverflowMask, bool noImpreciseFaults)noexcept {
-                using K = std::decay_t<T>;
-                if constexpr (std::is_same_v<K, CoreArchitecture>) {
-                    auto base = cc;
-                    auto shiftedIOF = static_cast<Ordinal>(integerOverflowFlag ? (1 << 8) : 0);
-                    auto shiftedIOM = static_cast<Ordinal>(integerOverflowMask ? (1 << 12) : 0);
-                    auto shiftedNIF = static_cast<Ordinal>(noImpreciseFaults ? (1 << 15) : 0);
-                    return (base | shiftedIOF | shiftedIOM | shiftedNIF) & CoreArchitectureExtractMask;
-                } else {
-                    static_assert(false_v<T>, "Illegal architecture kind!");
-                }
+            static constexpr Ordinal create(Ordinal cc, bool integerOverflowFlag, bool integerOverflowMask, bool noImpreciseFaults) noexcept {
+                auto base = cc;
+                auto shiftedIOF = static_cast<Ordinal>(integerOverflowFlag ? (1 << 8) : 0);
+                auto shiftedIOM = static_cast<Ordinal>(integerOverflowMask ? (1 << 12) : 0);
+                auto shiftedNIF = static_cast<Ordinal>(noImpreciseFaults ? (1 << 15) : 0);
+                return (base | shiftedIOF | shiftedIOM | shiftedNIF) & CoreArchitectureExtractMask;
             }
             static constexpr Ordinal extractConditionCode(Ordinal raw) noexcept {
                 return raw & 0b111;
@@ -117,7 +122,7 @@ namespace i960 {
                 return (raw >> 15) & 1;
             }
     };
-    static_assert(ArithmeticControls::create<ArithmeticControls::CoreArchitecture>(0b111, true, true, true) == ArithmeticControls::CoreArchitectureExtractMask, "create(CoreArchitecture) failed!");
+    static_assert(ArithmeticControls::create(0b111, true, true, true) == ArithmeticControls::CoreArchitectureExtractMask, "create(CoreArchitecture) failed!");
 
 } // end namespace i960
 #endif // end I960_ARITHMETIC_CONTROLS_H__
