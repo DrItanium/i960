@@ -13,17 +13,23 @@ namespace i960 {
         };
         Ordinal value;
     } __attribute__((packed));
-    union ProcedureEntry {
-       struct {
-           Ordinal type : 2;
-           Ordinal address : 30;
-       };
-       Ordinal raw;
-       constexpr ProcedureEntry(Ordinal _raw = 0) : raw(_raw) { }
-       constexpr bool isLocal() const noexcept { return type == 0; }
-       constexpr bool isSupervisor() const noexcept { return type == 0b10; }
-    } __attribute__((packed));
-    static_assert(sizeof(ProcedureEntry) == 1_words, "Procedure entry must be of the correct size!");
+    class ProcedureEntry {
+        public:
+            static constexpr Ordinal TypeMask = 0b11;
+            static constexpr auto AddressMask = ~TypeMask;
+            constexpr ProcedureEntry(Ordinal _raw) noexcept : _type(_raw & TypeMask), _address(_raw & AddressMask) { }
+            constexpr bool isLocal() const noexcept { return _type == 0; }
+            constexpr bool isSupervisor() const noexcept { return _type == 0b10; }
+            constexpr auto getAddress() const noexcept { return _address; }
+            constexpr auto getRawValue() const noexcept { return (_type & TypeMask) | (_address & AddressMask); }
+            void setType(Ordinal type) noexcept { _type = TypeMask & type; }
+            void setAddress(Ordinal addr) noexcept { _address = (addr & _address); }
+            constexpr auto getType() const noexcept { return _type; }
+        private:
+            Ordinal _type = 0;
+            Ordinal _address = 0;
+
+    };
     union TraceControls {
         struct {
             Ordinal unused0 : 1;
