@@ -53,7 +53,32 @@ namespace i960 {
             Ordinal _address = 0;
 
     };
-    union TraceControls {
+    class TraceControls {
+        public:
+            static constexpr Ordinal InstructionTraceModeMask = 0x0000'0002;
+            static constexpr Ordinal BranchTraceModeMask = 0x0000'0004;
+            static constexpr Ordinal CallTraceModeMask = 0x0000'0008;
+            static constexpr Ordinal ReturnTraceModeMask = 0x0000'0010;
+            static constexpr Ordinal PrereturnTraceModeMask = 0x0000'0020; 
+            static constexpr Ordinal SupervisorTraceModeMask = 0x0000'0040;
+            static constexpr Ordinal MarkTraceModeMask = 0x0000'0080;
+            static constexpr Ordinal InstructionAddressBreakpoint0Mask = 0x0100'0000;
+            static constexpr Ordinal InstructionAddressBreakpoint1Mask = 0x0200'0000;
+            static constexpr Ordinal DataAddressBreakpoint0Mask = 0x0400'0000;
+            static constexpr Ordinal DataAddressBreakpoint1Mask = 0x0800'0000;
+            static constexpr Ordinal ExtractionMask = constructOrdinalMask(
+                    InstructionTraceModeMask, 
+                    BranchTraceModeMask, 
+                    CallTraceModeMask, 
+                    ReturnTraceModeMask, 
+                    PrereturnTraceModeMask,
+                    SupervisorTraceModeMask,
+                    MarkTraceModeMask,
+                    InstructionAddressBreakpoint0Mask,
+                    InstructionAddressBreakpoint1Mask,
+                    DataAddressBreakpoint0Mask,
+                    DataAddressBreakpoint1Mask);
+#if 0
         struct {
             Ordinal unused0 : 1;
 			// trace mode bits
@@ -75,9 +100,17 @@ namespace i960 {
         Ordinal value;
         constexpr TraceControls(Ordinal raw = 0) : value(raw) { }
 		constexpr bool traceMarked() const noexcept { return markTraceMode != 0; }
+#endif
+        //constexpr TraceControls(Ordinal raw) noexcept : 
+
         void clear() noexcept;
-    } __attribute__((packed));
-	static_assert(sizeof(TraceControls) == 1_words, "TraceControls must be the size of an ordinal!");
+        private:
+            bool _instructionTraceMode = false;
+            bool _branchTraceMode = false;
+            bool _callTraceMode = false;
+            bool _returnTraceMode = false;
+            bool _prereturnTraceMode = false;
+    };
     union NormalRegister {
         public:
             constexpr NormalRegister(Ordinal value = 0) : ordinal(value) { }
