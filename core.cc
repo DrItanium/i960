@@ -736,12 +736,10 @@ namespace i960 {
     }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::modtc) noexcept {
         // the instruction has its arguments reversed for some reason...
-        auto mask = getSrc(inst);
-        auto src2 = getSrc2(inst);
-        auto tmp = _tc.getValue();
-		auto temp1 = 0x00FF00FF & mask; // masked to prevent reserved bits from being used
-        _tc.setValue((temp1 & src2) | (_tc.getValue() & (~temp1)));
-        setRegister(inst.getSrc1(), tmp);
+        auto tc = getTraceControls();
+        auto old = tc.getRawValue();
+        tc.modify(getSrc(inst), getSrc2(inst));
+        setRegister(inst.getSrc1(), old);
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::modpc) noexcept {
 		// modify process controls

@@ -81,6 +81,7 @@ namespace i960 {
                 return _reg.decodeField<R, mask, shift>();
             }
             void clear() noexcept { _reg.clear(); }
+            void setRawValue(Ordinal value) noexcept { _reg.setValue(value); }
         protected:
             template<typename T, Ordinal mask, Ordinal shift = 0>
             void encodeField(T value) noexcept {
@@ -155,6 +156,7 @@ namespace i960 {
 #undef ABM
 #undef B
             constexpr auto traceMarked() const noexcept { return getMarkTraceMode(); }
+            void modify(Ordinal mask, Ordinal input) noexcept;
     };
 
 } // end namespace i960
