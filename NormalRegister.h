@@ -5,11 +5,10 @@
 #include "ProcessControls.h"
 namespace i960 {
     class PreviousFramePointer;
-    class RegisterWrapper;
+    class RegisterView;
     class ProcedureEntry;
-    class TraceControls;
     template<typename T, typename ... Args>
-        constexpr auto IsOneOfThese = ( ... || std::is_same_v<std::decay_t<T>, Args>);
+    constexpr auto IsOneOfThese = ( ... || std::is_same_v<std::decay_t<T>, Args>);
     class NormalRegister {
         public:
             constexpr NormalRegister(Ordinal value = 0) noexcept : _value(value) { }
@@ -32,7 +31,7 @@ namespace i960 {
                     return toInteger(static_cast<ShortOrdinal>(getValue()));
                 } else if constexpr (std::is_same_v<K, LongOrdinal>) {
                     return static_cast<LongOrdinal>(getValue());
-                } else if constexpr (std::is_base_of_v<RegisterWrapper, K>) {
+                } else if constexpr (std::is_base_of_v<RegisterView, K>) {
                     return {*this};
                 } else {
                     static_assert(false_v<K>, "Illegal type requested!");
@@ -41,7 +40,7 @@ namespace i960 {
             template<typename T>
             void set(T value) noexcept {
                 using K = std::decay_t<T>;
-                if constexpr (std::is_base_of_v<RegisterWrapper, K>) {
+                if constexpr (std::is_base_of_v<RegisterView, K>) {
                     // copy I guess?
                     setValue(value.getRawValue());
                 } else if constexpr (IsOneOfThese<K, Ordinal, ByteOrdinal, ShortOrdinal, LongOrdinal>) {
@@ -75,9 +74,9 @@ namespace i960 {
             Ordinal _value;
 
     };
-    class RegisterWrapper {
+    class RegisterView {
         public:
-            constexpr RegisterWrapper(NormalRegister& r) noexcept : _reg(r) { }
+            constexpr RegisterView(NormalRegister& r) noexcept : _reg(r) { }
             constexpr auto getRawValue() const noexcept { return _reg.getValue(); }
             template<typename R, Ordinal mask, Ordinal shift = 0>
             constexpr R decodeField() const noexcept {
@@ -92,14 +91,14 @@ namespace i960 {
         private:
             NormalRegister& _reg;
     };
-    class PreviousFramePointer : public RegisterWrapper {
+    class PreviousFramePointer : public RegisterView {
         public:
             static constexpr Ordinal ReturnCodeMask = 0x0000'0007;
             static constexpr Ordinal PreReturnTraceMask = 0x0000'0008;
             static constexpr Ordinal AddressMask = 0xFFFF'FFC0; // aligned to 64-byte boundaries
             static constexpr Ordinal ExtractionMask = constructOrdinalMask(ReturnCodeMask, PreReturnTraceMask, AddressMask); 
             static constexpr Ordinal ReservedMask = ~ExtractionMask;
-            using RegisterWrapper::RegisterWrapper;
+            using RegisterView::RegisterView;
             constexpr auto getReturnCode() const noexcept { return decodeField<Ordinal, ReturnCodeMask>(); }
             void setReturnCode(Ordinal value) noexcept { encodeField<Ordinal, ReturnCodeMask>(value); }
             constexpr auto getPrereturnTrace() const noexcept { return decodeField<bool, PreReturnTraceMask, 3>(); }
@@ -107,11 +106,11 @@ namespace i960 {
             constexpr auto getAddress() const noexcept { return decodeField<Ordinal, AddressMask>(); }
             void setAddress(Ordinal value) noexcept { encodeField<Ordinal, AddressMask>(value); }
     };
-    class ProcedureEntry : public RegisterWrapper {
+    class ProcedureEntry : public RegisterView {
         public:
             static constexpr Ordinal TypeMask = 0b11;
             static constexpr auto AddressMask = ~TypeMask;
-            using RegisterWrapper::RegisterWrapper;
+            using RegisterView::RegisterView;
             constexpr auto getType() const noexcept { return decodeField<Ordinal, TypeMask>(); }
             void setType(Ordinal type) noexcept { encodeField<Ordinal, TypeMask>(type); }
             constexpr auto getAddress() const noexcept { return decodeField<Ordinal, AddressMask>(); }
@@ -121,7 +120,7 @@ namespace i960 {
 
     };
 
-    class TraceControls : public RegisterWrapper {
+    class TraceControls {
         public:
             static constexpr Ordinal InstructionTraceModeMask = 0x0000'0002;
             static constexpr Ordinal BranchTraceModeMask = 0x0000'0004;
@@ -135,13 +134,16 @@ namespace i960 {
             static constexpr Ordinal DataAddressBreakpoint0Mask = 0x0400'0000;
             static constexpr Ordinal DataAddressBreakpoint1Mask = 0x0800'0000;
         public:
-            using RegisterWrapper::RegisterWrapper;
+            constexpr TraceControls(Ordinal raw = 0) : _value(raw) { }
+            void clear() noexcept;
+            constexpr auto getRawValue() const noexcept { return _value; }
+            void setRawValue(Ordinal value) noexcept { _value = value; }
 #define B(field, mask) \
             void set ## field (bool value) noexcept { \
-                encodeField<bool, mask>(value); \
+                _value = i960::encode<Ordinal, bool, mask, 0>(_value, value); \
             } \
             constexpr auto get ## field () const noexcept { \
-                return decodeField<bool, mask>(); \
+                return i960::decode<Ordinal, bool, mask>(_value); \
             }
 #define TM(title) B(title ## TraceMode , title ## TraceModeMask)
 #define ABM(title) \
@@ -160,6 +162,8 @@ namespace i960 {
 #undef ABM
 #undef B
             constexpr auto traceMarked() const noexcept { return getMarkTraceMode(); }
+        private:
+            Ordinal _value;
 
     };
 
