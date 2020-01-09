@@ -2,11 +2,17 @@
 
 namespace i960 {
 
-void NormalRegister::move(const NormalRegister& other) noexcept {
-    set<Ordinal>(other.get<Ordinal>());
+void PreviousFramePointer::setRawValue(Ordinal raw) noexcept {
+    _returnCode = ReturnCodeMask & raw;
+    _prereturnTrace = PreReturnTraceMask & raw;
+    _address = AddressMask & raw;
 }
-NormalRegister::~NormalRegister() {
-    ordinal = 0;
+void ProcedureEntry::setRawValue(Ordinal raw) noexcept {
+    _type = raw & TypeMask;
+    _address = raw & AddressMask;
+}
+void NormalRegister::move(const NormalRegister& other) noexcept {
+    setValue(other.getValue());
 }
 void TraceControls::clear() noexcept {
     _instructionTraceMode = false;

@@ -41,7 +41,44 @@ namespace i960 {
     constexpr Ordinal encodeBool(bool value) noexcept {
         return value ? boolMask : 0;
     }
-
+    template<typename T>
+    using EnableIfUnsigned = std::enable_if_t<std::is_unsigned_v<std::decay_t<T>>>;
+    template<typename I, typename = EnableIfUnsigned<I>>
+    union UnsignedToSigned {
+        public:
+            using U = std::make_unsigned_t<std::decay_t<I>>;
+            using S = std::make_signed_t<std::decay_t<I>>;
+        private:
+            U ordinal;
+            S integer;
+        public:
+            constexpr UnsignedToSigned(U value) noexcept : ordinal(value) { }
+            constexpr auto getInteger() const noexcept { return integer; }
+    };
+    template<typename T>
+    using EnableIfSigned = std::enable_if_t<std::is_signed_v<std::decay_t<T>>>;
+    template<typename I, typename = EnableIfSigned<I>>
+    union SignedToUnsigned{
+        public:
+            using U = std::make_unsigned_t<std::decay_t<I>>;
+            using S = std::make_signed_t<std::decay_t<I>>;
+        private:
+            U ordinal;
+            S integer;
+        public:
+            constexpr SignedToUnsigned(S value) noexcept : integer(value) { }
+            constexpr auto getOrdinal() const noexcept { return ordinal; }
+    };
+    template<typename T, typename = EnableIfUnsigned<T>>
+    constexpr auto toInteger(T value) noexcept {
+        UnsignedToSigned<T> conv(value);
+        return conv.getInteger();
+    }
+    template<typename T, typename = EnableIfSigned<T>>
+    constexpr auto toOrdinal(T value) noexcept {
+        SignedToUnsigned<T> conv(value);
+        return conv.getOrdinal();
+    }
 
     enum class ProcessorSeries {
         Jx,
