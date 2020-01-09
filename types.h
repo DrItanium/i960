@@ -37,6 +37,12 @@ namespace i960 {
 		return byteCount<LongOrdinal>(count);
 	}
 
+    template<Ordinal boolMask>
+    constexpr Ordinal encodeBool(bool value) noexcept {
+        return value ? boolMask : 0;
+    }
+
+
     enum class ProcessorSeries {
         Jx,
         Hx,

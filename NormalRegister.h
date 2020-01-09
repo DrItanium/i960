@@ -101,15 +101,65 @@ namespace i960 {
         constexpr TraceControls(Ordinal raw = 0) : value(raw) { }
 		constexpr bool traceMarked() const noexcept { return markTraceMode != 0; }
 #endif
-        //constexpr TraceControls(Ordinal raw) noexcept : 
-
-        void clear() noexcept;
+        constexpr TraceControls(Ordinal raw) noexcept : 
+            _instructionTraceMode(InstructionTraceModeMask & raw),
+            _branchTraceMode(BranchTraceModeMask & raw),
+            _callTraceMode(CallTraceModeMask & raw),
+            _returnTraceMode(ReturnTraceModeMask & raw),
+            _prereturnTraceMode(PrereturnTraceModeMask& raw),
+            _supervisorTraceMode(SupervisorTraceModeMask & raw),
+            _markTraceMode(MarkTraceModeMask & raw),
+            _instructionAddressBreakpoint0(InstructionAddressBreakpoint0Mask & raw),
+            _instructionAddressBreakpoint1(InstructionAddressBreakpoint1Mask & raw),
+            _dataAddressBreakpoint0(DataAddressBreakpoint0Mask & raw),
+            _dataAddressBreakpoint1(DataAddressBreakpoint1Mask & raw) { }
+        constexpr TraceControls() noexcept = default;
+        void clear() noexcept {
+            _instructionTraceMode = false;
+            _branchTraceMode = false;
+            _callTraceMode = false;
+            _returnTraceMode = false;
+            _prereturnTraceMode = false;
+            _supervisorTraceMode = false;
+            _markTraceMode = false;
+            _instructionAddressBreakpoint0 = false;
+            _instructionAddressBreakpoint1 = false;
+            _dataAddressBreakpoint0 = false;
+            _dataAddressBreakpoint1 = false;
+        }
+        constexpr auto getRawValue() const noexcept {
+            return constructOrdinalMask(encodeBool<InstructionTraceModeMask>(_instructionTraceMode),
+                                        encodeBool<BranchTraceModeMask>(_branchTraceMode),
+                                        encodeBool<CallTraceModeMask>(_callTraceMode),
+                                        encodeBool<ReturnTraceModeMask>(_returnTraceMode),
+                                        encodeBool<PrereturnTraceModeMask>(_prereturnTraceMode),
+                                        encodeBool<SupervisorTraceModeMask>(_supervisorTraceMode),
+                                        encodeBool<MarkTraceModeMask>(_markTraceMode),
+                                        encodeBool<InstructionAddressBreakpoint0Mask>(_instructionAddressBreakpoint0),
+                                        encodeBool<InstructionAddressBreakpoint1Mask>(_instructionAddressBreakpoint1),
+                                        encodeBool<DataAddressBreakpoint0Mask>(_dataAddressBreakpoint0),
+                                        encodeBool<DataAddressBreakpoint1Mask>(_dataAddressBreakpoint1));
+        }
+#define X(v, i) \
+        constexpr auto get ## v () const noexcept { return i ; } \
+        void set ## v (bool value) noexcept { i = value; }
+        X(InstructionTraceMode, _instructionTraceMode);
+        X(BranchTraceMode, _branchTraceMode);
+        /// @todo continue here
+#undef X
         private:
             bool _instructionTraceMode = false;
             bool _branchTraceMode = false;
             bool _callTraceMode = false;
             bool _returnTraceMode = false;
             bool _prereturnTraceMode = false;
+            bool _supervisorTraceMode = false;
+            bool _markTraceMode = false;
+            bool _instructionAddressBreakpoint0 = false;
+            bool _instructionAddressBreakpoint1 = false;
+            bool _dataAddressBreakpoint0 = false;
+            bool _dataAddressBreakpoint1 = false;
+
     };
     union NormalRegister {
         public:
