@@ -156,7 +156,7 @@ namespace i960 {
 		return _globalRegisters[FP.getOffset()].get<Ordinal>() & (~0b111111);
 	}
 	auto Core::getPFP() noexcept -> PreviousFramePointer {
-        return _localRegisters[PFP.getOffset()].get<PreviousFramePointer>();
+        return {_localRegisters[PFP.getOffset()]};
 	}
 	constexpr Ordinal getProcedureAddress(Ordinal value) noexcept {
         return computeAlignedAddress(value);
@@ -188,8 +188,8 @@ namespace i960 {
         }
         setRegister(RIP, _instructionPointer);
         _instructionPointer = temp.get<Ordinal>();
-        auto pe = temp.get<ProcedureEntry>();
-        auto pfp = temp.get<PreviousFramePointer>();
+        ProcedureEntry pe(temp);
+        PreviousFramePointer pfp(temp);
         if ((pe.isLocal()) || (_pc.inSupervisorMode())) {
             // local call or supervisor call from supervisor mode
             // in the manual:
@@ -762,7 +762,7 @@ namespace i960 {
     void Core::performOperation(const REGFormatInstruction& inst, Operation::modac) noexcept {
         auto mask = getSrc(inst);
         auto src = getSrc2(inst);
-        auto dest = getRegister(inst.getSrc1());
+        //auto dest = getRegister(inst.getSrc1());
         
 		auto tmp = _ac.getRawValue();
         _ac.setRawValue((src & mask) | (tmp & (~mask)));
@@ -796,7 +796,8 @@ namespace i960 {
 	void Core::performOperation(const CTRLFormatInstruction&, Operation::ret) noexcept {
         syncf();
         auto pfp = getPFP();
-        if (pfp.getPrereturnTrace() && _pc.traceEnabled() && _tc.getPrereturnTraceMode()) {
+        auto tc = getTraceControls();
+        if (pfp.getPrereturnTrace() && _pc.traceEnabled() && tc.getPrereturnTraceMode()) {
             pfp.setPrereturnTrace(false);
             generateFault(TraceFaultSubtype::PreReturn);
             return;
@@ -1028,7 +1029,7 @@ namespace i960 {
 	}
     void Core::performOperation(const REGFormatInstruction&, Operation::mark) noexcept {
 		// force mark aka generate a breakpoint trace-event
-		if (_pc.traceEnabled() && _tc.traceMarked()) {
+		if (_pc.traceEnabled() && getTraceControls().traceMarked()) {
 			generateFault(TraceFaultSubtype::Mark);
 		}
 	}

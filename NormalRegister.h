@@ -29,8 +29,6 @@ namespace i960 {
                     return toInteger(static_cast<ShortOrdinal>(getValue()));
                 } else if constexpr (std::is_same_v<K, LongOrdinal>) {
                     return static_cast<LongOrdinal>(getValue());
-                } else if constexpr (std::is_base_of_v<RegisterView, K>) {
-                    return {*this};
                 } else {
                     static_assert(false_v<K>, "Illegal type requested!");
                 }
@@ -38,10 +36,7 @@ namespace i960 {
             template<typename T>
             void set(T value) noexcept {
                 using K = std::decay_t<T>;
-                if constexpr (std::is_base_of_v<RegisterView, K>) {
-                    // copy I guess?
-                    setValue(value.getRawValue());
-                } else if constexpr (IsOneOfThese<K, Ordinal, ByteOrdinal, ShortOrdinal, LongOrdinal>) {
+                if constexpr (IsOneOfThese<K, Ordinal, ByteOrdinal, ShortOrdinal, LongOrdinal>) {
                     setValue(static_cast<Ordinal>(value));
                 } else if constexpr (IsOneOfThese<K, Integer, ByteInteger, ShortInteger>) {
                     setValue(static_cast<Ordinal>(toOrdinal(value)));
