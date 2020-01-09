@@ -35,4 +35,29 @@ namespace i960 {
     };
 
 } // end namespace i960
+namespace std {
+
+template<size_t I>
+constexpr i960::Ordinal get(const i960::DoubleRegister& dr) noexcept {
+    if constexpr (I == 0) {
+        return dr.getLowerHalf();
+    } else if constexpr (I == 1) {
+        return dr.getUpperHalf();
+    } else {
+        static_assert(I >= 2, "Out of range accessor");
+    }
+}
+
+template<size_t I>
+constexpr i960::Ordinal get(const i960::DoubleRegister&& dr) noexcept {
+    if constexpr (I == 0) {
+        return dr.getLowerHalf();
+    } else if constexpr (I == 1) {
+        return dr.getUpperHalf();
+    } else {
+        static_assert(I >= 2, "Out of range accessor");
+    }
+}
+
+} // end namespace std
 #endif // end I960_DOUBLE_REGISTER_H__
