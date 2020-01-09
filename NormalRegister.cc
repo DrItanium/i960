@@ -2,14 +2,8 @@
 
 namespace i960 {
 
-void PreviousFramePointer::setRawValue(Ordinal raw) noexcept {
-    _returnCode = ReturnCodeMask & raw;
-    _prereturnTrace = PreReturnTraceMask & raw;
-    _address = AddressMask & raw;
-}
-void ProcedureEntry::setRawValue(Ordinal raw) noexcept {
-    _type = raw & TypeMask;
-    _address = raw & AddressMask;
+void NormalRegister::clear() noexcept {
+    _value = 0;
 }
 void NormalRegister::move(const NormalRegister& other) noexcept {
     setValue(other.getValue());
