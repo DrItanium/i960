@@ -36,13 +36,15 @@ namespace i960 {
             template<typename T>
             void set(T value) noexcept {
                 using K = std::decay_t<T>;
+                Ordinal outcome = 0;
                 if constexpr (IsOneOfThese<K, Ordinal, ByteOrdinal, ShortOrdinal, LongOrdinal>) {
-                    setValue(static_cast<Ordinal>(value));
+                    outcome = static_cast<Ordinal>(value);
                 } else if constexpr (IsOneOfThese<K, Integer, ByteInteger, ShortInteger>) {
-                    setValue(static_cast<Ordinal>(toOrdinal(value)));
+                    outcome = static_cast<Ordinal>(toOrdinal(value));
                 } else {
                     static_assert(false_v<K>, "Illegal type to store into register!");
                 }
+                setValue(outcome);
             }
             void move(const NormalRegister& other) noexcept;
             constexpr auto mostSignificantBit() const noexcept {
@@ -82,7 +84,6 @@ namespace i960 {
             }
             void clear() noexcept { _reg.clear(); }
             void setRawValue(Ordinal value) noexcept { _reg.setValue(value); }
-        protected:
             template<typename T, Ordinal mask, Ordinal shift = 0>
             void encodeField(T value) noexcept {
                 _reg.encodeField<T, mask, shift>(value);
