@@ -5,13 +5,13 @@
 namespace i960 {
     class DoubleRegister final {
         public:
-            DoubleRegister(NormalRegister& lower, NormalRegister& upper) noexcept : _lower(lower), _upper(upper) { }
+            constexpr DoubleRegister(NormalRegister& lower, NormalRegister& upper) noexcept : _lower(lower), _upper(upper) { }
             ~DoubleRegister() = default;
             template<typename T>
-            T get() const noexcept {
+            constexpr T get() const noexcept {
                 using K = std::decay_t<T>;
                 if constexpr(std::is_same_v<K, LongOrdinal>) {
-                    return LongOrdinal(_lower.ordinal) | (LongOrdinal(_upper.ordinal) << 32);
+                    return _lower.get<LongOrdinal>() | (_upper.get<LongOrdinal>() << 32);
                 } else {
                     static_assert(false_v<K>, "Illegal type requested");
                 }
@@ -20,16 +20,15 @@ namespace i960 {
             void set(T value) noexcept {
                 using K = std::decay_t<T>;
                 if constexpr(std::is_same_v<K, LongOrdinal>) {
-                    _lower.ordinal = static_cast<Ordinal>(value);
-                    _upper.ordinal = static_cast<Ordinal>(value >> 32);
+                    set(static_cast<Ordinal>(value), 
+                        static_cast<Ordinal>(value >> 32));
                 } else {
                     static_assert(false_v<K>, "Illegal type requested");
                 }
             }
             void set(Ordinal lower, Ordinal upper) noexcept;
-            Ordinal getLowerHalf() const noexcept { return _lower.get<Ordinal>(); }
-            Ordinal getUpperHalf() const noexcept { return _upper.get<Ordinal>(); }
-
+            constexpr Ordinal getLowerHalf() const noexcept { return _lower.get<Ordinal>(); }
+            constexpr Ordinal getUpperHalf() const noexcept { return _upper.get<Ordinal>(); }
         private:
             NormalRegister& _lower;
             NormalRegister& _upper;
