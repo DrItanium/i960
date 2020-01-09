@@ -93,6 +93,7 @@ namespace i960 {
                     ProcessorSeries series,
                     const char* str, 
                     CoreVoltageKind voltage, 
+                    Ordinal salign = 1,
                     Ordinal icacheSize = 0, 
                     Ordinal dcacheSize = 0,
                     Ordinal devId = 0) noexcept :
@@ -101,7 +102,8 @@ namespace i960 {
                 _devId(devId), 
                 _voltage(voltage), 
                 _icacheSize(icacheSize), 
-                _dcacheSize(dcacheSize) { }
+                _dcacheSize(dcacheSize),
+                _salign(salign) { }
             constexpr auto getString() const noexcept               { return _str; }
             constexpr auto getDeviceId() const noexcept             { return _devId; }
             constexpr auto getVoltage() const noexcept              { return _voltage; }
@@ -118,6 +120,7 @@ namespace i960 {
             constexpr auto is5VoltCore() const noexcept             { return _voltage == CoreVoltageKind::V5_0; }
             constexpr auto is3_3VoltCore() const noexcept           { return _voltage == CoreVoltageKind::V3_3; }
             constexpr auto hasDeviceId() const noexcept             { return _devId != 0; }
+            constexpr auto getSalign() const noexcept               { return _salign; }
         private:
             ProcessorSeries _series;
             const char* _str;
@@ -125,13 +128,14 @@ namespace i960 {
             CoreVoltageKind _voltage;
             Ordinal _icacheSize;
             Ordinal _dcacheSize;
+            Ordinal _salign;
     };
     constexpr CoreInformation cpu80960SA(ProcessorSeries::Sx , "80960SA", CoreVoltageKind::V5_0);
     constexpr CoreInformation cpu80960SB(ProcessorSeries::Sx , "80960SB", CoreVoltageKind::V5_0);
-    constexpr CoreInformation cpu80L960JA(ProcessorSeries::Jx, "80L960JA", CoreVoltageKind::V3_3, 2048u, 1024u, 0x0082'1013);
-    constexpr CoreInformation cpu80L960JF(ProcessorSeries::Jx, "80L960JF", CoreVoltageKind::V3_3, 4096u, 2048u, 0x0082'0013);
-    constexpr CoreInformation cpu80960JD( ProcessorSeries::Jx, "80960JD", CoreVoltageKind::V5_0,  4096u, 2048u, 0x0882'0013);
-    constexpr CoreInformation cpu80960JF( ProcessorSeries::Jx, "80960JF", CoreVoltageKind::V5_0,  4096u, 2048u, 0x0882'0013);
+    constexpr CoreInformation cpu80L960JA(ProcessorSeries::Jx, "80L960JA", CoreVoltageKind::V3_3, 1, 2048u, 1024u, 0x0082'1013);
+    constexpr CoreInformation cpu80L960JF(ProcessorSeries::Jx, "80L960JF", CoreVoltageKind::V3_3, 1, 4096u, 2048u, 0x0082'0013);
+    constexpr CoreInformation cpu80960JD( ProcessorSeries::Jx, "80960JD", CoreVoltageKind::V5_0,  1, 4096u, 2048u, 0x0882'0013);
+    constexpr CoreInformation cpu80960JF( ProcessorSeries::Jx, "80960JF", CoreVoltageKind::V5_0,  1, 4096u, 2048u, 0x0882'0013);
     // sanity checks
     static_assert(cpu80960JF.getGeneration() == 0b0001, "Bad generation check!");
     static_assert(cpu80960JF.getModel() == 0, "Bad model check!");

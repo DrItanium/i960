@@ -155,8 +155,8 @@ namespace i960 {
 	Ordinal Core::getFramePointerAddress() const noexcept {
 		return _globalRegisters[FP.getOffset()].get<Ordinal>() & (~0b111111);
 	}
-	auto Core::getPFP() noexcept -> PreviousFramePointer {
-        return {_localRegisters[PFP.getOffset()]};
+	PreviousFramePointer Core::getPFP() noexcept {
+        return _localRegisters[PFP.getOffset()].viewAs<PreviousFramePointer>();
 	}
 	constexpr Ordinal getProcedureAddress(Ordinal value) noexcept {
         return computeAlignedAddress(value);
@@ -1348,7 +1348,7 @@ namespace i960 {
 		} conv;
 		conv._value = inst.getDisplacement();
 		auto newAddress = conv._value;
-		auto tmp = (getStackPointerAddress() + 63) & (~63); // round to the next boundary
+		auto tmp = (getStackPointerAddress() + computeAlignmentBoundaryConstant()) & (~computeAlignmentBoundaryConstant()); // round to the next boundary
 		setRegister(RIP, _instructionPointer);
 		saveLocalRegisters();
 		allocateNewLocalRegisterSet();

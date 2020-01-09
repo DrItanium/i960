@@ -63,6 +63,11 @@ namespace i960 {
                 _value = i960::encode<decltype(_value), T, mask, shift>(_value, field);
             }
             void clear() noexcept; 
+
+            template<typename T, typename = std::enable_if_t<std::is_base_of_v<RegisterView, std::decay_t<T>>>>
+            T viewAs() noexcept {
+                return {*this};
+            }
         private:
             Ordinal _value;
 
@@ -153,6 +158,7 @@ namespace i960 {
             constexpr auto traceMarked() const noexcept { return getMarkTraceMode(); }
             void modify(Ordinal mask, Ordinal input) noexcept;
     };
+
 
 } // end namespace i960
 

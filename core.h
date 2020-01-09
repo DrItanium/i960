@@ -493,6 +493,12 @@ namespace i960 {
 								}
 				}());
             }
+        private:
+            constexpr Ordinal computeAlignmentBoundaryConstant() const noexcept {
+                // on the i960 MC the constant is four,
+                // on the jx it is 1
+                return (_deviceId.getSalign() * 16) - 1;
+            }
 		private:
 			void dispatch(const Instruction& decodedInstruction) noexcept;
             bool cycle();
@@ -505,7 +511,7 @@ namespace i960 {
             void freeCurrentRegisterSet() noexcept;
             bool registerSetNotAllocated(const Operand& fp) noexcept;
             void retrieveFromMemory(const Operand& fp) noexcept;
-            TraceControls getTraceControls() noexcept { return {_tc}; }
+            TraceControls getTraceControls() noexcept { return _tc.viewAs<TraceControls>(); }
         private:
             RegisterWindow _globalRegisters;
             // The hardware implementations use register sets, however
