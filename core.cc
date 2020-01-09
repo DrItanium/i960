@@ -207,8 +207,8 @@ namespace i960 {
         }
         setRegister(PFP, getRegister(FP).get<Ordinal>());
         getPFP().returnCode = temp.pfp.returnCode;
-        setRegister(FP, temp.ordinal);
-        setRegister(SP, temp.ordinal + 64);
+        setRegister(FP, temp..getValue());
+        setRegister(SP, temp.getValue() + 64);
 	}
 
 	Ordinal Core::load(Ordinal address, bool atomic) noexcept {
@@ -737,11 +737,10 @@ namespace i960 {
         // the instruction has its arguments reversed for some reason...
         auto mask = getSrc(inst);
         auto src2 = getSrc2(inst);
-		TraceControls tmp;
-		tmp.value = _tc.value;
+        auto tmp = _tc.getRawValue();
 		auto temp1 = 0x00FF00FF & mask; // masked to prevent reserved bits from being used
-		_tc.value = (temp1 & src2) | (_tc.value & (~temp1));
-        setRegister(inst.getSrc1(), tmp.value);
+        _tc.setRawValue((temp1 & src2) | (_tc.getRawValue() & (~temp1)));
+        setRegister(inst.getSrc1(), tmp);
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::modpc) noexcept {
 		// modify process controls
@@ -798,27 +797,27 @@ namespace i960 {
 	void Core::performOperation(const CTRLFormatInstruction&, Operation::ret) noexcept {
         syncf();
         auto pfp = getPFP();
-        if (pfp.prereturnTrace && _pc.traceEnabled() && _tc.prereturnTraceMode) {
-            pfp.prereturnTrace = 0;
+        if (pfp.getPrereturnTrace() && _pc.traceEnabled() && _tc.getPrereturnTraceMode()) {
+            pfp.setPrereturnTrace(false);
             generateFault(TraceFaultSubtype::PreReturn);
             return;
         }
         auto getIPFP = [this]() {
-            setRegister(FP, getRegister(PFP).ordinal);
+            setRegister(FP, getRegister(PFP).getValue());
             freeCurrentRegisterSet();
             if (registerSetNotAllocated(FP)) {
                 retrieveFromMemory(FP);
             }
-            _instructionPointer = getRegister(RIP).ordinal;
+            _instructionPointer = getRegister(RIP).get<Ordinal>();
         };
-        switch (pfp.returnCode) {
+        switch (pfp.getReturnCode()) {
             case 0b000: // local return
                 // get_FP_and_IP();
                 break;
             case 0b001: // fault return
                 [this, getIPFP]() {
-                    auto tempa = load(getRegister(FP).ordinal - 16);
-                    auto tempb = load(getRegister(FP).ordinal - 12);
+                    auto tempa = load(getRegister(FP).get<Ordinal>() - 16);
+                    auto tempb = load(getRegister(FP).get<Ordinal>() - 12);
                     getIPFP();
                     _ac.setRawValue(tempb);
                     if (_pc.inSupervisorMode()) {
@@ -844,8 +843,8 @@ namespace i960 {
                 break;
             case 0b111: // interrupt return
                 [this, getIPFP]() {
-                    auto tempa = load(getRegister(FP).ordinal - 16);
-                    auto tempb = load(getRegister(FP).ordinal - 12);
+                    auto tempa = load(getRegister(FP).getValue() - 16);
+                    auto tempb = load(getRegister(FP).getValue() - 12);
                     getIPFP();
                     _ac.setRawValue(tempb);
                     if (_pc.inSupervisorMode()) {
