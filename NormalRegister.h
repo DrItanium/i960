@@ -4,126 +4,12 @@
 #include "types.h"
 #include "ProcessControls.h"
 namespace i960 {
-    class TraceControls {
-        public:
-            static constexpr Ordinal InstructionTraceModeMask = 0x0000'0002;
-            static constexpr Ordinal BranchTraceModeMask = 0x0000'0004;
-            static constexpr Ordinal CallTraceModeMask = 0x0000'0008;
-            static constexpr Ordinal ReturnTraceModeMask = 0x0000'0010;
-            static constexpr Ordinal PrereturnTraceModeMask = 0x0000'0020; 
-            static constexpr Ordinal SupervisorTraceModeMask = 0x0000'0040;
-            static constexpr Ordinal MarkTraceModeMask = 0x0000'0080;
-            static constexpr Ordinal InstructionAddressBreakpoint0Mask = 0x0100'0000;
-            static constexpr Ordinal InstructionAddressBreakpoint1Mask = 0x0200'0000;
-            static constexpr Ordinal DataAddressBreakpoint0Mask = 0x0400'0000;
-            static constexpr Ordinal DataAddressBreakpoint1Mask = 0x0800'0000;
-            static constexpr Ordinal ExtractionMask = constructOrdinalMask(
-                    InstructionTraceModeMask, 
-                    BranchTraceModeMask, 
-                    CallTraceModeMask, 
-                    ReturnTraceModeMask, 
-                    PrereturnTraceModeMask,
-                    SupervisorTraceModeMask,
-                    MarkTraceModeMask,
-                    InstructionAddressBreakpoint0Mask,
-                    InstructionAddressBreakpoint1Mask,
-                    DataAddressBreakpoint0Mask,
-                    DataAddressBreakpoint1Mask);
-        public:
-#define Base(v, m) \
-            static constexpr bool extract ## v (Ordinal raw) noexcept { \
-                return m & raw;  \
-            } \
-            static constexpr Ordinal encode ## v (bool value) noexcept { \
-                return encodeBool< m > (value); \
-            }
-#define X(v) \
-            Base(v ## TraceMode , v ## TraceModeMask )
-#define Y(v) \
-            Base(v ## AddressBreakpoint0, v ## AddressBreakpoint0Mask ); \
-            Base(v ## AddressBreakpoint1, v ## AddressBreakpoint1Mask )
-            X(Instruction);
-            X(Branch);
-            X(Call);
-            X(Return);
-            X(Prereturn);
-            X(Supervisor);
-            X(Mark);
-            Y(Instruction);
-            Y(Data);
-#undef Y
-#undef X
-#undef Base
-
-        public:
-            constexpr TraceControls() noexcept = default;
-            constexpr TraceControls(Ordinal raw) noexcept : 
-                _instructionTraceMode(InstructionTraceModeMask & raw),
-                _branchTraceMode(BranchTraceModeMask & raw),
-                _callTraceMode(CallTraceModeMask & raw),
-                _returnTraceMode(ReturnTraceModeMask & raw),
-                _prereturnTraceMode(PrereturnTraceModeMask& raw),
-                _supervisorTraceMode(SupervisorTraceModeMask & raw),
-                _markTraceMode(MarkTraceModeMask & raw),
-                _instructionAddressBreakpoint0(InstructionAddressBreakpoint0Mask & raw),
-                _instructionAddressBreakpoint1(InstructionAddressBreakpoint1Mask & raw),
-                _dataAddressBreakpoint0(DataAddressBreakpoint0Mask & raw),
-                _dataAddressBreakpoint1(DataAddressBreakpoint1Mask & raw) { }
-            constexpr bool traceMarked() const noexcept { return _markTraceMode != 0; }
-            constexpr auto getRawValue() const noexcept {
-                return constructOrdinalMask(encodeBool<InstructionTraceModeMask>(_instructionTraceMode),
-                        encodeBool<BranchTraceModeMask>(_branchTraceMode),
-                        encodeBool<CallTraceModeMask>(_callTraceMode),
-                        encodeBool<ReturnTraceModeMask>(_returnTraceMode),
-                        encodeBool<PrereturnTraceModeMask>(_prereturnTraceMode),
-                        encodeBool<SupervisorTraceModeMask>(_supervisorTraceMode),
-                        encodeBool<MarkTraceModeMask>(_markTraceMode),
-                        encodeBool<InstructionAddressBreakpoint0Mask>(_instructionAddressBreakpoint0),
-                        encodeBool<InstructionAddressBreakpoint1Mask>(_instructionAddressBreakpoint1),
-                        encodeBool<DataAddressBreakpoint0Mask>(_dataAddressBreakpoint0),
-                        encodeBool<DataAddressBreakpoint1Mask>(_dataAddressBreakpoint1)) & ExtractionMask;
-            }
-#define Base(v, i) \
-            constexpr auto get ## v () const noexcept { return i ; } \
-            void set ## v (bool value) noexcept { i = value; }
-#define X(v, i) \
-            Base(v ## TraceMode , _ ## i ## TraceMode )
-#define Y(v, i) \
-            Base(v ## AddressBreakpoint0, _ ## i ## AddressBreakpoint0); \
-            Base(v ## AddressBreakpoint1, _ ## i ## AddressBreakpoint1)
-            X(Instruction, instruction);
-            X(Branch, branch);
-            X(Call, call);
-            X(Return, return);
-            X(Prereturn, prereturn);
-            X(Supervisor, supervisor);
-            X(Mark, mark);
-            Y(Instruction, instruction);
-            Y(Data, data);
-#undef X
-#undef Y
-#undef Base
-            void clear() noexcept;
-            void setRawValue(Ordinal value) noexcept;
-        private:
-            bool _instructionTraceMode = false;
-            bool _branchTraceMode = false;
-            bool _callTraceMode = false;
-            bool _returnTraceMode = false;
-            bool _prereturnTraceMode = false;
-            bool _supervisorTraceMode = false;
-            bool _markTraceMode = false;
-            bool _instructionAddressBreakpoint0 = false;
-            bool _instructionAddressBreakpoint1 = false;
-            bool _dataAddressBreakpoint0 = false;
-            bool _dataAddressBreakpoint1 = false;
-
-    };
     class PreviousFramePointer;
     class RegisterWrapper;
     class ProcedureEntry;
+    class TraceControls;
     template<typename T, typename ... Args>
-    constexpr auto IsOneOfThese = ( ... || std::is_same_v<std::decay_t<T>, Args>);
+        constexpr auto IsOneOfThese = ( ... || std::is_same_v<std::decay_t<T>, Args>);
     class NormalRegister {
         public:
             constexpr NormalRegister(Ordinal value = 0) noexcept : _value(value) { }
@@ -232,6 +118,48 @@ namespace i960 {
             void setAddress(Ordinal addr) noexcept { encodeField<Ordinal, AddressMask>(addr); }
             constexpr bool isLocal() const noexcept { return getType() == 0; }
             constexpr bool isSupervisor() const noexcept { return getType() == 0b10; }
+
+    };
+
+    class TraceControls : public RegisterWrapper {
+        public:
+            static constexpr Ordinal InstructionTraceModeMask = 0x0000'0002;
+            static constexpr Ordinal BranchTraceModeMask = 0x0000'0004;
+            static constexpr Ordinal CallTraceModeMask = 0x0000'0008;
+            static constexpr Ordinal ReturnTraceModeMask = 0x0000'0010;
+            static constexpr Ordinal PrereturnTraceModeMask = 0x0000'0020; 
+            static constexpr Ordinal SupervisorTraceModeMask = 0x0000'0040;
+            static constexpr Ordinal MarkTraceModeMask = 0x0000'0080;
+            static constexpr Ordinal InstructionAddressBreakpoint0Mask = 0x0100'0000;
+            static constexpr Ordinal InstructionAddressBreakpoint1Mask = 0x0200'0000;
+            static constexpr Ordinal DataAddressBreakpoint0Mask = 0x0400'0000;
+            static constexpr Ordinal DataAddressBreakpoint1Mask = 0x0800'0000;
+        public:
+            using RegisterWrapper::RegisterWrapper;
+#define B(field, mask) \
+            void set ## field (bool value) noexcept { \
+                encodeField<bool, mask>(value); \
+            } \
+            constexpr auto get ## field () const noexcept { \
+                return decodeField<bool, mask>(); \
+            }
+#define TM(title) B(title ## TraceMode , title ## TraceModeMask)
+#define ABM(title) \
+            B(title ## AddressBreakpoint0, title ## AddressBreakpoint0Mask); \
+            B(title ## AddressBreakpoint1, title ## AddressBreakpoint1Mask)
+            TM(Instruction);
+            TM(Branch);
+            TM(Call);
+            TM(Return);
+            TM(Prereturn);
+            TM(Supervisor);
+            TM(Mark);
+            ABM(Instruction);
+            ABM(Data);
+#undef TM
+#undef ABM
+#undef B
+            constexpr auto traceMarked() const noexcept { return getMarkTraceMode(); }
 
     };
 
