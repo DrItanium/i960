@@ -4,20 +4,43 @@
 #include "types.h"
 #include "ProcessControls.h"
 namespace i960 {
-    union PreviousFramePointer {
-        struct {
-            Ordinal returnCode : 3;
-            Ordinal prereturnTrace : 1;
-            Ordinal unused : 2; // 80960 ignores the lower six bits of this register
-            Ordinal address : 26;
-        };
-        Ordinal value;
-    } __attribute__((packed));
+    class PreviousFramePointer {
+        public:
+            static constexpr Ordinal ReturnCodeMask = 0x0000'0007;
+            static constexpr Ordinal PreReturnTraceMask = 0x0000'0008;
+            static constexpr Ordinal AddressMask = 0xFFFF'FFC0; // aligned to 64-byte boundaries
+            static constexpr Ordinal ExtractionMask = constructOrdinalMask(ReturnCodeMask, PreReturnTraceMask, AddressMask); 
+            static constexpr Ordinal ReservedMask = ~ExtractionMask;
+            constexpr PreviousFramePointer(Ordinal raw) noexcept : 
+                _returnCode(ReturnCodeMask & raw), 
+                _prereturnTrace(PreReturnTraceMask & raw),
+                _address(AddressMask & raw) { }
+            constexpr PreviousFramePointer() noexcept = default;
+            constexpr auto getReturnCode() const noexcept { return _returnCode; }
+            void setReturnCode(Ordinal value) noexcept { _returnCode = ReturnCodeMask & value; }
+            constexpr auto getPrereturnTrace() const noexcept { return _prereturnTrace; }
+            void setPrereturnTrace(bool value) noexcept { _prereturnTrace = value; }
+            constexpr auto getAddress() const noexcept { return _address; }
+            void setAddress(Ordinal value) noexcept { _address = AddressMask & value; }
+            constexpr auto getRawValue() const noexcept {
+                return (getReturnCode() | getAddress() | (getPrereturnTrace() ? PreReturnTraceMask : 0)) & ExtractionMask;
+            }
+            void setRawValue(Ordinal raw) noexcept {
+                _returnCode = ReturnCodeMask & raw;
+                _prereturnTrace = PreReturnTraceMask & raw;
+                _address = AddressMask & raw;
+            }
+        private:
+            Ordinal _returnCode = 0;
+            bool _prereturnTrace = false;
+            Ordinal _address = 0;
+    };
     class ProcedureEntry {
         public:
             static constexpr Ordinal TypeMask = 0b11;
             static constexpr auto AddressMask = ~TypeMask;
-            constexpr ProcedureEntry(Ordinal _raw) noexcept : _type(_raw & TypeMask), _address(_raw & AddressMask) { }
+            constexpr ProcedureEntry() noexcept = default;
+            constexpr ProcedureEntry(Ordinal raw) noexcept : _type(raw & TypeMask), _address(raw & AddressMask) { }
             constexpr bool isLocal() const noexcept { return _type == 0; }
             constexpr bool isSupervisor() const noexcept { return _type == 0b10; }
             constexpr auto getAddress() const noexcept { return _address; }
