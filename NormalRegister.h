@@ -79,74 +79,104 @@ namespace i960 {
                     DataAddressBreakpoint0Mask,
                     DataAddressBreakpoint1Mask);
 #if 0
-        struct {
-            Ordinal unused0 : 1;
-			// trace mode bits
-            Ordinal instructionTraceMode : 1;
-            Ordinal branchTraceMode : 1;
-			Ordinal callTraceMode : 1;
-            Ordinal returnTraceMode : 1;
-            Ordinal prereturnTraceMode : 1;
-            Ordinal supervisorTraceMode : 1;
-            Ordinal markTraceMode : 1;
-            Ordinal unused1 : 16;
-			// hardware breakpoint event flags
-			Ordinal instructionAddressBreakpoint0 : 1;
-			Ordinal instructionAddressBreakpoint1 : 1;
-			Ordinal dataAddressBreakpoint0 : 1;
-			Ordinal dataAddressBreakpoint1 : 1;
-            Ordinal unused2 : 4;
-        };
-        Ordinal value;
-        constexpr TraceControls(Ordinal raw = 0) : value(raw) { }
-		constexpr bool traceMarked() const noexcept { return markTraceMode != 0; }
+            struct {
+                Ordinal unused0 : 1;
+                // trace mode bits
+                Ordinal instructionTraceMode : 1;
+                Ordinal branchTraceMode : 1;
+                Ordinal callTraceMode : 1;
+                Ordinal returnTraceMode : 1;
+                Ordinal prereturnTraceMode : 1;
+                Ordinal supervisorTraceMode : 1;
+                Ordinal markTraceMode : 1;
+                Ordinal unused1 : 16;
+                // hardware breakpoint event flags
+                Ordinal instructionAddressBreakpoint0 : 1;
+                Ordinal instructionAddressBreakpoint1 : 1;
+                Ordinal dataAddressBreakpoint0 : 1;
+                Ordinal dataAddressBreakpoint1 : 1;
+                Ordinal unused2 : 4;
+            };
+            Ordinal value;
+            constexpr TraceControls(Ordinal raw = 0) : value(raw) { }
+            constexpr bool traceMarked() const noexcept { return markTraceMode != 0; }
 #endif
-        constexpr TraceControls(Ordinal raw) noexcept : 
-            _instructionTraceMode(InstructionTraceModeMask & raw),
-            _branchTraceMode(BranchTraceModeMask & raw),
-            _callTraceMode(CallTraceModeMask & raw),
-            _returnTraceMode(ReturnTraceModeMask & raw),
-            _prereturnTraceMode(PrereturnTraceModeMask& raw),
-            _supervisorTraceMode(SupervisorTraceModeMask & raw),
-            _markTraceMode(MarkTraceModeMask & raw),
-            _instructionAddressBreakpoint0(InstructionAddressBreakpoint0Mask & raw),
-            _instructionAddressBreakpoint1(InstructionAddressBreakpoint1Mask & raw),
-            _dataAddressBreakpoint0(DataAddressBreakpoint0Mask & raw),
-            _dataAddressBreakpoint1(DataAddressBreakpoint1Mask & raw) { }
-        constexpr TraceControls() noexcept = default;
-        void clear() noexcept {
-            _instructionTraceMode = false;
-            _branchTraceMode = false;
-            _callTraceMode = false;
-            _returnTraceMode = false;
-            _prereturnTraceMode = false;
-            _supervisorTraceMode = false;
-            _markTraceMode = false;
-            _instructionAddressBreakpoint0 = false;
-            _instructionAddressBreakpoint1 = false;
-            _dataAddressBreakpoint0 = false;
-            _dataAddressBreakpoint1 = false;
-        }
-        constexpr auto getRawValue() const noexcept {
-            return constructOrdinalMask(encodeBool<InstructionTraceModeMask>(_instructionTraceMode),
-                                        encodeBool<BranchTraceModeMask>(_branchTraceMode),
-                                        encodeBool<CallTraceModeMask>(_callTraceMode),
-                                        encodeBool<ReturnTraceModeMask>(_returnTraceMode),
-                                        encodeBool<PrereturnTraceModeMask>(_prereturnTraceMode),
-                                        encodeBool<SupervisorTraceModeMask>(_supervisorTraceMode),
-                                        encodeBool<MarkTraceModeMask>(_markTraceMode),
-                                        encodeBool<InstructionAddressBreakpoint0Mask>(_instructionAddressBreakpoint0),
-                                        encodeBool<InstructionAddressBreakpoint1Mask>(_instructionAddressBreakpoint1),
-                                        encodeBool<DataAddressBreakpoint0Mask>(_dataAddressBreakpoint0),
-                                        encodeBool<DataAddressBreakpoint1Mask>(_dataAddressBreakpoint1));
-        }
-#define X(v, i) \
-        constexpr auto get ## v () const noexcept { return i ; } \
-        void set ## v (bool value) noexcept { i = value; }
-        X(InstructionTraceMode, _instructionTraceMode);
-        X(BranchTraceMode, _branchTraceMode);
-        /// @todo continue here
+        public:
+#define Base(v, m) \
+            static constexpr bool extract ## v (Ordinal raw) noexcept { \
+                return m & raw;  \
+            } \
+            static constexpr Ordinal encode ## v (bool value) noexcept { \
+                return encodeBool< m > (value); \
+            }
+#define X(v) \
+            Base(v ## TraceMode , v ## TraceModeMask )
+#define Y(v) \
+            Base(v ## AddressBreakpoint0, v ## AddressBreakpoint0Mask ); \
+            Base(v ## AddressBreakpoint1, v ## AddressBreakpoint1Mask )
+            X(Instruction);
+            X(Branch);
+            X(Call);
+            X(Return);
+            X(Prereturn);
+            X(Supervisor);
+            X(Mark);
+            Y(Instruction);
+            Y(Data);
+#undef Y
 #undef X
+#undef Base
+
+        public:
+            constexpr TraceControls() noexcept = default;
+            constexpr TraceControls(Ordinal raw) noexcept : 
+                _instructionTraceMode(InstructionTraceModeMask & raw),
+                _branchTraceMode(BranchTraceModeMask & raw),
+                _callTraceMode(CallTraceModeMask & raw),
+                _returnTraceMode(ReturnTraceModeMask & raw),
+                _prereturnTraceMode(PrereturnTraceModeMask& raw),
+                _supervisorTraceMode(SupervisorTraceModeMask & raw),
+                _markTraceMode(MarkTraceModeMask & raw),
+                _instructionAddressBreakpoint0(InstructionAddressBreakpoint0Mask & raw),
+                _instructionAddressBreakpoint1(InstructionAddressBreakpoint1Mask & raw),
+                _dataAddressBreakpoint0(DataAddressBreakpoint0Mask & raw),
+                _dataAddressBreakpoint1(DataAddressBreakpoint1Mask & raw) { }
+            constexpr bool traceMarked() const noexcept { return _markTraceMode != 0; }
+            void clear() noexcept;
+            constexpr auto getRawValue() const noexcept {
+                return constructOrdinalMask(encodeBool<InstructionTraceModeMask>(_instructionTraceMode),
+                        encodeBool<BranchTraceModeMask>(_branchTraceMode),
+                        encodeBool<CallTraceModeMask>(_callTraceMode),
+                        encodeBool<ReturnTraceModeMask>(_returnTraceMode),
+                        encodeBool<PrereturnTraceModeMask>(_prereturnTraceMode),
+                        encodeBool<SupervisorTraceModeMask>(_supervisorTraceMode),
+                        encodeBool<MarkTraceModeMask>(_markTraceMode),
+                        encodeBool<InstructionAddressBreakpoint0Mask>(_instructionAddressBreakpoint0),
+                        encodeBool<InstructionAddressBreakpoint1Mask>(_instructionAddressBreakpoint1),
+                        encodeBool<DataAddressBreakpoint0Mask>(_dataAddressBreakpoint0),
+                        encodeBool<DataAddressBreakpoint1Mask>(_dataAddressBreakpoint1)) & ExtractionMask;
+            }
+            void setRawValue(Ordinal value) noexcept;
+#define Base(v, i) \
+            constexpr auto get ## v () const noexcept { return i ; } \
+            void set ## v (bool value) noexcept { i = value; }
+#define X(v, i) \
+            Base(v ## TraceMode , _ ## i ## TraceMode )
+#define Y(v, i) \
+            Base(v ## AddressBreakpoint0, _ ## i ## AddressBreakpoint0); \
+            Base(v ## AddressBreakpoint1, _ ## i ## AddressBreakpoint1)
+            X(Instruction, instruction);
+            X(Branch, branch);
+            X(Call, call);
+            X(Return, return);
+            X(Prereturn, prereturn);
+            X(Supervisor, supervisor);
+            X(Mark, mark);
+            Y(Instruction, instruction);
+            Y(Data, data);
+#undef X
+#undef Y
+#undef Base
         private:
             bool _instructionTraceMode = false;
             bool _branchTraceMode = false;
@@ -174,57 +204,57 @@ namespace i960 {
             Integer integer;
             ByteOrdinal byteOrd;
             ShortOrdinal shortOrd;
-			ByteInteger byteInt;
-			ShortInteger shortInt;
+            ByteInteger byteInt;
+            ShortInteger shortInt;
 
             template<typename T>
-            constexpr T get() const noexcept {
-                using K = std::decay_t<T>;
-                if constexpr(std::is_same_v<K, Ordinal>) {
-                    return ordinal;
-                } else if constexpr(std::is_same_v<K, Integer>) {
-                    return integer;
-                } else if constexpr(std::is_same_v<K, ByteOrdinal>) {
-                    return byteOrd;
-				} else if constexpr(std::is_same_v<K, ByteInteger>) {
-					return byteInt;
-                } else if constexpr(std::is_same_v<K, ShortOrdinal>) {
-                    return shortOrd;
-				} else if constexpr(std::is_same_v<K, ShortInteger>) {
-					return shortInt;
-                } else if constexpr(std::is_same_v<K, PreviousFramePointer>) {
-                    return pfp;
-                } else if constexpr(std::is_same_v<K, LongOrdinal>) {
-                    return static_cast<LongOrdinal>(ordinal);
-                } else {
-                    static_assert(false_v<K>, "Illegal type requested");
+                constexpr T get() const noexcept {
+                    using K = std::decay_t<T>;
+                    if constexpr(std::is_same_v<K, Ordinal>) {
+                        return ordinal;
+                    } else if constexpr(std::is_same_v<K, Integer>) {
+                        return integer;
+                    } else if constexpr(std::is_same_v<K, ByteOrdinal>) {
+                        return byteOrd;
+                    } else if constexpr(std::is_same_v<K, ByteInteger>) {
+                        return byteInt;
+                    } else if constexpr(std::is_same_v<K, ShortOrdinal>) {
+                        return shortOrd;
+                    } else if constexpr(std::is_same_v<K, ShortInteger>) {
+                        return shortInt;
+                    } else if constexpr(std::is_same_v<K, PreviousFramePointer>) {
+                        return pfp;
+                    } else if constexpr(std::is_same_v<K, LongOrdinal>) {
+                        return static_cast<LongOrdinal>(ordinal);
+                    } else {
+                        static_assert(false_v<K>, "Illegal type requested");
+                    }
                 }
-            }
             template<typename T>
-            void set(T value) noexcept {
-                using K = std::decay_t<T>;
-                if constexpr(std::is_same_v<K, Ordinal>) {
-                    ordinal = value;
-                } else if constexpr(std::is_same_v<K, Integer>) {
-                    integer = value;
-                } else if constexpr(std::is_same_v<K, ByteOrdinal>) {
-                    byteOrd = value;
-                } else if constexpr(std::is_same_v<K, ShortOrdinal>) {
-                    shortOrd = value;
-				} else if constexpr(std::is_same_v<K, ByteInteger>) {
-					byteInt = value;
-				} else if constexpr(std::is_same_v<K, ShortInteger>) {
-					shortInt = value;
-                } else if constexpr(std::is_same_v<K, PreviousFramePointer>) {
-                    ordinal = value.value;
-                } else {
-                    static_assert(false_v<K>, "Illegal type requested");
+                void set(T value) noexcept {
+                    using K = std::decay_t<T>;
+                    if constexpr(std::is_same_v<K, Ordinal>) {
+                        ordinal = value;
+                    } else if constexpr(std::is_same_v<K, Integer>) {
+                        integer = value;
+                    } else if constexpr(std::is_same_v<K, ByteOrdinal>) {
+                        byteOrd = value;
+                    } else if constexpr(std::is_same_v<K, ShortOrdinal>) {
+                        shortOrd = value;
+                    } else if constexpr(std::is_same_v<K, ByteInteger>) {
+                        byteInt = value;
+                    } else if constexpr(std::is_same_v<K, ShortInteger>) {
+                        shortInt = value;
+                    } else if constexpr(std::is_same_v<K, PreviousFramePointer>) {
+                        ordinal = value.value;
+                    } else {
+                        static_assert(false_v<K>, "Illegal type requested");
+                    }
                 }
-            }
             void move(const NormalRegister& other) noexcept;
-			constexpr Ordinal mostSignificantBit() const noexcept { return getMostSignificantBit(ordinal); }
-			constexpr bool mostSignificantBitSet() const noexcept     { return i960::mostSignificantBitSet(ordinal); }
-			constexpr bool mostSignificantBitClear() const noexcept   { return i960::mostSignificantBitClear(ordinal); }
+            constexpr Ordinal mostSignificantBit() const noexcept { return getMostSignificantBit(ordinal); }
+            constexpr bool mostSignificantBitSet() const noexcept     { return i960::mostSignificantBitSet(ordinal); }
+            constexpr bool mostSignificantBitClear() const noexcept   { return i960::mostSignificantBitClear(ordinal); }
     };
 
 } // end namespace i960
