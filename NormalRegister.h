@@ -4,9 +4,7 @@
 #include "types.h"
 #include "ProcessControls.h"
 namespace i960 {
-    class PreviousFramePointer;
     class RegisterView;
-    class ProcedureEntry;
     template<typename T, typename ... Args>
     constexpr auto IsOneOfThese = ( ... || std::is_same_v<std::decay_t<T>, Args>);
     class NormalRegister {
@@ -168,4 +166,16 @@ namespace i960 {
     };
 
 } // end namespace i960
+
+namespace std {
+template<typename T>
+constexpr T get(const i960::NormalRegister& reg) noexcept {
+    return reg.get<T>();
+}
+
+template<typename T>
+constexpr T get(const i960::NormalRegister&& reg) noexcept {
+    return reg.get<T>();
+}
+} // end namespace std
 #endif // end I960_NORMAL_REGISTER_H__
