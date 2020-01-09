@@ -4,33 +4,6 @@
 #include "types.h"
 #include "ProcessControls.h"
 namespace i960 {
-    class PreviousFramePointer {
-        public:
-            static constexpr Ordinal ReturnCodeMask = 0x0000'0007;
-            static constexpr Ordinal PreReturnTraceMask = 0x0000'0008;
-            static constexpr Ordinal AddressMask = 0xFFFF'FFC0; // aligned to 64-byte boundaries
-            static constexpr Ordinal ExtractionMask = constructOrdinalMask(ReturnCodeMask, PreReturnTraceMask, AddressMask); 
-            static constexpr Ordinal ReservedMask = ~ExtractionMask;
-            constexpr PreviousFramePointer(Ordinal raw) noexcept : 
-                _returnCode(ReturnCodeMask & raw), 
-                _prereturnTrace(PreReturnTraceMask & raw),
-                _address(AddressMask & raw) { }
-            constexpr PreviousFramePointer() noexcept = default;
-            constexpr auto getReturnCode() const noexcept { return _returnCode; }
-            void setReturnCode(Ordinal value) noexcept { _returnCode = ReturnCodeMask & value; }
-            constexpr auto getPrereturnTrace() const noexcept { return _prereturnTrace; }
-            void setPrereturnTrace(bool value) noexcept { _prereturnTrace = value; }
-            constexpr auto getAddress() const noexcept { return _address; }
-            void setAddress(Ordinal value) noexcept { _address = AddressMask & value; }
-            constexpr auto getRawValue() const noexcept {
-                return (getReturnCode() | getAddress() | (getPrereturnTrace() ? PreReturnTraceMask : 0)) & ExtractionMask;
-            }
-            void setRawValue(Ordinal raw) noexcept;
-        private:
-            Ordinal _returnCode = 0;
-            bool _prereturnTrace = false;
-            Ordinal _address = 0;
-    };
     class ProcedureEntry {
         public:
             static constexpr Ordinal TypeMask = 0b11;
@@ -165,6 +138,7 @@ namespace i960 {
             bool _dataAddressBreakpoint1 = false;
 
     };
+    class PreviousFramePointer;
     template<typename T, typename ... Args>
     constexpr auto IsOneOfThese = ( ... || std::is_same_v<std::decay_t<T>, Args>);
     class NormalRegister {
@@ -193,7 +167,8 @@ namespace i960 {
                                                      ProcedureEntry, 
                                                      ProcessControls, 
                                                      TraceControls>) {
-                    return {getValue()};
+                    return {*this};
+                    //return {getValue()};
                 } else {
                     static_assert(false_v<K>, "Illegal type requested!");
                 }
@@ -224,9 +199,48 @@ namespace i960 {
             constexpr auto mostSignificantBitClear() const noexcept {
                 return i960::mostSignificantBitClear(_value);
             }
+            template<typename R, Ordinal mask, Ordinal shift = 0>
+            constexpr R decodeField() noexcept {
+                return i960::decode<decltype(_value), R, mask, shift>(_value);
+            }
+            template<typename T, Ordinal mask, Ordinal shift = 0>
+            void encodeField(T field) noexcept {
+                _value = i960::encode<decltype(_value), T, mask, shift>(_value, field);
+            }
         private:
             Ordinal _value;
 
+    };
+    class RegisterWrapper {
+        public:
+            constexpr RegisterWrapper(NormalRegister& r) noexcept : _reg(r) { }
+            constexpr auto getRawValue() const noexcept { return _reg.getValue(); }
+            template<typename R, Ordinal mask, Ordinal shift = 0>
+            constexpr R decodeField() const noexcept {
+                return _reg.decodeField<R, mask, shift>();
+            }
+        protected:
+            template<typename T, Ordinal mask, Ordinal shift = 0>
+            void encodeField(T value) noexcept {
+                _reg.encodeField<T, mask, shift>(value);
+            }
+        private:
+            NormalRegister& _reg;
+    };
+    class PreviousFramePointer : public RegisterWrapper {
+        public:
+            static constexpr Ordinal ReturnCodeMask = 0x0000'0007;
+            static constexpr Ordinal PreReturnTraceMask = 0x0000'0008;
+            static constexpr Ordinal AddressMask = 0xFFFF'FFC0; // aligned to 64-byte boundaries
+            static constexpr Ordinal ExtractionMask = constructOrdinalMask(ReturnCodeMask, PreReturnTraceMask, AddressMask); 
+            static constexpr Ordinal ReservedMask = ~ExtractionMask;
+            using RegisterWrapper::RegisterWrapper;
+            constexpr auto getReturnCode() const noexcept { return decodeField<Ordinal, ReturnCodeMask>(); }
+            void setReturnCode(Ordinal value) noexcept { encodeField<Ordinal, ReturnCodeMask>(value); }
+            constexpr auto getPrereturnTrace() const noexcept { return decodeField<bool, PreReturnTraceMask, 3>(); }
+            void setPrereturnTrace(bool value) noexcept { encodeField<bool, PreReturnTraceMask, 3>(value); }
+            constexpr auto getAddress() const noexcept { return decodeField<Ordinal, AddressMask>(); }
+            void setAddress(Ordinal value) noexcept { encodeField<Ordinal, AddressMask>(value); }
     };
 
 } // end namespace i960

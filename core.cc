@@ -207,8 +207,8 @@ namespace i960 {
         }
         setRegister(PFP, getRegister(FP).get<Ordinal>());
         getPFP().returnCode = temp.pfp.returnCode;
-        setRegister(FP, temp..getValue());
-        setRegister(SP, temp.getValue() + 64);
+        setRegister(FP, temp.ordinal);
+        setRegister(SP, temp.ordinal + 64);
 	}
 
 	Ordinal Core::load(Ordinal address, bool atomic) noexcept {

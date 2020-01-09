@@ -37,10 +37,6 @@ namespace i960 {
 		return byteCount<LongOrdinal>(count);
 	}
 
-    template<Ordinal boolMask>
-    constexpr Ordinal encodeBool(bool value) noexcept {
-        return value ? boolMask : 0;
-    }
     template<typename T>
     using EnableIfUnsigned = std::enable_if_t<std::is_unsigned_v<std::decay_t<T>>>;
     template<typename I, typename = EnableIfUnsigned<I>>
@@ -145,11 +141,33 @@ namespace i960 {
     static_assert(cpu80960JF.getSeries() == ProcessorSeries::Jx, "Bad processor series!");
     template<typename T, typename R, T mask, T shift = static_cast<T>(0)>
     constexpr R decode(T value) noexcept {
-        return static_cast<R>((value & mask) >> shift);
+        using RK = std::decay_t<R>;
+        using TK = std::decay_t<T>;
+        if constexpr (std::is_same_v<RK, bool> && std::is_integral_v<TK>) {
+            // exploit explicit boolean conversion to get rid of the shift if we know we're looking
+            // at a conversion from an integral to a bool. In other cases, the explicit boolean conversion
+            // could be dependent on the shift so we have to carryout the entire operation
+            return value & mask;
+        } else {
+            return static_cast<R>((value & mask) >> shift);
+        }
+    }
+    template<Ordinal boolMask>
+    constexpr Ordinal encodeBool(bool value) noexcept {
+        return value ? boolMask : 0;
     }
     template<typename T, typename R, T mask, T shift>
     constexpr T encode(T value, R input) noexcept {
-        return ((value & (~mask)) | ((static_cast<T>(input) << shift) & mask));
+        using K = std::decay_t<R>;
+        if constexpr (auto result = value & (~mask) /* we always want to do this */; std::is_same_v<K, bool>) {
+            // ignore shift in this case since the mask describes the bits in the correct positions
+            if (input) {
+                result |= mask;
+            } 
+            return result;
+        } else {
+            return result | ((static_cast<T>(input) << shift) & mask);
+        }
     }
     class Flags8 final {
         public:
