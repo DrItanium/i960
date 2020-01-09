@@ -223,7 +223,7 @@ namespace i960 {
             inline auto makeTripleRegister(const Operand& index) noexcept { return makeTripleRegister(static_cast<ByteOrdinal>(index)); }
 			QuadRegister makeQuadRegister(ByteOrdinal index) noexcept;
             inline auto makeQuadRegister(const Operand& index) noexcept { return makeQuadRegister(static_cast<ByteOrdinal>(index)); }
-            PreviousFramePointer& getPFP() noexcept;
+            PreviousFramePointer getPFP() noexcept;
             Ordinal getStackPointerAddress() const noexcept;
             void setFramePointer(Ordinal value) noexcept;
             Ordinal getFramePointerAddress() const noexcept;
@@ -505,6 +505,7 @@ namespace i960 {
             void freeCurrentRegisterSet() noexcept;
             bool registerSetNotAllocated(const Operand& fp) noexcept;
             void retrieveFromMemory(const Operand& fp) noexcept;
+            TraceControls getTraceControls() noexcept { return {_tc}; }
         private:
             RegisterWindow _globalRegisters;
             // The hardware implementations use register sets, however
@@ -515,7 +516,8 @@ namespace i960 {
             ArithmeticControls _ac;
             Ordinal _instructionPointer;
             ProcessControls _pc;
-            TraceControls _tc;
+            NormalRegister _tc;
+            //TraceControls _tc;
 			MemoryInterface& _mem;
 			Ordinal _prcbAddress;
 			Ordinal _ctrlTable;

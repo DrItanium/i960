@@ -155,8 +155,8 @@ namespace i960 {
 	Ordinal Core::getFramePointerAddress() const noexcept {
 		return _globalRegisters[FP.getOffset()].get<Ordinal>() & (~0b111111);
 	}
-	auto Core::getPFP() noexcept -> PreviousFramePointer& {
-		return _localRegisters[PFP.getOffset()].pfp;
+	auto Core::getPFP() noexcept -> PreviousFramePointer {
+        return _localRegisters[PFP.getOffset()].get<PreviousFramePointer>();
 	}
 	constexpr Ordinal getProcedureAddress(Ordinal value) noexcept {
         return computeAlignedAddress(value);
@@ -178,8 +178,7 @@ namespace i960 {
 			generateFault(ProtectionFaultSubtype::Length);
 			return;
 		}
-        NormalRegister tempPE(load(getSystemProcedureTableBaseAddress() + 48 + (4 * targ)));
-		// TODO reimplement for the i960 jx
+        NormalRegister temp(load(getSystemProcedureTableBaseAddress() + 48 + (4 * targ)));
         if (_frameAvailable) {
             allocateNewFrame();
         } else {
@@ -188,27 +187,29 @@ namespace i960 {
             // local register references now refer to new frame
         }
         setRegister(RIP, _instructionPointer);
-        _instructionPointer = tempPE.ordinal;
-        NormalRegister temp;
-        if ((temp.pe.isLocal()) || (_pc.inSupervisorMode())) {
+        _instructionPointer = temp.get<Ordinal>();
+        auto pe = temp.get<ProcedureEntry>();
+        auto pfp = temp.get<PreviousFramePointer>();
+        if ((pe.isLocal()) || (_pc.inSupervisorMode())) {
             // local call or supervisor call from supervisor mode
             // in the manual:
             // temp = (SP + (SALIGN*16 -1)) & ~(SALIGN * 16 - 1)
             // where SALIGN=1 on i960 Jx processors
             // round stack pointer to the next boundary
-            temp.ordinal = (getStackPointerAddress() + (SALIGN * 16 - 1)) & ~(SALIGN * 16 - 1);
-            temp.pfp.returnCode = 0b000;
+            temp.set<Ordinal>( (getStackPointerAddress() + (SALIGN * 16 - 1)) & ~(SALIGN * 16 - 1));
+            pfp.setReturnCode(0b000);
         } else {
             // supervisor call from user mode
-            temp.ordinal = getSupervisorStackPointerBase();
-            temp.pfp.returnCode = 0b010 | _pc.traceEnabled();
+            temp.set<Ordinal>(getSupervisorStackPointerBase());
+            pfp.setReturnCode(0b010 | _pc.traceEnabled());
             _pc.enterSupervisorMode();
-            _pc.setTraceMode(temp.pc.getTraceMode());
+            ProcessControls pc(temp.getValue());
+            _pc.setTraceMode(pc.getTraceMode());
         }
         setRegister(PFP, getRegister(FP).get<Ordinal>());
-        getPFP().returnCode = temp.pfp.returnCode;
-        setRegister(FP, temp.ordinal);
-        setRegister(SP, temp.ordinal + 64);
+        getPFP().setReturnCode(pfp.getReturnCode());
+        setRegister(FP, temp.get<Ordinal>());
+        setRegister(SP, temp.get<Ordinal>() + 64);
 	}
 
 	Ordinal Core::load(Ordinal address, bool atomic) noexcept {
@@ -737,9 +738,9 @@ namespace i960 {
         // the instruction has its arguments reversed for some reason...
         auto mask = getSrc(inst);
         auto src2 = getSrc2(inst);
-        auto tmp = _tc.getRawValue();
+        auto tmp = _tc.getValue();
 		auto temp1 = 0x00FF00FF & mask; // masked to prevent reserved bits from being used
-        _tc.setRawValue((temp1 & src2) | (_tc.getRawValue() & (~temp1)));
+        _tc.setValue((temp1 & src2) | (_tc.getValue() & (~temp1)));
         setRegister(inst.getSrc1(), tmp);
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::modpc) noexcept {

@@ -94,13 +94,11 @@ namespace i960 {
             static constexpr Ordinal ReturnCodeMask = 0x0000'0007;
             static constexpr Ordinal PreReturnTraceMask = 0x0000'0008;
             static constexpr Ordinal AddressMask = 0xFFFF'FFC0; // aligned to 64-byte boundaries
-            static constexpr Ordinal ExtractionMask = constructOrdinalMask(ReturnCodeMask, PreReturnTraceMask, AddressMask); 
-            static constexpr Ordinal ReservedMask = ~ExtractionMask;
             using RegisterView::RegisterView;
             constexpr auto getReturnCode() const noexcept { return decodeField<Ordinal, ReturnCodeMask>(); }
             void setReturnCode(Ordinal value) noexcept { encodeField<Ordinal, ReturnCodeMask>(value); }
-            constexpr auto getPrereturnTrace() const noexcept { return decodeField<bool, PreReturnTraceMask, 3>(); }
-            void setPrereturnTrace(bool value) noexcept { encodeField<bool, PreReturnTraceMask, 3>(value); }
+            constexpr auto getPrereturnTrace() const noexcept { return decodeField<bool, PreReturnTraceMask>(); }
+            void setPrereturnTrace(bool value) noexcept { encodeField<bool, PreReturnTraceMask>(value); }
             constexpr auto getAddress() const noexcept { return decodeField<Ordinal, AddressMask>(); }
             void setAddress(Ordinal value) noexcept { encodeField<Ordinal, AddressMask>(value); }
     };
@@ -118,7 +116,7 @@ namespace i960 {
 
     };
 
-    class TraceControls {
+    class TraceControls : public RegisterView {
         public:
             static constexpr Ordinal InstructionTraceModeMask = 0x0000'0002;
             static constexpr Ordinal BranchTraceModeMask = 0x0000'0004;
@@ -132,16 +130,13 @@ namespace i960 {
             static constexpr Ordinal DataAddressBreakpoint0Mask = 0x0400'0000;
             static constexpr Ordinal DataAddressBreakpoint1Mask = 0x0800'0000;
         public:
-            constexpr TraceControls(Ordinal raw = 0) : _value(raw) { }
-            void clear() noexcept;
-            constexpr auto getRawValue() const noexcept { return _value; }
-            void setRawValue(Ordinal value) noexcept { _value = value; }
+            using RegisterView::RegisterView;
 #define B(field, mask) \
             void set ## field (bool value) noexcept { \
-                _value = i960::encode<Ordinal, bool, mask, 0>(_value, value); \
+                encodeField<bool, mask>(value); \
             } \
             constexpr auto get ## field () const noexcept { \
-                return i960::decode<Ordinal, bool, mask>(_value); \
+                return decodeField<bool, mask>(); \
             }
 #define TM(title) B(title ## TraceMode , title ## TraceModeMask)
 #define ABM(title) \
@@ -160,9 +155,6 @@ namespace i960 {
 #undef ABM
 #undef B
             constexpr auto traceMarked() const noexcept { return getMarkTraceMode(); }
-        private:
-            Ordinal _value;
-
     };
 
 } // end namespace i960
