@@ -390,12 +390,19 @@ namespace i960 {
     constexpr CoreInformation cpu80960JT_A0("80960JT", 0x0082'B013, 1);
 #define CoreWithHardwareDeviceId(title, version, vcc, gen, model, salign) \
     constexpr CoreInformation cpu ## title ( #title , HardwareDeviceIdentificationCode { version, vcc, gen, model }, salign)
-    CoreWithHardwareDeviceId(80960HA_A0, 0b0000, true, 0b0010, 0, 1);
-    CoreWithHardwareDeviceId(80960HA_A1, 0b0001, true, 0b0010, 0, 1);
-    CoreWithHardwareDeviceId(80960HA_A2, 0b0001, true, 0b0010, 0, 1);
-    CoreWithHardwareDeviceId(80960HA_B0, 0b0010, true, 0b0010, 0, 1);
-    CoreWithHardwareDeviceId(80960HA_B2, 0b0010, true, 0b0010, 0, 1);
-    CoreWithHardwareDeviceId(80960HA, 0b0010, true, 0b0010, 0, 1); // most recent 80960HA
+#define Def80960HxCore(title, model) \
+    CoreWithHardwareDeviceId(title ## _A0, 0b0000, true, 0b0010, model, 1); \
+    CoreWithHardwareDeviceId(title ## _A1, 0b0001, true, 0b0010, model, 1); \
+    CoreWithHardwareDeviceId(title ## _A2, 0b0001, true, 0b0010, model, 1); \
+    CoreWithHardwareDeviceId(title ## _B0, 0b0010, true, 0b0010, model, 1); \
+    CoreWithHardwareDeviceId(title ## _B2, 0b0010, true, 0b0010, model, 1)
+    Def80960HxCore(80960HA, 0b00000);
+    Def80960HxCore(80960HD, 0b00001);
+    Def80960HxCore(80960HT, 0b00010);
+#undef Def80960HxCore
+    constexpr auto cpu80960HA(cpu80960HA_B2);
+    constexpr auto cpu80960HD(cpu80960HD_B2);
+    constexpr auto cpu80960HT(cpu80960HT_B2);
 #undef CoreWithHardwareDeviceId
 
     static_assert(cpu80960JT_A0.getDataCacheSize() == 4096u);
