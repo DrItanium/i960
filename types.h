@@ -415,5 +415,10 @@ namespace i960 {
 
     static_assert(cpu80960SA.hasInstructionCache());
     static_assert(!cpu80960SA.hasDataCache());
+    static_assert(cpu80960HA.getSeries() == ProcessorSeries::Hx);
+    static_assert(cpu80960HT.getSeries() == ProcessorSeries::Hx);
+    static_assert(cpu80960HD.getSeries() == ProcessorSeries::Hx);
+    static_assert(cpu80960SA.getSeries() == ProcessorSeries::Sx);
+    static_assert(cpu80960SB.getSeries() == ProcessorSeries::Sx);
 } // end namespace i960
 #endif // end I960_TYPES_H__
