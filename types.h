@@ -175,19 +175,32 @@ namespace i960 {
         V3_3,
         V5_0,
     };
-    class DeviceIdentificationCode final {
+    /**
+     * Contains common hardcoded methods related to device identification codes
+     */
+    template<bool hardwareAccessible>
+    class BaseDeviceIdenficationCode {
         public:
-            constexpr DeviceIdentificationCode(uint8_t version, bool vcc, uint8_t generation, uint8_t model) noexcept :
+            static constexpr uint8_t ProductType = 0b000'100; // : 6
+            static constexpr uint16_t Manufacturer = 0b0000'0001'001; // : 12
+        public:
+
+            constexpr auto getProductType() const noexcept { return ProductType; }
+            constexpr auto getManufacturer() const noexcept { return Manufacturer; }
+            constexpr auto deviceIdCodeInHardware() const noexcept { return hardwareAccessible; }
+    };
+    class HardwareDeviceIdentificationCode final : public BaseDeviceIdenficationCode<true> {
+        public:
+            constexpr HardwareDeviceIdentificationCode(uint8_t version, bool vcc, uint8_t generation, uint8_t model) noexcept :
                 _version(version),
                 _vcc(vcc),
                 _gen(generation),
                 _model(model) { }
-            constexpr DeviceIdentificationCode(Ordinal raw) noexcept : DeviceIdentificationCode(
+            constexpr HardwareDeviceIdentificationCode(Ordinal raw) noexcept : HardwareDeviceIdentificationCode(
                     i960::decode<Ordinal, uint8_t, 0xF000'0000, 28>(raw),
                     i960::decode<Ordinal, bool, (1 << 27), 27>(raw),
                     i960::decode<Ordinal, uint8_t, (0b1111 << 17), 17>(raw),
                     i960::decode<Ordinal, uint8_t, (0b11111 << 12), 12>(raw)) { }
-            constexpr auto getManufacturer() const noexcept { return Manufacturer; }
             constexpr auto getVersion() const noexcept { return _version; }
             constexpr auto getCoreVoltage() const noexcept { 
                 if (_vcc) {
@@ -196,10 +209,8 @@ namespace i960 {
                     return CoreVoltageKind::V3_3;
                 }
             }
-            constexpr auto supportsDeviceIdCode() const noexcept { return true; }
             constexpr auto is5VCore() const noexcept { return _vcc; }
             constexpr auto is3_3VCore() const noexcept { return !_vcc; }
-            constexpr auto getProductType() const noexcept { return ProductType; }
             constexpr auto getGeneration() const noexcept { return _gen; }
             constexpr auto getModel() const noexcept { return _model; }
             constexpr auto makeDeviceId() const noexcept { 
@@ -208,10 +219,10 @@ namespace i960 {
                 if (_vcc) {
                     start |= vccMask;
                 }
-                start |= (static_cast<Ordinal>(ProductType & 0b111111) << 21);
+                start |= (static_cast<Ordinal>(getProductType() & 0b111111) << 21);
                 start |= (static_cast<Ordinal>(_gen & 0b1111) << 17);
                 start |= (static_cast<Ordinal>(_model & 0b11111) << 12);
-                start |= (static_cast<Ordinal>(Manufacturer) << 1);
+                start |= (static_cast<Ordinal>(getManufacturer()) << 1);
                 return (start | 1); // lsb must be 1
             }
         private:
@@ -219,16 +230,13 @@ namespace i960 {
             bool _vcc;
             uint8_t _gen;         // : 4
             uint8_t _model;       // : 5
-        public:
-            static constexpr uint8_t ProductType = 0b000'100; // : 6
-            static constexpr uint16_t Manufacturer = 0b0000'0001'001; // : 12
     };
     /**
      * If the cpu doesn't have a device id register built in then we need to
      * provide a consistent way to describe the features within through a hand maintained 
      * structure
      */
-    class ConstructedDeviceIdentificationCode final {
+    class ConstructedDeviceIdentificationCode final : public BaseDeviceIdenficationCode<false> {
         public:
             constexpr ConstructedDeviceIdentificationCode(ProcessorSeries s, CoreVoltageKind v, Ordinal icache = 0, Ordinal dcache = 0, uint8_t stepping = 0) noexcept :
                 _series(s),
@@ -236,11 +244,8 @@ namespace i960 {
                 _dcacheSize(dcache),
                 _voltage(v),
                 _stepping(stepping) { }
-            constexpr auto supportsDeviceIdCode() const noexcept { return false; }
             constexpr auto getICacheSize() const noexcept { return _icacheSize; }
             constexpr auto getDCacheSize() const noexcept { return _dcacheSize; }
-            constexpr auto getProductType() const noexcept { return DeviceIdentificationCode::ProductType; }
-            constexpr auto getManufacturer() const noexcept { return DeviceIdentificationCode::Manufacturer; }
             constexpr auto getCoreVoltage() const noexcept { return _voltage; }
             constexpr auto is3_3VoltCore() const noexcept { return _voltage == CoreVoltageKind::V3_3; }
             constexpr auto is5VoltCore() const noexcept { return _voltage == CoreVoltageKind::V5_0; }
@@ -253,7 +258,7 @@ namespace i960 {
             CoreVoltageKind _voltage;
             uint8_t _stepping;
     };
-    using DeviceCode = std::variant<ConstructedDeviceIdentificationCode, DeviceIdentificationCode>;
+    using DeviceCode = std::variant<ConstructedDeviceIdentificationCode, HardwareDeviceIdentificationCode>;
     class CoreInformation final {
         public:
             constexpr CoreInformation(
@@ -317,7 +322,7 @@ namespace i960 {
     constexpr CoreInformation cpu80960JD( ProcessorSeries::Jx, "80960JD", CoreVoltageKind::V5_0,  1, 4096u, 2048u, 0x0882'0013);
     constexpr CoreInformation cpu80960JF( ProcessorSeries::Jx, "80960JF", CoreVoltageKind::V5_0,  1, 4096u, 2048u, 0x0882'0013);
     constexpr CoreInformation cpu80960JT_A0 (ProcessorSeries::Jx, "80960JT", CoreVoltageKind::V3_3,  1, 16384, 4096u, 0x0082'B013);
-    static_assert(DeviceIdentificationCode(0, false, 0b0001, 0b01011).makeDeviceId() == cpu80960JT_A0.getDeviceId());
+    static_assert(HardwareDeviceIdentificationCode(0, false, 0b0001, 0b01011).makeDeviceId() == cpu80960JT_A0.getDeviceId());
     // sanity checks
     static_assert(cpu80960JF.getGeneration() == 0b0001, "Bad generation check!");
     static_assert(cpu80960JF.getModel() == 0, "Bad model check!");
