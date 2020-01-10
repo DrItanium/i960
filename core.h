@@ -171,7 +171,7 @@ namespace i960 {
                 using K = std::decay_t<T>;
                 if (op.isRegister()) {
                     if constexpr (std::is_same_v<K, LongOrdinal>) {
-                        return getDoubleRegister(op).get<T>();
+                        return getDoubleRegister(op).get();
                     } else {
                         return getRegister(op).get<T>();
                     }
@@ -198,9 +198,8 @@ namespace i960 {
             template<typename T>
             void setDest(const HasSrcDest& srcDest, T value) noexcept {
                 using K = std::decay_t<T>;
-                if constexpr (std::is_same_v<K, LongOrdinal> ||
-                              std::is_same_v<K, LongInteger>) {
-                    getDoubleRegister(srcDest.getSrcDest()).set<T>(value);
+                if constexpr (std::is_same_v<K, LongOrdinal>) {
+                    getDoubleRegister(srcDest.getSrcDest()).set(value);
                 } else {
                     getDest(srcDest).set<T>(value);
                 }
