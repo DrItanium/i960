@@ -100,19 +100,23 @@ namespace i960 {
                 return (base | shiftedIOF | shiftedIOM | shiftedNIF) & CoreArchitectureExtractMask;
             }
             static constexpr Ordinal extractConditionCode(Ordinal raw) noexcept {
-                return raw & 0b111;
+                return i960::decode<decltype(raw), Ordinal, ConditionCodeMask, 0>(raw);
             }
             static constexpr bool extractIntegerOverflowFlag(Ordinal raw) noexcept {
-                return (raw >> 8) & 1;
+                return i960::decode<decltype(raw), bool, IntegerOverflowFlagMask, 8>(raw);
             }
             static constexpr bool extractIntegerOverflowMask(Ordinal raw) noexcept {
-                return (raw >> 12) & 1;
+                return i960::decode<decltype(raw), bool, IntegerOverflowMaskMask, 12>(raw);
             }
             static constexpr bool extractNoImpreciseFaults(Ordinal raw) noexcept {
-                return (raw >> 15) & 1;
+                return i960::decode<decltype(raw), bool, NoImpreciseFaultsMask, 15>(raw);
             }
     };
     static_assert(ArithmeticControls::create(0b111, true, true, true) == ArithmeticControls::CoreArchitectureExtractMask, "create(CoreArchitecture) failed!");
+    static_assert(ArithmeticControls::extractIntegerOverflowFlag(ArithmeticControls::IntegerOverflowFlagMask));
+    static_assert(ArithmeticControls::extractIntegerOverflowMask(ArithmeticControls::IntegerOverflowMaskMask));
+    static_assert(ArithmeticControls::extractNoImpreciseFaults(ArithmeticControls::NoImpreciseFaultsMask));
+    static_assert(ArithmeticControls::extractConditionCode(0xF5) == 0x5);
 
 } // end namespace i960
 #endif // end I960_ARITHMETIC_CONTROLS_H__

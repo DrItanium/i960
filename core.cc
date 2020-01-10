@@ -1335,11 +1335,6 @@ namespace i960 {
         
         return basic;
     }
-#undef __DEFAULT_TWO_ARGS__
-#undef __DEFAULT_DOUBLE_WIDE_TWO_ARGS__
-#undef __DEFAULT_THREE_ARGS__
-#undef __DEFAULT_DOUBLE_WIDE_THREE_ARGS__
-#undef __TWO_SOURCE_REGS__
     void 
     Core::performOperation(const CTRLFormatInstruction& inst, Operation::call) noexcept {
         /// @todo see if this remasking is overkill
