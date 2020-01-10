@@ -165,15 +165,45 @@ namespace i960 {
     overloaded(Ts...) -> overloaded<Ts...>;
 
     enum class ProcessorSeries {
+        Unknown,
         Jx,
         Hx,
         Cx,
         Kx,
         Sx,
+        Mx,
     };
     enum class CoreVoltageKind {
         V3_3,
         V5_0,
+        Unknown,
+    };
+    /// Common base for a device id used in IEEE1149.1 JTAG interfacing
+    class IEEE1149_1DeviceIdentification final {
+        public:
+            static constexpr uint16_t Manufacturer_Altera = 0b000'0110'1110;
+            static constexpr uint16_t Manufacturer_Intel = 0b000'0000'1001;
+        public:
+            constexpr IEEE1149_1DeviceIdentification(uint8_t version, uint16_t partNum, uint16_t mfgr) : _version(version & 0b1111), _partNumber(partNum), _manufacturer(mfgr & 0x7FF) { }
+            constexpr IEEE1149_1DeviceIdentification(uint32_t id) noexcept :
+                IEEE1149_1DeviceIdentification(
+                decode<uint32_t, uint8_t, 0xF000'0000, 28>(id),
+                decode<uint32_t, uint16_t, 0x0FFF'F000, 12>(id),
+                decode<uint32_t, uint16_t, 0xFFE, 1>(id)) { }
+            constexpr auto getVersion() const noexcept { return _version; }
+            constexpr auto getPartNumber() const noexcept { return _partNumber; }
+            constexpr auto getManufacturer() const noexcept { return _manufacturer; }
+            constexpr uint32_t getId() const noexcept {
+                return encode<uint32_t, uint8_t, 0xF000'0000, 28>(
+                        encode<uint32_t, uint16_t, 0x0FFF'F000, 12>(
+                            static_cast<uint32_t>(getManufacturer() << 1),
+                            getPartNumber()),
+                        getVersion()) | 1; // make sure lsb is 1
+            }
+        private:
+            uint8_t _version;
+            uint16_t _partNumber;
+            uint16_t _manufacturer;
     };
     /**
      * Contains common hardcoded methods related to device identification codes
@@ -181,36 +211,25 @@ namespace i960 {
     template<bool hardwareAccessible>
     class BaseDeviceIdenficationCode {
         public:
-            static constexpr uint8_t ProductType = 0b000'100; // : 6
-            static constexpr uint16_t Manufacturer = 0b0000'0001'001; // : 12
+            static constexpr uint8_t ProductType = 0b000'100; // i960
         public:
-
             constexpr auto getProductType() const noexcept { return ProductType; }
-            constexpr auto getManufacturer() const noexcept { return Manufacturer; }
+            constexpr auto getManufacturer() const noexcept { return IEEE1149_1DeviceIdentification::Manufacturer_Intel; }
             constexpr auto deviceIdCodeInHardware() const noexcept { return hardwareAccessible; }
     };
     class HardwareDeviceIdentificationCode final : public BaseDeviceIdenficationCode<true> {
         public:
             constexpr HardwareDeviceIdentificationCode(uint8_t version, bool vcc, uint8_t generation, uint8_t model) noexcept :
-                _version(version),
+                _version(version & 0b11111),
                 _vcc(vcc),
-                _gen(generation),
-                _model(model) { }
+                _gen(generation & 0b1111),
+                _model(model & 0b11111) { }
             constexpr HardwareDeviceIdentificationCode(Ordinal raw) noexcept : HardwareDeviceIdentificationCode(
                     i960::decode<Ordinal, uint8_t, 0xF000'0000, 28>(raw),
                     i960::decode<Ordinal, bool, (1 << 27), 27>(raw),
                     i960::decode<Ordinal, uint8_t, (0b1111 << 17), 17>(raw),
                     i960::decode<Ordinal, uint8_t, (0b11111 << 12), 12>(raw)) { }
             constexpr auto getVersion() const noexcept { return _version; }
-            constexpr auto getCoreVoltage() const noexcept { 
-                if (_vcc) {
-                    return CoreVoltageKind::V5_0;
-                } else {
-                    return CoreVoltageKind::V3_3;
-                }
-            }
-            constexpr auto is5VCore() const noexcept { return _vcc; }
-            constexpr auto is3_3VCore() const noexcept { return !_vcc; }
             constexpr auto getGeneration() const noexcept { return _gen; }
             constexpr auto getModel() const noexcept { return _model; }
             constexpr auto makeDeviceId() const noexcept { 
@@ -225,6 +244,29 @@ namespace i960 {
                 start |= (static_cast<Ordinal>(getManufacturer()) << 1);
                 return (start | 1); // lsb must be 1
             }
+            constexpr auto getSeries() const noexcept {
+                switch (_gen & 0b1111) {
+                    case 0b0001:
+                        return ProcessorSeries::Jx;
+                    case 0b0010:
+                        return ProcessorSeries::Hx;
+                    default:
+                        return ProcessorSeries::Unknown;
+                }
+            }
+
+            constexpr auto getCoreVoltage() const noexcept { 
+                switch (getSeries()) {
+                    case ProcessorSeries::Jx:
+                        return _vcc ? CoreVoltageKind::V5_0 : CoreVoltageKind::V3_3; 
+                    case ProcessorSeries::Hx:
+                        return _vcc ? CoreVoltageKind::V3_3 : CoreVoltageKind::V5_0;
+                    default:
+                        return CoreVoltageKind::Unknown;
+                }
+            }
+            constexpr auto is5VCore() const noexcept { return getCoreVoltage() == CoreVoltageKind::V5_0; }
+            constexpr auto is3_3VCore() const noexcept { return getCoreVoltage() == CoreVoltageKind::V3_3; }
         private:
             uint8_t _version;
             bool _vcc;
@@ -243,12 +285,12 @@ namespace i960 {
                 _icacheSize(icache),
                 _dcacheSize(dcache),
                 _voltage(v),
-                _stepping(stepping) { }
+                _stepping(stepping & 0b1111) { }
             constexpr auto getICacheSize() const noexcept { return _icacheSize; }
             constexpr auto getDCacheSize() const noexcept { return _dcacheSize; }
             constexpr auto getCoreVoltage() const noexcept { return _voltage; }
-            constexpr auto is3_3VoltCore() const noexcept { return _voltage == CoreVoltageKind::V3_3; }
-            constexpr auto is5VoltCore() const noexcept { return _voltage == CoreVoltageKind::V5_0; }
+            constexpr auto is3_3VoltCore() const noexcept { return getCoreVoltage() == CoreVoltageKind::V3_3; }
+            constexpr auto is5VoltCore() const noexcept { return getCoreVoltage() == CoreVoltageKind::V5_0; }
             constexpr auto getSeries() const noexcept { return _series; }
             constexpr auto getStepping() const noexcept { return _stepping; }
         private:
