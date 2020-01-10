@@ -10,26 +10,29 @@ namespace i960 {
             static constexpr Ordinal TraceFaultPendingMask = 0x0000'0400;
             static constexpr Ordinal StateMask = 0x0000'2000;
             static constexpr Ordinal PriorityMask = 0x001F'0000;
+        private:
+            static constexpr Ordinal InternalPriorityMask = 0x1F;
+        public:
             static constexpr Ordinal CoreArchitectureExtractMask = constructOrdinalMask(TraceEnableMask, ExecutionModeMask, ResumeMask, TraceFaultPendingMask, StateMask, PriorityMask);
             static constexpr Ordinal CoreArchitectureReservedMask = ~CoreArchitectureExtractMask;
             static_assert(CoreArchitectureReservedMask == 0xFFE0'D9FC);
             static constexpr bool extractTraceEnable(Ordinal value) noexcept {
-                return value & TraceEnableMask;
+                return decode<Ordinal, bool, TraceEnableMask, 0>(value);
             }
             static constexpr bool extractExecutionMode(Ordinal value) noexcept { 
-                return value & ExecutionModeMask;
+                return decode<Ordinal, bool, ExecutionModeMask, 0>(value);
             }
             static constexpr bool extractResume(Ordinal value) noexcept {
-                return value & ResumeMask;
+                return decode<Ordinal, bool, ResumeMask, 0>(value);
             }
             static constexpr bool extractTraceFaultPending(Ordinal value) noexcept {
-                return value & TraceFaultPendingMask;
+                return decode<Ordinal, bool, TraceFaultPendingMask, 0>(value);
             }
             static constexpr bool extractState(Ordinal value) noexcept {
-                return value & StateMask;
+                return decode<Ordinal, bool, StateMask, 0>(value);
             }
             static constexpr Ordinal extractPriority(Ordinal value) noexcept {
-                return static_cast<Ordinal>((value & PriorityMask) >> 16);
+                return decode<Ordinal, Ordinal, PriorityMask, 16>(value);
             }
             static constexpr Ordinal create(bool traceEnable, bool executionMode, bool resume, bool traceFaultPending, bool state, Ordinal priority) noexcept {
                 auto mte = static_cast<Ordinal>(traceEnable);
@@ -59,20 +62,18 @@ namespace i960 {
             constexpr bool isInterrupted() const noexcept           { return _state != 0; }
             constexpr Ordinal getProcessPriority() const noexcept   { return _priority; }
             constexpr auto getRawValue() const noexcept { return create(_traceEnable, _executionMode, _resume, _traceFaultPending, _state, _priority); }
-            void setState(bool value) noexcept { _state = value; }
-            void enableTrace() noexcept { _traceEnable = true; }
-            void disableTrace() noexcept { _traceEnable = false; }
-            void setTraceMode(bool value) noexcept { _traceEnable = value; }
-            void enterSupervisorMode() noexcept { _executionMode = true; }
-            void enterUserMode() noexcept { _executionMode = false; }
-            void interrupt() noexcept { _state = true; }
-            void execute() noexcept { _state = false; }
-            void setProcessPriority(Ordinal value) noexcept { _priority = value; }
-            void markTraceFaultPending() noexcept { _traceFaultPending = true; }
-            void markTraceFaultNotPending() noexcept { _traceFaultPending = false; }
-            //void setRawValue(Ordinal value) noexcept { _value = value; }
+            void setState(bool value) noexcept              { _state = value; }
+            void enableTrace() noexcept                     { _traceEnable = true; }
+            void disableTrace() noexcept                    { _traceEnable = false; }
+            void setTraceMode(bool value) noexcept          { _traceEnable = value; }
+            void enterSupervisorMode() noexcept             { _executionMode = true; }
+            void enterUserMode() noexcept                   { _executionMode = false; }
+            void interrupt() noexcept                       { _state = true; }
+            void execute() noexcept                         { _state = false; }
+            void setProcessPriority(Ordinal value) noexcept { _priority = (value & InternalPriorityMask); }
+            void markTraceFaultPending() noexcept           { _traceFaultPending = true; }
+            void markTraceFaultNotPending() noexcept        { _traceFaultPending = false; }
             void setRawValue(Ordinal value) noexcept;
-        public:
             void clear() noexcept;
         private:
             bool _traceEnable = false;
