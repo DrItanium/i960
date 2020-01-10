@@ -347,15 +347,6 @@ namespace i960 {
                     uint8_t stepping = 0
                     ) noexcept : CoreInformation(str, ConstructedDeviceIdentificationCode { series, voltage, icacheSize, dcacheSize, stepping }, salign) { }
             constexpr CoreInformation(const char* str, Ordinal deviceId, Ordinal salign = 4) noexcept : CoreInformation(str, HardwareDeviceIdentificationCode(deviceId), salign) { }
-#if 0
-                _series(series),
-                _str(str), 
-                _devId(devId), 
-                _voltage(voltage), 
-                _icacheSize(icacheSize), 
-                _dcacheSize(dcacheSize),
-                _salign(salign) { }
-#endif
             constexpr auto getString() const noexcept               { return _str; }
             constexpr Ordinal getDeviceId() const noexcept          { return std::visit([](auto&& d) noexcept { return d.getDeviceId(); }, _code); }
             constexpr auto getVoltage() const noexcept              { return std::visit([](auto&& d) noexcept { return d.getCoreVoltage(); }, _code); }
@@ -387,22 +378,28 @@ namespace i960 {
             const char* _str;
             DeviceCode _code;
             Ordinal _salign;
-#if 0
-            ProcessorSeries _series;
-            //Ordinal _devId;
-            CoreVoltageKind _voltage;
-            Ordinal _icacheSize;
-            Ordinal _dcacheSize;
-#endif
     };
     
-    constexpr CoreInformation cpu80960JT_A0("80960JT", 0x0082'B013, 1);
+    // for the Sx series, I cannot find Appendix F of the reference manual online so I'm assuming 4 for SALIGN for now
     constexpr CoreInformation cpu80960SA("80960SA", ProcessorSeries::Sx, CoreVoltageKind::V5_0, 4, 512u);
     constexpr CoreInformation cpu80960SB("80960SB", ProcessorSeries::Sx, CoreVoltageKind::V5_0, 4, 512u);
     constexpr CoreInformation cpu80L960JA("80L960JA", 0x0082'1013, 1);
     constexpr CoreInformation cpu80L960JF("80L960JF", 0x0082'0013, 1);
     constexpr CoreInformation cpu80960JF("80960JF", 0x0882'0013, 1);
+    constexpr CoreInformation cpu80960JD("80960JD", 0x0882'0013, 1);
+    constexpr CoreInformation cpu80960JT_A0("80960JT", 0x0082'B013, 1);
+#define CoreWithHardwareDeviceId(title, version, vcc, gen, model, salign) \
+    constexpr CoreInformation cpu ## title ( #title , HardwareDeviceIdentificationCode { version, vcc, gen, model }, salign)
+    CoreWithHardwareDeviceId(80960HA_A0, 0b0000, true, 0b0010, 0, 1);
+    CoreWithHardwareDeviceId(80960HA_A1, 0b0001, true, 0b0010, 0, 1);
+    CoreWithHardwareDeviceId(80960HA_A2, 0b0001, true, 0b0010, 0, 1);
+    CoreWithHardwareDeviceId(80960HA_B0, 0b0010, true, 0b0010, 0, 1);
+    CoreWithHardwareDeviceId(80960HA_B2, 0b0010, true, 0b0010, 0, 1);
+    CoreWithHardwareDeviceId(80960HA, 0b0010, true, 0b0010, 0, 1); // most recent 80960HA
+#undef CoreWithHardwareDeviceId
 
+    static_assert(cpu80960JT_A0.getDataCacheSize() == 4096u);
+    static_assert(cpu80960JT_A0.getInstructionCacheSize() == 16384u);
     static_assert(cpu80L960JA.getDataCacheSize() == 1024u);
     static_assert(cpu80L960JA.getInstructionCacheSize() == 2048u);
 
@@ -411,19 +408,5 @@ namespace i960 {
 
     static_assert(cpu80960SA.hasInstructionCache());
     static_assert(!cpu80960SA.hasDataCache());
-#if 0
-    // for the Sx series, I cannot find Appendix F of the reference manual online so I'm assuming 4 for SALIGN for now
-    constexpr CoreInformation cpu80960JD( ProcessorSeries::Jx, "80960JD", CoreVoltageKind::V5_0,  1, 4096u, 2048u, 0x0882'0013);
-    constexpr CoreInformation cpu80960JF( ProcessorSeries::Jx, "80960JF", CoreVoltageKind::V5_0,  1, 4096u, 2048u, 0x0882'0013);
-    constexpr CoreInformation cpu80960JT_A0 (ProcessorSeries::Jx, "80960JT", CoreVoltageKind::V3_3,  1, 16384, 4096u, 0x0082'B013);
-    static_assert(HardwareDeviceIdentificationCode(0, false, 0b0001, 0b01011).makeDeviceId() == cpu80960JT_A0.getDeviceId());
-    // sanity checks
-    static_assert(cpu80960JF.getGeneration() == 0b0001, "Bad generation check!");
-    static_assert(cpu80960JF.getModel() == 0, "Bad model check!");
-    static_assert(cpu80960JF.getProductType() == 0b1000100, "Bad product type check!");
-    static_assert(cpu80960JF.getManufacturer() == 0b0000'0001'001, "Bad manufacturer check!");
-    static_assert(cpu80960JF.is5VoltCore(), "Bad voltage value!");
-    static_assert(cpu80960JF.getSeries() == ProcessorSeries::Jx, "Bad processor series!");
-#endif
 } // end namespace i960
 #endif // end I960_TYPES_H__
