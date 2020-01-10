@@ -300,6 +300,7 @@ namespace i960 {
             uint8_t _gen;         // : 4
             uint8_t _model;       // : 5
     };
+    static_assert(HardwareDeviceIdentificationCode(0x0082'B013).getDeviceId() == 0x0082'B013);
     /**
      * If the cpu doesn't have a device id register built in then we need to
      * provide a consistent way to describe the features within through a hand maintained 
@@ -320,6 +321,7 @@ namespace i960 {
             constexpr auto is5VoltCore() const noexcept { return getCoreVoltage() == CoreVoltageKind::V5_0; }
             constexpr auto getSeries() const noexcept { return _series; }
             constexpr auto getStepping() const noexcept { return _stepping; }
+            constexpr auto getVersion() const noexcept { return getStepping(); }
             constexpr Ordinal getDeviceId() const noexcept { return 0; }
         private:
             ProcessorSeries _series;
@@ -367,11 +369,7 @@ namespace i960 {
             constexpr auto hasDataCache() const noexcept            { return getDataCacheSize() > 0; }
             constexpr auto is5VoltCore() const noexcept             { return getVoltage() == CoreVoltageKind::V5_0; }
             constexpr auto is3_3VoltCore() const noexcept           { return getVoltage() == CoreVoltageKind::V3_3; }
-#if 0
-            constexpr auto getVersion() const noexcept              { return (_devId & 0xF000'0000) >> 28; }
-            constexpr auto getGeneration() const noexcept           { return (_devId & 0x001E'0000) >> 17; }
-            constexpr auto getModel() const noexcept                { return (_devId & 0x0001'F000) >> 12; }
-#endif
+            constexpr auto getVersion() const noexcept              { return std::visit([](auto&& d) noexcept { return d.getVersion(); }, _code); }
             constexpr auto getSalign() const noexcept               { return _salign; }
             constexpr auto getStackFrameAlignment() const noexcept  { return (_salign * 16); }
             constexpr Ordinal getNumberOfIgnoredFramePointerBits() const noexcept { 
@@ -399,13 +397,22 @@ namespace i960 {
     };
     
     constexpr CoreInformation cpu80960JT_A0("80960JT", 0x0082'B013, 1);
-    static_assert(HardwareDeviceIdentificationCode(0x0082'B013).getDeviceId() == 0x0082'B013);
+    constexpr CoreInformation cpu80960SA("80960SA", ProcessorSeries::Sx, CoreVoltageKind::V5_0, 4, 512u);
+    constexpr CoreInformation cpu80960SB("80960SB", ProcessorSeries::Sx, CoreVoltageKind::V5_0, 4, 512u);
+    constexpr CoreInformation cpu80L960JA("80L960JA", 0x0082'1013, 1);
+    constexpr CoreInformation cpu80L960JF("80L960JF", 0x0082'0013, 1);
+    constexpr CoreInformation cpu80960JF("80960JF", 0x0882'0013, 1);
+
+    static_assert(cpu80L960JA.getDataCacheSize() == 1024u);
+    static_assert(cpu80L960JA.getInstructionCacheSize() == 2048u);
+
+    static_assert(cpu80L960JF.getDataCacheSize() == 2048u);
+    static_assert(cpu80L960JF.getInstructionCacheSize() == 4096u);
+
+    static_assert(cpu80960SA.hasInstructionCache());
+    static_assert(!cpu80960SA.hasDataCache());
 #if 0
     // for the Sx series, I cannot find Appendix F of the reference manual online so I'm assuming 4 for SALIGN for now
-    constexpr CoreInformation cpu80960SA(ProcessorSeries::Sx , "80960SA", CoreVoltageKind::V5_0, 4, 512u);
-    constexpr CoreInformation cpu80960SB(ProcessorSeries::Sx , "80960SB", CoreVoltageKind::V5_0, 4, 512u);
-    constexpr CoreInformation cpu80L960JA(ProcessorSeries::Jx, "80L960JA", CoreVoltageKind::V3_3, 1, 2048u, 1024u, 0x0082'1013);
-    constexpr CoreInformation cpu80L960JF(ProcessorSeries::Jx, "80L960JF", CoreVoltageKind::V3_3, 1, 4096u, 2048u, 0x0082'0013);
     constexpr CoreInformation cpu80960JD( ProcessorSeries::Jx, "80960JD", CoreVoltageKind::V5_0,  1, 4096u, 2048u, 0x0882'0013);
     constexpr CoreInformation cpu80960JF( ProcessorSeries::Jx, "80960JF", CoreVoltageKind::V5_0,  1, 4096u, 2048u, 0x0882'0013);
     constexpr CoreInformation cpu80960JT_A0 (ProcessorSeries::Jx, "80960JT", CoreVoltageKind::V3_3,  1, 16384, 4096u, 0x0082'B013);
