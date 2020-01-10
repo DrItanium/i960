@@ -232,7 +232,7 @@ namespace i960 {
             constexpr auto getVersion() const noexcept { return _version; }
             constexpr auto getGeneration() const noexcept { return _gen; }
             constexpr auto getModel() const noexcept { return _model; }
-            constexpr auto makeDeviceId() const noexcept { 
+            constexpr Ordinal getDeviceId() const noexcept { 
                 constexpr Ordinal vccMask = 1 << 27;
                 Ordinal start = static_cast<Ordinal>(_version) << 28;
                 if (_vcc) {
@@ -267,6 +267,33 @@ namespace i960 {
             }
             constexpr auto is5VCore() const noexcept { return getCoreVoltage() == CoreVoltageKind::V5_0; }
             constexpr auto is3_3VCore() const noexcept { return getCoreVoltage() == CoreVoltageKind::V3_3; }
+
+            constexpr auto unpackCacheInformation() const noexcept {
+                switch(getSeries()) {
+                    case ProcessorSeries::Jx:
+                        // format is DDPCC
+                        // DD -> Clock Multiplier
+                        // P  -> Product Derivative
+                        // CC -> cache size
+                        //       11 -> 16K I-cache, 4-K dcache
+                        //       10 -> Unknown
+                        //       01 -> 2K I-cache,  1-K dcache
+                        //       00 -> 4K I-cache,  2-K Dcache
+                        switch (getModel() & 0b11) {
+                            case 0b00: return std::make_tuple<Ordinal, Ordinal>(4096u, 2048u);
+                            case 0b01: return std::make_tuple<Ordinal, Ordinal>(2048u, 1024u);
+                            case 0b11: return std::make_tuple<Ordinal, Ordinal>(16384u, 4096u);
+                        }
+                        break;
+                    case ProcessorSeries::Hx:
+                        return std::make_tuple<Ordinal, Ordinal>(16384u, 8192u);
+                    default:
+                        break;
+                }
+                return std::make_tuple<Ordinal, Ordinal>(0, 0);
+            }
+            constexpr auto getInstructionCacheSize() const noexcept { return std::get<0>(unpackCacheInformation()); }
+            constexpr auto getDataCacheSize() const noexcept { return std::get<1>(unpackCacheInformation()); }
         private:
             uint8_t _version;
             bool _vcc;
@@ -286,13 +313,14 @@ namespace i960 {
                 _dcacheSize(dcache),
                 _voltage(v),
                 _stepping(stepping & 0b1111) { }
-            constexpr auto getICacheSize() const noexcept { return _icacheSize; }
-            constexpr auto getDCacheSize() const noexcept { return _dcacheSize; }
+            constexpr auto getInstructionCacheSize() const noexcept { return _icacheSize; }
+            constexpr auto getDataCacheSize() const noexcept { return _dcacheSize; }
             constexpr auto getCoreVoltage() const noexcept { return _voltage; }
             constexpr auto is3_3VoltCore() const noexcept { return getCoreVoltage() == CoreVoltageKind::V3_3; }
             constexpr auto is5VoltCore() const noexcept { return getCoreVoltage() == CoreVoltageKind::V5_0; }
             constexpr auto getSeries() const noexcept { return _series; }
             constexpr auto getStepping() const noexcept { return _stepping; }
+            constexpr Ordinal getDeviceId() const noexcept { return 0; }
         private:
             ProcessorSeries _series;
             Ordinal _icacheSize;
@@ -304,13 +332,20 @@ namespace i960 {
     class CoreInformation final {
         public:
             constexpr CoreInformation(
-                    ProcessorSeries series,
                     const char* str, 
+                    DeviceCode code, 
+                    Ordinal salign = 4) noexcept : _str(str), _code(code), _salign(salign) { }
+            constexpr CoreInformation(
+                    const char* str, 
+                    ProcessorSeries series,
                     CoreVoltageKind voltage, 
                     Ordinal salign = 4, // found many instances where intel defaults to 4 unless stated otherwise
                     Ordinal icacheSize = 0, 
                     Ordinal dcacheSize = 0,
-                    Ordinal devId = 0) noexcept :
+                    uint8_t stepping = 0
+                    ) noexcept : CoreInformation(str, ConstructedDeviceIdentificationCode { series, voltage, icacheSize, dcacheSize, stepping }, salign) { }
+            constexpr CoreInformation(const char* str, Ordinal deviceId, Ordinal salign = 4) noexcept : CoreInformation(str, HardwareDeviceIdentificationCode(deviceId), salign) { }
+#if 0
                 _series(series),
                 _str(str), 
                 _devId(devId), 
@@ -318,22 +353,25 @@ namespace i960 {
                 _icacheSize(icacheSize), 
                 _dcacheSize(dcacheSize),
                 _salign(salign) { }
+#endif
             constexpr auto getString() const noexcept               { return _str; }
-            constexpr auto getDeviceId() const noexcept             { return _devId; }
-            constexpr auto getVoltage() const noexcept              { return _voltage; }
-            constexpr auto getInstructionCacheSize() const noexcept { return _icacheSize; }
-            constexpr auto getDataCacheSize() const noexcept        { return _dcacheSize; }
+            constexpr Ordinal getDeviceId() const noexcept          { return std::visit([](auto&& d) noexcept { return d.getDeviceId(); }, _code); }
+            constexpr auto getVoltage() const noexcept              { return std::visit([](auto&& d) noexcept { return d.getCoreVoltage(); }, _code); }
+            constexpr auto getInstructionCacheSize() const noexcept { return std::visit([](auto&& d) noexcept { return d.getInstructionCacheSize(); }, _code); }
+            constexpr auto getDataCacheSize() const noexcept        { return std::visit([](auto&& d) noexcept { return d.getDataCacheSize(); }, _code); }
+            constexpr auto getSeries() const noexcept               { return std::visit([](auto&& d) noexcept { return d.getSeries(); }, _code); }
+            constexpr auto hasDeviceId() const noexcept             { return std::visit([](auto&& d) noexcept { return d.deviceIdCodeInHardware(); }, _code); }
+            constexpr auto getManufacturer() const noexcept         { return std::visit([](auto&& d) noexcept { return d.getManufacturer(); }, _code); }
+            constexpr auto getProductType() const noexcept          { return std::visit([](auto&& d) noexcept { return d.getProductType(); }, _code); }
+            constexpr auto hasInstructionCache() const noexcept     { return getInstructionCacheSize() > 0; }
+            constexpr auto hasDataCache() const noexcept            { return getDataCacheSize() > 0; }
+            constexpr auto is5VoltCore() const noexcept             { return getVoltage() == CoreVoltageKind::V5_0; }
+            constexpr auto is3_3VoltCore() const noexcept           { return getVoltage() == CoreVoltageKind::V3_3; }
+#if 0
             constexpr auto getVersion() const noexcept              { return (_devId & 0xF000'0000) >> 28; }
-            constexpr auto getProductType() const noexcept          { return (_devId & 0x0FE0'0000) >> 21; }
             constexpr auto getGeneration() const noexcept           { return (_devId & 0x001E'0000) >> 17; }
             constexpr auto getModel() const noexcept                { return (_devId & 0x0001'F000) >> 12; }
-            constexpr auto getManufacturer() const noexcept         { return (_devId & 0x0000'0FFE) >> 1; }
-            constexpr auto getSeries() const noexcept               { return _series; }
-            constexpr auto hasInstructionCache() const noexcept     { return _icacheSize != 0; }
-            constexpr auto hasDataCache() const noexcept            { return _dcacheSize != 0; }
-            constexpr auto is5VoltCore() const noexcept             { return _voltage == CoreVoltageKind::V5_0; }
-            constexpr auto is3_3VoltCore() const noexcept           { return _voltage == CoreVoltageKind::V3_3; }
-            constexpr auto hasDeviceId() const noexcept             { return _devId != 0; }
+#endif
             constexpr auto getSalign() const noexcept               { return _salign; }
             constexpr auto getStackFrameAlignment() const noexcept  { return (_salign * 16); }
             constexpr Ordinal getNumberOfIgnoredFramePointerBits() const noexcept { 
@@ -348,14 +386,21 @@ namespace i960 {
                 }
             }
         private:
-            ProcessorSeries _series;
             const char* _str;
-            Ordinal _devId;
+            DeviceCode _code;
+            Ordinal _salign;
+#if 0
+            ProcessorSeries _series;
+            //Ordinal _devId;
             CoreVoltageKind _voltage;
             Ordinal _icacheSize;
             Ordinal _dcacheSize;
-            Ordinal _salign;
+#endif
     };
+    
+    constexpr CoreInformation cpu80960JT_A0("80960JT", 0x0082'B013, 1);
+    static_assert(HardwareDeviceIdentificationCode(0x0082'B013).getDeviceId() == 0x0082'B013);
+#if 0
     // for the Sx series, I cannot find Appendix F of the reference manual online so I'm assuming 4 for SALIGN for now
     constexpr CoreInformation cpu80960SA(ProcessorSeries::Sx , "80960SA", CoreVoltageKind::V5_0, 4, 512u);
     constexpr CoreInformation cpu80960SB(ProcessorSeries::Sx , "80960SB", CoreVoltageKind::V5_0, 4, 512u);
@@ -372,5 +417,6 @@ namespace i960 {
     static_assert(cpu80960JF.getManufacturer() == 0b0000'0001'001, "Bad manufacturer check!");
     static_assert(cpu80960JF.is5VoltCore(), "Bad voltage value!");
     static_assert(cpu80960JF.getSeries() == ProcessorSeries::Jx, "Bad processor series!");
+#endif
 } // end namespace i960
 #endif // end I960_TYPES_H__
