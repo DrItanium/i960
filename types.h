@@ -2,6 +2,7 @@
 #define I960_TYPES_H__
 #include <cstdint>
 #include <memory>
+#include <variant>
 namespace i960 {
 
     using ByteOrdinal = std::uint8_t;
@@ -76,73 +77,6 @@ namespace i960 {
         return conv.getOrdinal();
     }
 
-    enum class ProcessorSeries {
-        Jx,
-        Hx,
-        Cx,
-        Kx,
-        Sx,
-    };
-    enum class CoreVoltageKind {
-        V3_3,
-        V5_0,
-    };
-    class CoreInformation final {
-        public:
-            constexpr CoreInformation(
-                    ProcessorSeries series,
-                    const char* str, 
-                    CoreVoltageKind voltage, 
-                    Ordinal salign = 1,
-                    Ordinal icacheSize = 0, 
-                    Ordinal dcacheSize = 0,
-                    Ordinal devId = 0) noexcept :
-                _series(series),
-                _str(str), 
-                _devId(devId), 
-                _voltage(voltage), 
-                _icacheSize(icacheSize), 
-                _dcacheSize(dcacheSize),
-                _salign(salign) { }
-            constexpr auto getString() const noexcept               { return _str; }
-            constexpr auto getDeviceId() const noexcept             { return _devId; }
-            constexpr auto getVoltage() const noexcept              { return _voltage; }
-            constexpr auto getInstructionCacheSize() const noexcept { return _icacheSize; }
-            constexpr auto getDataCacheSize() const noexcept        { return _dcacheSize; }
-            constexpr auto getVersion() const noexcept              { return (_devId & 0xF000'0000) >> 28; }
-            constexpr auto getProductType() const noexcept          { return (_devId & 0x0FE0'0000) >> 21; }
-            constexpr auto getGeneration() const noexcept           { return (_devId & 0x001E'0000) >> 17; }
-            constexpr auto getModel() const noexcept                { return (_devId & 0x0001'F000) >> 12; }
-            constexpr auto getManufacturer() const noexcept         { return (_devId & 0x0000'0FFE) >> 1; }
-            constexpr auto getSeries() const noexcept               { return _series; }
-            constexpr auto hasInstructionCache() const noexcept     { return _icacheSize != 0; }
-            constexpr auto hasDataCache() const noexcept            { return _dcacheSize != 0; }
-            constexpr auto is5VoltCore() const noexcept             { return _voltage == CoreVoltageKind::V5_0; }
-            constexpr auto is3_3VoltCore() const noexcept           { return _voltage == CoreVoltageKind::V3_3; }
-            constexpr auto hasDeviceId() const noexcept             { return _devId != 0; }
-            constexpr auto getSalign() const noexcept               { return _salign; }
-        private:
-            ProcessorSeries _series;
-            const char* _str;
-            Ordinal _devId;
-            CoreVoltageKind _voltage;
-            Ordinal _icacheSize;
-            Ordinal _dcacheSize;
-            Ordinal _salign;
-    };
-    constexpr CoreInformation cpu80960SA(ProcessorSeries::Sx , "80960SA", CoreVoltageKind::V5_0);
-    constexpr CoreInformation cpu80960SB(ProcessorSeries::Sx , "80960SB", CoreVoltageKind::V5_0);
-    constexpr CoreInformation cpu80L960JA(ProcessorSeries::Jx, "80L960JA", CoreVoltageKind::V3_3, 1, 2048u, 1024u, 0x0082'1013);
-    constexpr CoreInformation cpu80L960JF(ProcessorSeries::Jx, "80L960JF", CoreVoltageKind::V3_3, 1, 4096u, 2048u, 0x0082'0013);
-    constexpr CoreInformation cpu80960JD( ProcessorSeries::Jx, "80960JD", CoreVoltageKind::V5_0,  1, 4096u, 2048u, 0x0882'0013);
-    constexpr CoreInformation cpu80960JF( ProcessorSeries::Jx, "80960JF", CoreVoltageKind::V5_0,  1, 4096u, 2048u, 0x0882'0013);
-    // sanity checks
-    static_assert(cpu80960JF.getGeneration() == 0b0001, "Bad generation check!");
-    static_assert(cpu80960JF.getModel() == 0, "Bad model check!");
-    static_assert(cpu80960JF.getProductType() == 0b1000100, "Bad product type check!");
-    static_assert(cpu80960JF.getManufacturer() == 0b0000'0001'001, "Bad manufacturer check!");
-    static_assert(cpu80960JF.is5VoltCore(), "Bad voltage value!");
-    static_assert(cpu80960JF.getSeries() == ProcessorSeries::Jx, "Bad processor series!");
     template<typename T, typename R, T mask, T shift = static_cast<T>(0)>
     constexpr R decode(T value) noexcept {
         using RK = std::decay_t<R>;
@@ -229,5 +163,167 @@ namespace i960 {
 
     template<typename ... Ts>
     overloaded(Ts...) -> overloaded<Ts...>;
+
+    enum class ProcessorSeries {
+        Jx,
+        Hx,
+        Cx,
+        Kx,
+        Sx,
+    };
+    enum class CoreVoltageKind {
+        V3_3,
+        V5_0,
+    };
+    class DeviceIdentificationCode final {
+        public:
+            constexpr DeviceIdentificationCode(uint8_t version, bool vcc, uint8_t generation, uint8_t model) noexcept :
+                _version(version),
+                _vcc(vcc),
+                _gen(generation),
+                _model(model) { }
+            constexpr DeviceIdentificationCode(Ordinal raw) noexcept : DeviceIdentificationCode(
+                    i960::decode<Ordinal, uint8_t, 0xF000'0000, 28>(raw),
+                    i960::decode<Ordinal, bool, (1 << 27), 27>(raw),
+                    i960::decode<Ordinal, uint8_t, (0b1111 << 17), 17>(raw),
+                    i960::decode<Ordinal, uint8_t, (0b11111 << 12), 12>(raw)) { }
+            constexpr auto getManufacturer() const noexcept { return Manufacturer; }
+            constexpr auto getVersion() const noexcept { return _version; }
+            constexpr auto getCoreVoltage() const noexcept { 
+                if (_vcc) {
+                    return CoreVoltageKind::V5_0;
+                } else {
+                    return CoreVoltageKind::V3_3;
+                }
+            }
+            constexpr auto supportsDeviceIdCode() const noexcept { return true; }
+            constexpr auto is5VCore() const noexcept { return _vcc; }
+            constexpr auto is3_3VCore() const noexcept { return !_vcc; }
+            constexpr auto getProductType() const noexcept { return ProductType; }
+            constexpr auto getGeneration() const noexcept { return _gen; }
+            constexpr auto getModel() const noexcept { return _model; }
+            constexpr auto makeDeviceId() const noexcept { 
+                constexpr Ordinal vccMask = 1 << 27;
+                Ordinal start = static_cast<Ordinal>(_version) << 28;
+                if (_vcc) {
+                    start |= vccMask;
+                }
+                start |= (static_cast<Ordinal>(ProductType & 0b111111) << 21);
+                start |= (static_cast<Ordinal>(_gen & 0b1111) << 17);
+                start |= (static_cast<Ordinal>(_model & 0b11111) << 12);
+                start |= (static_cast<Ordinal>(Manufacturer) << 1);
+                return (start | 1); // lsb must be 1
+            }
+        private:
+            uint8_t _version;
+            bool _vcc;
+            uint8_t _gen;         // : 4
+            uint8_t _model;       // : 5
+        public:
+            static constexpr uint8_t ProductType = 0b000'100; // : 6
+            static constexpr uint16_t Manufacturer = 0b0000'0001'001; // : 12
+    };
+    /**
+     * If the cpu doesn't have a device id register built in then we need to
+     * provide a consistent way to describe the features within through a hand maintained 
+     * structure
+     */
+    class ConstructedDeviceIdentificationCode final {
+        public:
+            constexpr ConstructedDeviceIdentificationCode(ProcessorSeries s, CoreVoltageKind v, Ordinal icache = 0, Ordinal dcache = 0, uint8_t stepping = 0) noexcept :
+                _series(s),
+                _icacheSize(icache),
+                _dcacheSize(dcache),
+                _voltage(v),
+                _stepping(stepping) { }
+            constexpr auto supportsDeviceIdCode() const noexcept { return false; }
+            constexpr auto getICacheSize() const noexcept { return _icacheSize; }
+            constexpr auto getDCacheSize() const noexcept { return _dcacheSize; }
+            constexpr auto getProductType() const noexcept { return DeviceIdentificationCode::ProductType; }
+            constexpr auto getManufacturer() const noexcept { return DeviceIdentificationCode::Manufacturer; }
+            constexpr auto getCoreVoltage() const noexcept { return _voltage; }
+            constexpr auto is3_3VoltCore() const noexcept { return _voltage == CoreVoltageKind::V3_3; }
+            constexpr auto is5VoltCore() const noexcept { return _voltage == CoreVoltageKind::V5_0; }
+            constexpr auto getSeries() const noexcept { return _series; }
+            constexpr auto getStepping() const noexcept { return _stepping; }
+        private:
+            ProcessorSeries _series;
+            Ordinal _icacheSize;
+            Ordinal _dcacheSize;
+            CoreVoltageKind _voltage;
+            uint8_t _stepping;
+    };
+    using DeviceCode = std::variant<ConstructedDeviceIdentificationCode, DeviceIdentificationCode>;
+    class CoreInformation final {
+        public:
+            constexpr CoreInformation(
+                    ProcessorSeries series,
+                    const char* str, 
+                    CoreVoltageKind voltage, 
+                    Ordinal salign = 4, // found many instances where intel defaults to 4 unless stated otherwise
+                    Ordinal icacheSize = 0, 
+                    Ordinal dcacheSize = 0,
+                    Ordinal devId = 0) noexcept :
+                _series(series),
+                _str(str), 
+                _devId(devId), 
+                _voltage(voltage), 
+                _icacheSize(icacheSize), 
+                _dcacheSize(dcacheSize),
+                _salign(salign) { }
+            constexpr auto getString() const noexcept               { return _str; }
+            constexpr auto getDeviceId() const noexcept             { return _devId; }
+            constexpr auto getVoltage() const noexcept              { return _voltage; }
+            constexpr auto getInstructionCacheSize() const noexcept { return _icacheSize; }
+            constexpr auto getDataCacheSize() const noexcept        { return _dcacheSize; }
+            constexpr auto getVersion() const noexcept              { return (_devId & 0xF000'0000) >> 28; }
+            constexpr auto getProductType() const noexcept          { return (_devId & 0x0FE0'0000) >> 21; }
+            constexpr auto getGeneration() const noexcept           { return (_devId & 0x001E'0000) >> 17; }
+            constexpr auto getModel() const noexcept                { return (_devId & 0x0001'F000) >> 12; }
+            constexpr auto getManufacturer() const noexcept         { return (_devId & 0x0000'0FFE) >> 1; }
+            constexpr auto getSeries() const noexcept               { return _series; }
+            constexpr auto hasInstructionCache() const noexcept     { return _icacheSize != 0; }
+            constexpr auto hasDataCache() const noexcept            { return _dcacheSize != 0; }
+            constexpr auto is5VoltCore() const noexcept             { return _voltage == CoreVoltageKind::V5_0; }
+            constexpr auto is3_3VoltCore() const noexcept           { return _voltage == CoreVoltageKind::V3_3; }
+            constexpr auto hasDeviceId() const noexcept             { return _devId != 0; }
+            constexpr auto getSalign() const noexcept               { return _salign; }
+            constexpr auto getStackFrameAlignment() const noexcept  { return (_salign * 16); }
+            constexpr Ordinal getNumberOfIgnoredFramePointerBits() const noexcept { 
+                // these are the constants that would be found by solving the equation
+                // SALIGN*16 = 2^n
+                // for n. Log2 is not constexpr in C++...
+                switch (getStackFrameAlignment()) {
+                    case 16:    return 4;
+                    case 32:    return 5;
+                    case 64:    return 6;
+                    default:    return 0xFFFF'FFFF;
+                }
+            }
+        private:
+            ProcessorSeries _series;
+            const char* _str;
+            Ordinal _devId;
+            CoreVoltageKind _voltage;
+            Ordinal _icacheSize;
+            Ordinal _dcacheSize;
+            Ordinal _salign;
+    };
+    // for the Sx series, I cannot find Appendix F of the reference manual online so I'm assuming 4 for SALIGN for now
+    constexpr CoreInformation cpu80960SA(ProcessorSeries::Sx , "80960SA", CoreVoltageKind::V5_0, 4, 512u);
+    constexpr CoreInformation cpu80960SB(ProcessorSeries::Sx , "80960SB", CoreVoltageKind::V5_0, 4, 512u);
+    constexpr CoreInformation cpu80L960JA(ProcessorSeries::Jx, "80L960JA", CoreVoltageKind::V3_3, 1, 2048u, 1024u, 0x0082'1013);
+    constexpr CoreInformation cpu80L960JF(ProcessorSeries::Jx, "80L960JF", CoreVoltageKind::V3_3, 1, 4096u, 2048u, 0x0082'0013);
+    constexpr CoreInformation cpu80960JD( ProcessorSeries::Jx, "80960JD", CoreVoltageKind::V5_0,  1, 4096u, 2048u, 0x0882'0013);
+    constexpr CoreInformation cpu80960JF( ProcessorSeries::Jx, "80960JF", CoreVoltageKind::V5_0,  1, 4096u, 2048u, 0x0882'0013);
+    constexpr CoreInformation cpu80960JT_A0 (ProcessorSeries::Jx, "80960JT", CoreVoltageKind::V3_3,  1, 16384, 4096u, 0x0082'B013);
+    static_assert(DeviceIdentificationCode(0, false, 0b0001, 0b01011).makeDeviceId() == cpu80960JT_A0.getDeviceId());
+    // sanity checks
+    static_assert(cpu80960JF.getGeneration() == 0b0001, "Bad generation check!");
+    static_assert(cpu80960JF.getModel() == 0, "Bad model check!");
+    static_assert(cpu80960JF.getProductType() == 0b1000100, "Bad product type check!");
+    static_assert(cpu80960JF.getManufacturer() == 0b0000'0001'001, "Bad manufacturer check!");
+    static_assert(cpu80960JF.is5VoltCore(), "Bad voltage value!");
+    static_assert(cpu80960JF.getSeries() == ProcessorSeries::Jx, "Bad processor series!");
 } // end namespace i960
 #endif // end I960_TYPES_H__
