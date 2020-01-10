@@ -47,11 +47,11 @@ namespace i960 {
             constexpr bool conditionCodeBitSet(Ordinal mask) const noexcept { return getConditionCode(mask) != 0; }
             constexpr bool shouldCarryOut() const noexcept {
                 // 0b01X where X is don't care
-                return _conditionCode == 0b010 || _conditionCode == 0b011;
+                return conditionCodeIs<0b010>() || conditionCodeIs<0b011>();
             }
             constexpr bool markedAsOverflow() const noexcept {
                 // 0b0X1 where X is don't care
-                return _conditionCode == 0b001 || _conditionCode == 0b011;
+                return conditionCodeIs<0b001>() || conditionCodeIs<0b011>();
             }
             constexpr bool carrySet() const noexcept { return conditionCodeBitSet<0b010>(); }
             constexpr Ordinal getCarryValue() const noexcept { return carrySet() ? 1 : 0; }
@@ -88,9 +88,6 @@ namespace i960 {
             static constexpr Ordinal NoImpreciseFaultsMask   = 0x0000'8000;
             static constexpr Ordinal CoreArchitectureExtractMask = constructOrdinalMask(ConditionCodeMask, IntegerOverflowFlagMask, IntegerOverflowMaskMask, NoImpreciseFaultsMask);
         public:
-            class CoreArchitecture { 
-                constexpr CoreArchitecture() = default;
-            };
             static constexpr Ordinal create(Ordinal cc, bool integerOverflowFlag, bool integerOverflowMask, bool noImpreciseFaults) noexcept {
                 auto base = cc;
                 auto shiftedIOF = static_cast<Ordinal>(integerOverflowFlag ? (1 << 8) : 0);
