@@ -87,7 +87,6 @@ namespace i960 {
             static constexpr Ordinal IntegerOverflowMaskMask = 0x0000'1000;
             static constexpr Ordinal NoImpreciseFaultsMask   = 0x0000'8000;
             static constexpr Ordinal CoreArchitectureExtractMask = constructOrdinalMask(ConditionCodeMask, IntegerOverflowFlagMask, IntegerOverflowMaskMask, NoImpreciseFaultsMask);
-            static constexpr Ordinal CoreArchitectureReservedMask = ~CoreArchitectureExtractMask;
         public:
             class CoreArchitecture { 
                 constexpr CoreArchitecture() = default;
