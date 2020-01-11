@@ -2,14 +2,15 @@
 
 namespace i960 {
 
-void TraceControls::clear() noexcept {
-    value = 0;
+void NormalRegister::clear() noexcept {
+    _value = 0;
+}
+void NormalRegister::move(const NormalRegister& other) noexcept {
+    setValue(other.getValue());
 }
 
-void NormalRegister::move(const NormalRegister& other) noexcept {
-    set<Ordinal>(other.get<Ordinal>());
-}
-NormalRegister::~NormalRegister() {
-    ordinal = 0;
+void TraceControls::modify(Ordinal mask, Ordinal input) noexcept {
+    auto fixedMask = 0x00FF00FF & mask; // masked to prevent reserved bits from being used
+    setRawValue((fixedMask & input) | (getRawValue() & (~fixedMask)));
 }
 } // end namespace i960

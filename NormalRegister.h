@@ -4,127 +4,174 @@
 #include "types.h"
 #include "ProcessControls.h"
 namespace i960 {
-    union PreviousFramePointer {
-        struct {
-            Ordinal returnCode : 3;
-            Ordinal prereturnTrace : 1;
-            Ordinal unused : 2; // 80960 ignores the lower six bits of this register
-            Ordinal address : 26;
-        };
-        Ordinal value;
-    } __attribute__((packed));
-    union ProcedureEntry {
-       struct {
-           Ordinal type : 2;
-           Ordinal address : 30;
-       };
-       Ordinal raw;
-       constexpr ProcedureEntry(Ordinal _raw = 0) : raw(_raw) { }
-       constexpr bool isLocal() const noexcept { return type == 0; }
-       constexpr bool isSupervisor() const noexcept { return type == 0b10; }
-    } __attribute__((packed));
-    static_assert(sizeof(ProcedureEntry) == 1_words, "Procedure entry must be of the correct size!");
-    union TraceControls {
-        struct {
-            Ordinal unused0 : 1;
-			// trace mode bits
-            Ordinal instructionTraceMode : 1;
-            Ordinal branchTraceMode : 1;
-			Ordinal callTraceMode : 1;
-            Ordinal returnTraceMode : 1;
-            Ordinal prereturnTraceMode : 1;
-            Ordinal supervisorTraceMode : 1;
-            Ordinal markTraceMode : 1;
-            Ordinal unused1 : 16;
-			// hardware breakpoint event flags
-			Ordinal instructionAddressBreakpoint0 : 1;
-			Ordinal instructionAddressBreakpoint1 : 1;
-			Ordinal dataAddressBreakpoint0 : 1;
-			Ordinal dataAddressBreakpoint1 : 1;
-            Ordinal unused2 : 4;
-        };
-        Ordinal value;
-        constexpr TraceControls(Ordinal raw = 0) : value(raw) { }
-		constexpr bool traceMarked() const noexcept { return markTraceMode != 0; }
-        void clear() noexcept;
-    } __attribute__((packed));
-	static_assert(sizeof(TraceControls) == 1_words, "TraceControls must be the size of an ordinal!");
-    constexpr Ordinal getMostSignificantBit(Ordinal value) noexcept {
-        return value & 0x8000'0000;
-    }
-    constexpr auto mostSignificantBitSet(Ordinal value) noexcept {
-        return getMostSignificantBit(value) != 0;
-    }
-    constexpr auto mostSignificantBitClear(Ordinal value) noexcept {
-        return getMostSignificantBit(value) == 0;
-    }
-    union NormalRegister {
+    class RegisterView;
+    template<typename T, typename ... Args>
+    constexpr auto IsOneOfThese = ( ... || std::is_same_v<std::decay_t<T>, Args>);
+    class NormalRegister {
         public:
-            constexpr NormalRegister(Ordinal value = 0) : ordinal(value) { }
-            ~NormalRegister(); 
-
-            PreviousFramePointer pfp;
-            ProcedureEntry pe;
-            ProcessControls pc;
-            TraceControls te;
-            Ordinal ordinal;
-            Integer integer;
-            ByteOrdinal byteOrd;
-            ShortOrdinal shortOrd;
-			ByteInteger byteInt;
-			ShortInteger shortInt;
-
+            constexpr NormalRegister(Ordinal value = 0) noexcept : _value(value) { }
+            constexpr auto getValue() const noexcept { return _value; }
+            void setValue(Ordinal value) noexcept { _value = value; }
             template<typename T>
             constexpr T get() const noexcept {
                 using K = std::decay_t<T>;
-                if constexpr(std::is_same_v<K, Ordinal>) {
-                    return ordinal;
-                } else if constexpr(std::is_same_v<K, Integer>) {
-                    return integer;
-                } else if constexpr(std::is_same_v<K, ByteOrdinal>) {
-                    return byteOrd;
-				} else if constexpr(std::is_same_v<K, ByteInteger>) {
-					return byteInt;
-                } else if constexpr(std::is_same_v<K, ShortOrdinal>) {
-                    return shortOrd;
-				} else if constexpr(std::is_same_v<K, ShortInteger>) {
-					return shortInt;
-                } else if constexpr(std::is_same_v<K, PreviousFramePointer>) {
-                    return pfp;
-                } else if constexpr(std::is_same_v<K, LongOrdinal>) {
-                    return static_cast<LongOrdinal>(ordinal);
+                if constexpr (std::is_same_v<K, Ordinal>) {
+                    return getValue();
+                } else if constexpr (std::is_same_v<K, Integer>) {
+                    return toInteger(getValue());
+                } else if constexpr (std::is_same_v<K, ByteOrdinal>) {
+                    return static_cast<ByteOrdinal>(getValue());
+                } else if constexpr (std::is_same_v<K, ByteInteger>) {
+                    return toInteger(static_cast<ByteOrdinal>(getValue()));
+                } else if constexpr (std::is_same_v<K, ShortOrdinal>) {
+                    return static_cast<ShortOrdinal>(getValue());
+                } else if constexpr (std::is_same_v<K, ShortInteger>) {
+                    return toInteger(static_cast<ShortOrdinal>(getValue()));
+                } else if constexpr (std::is_same_v<K, LongOrdinal>) {
+                    return static_cast<LongOrdinal>(getValue());
                 } else {
-                    static_assert(false_v<K>, "Illegal type requested");
+                    static_assert(false_v<K>, "Illegal type requested!");
                 }
             }
             template<typename T>
             void set(T value) noexcept {
                 using K = std::decay_t<T>;
-                if constexpr(std::is_same_v<K, Ordinal>) {
-                    ordinal = value;
-                } else if constexpr(std::is_same_v<K, Integer>) {
-                    integer = value;
-                } else if constexpr(std::is_same_v<K, ByteOrdinal>) {
-                    byteOrd = value;
-                } else if constexpr(std::is_same_v<K, ShortOrdinal>) {
-                    shortOrd = value;
-				} else if constexpr(std::is_same_v<K, ByteInteger>) {
-					byteInt = value;
-				} else if constexpr(std::is_same_v<K, ShortInteger>) {
-					shortInt = value;
-                } else if constexpr(std::is_same_v<K, PreviousFramePointer>) {
-                    ordinal = value.value;
+                Ordinal outcome = 0;
+                if constexpr (IsOneOfThese<K, Ordinal, ByteOrdinal, ShortOrdinal, LongOrdinal>) {
+                    outcome = static_cast<Ordinal>(value);
+                } else if constexpr (IsOneOfThese<K, Integer, ByteInteger, ShortInteger>) {
+                    outcome = static_cast<Ordinal>(toOrdinal(value));
                 } else {
-                    static_assert(false_v<K>, "Illegal type requested");
+                    static_assert(false_v<K>, "Illegal type to store into register!");
                 }
+                setValue(outcome);
             }
             void move(const NormalRegister& other) noexcept;
-			constexpr Ordinal mostSignificantBit() const noexcept { return getMostSignificantBit(ordinal); }
-			constexpr bool mostSignificantBitSet() const noexcept     { return i960::mostSignificantBitSet(ordinal); }
-			constexpr bool mostSignificantBitClear() const noexcept   { return i960::mostSignificantBitClear(ordinal); }
+            constexpr auto mostSignificantBit() const noexcept {
+                return getMostSignificantBit(_value);
+            }
+            constexpr auto mostSignificantBitSet() const noexcept {
+                return i960::mostSignificantBitSet(_value);
+            }
+            constexpr auto mostSignificantBitClear() const noexcept {
+                return i960::mostSignificantBitClear(_value);
+            }
+            template<typename R, Ordinal mask, Ordinal shift = 0>
+            constexpr R decodeField() noexcept {
+                return i960::decode<decltype(_value), R, mask, shift>(_value);
+            }
+            template<typename T, Ordinal mask, Ordinal shift = 0>
+            void encodeField(T field) noexcept {
+                _value = i960::encode<decltype(_value), T, mask, shift>(_value, field);
+            }
+            void clear() noexcept; 
+
+            template<typename T, typename = std::enable_if_t<std::is_base_of_v<RegisterView, std::decay_t<T>>>>
+            T viewAs() noexcept {
+                return {*this};
+            }
+        private:
+            Ordinal _value;
+
+    };
+    class RegisterView {
+        public:
+            constexpr RegisterView(NormalRegister& r) noexcept : _reg(r) { }
+            constexpr auto getRawValue() const noexcept { return _reg.getValue(); }
+            template<typename R, Ordinal mask, Ordinal shift = 0>
+            constexpr R decodeField() const noexcept {
+                return _reg.decodeField<R, mask, shift>();
+            }
+            void clear() noexcept { _reg.clear(); }
+            void setRawValue(Ordinal value) noexcept { _reg.setValue(value); }
+            template<typename T, Ordinal mask, Ordinal shift = 0>
+            void encodeField(T value) noexcept {
+                _reg.encodeField<T, mask, shift>(value);
+            }
+        private:
+            NormalRegister& _reg;
+    };
+    class PreviousFramePointer : public RegisterView {
+        public:
+            static constexpr Ordinal ReturnCodeMask = 0x0000'0007;
+            static constexpr Ordinal PreReturnTraceMask = 0x0000'0008;
+            static constexpr Ordinal AddressMask = 0xFFFF'FFC0; // aligned to 64-byte boundaries
+            using RegisterView::RegisterView;
+            constexpr auto getReturnCode() const noexcept { return decodeField<Ordinal, ReturnCodeMask>(); }
+            void setReturnCode(Ordinal value) noexcept { encodeField<Ordinal, ReturnCodeMask>(value); }
+            constexpr auto getPrereturnTrace() const noexcept { return decodeField<bool, PreReturnTraceMask>(); }
+            void setPrereturnTrace(bool value) noexcept { encodeField<bool, PreReturnTraceMask>(value); }
+            constexpr auto getAddress() const noexcept { return decodeField<Ordinal, AddressMask>(); }
+            void setAddress(Ordinal value) noexcept { encodeField<Ordinal, AddressMask>(value); }
+    };
+    class ProcedureEntry : public RegisterView {
+        public:
+            static constexpr Ordinal TypeMask = 0b11;
+            static constexpr auto AddressMask = ~TypeMask;
+            using RegisterView::RegisterView;
+            constexpr auto getType() const noexcept { return decodeField<Ordinal, TypeMask>(); }
+            void setType(Ordinal type) noexcept { encodeField<Ordinal, TypeMask>(type); }
+            constexpr auto getAddress() const noexcept { return decodeField<Ordinal, AddressMask>(); }
+            void setAddress(Ordinal addr) noexcept { encodeField<Ordinal, AddressMask>(addr); }
+            constexpr bool isLocal() const noexcept { return getType() == 0; }
+            constexpr bool isSupervisor() const noexcept { return getType() == 0b10; }
+
     };
 
-	static_assert(sizeof(NormalRegister) == 1_words, "NormalRegister must be 32-bits wide!");
+    class TraceControls : public RegisterView {
+        public:
+            static constexpr Ordinal InstructionTraceModeMask = 0x0000'0002;
+            static constexpr Ordinal BranchTraceModeMask = 0x0000'0004;
+            static constexpr Ordinal CallTraceModeMask = 0x0000'0008;
+            static constexpr Ordinal ReturnTraceModeMask = 0x0000'0010;
+            static constexpr Ordinal PrereturnTraceModeMask = 0x0000'0020; 
+            static constexpr Ordinal SupervisorTraceModeMask = 0x0000'0040;
+            static constexpr Ordinal MarkTraceModeMask = 0x0000'0080;
+            static constexpr Ordinal InstructionAddressBreakpoint0Mask = 0x0100'0000;
+            static constexpr Ordinal InstructionAddressBreakpoint1Mask = 0x0200'0000;
+            static constexpr Ordinal DataAddressBreakpoint0Mask = 0x0400'0000;
+            static constexpr Ordinal DataAddressBreakpoint1Mask = 0x0800'0000;
+        public:
+            using RegisterView::RegisterView;
+#define B(field, mask) \
+            void set ## field (bool value) noexcept { \
+                encodeField<bool, mask>(value); \
+            } \
+            constexpr auto get ## field () const noexcept { \
+                return decodeField<bool, mask>(); \
+            }
+#define TM(title) B(title ## TraceMode , title ## TraceModeMask)
+#define ABM(title) \
+            B(title ## AddressBreakpoint0, title ## AddressBreakpoint0Mask); \
+            B(title ## AddressBreakpoint1, title ## AddressBreakpoint1Mask)
+            TM(Instruction);
+            TM(Branch);
+            TM(Call);
+            TM(Return);
+            TM(Prereturn);
+            TM(Supervisor);
+            TM(Mark);
+            ABM(Instruction);
+            ABM(Data);
+#undef TM
+#undef ABM
+#undef B
+            constexpr auto traceMarked() const noexcept { return getMarkTraceMode(); }
+            void modify(Ordinal mask, Ordinal input) noexcept;
+    };
+
 
 } // end namespace i960
+
+namespace std {
+template<typename T>
+constexpr T get(const i960::NormalRegister& reg) noexcept {
+    return reg.get<T>();
+}
+
+template<typename T>
+constexpr T get(const i960::NormalRegister&& reg) noexcept {
+    return reg.get<T>();
+}
+} // end namespace std
 #endif // end I960_NORMAL_REGISTER_H__

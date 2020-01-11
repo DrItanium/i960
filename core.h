@@ -171,7 +171,7 @@ namespace i960 {
                 using K = std::decay_t<T>;
                 if (op.isRegister()) {
                     if constexpr (std::is_same_v<K, LongOrdinal>) {
-                        return getDoubleRegister(op).get<T>();
+                        return getDoubleRegister(op).get();
                     } else {
                         return getRegister(op).get<T>();
                     }
@@ -198,9 +198,8 @@ namespace i960 {
             template<typename T>
             void setDest(const HasSrcDest& srcDest, T value) noexcept {
                 using K = std::decay_t<T>;
-                if constexpr (std::is_same_v<K, LongOrdinal> ||
-                              std::is_same_v<K, LongInteger>) {
-                    getDoubleRegister(srcDest.getSrcDest()).set<T>(value);
+                if constexpr (std::is_same_v<K, LongOrdinal>) {
+                    getDoubleRegister(srcDest.getSrcDest()).set(value);
                 } else {
                     getDest(srcDest).set<T>(value);
                 }
@@ -223,7 +222,7 @@ namespace i960 {
             inline auto makeTripleRegister(const Operand& index) noexcept { return makeTripleRegister(static_cast<ByteOrdinal>(index)); }
 			QuadRegister makeQuadRegister(ByteOrdinal index) noexcept;
             inline auto makeQuadRegister(const Operand& index) noexcept { return makeQuadRegister(static_cast<ByteOrdinal>(index)); }
-            PreviousFramePointer& getPFP() noexcept;
+            PreviousFramePointer getPFP() noexcept;
             Ordinal getStackPointerAddress() const noexcept;
             void setFramePointer(Ordinal value) noexcept;
             Ordinal getFramePointerAddress() const noexcept;
@@ -493,6 +492,12 @@ namespace i960 {
 								}
 				}());
             }
+        private:
+            constexpr Ordinal computeAlignmentBoundaryConstant() const noexcept {
+                // on the i960 MC the constant is four,
+                // on the jx it is 1
+                return (_deviceId.getSalign() * 16) - 1;
+            }
 		private:
 			void dispatch(const Instruction& decodedInstruction) noexcept;
             bool cycle();
@@ -505,6 +510,7 @@ namespace i960 {
             void freeCurrentRegisterSet() noexcept;
             bool registerSetNotAllocated(const Operand& fp) noexcept;
             void retrieveFromMemory(const Operand& fp) noexcept;
+            TraceControls getTraceControls() noexcept { return _tc.viewAs<TraceControls>(); }
         private:
             RegisterWindow _globalRegisters;
             // The hardware implementations use register sets, however
@@ -515,7 +521,8 @@ namespace i960 {
             ArithmeticControls _ac;
             Ordinal _instructionPointer;
             ProcessControls _pc;
-            TraceControls _tc;
+            NormalRegister _tc;
+            //TraceControls _tc;
 			MemoryInterface& _mem;
 			Ordinal _prcbAddress;
 			Ordinal _ctrlTable;
