@@ -14,62 +14,150 @@ namespace i960::Opcode {
          */
         enum class Class : EncodedOpcode {
             // upper most 4 bits are consumed by this class field but only 5 are used, wasteful but who cares
-            Unknown  = 0x0000'0000,
-            Register = 0x1000'0000,
-            COBR     = 0x2000'0000,
-            Memory   = 0x3000'0000,
-            Control  = 0x4000'0000,
+            Unknown  = 0x00,
+            Register = 0x10,
+            COBR     = 0x20,
+            Memory   = 0x30,
+            Control  = 0x40,
         };
         /**
          * 4 bit code field which describes the instruction's argument layout
          */
         enum class Arguments : EncodedOpcode {
             // not set
-            Undefined         = 0x0000'0000,
+            Undefined         = 0x00,
             // 0 args
-            None              = 0x0100'0000,
+            None              = 0x01,
             // 1 arg
-            Disp              = 0x0200'0000,
-            Mem               = 0x0300'0000,
-            RegLit            = 0x0400'0000,
-            Reg               = 0x0500'0000,
+            Disp              = 0x02,
+            Mem               = 0x03,
+            RegLit            = 0x04,
+            Reg               = 0x05,
             // 2 args
-            Mem_Reg           = 0x0600'0000,
-            Reg_Mem           = 0x0700'0000,
-            RegLit_Reg        = 0x0800'0000,
-            RegLit_RegLit     = 0x0900'0000,
+            Mem_Reg           = 0x06,
+            Reg_Mem           = 0x07,
+            RegLit_Reg        = 0x08,
+            RegLit_RegLit     = 0x09,
             // 3 args
-            RegLit_RegLit_Reg = 0x0A00'0000,
-            Reg_RegLit_Reg    = 0x0B00'0000,
-            RegLit_Reg_Disp   = 0x0C00'0000,
+            RegLit_RegLit_Reg = 0x0A,
+            Reg_RegLit_Reg    = 0x0B,
+            RegLit_Reg_Disp   = 0x0C,
         };
 
         template<typename T>
         constexpr EncodedOpcode FieldMask = 0xFFFF'FFFF;
-        template<> constexpr EncodedOpcode FieldMask<Class>     = 0xF000'0000;
-        template<> constexpr EncodedOpcode FieldMask<Arguments> = 0x0F00'0000;
-        template<> constexpr EncodedOpcode FieldMask<uint16_t>  = 0x0000'FFFF;
+        template<> constexpr EncodedOpcode FieldMask<Class>     = 0x0000'00F0;
+        template<> constexpr EncodedOpcode FieldMask<Arguments> = 0x0000'000F;
+        template<> constexpr EncodedOpcode FieldMask<uint16_t>  = 0xFFFF'0000;
+        template<typename T>
+        constexpr EncodedOpcode ShiftAmount = 0;
+        template<> constexpr EncodedOpcode ShiftAmount<uint16_t> = 16;
         template<typename R>
         constexpr R extractField(EncodedOpcode raw) noexcept {
             static_assert(FieldMask<R> != 0xFFFF'FFFF, "FieldMask not specified for type");
-            return i960::decode<decltype(raw), R, FieldMask<R>, 0>(raw);
+            return i960::decode<decltype(raw), R, FieldMask<R>, ShiftAmount<R>>(raw);
+        }
+        constexpr Integer getArgumentCount(Arguments args) noexcept {
+            switch(args) {
+                case Arguments::None: 
+                    return 0;
+                case Arguments::Disp:
+                case Arguments::Mem:
+                case Arguments::RegLit:
+                case Arguments::Reg:
+                    return 1;
+                case Arguments::Mem_Reg:
+                case Arguments::Reg_Mem:
+                case Arguments::RegLit_Reg:
+                case Arguments::RegLit_RegLit:
+                    return 2;
+                case Arguments::RegLit_RegLit_Reg:
+                case Arguments::Reg_RegLit_Reg:
+                case Arguments::RegLit_Reg_Disp:
+                    return 3;
+                default:
+                    return -1;
+            }
         }
         class DecodedOpcode final {
             public:
-                constexpr DecodedOpcode(EncodedOpcode opcode) noexcept : 
-                    _class(extractField<Class>(opcode)),
-                    _arguments(extractField<Arguments>(opcode)),
-                    _actualOpcode(extractField<uint16_t>(opcode)) { }
+                constexpr DecodedOpcode(Class cl, Arguments args, uint16_t opcode) noexcept : _class(cl), _arguments(args), _actualOpcode(opcode) { }
+                constexpr DecodedOpcode(EncodedOpcode opcode) noexcept : DecodedOpcode(extractField<Class>(opcode), extractField<Arguments>(opcode), extractField<uint16_t>(opcode)) { }
                 constexpr auto getEncodedOpcode() const noexcept {
                     return static_cast<EncodedOpcode>(_class) |
                            static_cast<EncodedOpcode>(_arguments) |
-                           static_cast<EncodedOpcode>(_actualOpcode);
+                           (static_cast<EncodedOpcode>(_actualOpcode) << ShiftAmount<decltype(_actualOpcode)>);
                 }
+                constexpr auto getClass() const noexcept { return _class; }
+                constexpr auto getArguments() const noexcept { return _arguments; }
+                constexpr auto getActualOpcode() const noexcept { return _actualOpcode; }
+                constexpr auto getNumberOfArguments() const noexcept { return getArgumentCount(_arguments); }
             private:
                 Class _class;
                 Arguments _arguments;
                 uint16_t _actualOpcode;
         };
+        constexpr DecodedOpcode undefinedOpcode(Class::Unknown, Arguments::Undefined, 0xFFFF);
+        template<uint16_t opcode>
+        constexpr auto RetrieveDecodedOpcode = undefinedOpcode;
+#define o(name, code, arg, kind) \
+        constexpr DecodedOpcode decoded_ ## name (i960::constructOrdinalMask(Class:: kind, Arguments:: arg , static_cast<EncodedOpcode>(code) << 16)); \
+        template<> constexpr auto RetrieveDecodedOpcode<code> = decoded_ ## name ; \
+        static_assert(decoded_ ## name . getEncodedOpcode() == DecodedOpcode(Class:: kind, Arguments:: arg , code).getEncodedOpcode()); 
+#define reg(name, code, arg) o(name, code, arg, Register)
+#define cobr(name, code, arg) o(name, code, arg, COBR) 
+#define mem(name, code, arg) o(name, code, arg, Memory) 
+#define ctrl(name, code, arg) o(name, code, arg, Control)
+#include "opcodes.def"
+#undef reg
+#undef cobr
+#undef mem
+#undef ctrl
+#undef o
+
+        template<uint16_t opcode>
+        constexpr auto IsControlFormat = RetrieveDecodedOpcode<opcode>.getClass() == Class::Control;
+        template<uint16_t opcode>
+        constexpr auto IsRegisterFormat = RetrieveDecodedOpcode<opcode>.getClass() == Class::Register;
+        template<uint16_t opcode>
+        constexpr auto IsCompareAndBranchFormat= RetrieveDecodedOpcode<opcode>.getClass() == Class::COBR;
+        template<uint16_t opcode>
+        constexpr auto IsMemoryFormat = RetrieveDecodedOpcode<opcode>.getClass() == Class::Memory;
+        template<uint16_t opcode>
+        constexpr auto NumberOfArguments = RetrieveDecodedOpcode<opcode>.getNumberOfArguments();
+
+        constexpr const DecodedOpcode& decodeOpcode(uint16_t opcode) noexcept {
+            switch(opcode) {
+#define o(name, code, arg, kind) case code : return RetrieveDecodedOpcode<code>;
+#define reg(name, code, arg) o(name, code, arg, Reg)
+#define cobr(name, code, arg) o(name, code, arg, Cobr) 
+#define mem(name, code, arg) o(name, code, arg, Mem) 
+#define ctrl(name, code, arg) o(name, code, arg, Ctrl)
+#include "opcodes.def"
+#undef reg
+#undef cobr
+#undef mem
+#undef ctrl
+#undef o
+                default: return undefinedOpcode;
+            }
+        }
+        constexpr auto getNumberOfArguments(uint16_t opcode) noexcept {
+            switch(opcode) {
+#define o(name, code, arg, kind) case code : return NumberOfArguments<code>;
+#define reg(name, code, arg) o(name, code, arg, Reg)
+#define cobr(name, code, arg) o(name, code, arg, Cobr) 
+#define mem(name, code, arg) o(name, code, arg, Mem) 
+#define ctrl(name, code, arg) o(name, code, arg, Ctrl)
+#include "opcodes.def"
+#undef reg
+#undef cobr
+#undef mem
+#undef ctrl
+#undef o
+                default: return NumberOfArguments<0xFFFF>;
+            }
+        }
 
 
 		enum Id : OpcodeValue {
@@ -197,6 +285,7 @@ namespace i960::Opcode {
 
 		const Description& getDescription(Ordinal opcode) noexcept;
 		const Description& getDescription(const Instruction& inst) noexcept;
+        const DecodedOpcode& test(Ordinal opcode) noexcept;
 } // end namespace i960::Opcode
 namespace i960::Operation {
     template<typename T>

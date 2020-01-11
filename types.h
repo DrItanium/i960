@@ -146,7 +146,7 @@ namespace i960 {
 
     template<typename ... Args>
     inline constexpr Ordinal constructOrdinalMask(Args&& ... masks) noexcept {
-        return (... | masks);
+        return (... | static_cast<Ordinal>(masks));
     }
 
     /**

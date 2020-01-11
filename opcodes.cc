@@ -25,4 +25,7 @@ namespace i960::Opcode {
 			return undefined;
 		}
 	}
+    const DecodedOpcode& test(Ordinal opcode) noexcept {
+        return decodeOpcode(static_cast<uint16_t>(opcode));
+    }
 } // end namespace i960::Opcode
