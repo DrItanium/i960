@@ -6,6 +6,72 @@ namespace i960 {
     class Instruction;
 }
 namespace i960::Opcode {
+        using EncodedOpcode = i960::Ordinal;
+        /**
+         * The opcode class as defined in i960, there are additions to make sure
+         * that we don't run into strange edge cases; The values are encoded as they will show up in
+         * the encoded 32-bit token
+         */
+        enum class Class : EncodedOpcode {
+            // upper most 4 bits are consumed by this class field but only 5 are used, wasteful but who cares
+            Unknown  = 0x0000'0000,
+            Register = 0x1000'0000,
+            COBR     = 0x2000'0000,
+            Memory   = 0x3000'0000,
+            Control  = 0x4000'0000,
+        };
+        /**
+         * 4 bit code field which describes the instruction's argument layout
+         */
+        enum class Arguments : EncodedOpcode {
+            // not set
+            Undefined         = 0x0000'0000,
+            // 0 args
+            None              = 0x0100'0000,
+            // 1 arg
+            Disp              = 0x0200'0000,
+            Mem               = 0x0300'0000,
+            RegLit            = 0x0400'0000,
+            Reg               = 0x0500'0000,
+            // 2 args
+            Mem_Reg           = 0x0600'0000,
+            Reg_Mem           = 0x0700'0000,
+            RegLit_Reg        = 0x0800'0000,
+            RegLit_RegLit     = 0x0900'0000,
+            // 3 args
+            RegLit_RegLit_Reg = 0x0A00'0000,
+            Reg_RegLit_Reg    = 0x0B00'0000,
+            RegLit_Reg_Disp   = 0x0C00'0000,
+        };
+
+        template<typename T>
+        constexpr EncodedOpcode FieldMask = 0xFFFF'FFFF;
+        template<> constexpr EncodedOpcode FieldMask<Class>     = 0xF000'0000;
+        template<> constexpr EncodedOpcode FieldMask<Arguments> = 0x0F00'0000;
+        template<> constexpr EncodedOpcode FieldMask<uint16_t>  = 0x0000'FFFF;
+        template<typename R>
+        constexpr R extractField(EncodedOpcode raw) noexcept {
+            static_assert(FieldMask<R> != 0xFFFF'FFFF, "FieldMask not specified for type");
+            return i960::decode<decltype(raw), R, FieldMask<R>, 0>(raw);
+        }
+        class DecodedOpcode final {
+            public:
+                constexpr DecodedOpcode(EncodedOpcode opcode) noexcept : 
+                    _class(extractField<Class>(opcode)),
+                    _arguments(extractField<Arguments>(opcode)),
+                    _actualOpcode(extractField<uint16_t>(opcode)) { }
+                constexpr auto getEncodedOpcode() const noexcept {
+                    return static_cast<EncodedOpcode>(_class) |
+                           static_cast<EncodedOpcode>(_arguments) |
+                           static_cast<EncodedOpcode>(_actualOpcode);
+                }
+            private:
+                Class _class;
+                Arguments _arguments;
+                uint16_t _actualOpcode;
+        };
+
+
 		enum Id : OpcodeValue {
 #define o(name, code, arg, kind) \
 	name = code,
@@ -54,6 +120,8 @@ namespace i960::Opcode {
 				Ctrl,
 			};
 			enum class ArgumentLayout {
+				// not set
+				Undefined,
 				// 0 args
 				None,
 				// 1 arg
@@ -70,8 +138,6 @@ namespace i960::Opcode {
 				RegLit_RegLit_Reg,
 				Reg_RegLit_Reg,
 				RegLit_Reg_Disp,
-				// not set
-				Undefined,
 			};
 			static constexpr Integer getArgumentCount(ArgumentLayout layout) noexcept {
 				switch (layout) {
