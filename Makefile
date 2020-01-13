@@ -74,7 +74,6 @@ StartupRecord.o: StartupRecord.h types.h
 Timer.o: Timer.h types.h
 TripleRegister.o: TripleRegister.h types.h NormalRegister.h \
  ProcessControls.h
-bus.o: bus.h
 core.o: core.h types.h NormalRegister.h ProcessControls.h \
  DoubleRegister.h TripleRegister.h QuadRegister.h ArithmeticControls.h \
  memiface.h Operand.h Instruction.h opcodes.h opcodes.def \
