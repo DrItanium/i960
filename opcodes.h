@@ -158,8 +158,12 @@ namespace i960::Opcode {
                 default: return NumberOfArguments<0xFFFF>;
             }
         }
+} // end namespace i960::Opcode
+namespace i960::Operation {
 
-
+} // end namespace i960::Operation
+#if 0
+namespace i960::Opcode {
 		enum Id : OpcodeValue {
 #define o(name, code, arg, kind) \
 	name = code,
@@ -440,4 +444,5 @@ namespace i960::Operation {
         }
     }
 } // end namespace i960::Operation
+#endif
 #endif // end I960_OPCODES_H__

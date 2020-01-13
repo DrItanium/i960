@@ -3,6 +3,7 @@
 #include <map>
 
 namespace i960::Opcode {
+#if 0
 	const Description& getDescription(Ordinal opcode) noexcept {
 		static constexpr Description undefined (static_cast<OpcodeValue>(Id::Undefined), Description::Class::Undefined, "undefined", Description::ArgumentLayout::Undefined);
 		static std::map<Ordinal, Description> lookupTable = {
@@ -28,4 +29,5 @@ namespace i960::Opcode {
     const DecodedOpcode& test(Ordinal opcode) noexcept {
         return decodeOpcode(static_cast<uint16_t>(opcode));
     }
+#endif
 } // end namespace i960::Opcode
