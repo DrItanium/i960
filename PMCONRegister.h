@@ -60,22 +60,49 @@ namespace i960 {
             constexpr bool busWidthIs32bit() const noexcept { return _busWidth == 0b10; }
             constexpr bool busWidthIsUndefined() const noexcept { return _busWidth == 0b11; }
             void setBusWidth(Ordinal v) noexcept { _busWidth = v; }
-            void setRawValue(Ordinal val) noexcept { _busWidth = extractBusWidth(val); }
             constexpr auto getRawValue() const noexcept { return encodeBusWidth(_busWidth); }
         private:
             uint8_t _busWidth = 0;
     };
-	union BCONRegister final {
-		struct {
-			Ordinal _configurationEntriesInControlTableValid : 1;
-			Ordinal _internalRAMProtection : 1;
-			Ordinal _supervisorInternalRAMProtection : 1;
-		};
-		Ordinal _value;
-		constexpr bool pmconEntriesValid() const noexcept { return _configurationEntriesInControlTableValid != 0; }
-		constexpr bool internalDataRAMProtectedFromUserModeWrites() const noexcept { return _internalRAMProtection != 0; }
-		constexpr bool first64BytesProtectedFromSupervisorModeWrites() const noexcept { return _supervisorInternalRAMProtection != 0; }
-	} __attribute__((packed));
+	class BCONRegister final {
+        public:
+            static constexpr bool decodeCTV(Ordinal value) noexcept {
+                return i960::decode<Ordinal, bool, 0x1, 0>(value);
+            }
+            static constexpr bool decodeIRP(Ordinal value) noexcept {
+                return i960::decode<Ordinal, bool, 0x2, 1>(value);
+            }
+            static constexpr bool decodeSIRP(Ordinal value) noexcept {
+                return i960::decode<Ordinal, bool, 0x4, 2>(value);
+            }
+            static constexpr Ordinal encodeRawValue(bool ctv, bool irp, bool sirp) noexcept {
+                return i960::encode<Ordinal, bool, 0x1, 0>(
+                        i960::encode<Ordinal, bool, 0x2, 1>(
+                            i960::encode<Ordinal, bool, 0x4, 2>(0, sirp), irp) , ctv);
+            }
+        public:
+            constexpr BCONRegister() noexcept = default;
+            constexpr BCONRegister(Ordinal raw) noexcept : 
+                _configurationEntriesInControlTableValid(decodeCTV(raw)),
+                _internalRAMProtection(decodeIRP(raw)),
+                _supervisorInternalRAMProtection(decodeSIRP(raw)) { }
+            constexpr Ordinal getRawValue() const noexcept { 
+                return encodeRawValue(getCTV(), getIRP(), getSIRP());
+            }
+            constexpr bool pmconEntriesValid() const noexcept { return getCTV(); }
+            constexpr bool internalDataRAMProtectedFromUserModeWrites() const noexcept { return getIRP(); }
+            constexpr bool first64BytesProtectedFromSupervisorModeWrites() const noexcept { return getSIRP(); }
+            constexpr bool getSIRP() const noexcept { return _supervisorInternalRAMProtection; }
+            constexpr bool getIRP() const noexcept { return _internalRAMProtection; }
+            constexpr bool getCTV() const noexcept { return _configurationEntriesInControlTableValid; }
+            void setCTV(bool value) noexcept  { _configurationEntriesInControlTableValid = value; }
+            void setIRP(bool value) noexcept  { _internalRAMProtection = value; }
+            void setSIRP(bool value) noexcept { _supervisorInternalRAMProtection = value; }
+        private:
+			bool _configurationEntriesInControlTableValid = false;
+			bool _internalRAMProtection = false;
+			bool _supervisorInternalRAMProtection = false;
+	};
 	union LogicalMemoryTemplateStartingAddressRegister final {
 		struct {
 			Ordinal _byteOrder : 1;
