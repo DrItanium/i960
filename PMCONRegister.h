@@ -43,23 +43,27 @@ namespace i960 {
     constexpr PMCONRegisterRange_t PMCONRegisterRange = getRegisterRange<kind>();
     class PMCONRegister final {
         public:
-            constexpr PMCONRegister(Ordinal value = 0) : _value(value) { }
+            static constexpr auto extractBusWidth(Ordinal value) noexcept {
+                return i960::decode<Ordinal, uint8_t, 0xC0'0000, 22>(value); 
+            }
+            static constexpr auto encodeBusWidth(Ordinal base, uint8_t width) noexcept {
+                return i960::encode<Ordinal, uint8_t, 0xC0'0000, 22>(base, width);
+            }
+            static constexpr auto encodeBusWidth(uint8_t width) noexcept {
+                return encodeBusWidth(0, width);
+            }
+        public:
+            constexpr PMCONRegister() noexcept = default;
+            constexpr PMCONRegister(Ordinal value) : _busWidth(extractBusWidth(value)) { }
             constexpr bool busWidthIs8bit() const noexcept { return _busWidth == 0b00; }
             constexpr bool busWidthIs16bit() const noexcept { return _busWidth == 0b01; }
             constexpr bool busWidthIs32bit() const noexcept { return _busWidth == 0b10; }
             constexpr bool busWidthIsUndefined() const noexcept { return _busWidth == 0b11; }
             void setBusWidth(Ordinal v) noexcept { _busWidth = v; }
-            void setRawValue(Ordinal val) noexcept { _value = val; }
-            constexpr auto getRawValue() const noexcept { return _value; }
+            void setRawValue(Ordinal val) noexcept { _busWidth = extractBusWidth(val); }
+            constexpr auto getRawValue() const noexcept { return encodeBusWidth(_busWidth); }
         private:
-            union {
-                struct {
-                    Ordinal _unused0 : 22;
-                    Ordinal _busWidth : 2;
-                    Ordinal _unused1 : 8;
-                };
-                Ordinal _value;
-            };
+            uint8_t _busWidth = 0;
     };
 	union BCONRegister final {
 		struct {
