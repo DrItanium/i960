@@ -157,5 +157,5 @@ namespace i960 {
 		constexpr bool bigEndianByteOrder() const noexcept { return _byteOrder != 0; }
 		constexpr bool dataCacheEnabled() const noexcept { return _dataCacheEnable != 0; }
 	} __attribute__((packed));
-}
-#endif // end I960_PMCON_REGISTER_H__
+} // end namespace i960
+#endif // end I961_PMCON_REGISTER_H__
