@@ -92,18 +92,39 @@ namespace i960::Opcode {
                 constexpr auto getArguments() const noexcept { return _arguments; }
                 constexpr auto getActualOpcode() const noexcept { return _actualOpcode; }
                 constexpr auto getNumberOfArguments() const noexcept { return getArgumentCount(_arguments); }
+                template<Class c>
+                constexpr auto isOfClass() const noexcept {
+                    return _class == c;
+                }
+
+                constexpr auto isUndefined() const noexcept { return isOfClass<Class::Unknown>(); }
+                constexpr auto isUnknown() const noexcept { return isUndefined(); }
             private:
                 Class _class;
                 Arguments _arguments;
                 uint16_t _actualOpcode;
         };
         constexpr DecodedOpcode undefinedOpcode(Class::Unknown, Arguments::Undefined, 0xFFFF);
+        class Description final {
+            public:
+                constexpr Description(const char* name, const DecodedOpcode& opcode) noexcept : _name(name), _opcode(opcode) { }
+                constexpr const char* getName() const noexcept { return _name; }
+                constexpr const char* getString() const noexcept { return getName(); }
+                constexpr const DecodedOpcode& getOpcode() const noexcept { return _opcode; }
+                constexpr auto isUndefined() const noexcept { return _opcode.isUndefined(); }
+                constexpr auto isUnknown() const noexcept { return _opcode.isUnknown(); }
+            private:
+                const char* _name;
+                const DecodedOpcode& _opcode;
+        };
+        constexpr Description undefinedOpcodeDescription("undefined/unknown", undefinedOpcode);
         template<uint16_t opcode>
         constexpr auto RetrieveDecodedOpcode = undefinedOpcode;
 #define o(name, code, arg, kind) \
         constexpr DecodedOpcode decoded_ ## name (i960::constructOrdinalMask(Class:: kind, Arguments:: arg , static_cast<EncodedOpcode>(code) << 16)); \
         template<> constexpr auto RetrieveDecodedOpcode<code> = decoded_ ## name ; \
-        static_assert(decoded_ ## name . getEncodedOpcode() == DecodedOpcode(Class:: kind, Arguments:: arg , code).getEncodedOpcode()); 
+        static_assert(decoded_ ## name . getEncodedOpcode() == DecodedOpcode(Class:: kind, Arguments:: arg , code).getEncodedOpcode()); \
+        constexpr Description described_ ## name ( #name , decoded_ ## name );
 #define reg(name, code, arg) o(name, code, arg, Register)
 #define cobr(name, code, arg) o(name, code, arg, COBR) 
 #define mem(name, code, arg) o(name, code, arg, Memory) 
@@ -158,15 +179,9 @@ namespace i960::Opcode {
                 default: return NumberOfArguments<0xFFFF>;
             }
         }
-} // end namespace i960::Opcode
-namespace i960::Operation {
-
-} // end namespace i960::Operation
-#if 0
-namespace i960::Opcode {
-		enum Id : OpcodeValue {
-#define o(name, code, arg, kind) \
-	name = code,
+        constexpr const Description& getDescription(i960::OpcodeValue opcode) noexcept {
+            switch (opcode) {
+#define o(name, code, arg, kind) case code : return described_ ## name ;
 #define reg(name, code, arg) o(name, code, arg, Reg)
 #define cobr(name, code, arg) o(name, code, arg, Cobr) 
 #define mem(name, code, arg) o(name, code, arg, Mem) 
@@ -177,133 +192,17 @@ namespace i960::Opcode {
 #undef mem
 #undef ctrl
 #undef o
-            Undefined = 0xFFFF,
-		};
-        template<Id id>
-        constexpr auto IsMEMFormat = false;
-        template<Id id>
-        constexpr auto IsREGFormat = false;
-        template<Id id>
-        constexpr auto IsCTRLFormat = false;
-        template<Id id>
-        constexpr auto IsCOBRFormat = false;
-
-#define o(name, code, arg, kind) \
-        template<> \
-        constexpr auto Is ## kind ## Format < Id :: name > = true; 
-#define reg(name, code, arg) o(name, code, arg, REG)
-#define cobr(name, code, arg) o(name, code, arg, COBR) 
-#define mem(name, code, arg) o(name, code, arg, MEM) 
-#define ctrl(name, code, arg) o(name, code, arg, CTRL)
-#include "opcodes.def"
-#undef reg
-#undef cobr
-#undef mem
-#undef ctrl
-#undef o
-
-
-		struct Description final {
-			enum class Class : Ordinal {
-				Undefined,
-				Reg,
-				Cobr,
-				Mem,
-				Ctrl,
-			};
-			enum class ArgumentLayout {
-				// not set
-				Undefined,
-				// 0 args
-				None,
-				// 1 arg
-				Disp,
-				Mem,
-				RegLit,
-				Reg,
-				// 2 args
-				Mem_Reg,
-				Reg_Mem,
-				RegLit_Reg,
-				RegLit_RegLit,
-				// 3 args
-				RegLit_RegLit_Reg,
-				Reg_RegLit_Reg,
-				RegLit_Reg_Disp,
-			};
-			static constexpr Integer getArgumentCount(ArgumentLayout layout) noexcept {
-				switch (layout) {
-					case ArgumentLayout::None:
-						return 0;
-					case ArgumentLayout::Disp:
-					case ArgumentLayout::Mem:
-					case ArgumentLayout::Reg:
-					case ArgumentLayout::RegLit:
-						return 1;
-					case ArgumentLayout::Mem_Reg:
-					case ArgumentLayout::Reg_Mem:
-					case ArgumentLayout::RegLit_Reg:
-					case ArgumentLayout::RegLit_RegLit:
-						return 2;
-					case ArgumentLayout::RegLit_Reg_Disp:
-					case ArgumentLayout::RegLit_RegLit_Reg:
-					case ArgumentLayout::Reg_RegLit_Reg:
-						return 3;
-					default:
-						return -1;
-				}
-			}
-
-			constexpr Description(OpcodeValue opcode, Class type, const char* str, ArgumentLayout layout) noexcept : 
-				_opcode(opcode), _type(type), _str(str), _argCount(getArgumentCount(layout)), _layout(layout) { }
-            ~Description() = default;
-			constexpr auto getOpcode() const noexcept { return _opcode; }
-			constexpr auto getType() const noexcept { return _type; }
-			constexpr auto getString() const noexcept { return _str; }
-			constexpr auto getArgumentCount() const noexcept { return _argCount; }
-			constexpr auto getArgumentLayout() const noexcept { return _layout; }
-			constexpr auto hasZeroArguments() const noexcept { return _argCount == 0; }
-			constexpr auto hasOneArgument() const noexcept { return _argCount == 1; }
-			constexpr auto hasTwoArguments() const noexcept { return _argCount == 2; } 
-			constexpr auto hasThreeArguments() const noexcept { return _argCount == 3; } 
-			constexpr auto argumentCountUndefined() const noexcept { return _argCount == -1; }
-#define X(cl) constexpr bool is ## cl () const noexcept { return isOfClass<Class:: cl > () ; }
-			X(Reg);
-			X(Cobr);
-			X(Mem);
-			X(Ctrl);
-			X(Undefined);
-#undef X
-			constexpr operator OpcodeValue() const noexcept { return _opcode; }
-			private:
-				template<Class t>
-				constexpr bool isOfClass() const noexcept { return _type == t; }
-			private:
-                OpcodeValue _opcode;
-				Class _type;
-				const char* _str;
-				Integer _argCount;
-				ArgumentLayout _layout;
-		};
-
-
-		const Description& getDescription(Ordinal opcode) noexcept;
-		const Description& getDescription(const Instruction& inst) noexcept;
-        const DecodedOpcode& test(Ordinal opcode) noexcept;
+                default: return undefinedOpcodeDescription; 
+            }
+        }
 } // end namespace i960::Opcode
 namespace i960::Operation {
-    template<typename T>
-    constexpr auto IsCTRLFormat = i960::Opcode::IsCTRLFormat<T::Opcode>;
-    template<typename T>
-    constexpr auto IsREGFormat = i960::Opcode::IsREGFormat<T::Opcode>;
-    template<typename T>
-    constexpr auto IsMEMFormat = i960::Opcode::IsMEMFormat<T::Opcode>;
-    template<typename T>
-    constexpr auto IsCOBRFormat = i960::Opcode::IsCOBRFormat<T::Opcode>;
+
 #define X(name, code, kind) \
         struct name final { \
-            static constexpr auto Opcode = static_cast<i960::Opcode::Id>(code); \
-            constexpr auto getOpcode() noexcept { return Opcode; } \
+            static constexpr auto Opcode = static_cast<uint16_t>(code); \
+            constexpr auto getOpcode() const noexcept { return Opcode; } \
+            constexpr const i960::Opcode::DecodedOpcode& getDecodedForm() const noexcept { return i960::Opcode::decodeOpcode(Opcode); } \
         };
 #define reg(name, code, __) X(name, code, REG)
 #define mem(name, code, __) X(name, code, MEM)
@@ -371,6 +270,7 @@ namespace i960::Operation {
 #undef cobr
 #undef ctrl
     >;
+
     struct CTRLClass final { };
     struct COBRClass final { };
     struct REGClass final { };
@@ -444,5 +344,4 @@ namespace i960::Operation {
         }
     }
 } // end namespace i960::Operation
-#endif
 #endif // end I960_OPCODES_H__
