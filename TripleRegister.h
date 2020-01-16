@@ -34,7 +34,7 @@ constexpr i960::Ordinal get(const i960::TripleRegister& tr) noexcept {
 }
 
 template<size_t I>
-constexpr i960::Ordinal get(const i960::TripleRegister&& tr) noexcept {
+constexpr i960::Ordinal get(i960::TripleRegister&& tr) noexcept {
     switch (I) {
         case 0:
             return tr.getLowerPart();
