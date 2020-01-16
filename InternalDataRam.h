@@ -56,38 +56,39 @@ namespace i960 {
 				}
 				write(address & (~0b11), localOrdinal);
 			}
+            static constexpr auto computeActualAddress(Ordinal address) noexcept {
+                return ((address >> 2) & LegalMaskValue);
+            }
 			void write(Ordinal address, Ordinal value) noexcept {
-				auto actualAddress = (address >> 2) & LegalMaskValue;
-				_words[actualAddress] = value;
+                _words[computeActualAddress(address)] = value;
 			}
 			ByteOrdinal readByte(Ordinal address) const noexcept {
 				// extract out the ordinal that the byte is a part of
 				auto closeValue = read(address);
 				switch (address & 0b11) {
 					case 0b00: 
-						return ByteOrdinal(closeValue);
+						return closeValue;
 					case 0b01: 
-						return ByteOrdinal(closeValue >> 8);
+						return closeValue >> 8;
 					case 0b10: 
-						return ByteOrdinal(closeValue >> 16);
+						return closeValue >> 16;
 					case 0b11: 
-						return ByteOrdinal(closeValue >> 24);
+						return closeValue >> 24;
 					default:
 						throw "Should never be hit!";
 				}
 			}
 			Ordinal read(Ordinal address) const noexcept {
 				// the address needs to be fixed to be a multiple of four
-				auto realAddress = (address >> 2) & LegalMaskValue;
-				return _words[realAddress];
+                return _words[computeActualAddress(address)];
 			}
             LongOrdinal readDouble(Ordinal address) const noexcept {
                 return (LongOrdinal(read(address+1)) << 32) | LongOrdinal(read(address));
             }
 			constexpr Ordinal totalByteCapacity() const noexcept { return TotalByteCapacity; }
 		private:
-			Ordinal _words[TotalUnreservedWords + TotalReservedWords];
-	} __attribute__((packed));
+            std::array<Ordinal, TotalUnreservedWords + TotalReservedWords> _words;
+	};
 	using JxCPUInternalDataRam = InternalDataRam<1024>;
 	static_assert(sizeof(JxCPUInternalDataRam) == JxCPUInternalDataRam::TotalByteCapacity, "InternalDataRam is larger than its storage footprint!");
 } // end namespace i960
