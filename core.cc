@@ -963,22 +963,14 @@ namespace i960 {
         if (_ac.conditionCodeBitSet<0b100>()) {
             auto src1 = getSrc1(inst);
             auto src2 = getSrc2(inst);
-            if (src1 <= src2) {
-                _ac.setConditionCode(0b010);
-            } else {
-                _ac.setConditionCode(0b001);
-            }
+            _ac.setConditionCode(src1 <= src2, 0b010, 0b001);
         }
     }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::concmpi) noexcept {
         if (_ac.conditionCodeBitSet<0b100>()) {
             auto src1 = getSrc1<Integer>(inst);
             auto src2 = getSrc2<Integer>(inst);
-            if (src1 <= src2) {
-                _ac.setConditionCode(0b010);
-            } else {
-                _ac.setConditionCode(0b001);
-            }
+            _ac.setConditionCode(src1 <= src2, 0b010, 0b001);
         }
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpinco) noexcept {
@@ -1157,13 +1149,13 @@ namespace i960 {
 		}
 	}
 	QuadRegister Core::makeQuadRegister(ByteOrdinal index) noexcept {
-		return QuadRegister(getRegister(index), getRegister(index + 1), getRegister(index + 2), getRegister(index + 3));
+        return { getRegister(index), getRegister(index + 1), getRegister(index + 2), getRegister(index + 3) };
 	}
 	TripleRegister Core::makeTripleRegister(ByteOrdinal index) noexcept {
-		return TripleRegister(getRegister(index), getRegister(index + 1), getRegister(index + 2));
+        return { getRegister(index), getRegister(index+1), getRegister(index + 2)};
 	}
 	LongRegister Core::makeLongRegister(ByteOrdinal index) noexcept {
-		return LongRegister(getRegister(index), getRegister(index + 1));
+        return { getRegister(index), getRegister(index + 1)};
 	}
 	void Core::generateFault(ByteOrdinal /*faultType*/, ByteOrdinal /*faultSubtype*/) {
 		// get the fault table base address

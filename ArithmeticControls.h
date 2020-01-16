@@ -35,6 +35,13 @@ namespace i960 {
             constexpr auto maskIntegerOverflow() const noexcept { return _integerOverflowMask; }
             constexpr auto noImpreciseFaults() const noexcept { return _noImpreciseFaults; }
             void setConditionCode(Ordinal value) noexcept { _conditionCode = value; }
+            void setConditionCode(bool cond, Ordinal onTrue, Ordinal onFalse) noexcept {
+                if (cond) {
+                    setConditionCode(onTrue);
+                } else {
+                    setConditionCode(onFalse);
+                }
+            }
             void setIntegerOverflowFlag(bool value) noexcept { _integerOverflowFlag = value; }
             void setIntegerOverflowMask(bool value) noexcept { _integerOverflowMask = value; }
             void setNoImpreciseFaults(bool value) noexcept { _noImpreciseFaults = value; }
