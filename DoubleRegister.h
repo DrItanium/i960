@@ -32,7 +32,7 @@ constexpr i960::Ordinal get(const i960::DoubleRegister& dr) noexcept {
 }
 
 template<size_t I>
-constexpr i960::Ordinal get(const i960::DoubleRegister&& dr) noexcept {
+constexpr i960::Ordinal get(i960::DoubleRegister&& dr) noexcept {
     if constexpr (I == 0) {
         return dr.getLowerHalf();
     } else if constexpr (I == 1) {

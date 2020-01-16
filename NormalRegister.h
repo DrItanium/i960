@@ -170,7 +170,7 @@ constexpr T get(const i960::NormalRegister& reg) noexcept {
 }
 
 template<typename T>
-constexpr T get(const i960::NormalRegister&& reg) noexcept {
+constexpr T get(i960::NormalRegister&& reg) noexcept {
     return reg.get<T>();
 }
 } // end namespace std
