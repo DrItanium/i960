@@ -10,30 +10,38 @@ namespace i960 {
 	 */
 	struct Operand final {
 		public:
-			static constexpr Ordinal encodingMask = 0b111111; 
+			static constexpr Ordinal encodingMask = 0b1'11111; 
 			static constexpr Ordinal typeMask = 0b100000;
 			static constexpr Ordinal valueMask = 0b011111;
 			static constexpr Ordinal typeInputMask = 0b1;
 			static constexpr Ordinal typeShiftAmount = 5;
+            static constexpr Ordinal RegisterClassMask = 0b1111;
+            static constexpr Ordinal GlobalRegisterId = 0b10000;
             static constexpr Operand makeLiteral(Ordinal value) noexcept {
                 return Operand(((Operand::valueMask & Ordinal(value)) + Operand::typeMask));
+            }
+            static constexpr Operand makeGlobalRegister(Ordinal field) noexcept {
+                return {(field & RegisterClassMask) + GlobalRegisterId};
+            }
+            static constexpr Operand makeLocalRegister(Ordinal field) noexcept {
+                return { field & RegisterClassMask };
             }
 			constexpr Operand(Ordinal rawValue) noexcept : _raw(rawValue & encodingMask) { }
 			constexpr Operand(Ordinal type, Ordinal value) noexcept : Operand(((type & typeInputMask) << typeShiftAmount) | (value & valueMask)) { }
 			constexpr bool isLiteral() const noexcept { return (_raw & typeMask) != 0; }
 			constexpr bool isRegister() const noexcept { return (_raw & typeMask) == 0; }
 			constexpr ByteOrdinal getValue() const noexcept { return (_raw & valueMask); }
-            constexpr ByteOrdinal getOffset() const noexcept { return (_raw & 0b1111); }
-			constexpr operator ByteOrdinal() const noexcept { return ByteOrdinal(getValue()); }
+            constexpr ByteOrdinal getOffset() const noexcept { return (_raw & RegisterClassMask); }
 			constexpr auto notDivisibleBy(ByteOrdinal value) const noexcept { return (((ByteOrdinal)getValue()) % value) != 0; }
-            constexpr auto isGlobalRegister() const noexcept { return isRegister() && (getValue() >= 0b10000); }
-            constexpr auto isLocalRegister() const noexcept { return isRegister() && (getValue() < 0b10000); }
+            constexpr auto isGlobalRegister() const noexcept { return isRegister() && (getValue() >= GlobalRegisterId); }
+            constexpr auto isLocalRegister() const noexcept { return isRegister() && (getValue() < GlobalRegisterId); }
 			constexpr Operand next() const noexcept {
 				return Operand((_raw & typeMask) != 0, getValue() + 1);
 			}
             constexpr bool operator ==(const Operand& other) const noexcept {
                 return _raw == other._raw;
             }
+			constexpr operator ByteOrdinal() const noexcept { return ByteOrdinal(getValue()); }
 		private:
 			Ordinal _raw;
 	};
@@ -43,10 +51,10 @@ namespace i960 {
         return Operand::makeLiteral(n);
 	}
 	constexpr Operand operator"" _gr(unsigned long long n) noexcept {
-		return Operand((n & 0b1111) + 0b10000);
+        return Operand::makeGlobalRegister(n);
 	}
 	constexpr Operand operator"" _lr(unsigned long long n) noexcept {
-		return Operand((n & 0b1111));
+        return Operand::makeLocalRegister(n);
 	}
     constexpr auto PFP = 0_lr;
     constexpr auto SP = 1_lr;
