@@ -71,7 +71,6 @@ ProcessorControlBlock.o: ProcessorControlBlock.h types.h
 QuadRegister.o: QuadRegister.h types.h NormalRegister.h ProcessControls.h
 Records.o: Records.h types.h ProcessControls.h ArithmeticControls.h
 StartupRecord.o: StartupRecord.h types.h
-Timer.o: Timer.h types.h
 TripleRegister.o: TripleRegister.h types.h NormalRegister.h \
  ProcessControls.h
 core.o: core.h types.h NormalRegister.h ProcessControls.h \
