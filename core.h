@@ -2,7 +2,6 @@
 #define I960_CORE_H__
 #include "types.h"
 #include "NormalRegister.h"
-#include "DoubleRegister.h"
 #include "TripleRegister.h"
 #include "QuadRegister.h"
 #include "ArithmeticControls.h"

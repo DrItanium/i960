@@ -1,7 +1,6 @@
 #include "types.h"
 #include "core.h"
 #include "NormalRegister.h"
-#include "DoubleRegister.h"
 #include "TripleRegister.h"
 #include "QuadRegister.h"
 #include "opcodes.h"
