@@ -3,6 +3,21 @@
 #include "types.h"
 #include <tuple>
 namespace i960 {
+    class MachineStartupRecord {
+        public:
+            MachineStartupRecord() = default;
+            virtual Ordinal computeChecksum() const noexcept = 0;
+            virtual bool checksumPassed() const noexcept {
+                return computeChecksum() == 0;
+            }
+            constexpr auto getFirstInstructionAddress() const noexcept { return _firstInstruction; }
+            void setFirstInstructionAddress(Ordinal value) noexcept { _firstInstruction = value; }
+            constexpr auto getPrcbPointer() const noexcept { return _prcbPointer; }
+            void setPrcbPointer(Ordinal value) noexcept { _prcbPointer = value; }
+        private:
+            Ordinal _firstInstruction;
+            Ordinal _prcbPointer;
+    };
     constexpr bool initializationBootRecordSupported(ProcessorSeries proc) noexcept {
         switch (proc) {
             case ProcessorSeries::Sx:
@@ -20,39 +35,36 @@ namespace i960 {
     template<> constexpr Ordinal InitialMemoryImageStartAddress<ProcessorSeries::Cx> = 0xFEFF'FF00;
 
     /// This structure only applies to CX, HX, and JX cpus
-    struct InitializationBootRecord {
-        Ordinal busByte0, busByte1, busByte2, busByte3;
-        Ordinal firstInstruction;
-        Ordinal prcbPtr;
-        Integer checkSum[6];
+    class InitializationBootRecord : public MachineStartupRecord {
+        public:
+            Ordinal computeChecksum() const noexcept override {
+                /// @todo implement
+                return 0;
+            }
+        public:
+            Ordinal busByte0, busByte1, busByte2, busByte3;
+            Integer checkSum[6];
     };
 
-    static_assert(sizeof(InitializationBootRecord) == 12_words, "IBR is too large!");
 
-    struct KxSxStartupRecord {
-        Ordinal satPointer;
-        Ordinal prcbPointer;
-        Ordinal checkWord;
-        Ordinal instructionPointer;
-        Ordinal checkWords[4];
-        Ordinal computeChecksum() const noexcept {
-            // The startup record uses the eight words as a checksum where words 3 and 5-8 
-            // are specially chosen such that the one's complement of the sum of these
-            // eight words plus 0xFFFF'FFFF equals 0
-            auto baseSum = satPointer + prcbPointer + checkWord + instructionPointer;
-            for (int i = 0; i < 4; ++i) {
-                baseSum += checkWords[i];
+    class KxSxStartupRecord : public MachineStartupRecord {
+        public:
+            Ordinal satPointer;
+            Ordinal checkWord;
+            Ordinal checkWords[4];
+        public:
+            Ordinal computeChecksum() const noexcept override {
+                // The startup record uses the eight words as a checksum where words 3 and 5-8 
+                // are specially chosen such that the one's complement of the sum of these
+                // eight words plus 0xFFFF'FFFF equals 0
+                auto baseSum = satPointer + getPrcbPointer() + checkWord + getFirstInstructionAddress();
+                for (int i = 0; i < 4; ++i) {
+                    baseSum += checkWords[i];
+                }
+                return (~baseSum) + 0xFFFF'FFFF;
             }
-            return (~baseSum) + 0xFFFF'FFFF;
-        }
-        bool checksumPassed() const noexcept {
-            return computeChecksum() == 0;
-        }
-    } __attribute__((packed));
+    };
 
-
-
-    static_assert(sizeof(KxSxStartupRecord) == 8_words, "KxSxStartupRecord is too large!");
 
     template<ProcessorSeries proc>
     struct StartupRecordType final {
