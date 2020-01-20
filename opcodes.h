@@ -108,6 +108,9 @@ namespace i960::Opcode {
                 constexpr auto isUndefined() const noexcept { return isOfClass<Class::Unknown>(); }
                 constexpr auto isUnknown() const noexcept { return isUndefined(); }
 			    constexpr operator OpcodeValue() const noexcept { return _actualOpcode; }
+                constexpr bool operator==(const DecodedOpcode& other) noexcept {
+                    return (other._actualOpcode == _actualOpcode);
+                }
             private:
                 Class _class;
                 Arguments _arguments;
@@ -128,6 +131,9 @@ namespace i960::Opcode {
                 constexpr auto hasTwoArguments() const noexcept { return hasNumberOfArguments<2>(); }
                 constexpr auto hasThreeArguments() const noexcept { return hasNumberOfArguments<3>(); }
 			    constexpr operator OpcodeValue() const noexcept { return _opcode; }
+                constexpr bool operator==(const Description& other) noexcept {
+                    return other._opcode == _opcode;
+                }
             private:
                 const char* _name;
                 const DecodedOpcode& _opcode;

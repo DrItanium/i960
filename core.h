@@ -417,6 +417,8 @@ namespace i960 {
             X(Operation::extract);
             X(Operation::subc);
 #undef X
+
+
         private:
             // COBR format decls
             using TestOperation = std::variant<Operation::testg,
@@ -426,6 +428,7 @@ namespace i960 {
                                                Operation::testne,
                                                Operation::testle,
                                                Operation::testo>;
+            void performOperation(const COBRFormatInstruction& inst, TestOperation) noexcept;
             using CompareOrdinalAndBranchOperation = std::variant<Operation::cmpobg, 
                                                                   Operation::cmpobe, 
                                                                   Operation::cmpobge, 
@@ -443,7 +446,6 @@ namespace i960 {
             void performOperation(const COBRFormatInstruction& inst, Operation::bbc) noexcept;
             void performOperation(const COBRFormatInstruction& inst, Operation::bbs) noexcept;
             void performOperation(const COBRFormatInstruction&, Operation::testno) noexcept;
-            void performOperation(const COBRFormatInstruction&, TestOperation) noexcept;
             void performOperation(const COBRFormatInstruction&, CompareOrdinalAndBranchOperation) noexcept;
             void performOperation(const COBRFormatInstruction&, CompareIntegerAndBranchOperation) noexcept;
         private:

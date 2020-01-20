@@ -431,7 +431,6 @@ namespace i960 {
     }
     constexpr Ordinal largestOrdinal = 0xFFFF'FFFF;
     void Core::performOperation(const REGFormatInstruction& inst, Operation::scanbit) noexcept {
-	//void Core::scanbit(SourceRegister src, DestinationRegister dest) noexcept {
         // find the most significant set bit
         auto result = largestOrdinal;
         _ac.clearConditionCode();
