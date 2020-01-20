@@ -469,6 +469,8 @@ namespace i960 {
 #undef X
     template<typename T>
     constexpr auto IsConditionalSubtractOperation = IsConditionalSubtractIntegerOperation<std::decay_t<T>> || IsConditionalSubtractOrdinalOperation<std::decay_t<T>>;
+    template<typename T>
+    constexpr auto IsConditionalAddOperation = IsConditionalAddIntegerOperation<std::decay_t<T>> || IsConditionalAddOrdinalOperation<std::decay_t<T>>;
     template<typename T, typename ... Kinds>
     constexpr auto IsInCollection = (std::is_same_v<std::decay_t<T>, std::decay_t<Kinds>> || ...);
     template<typename T>
@@ -507,10 +509,10 @@ namespace i960 {
                                                           Operation::divi,
                                                           Operation::remi>;
     template<typename T>
-    constexpr auto IsAddOperation = IsInCollection<T, Operation::addo, 
+    constexpr auto IsUnconditionalAddOperation = IsInCollection<T, Operation::addo, 
                                                       Operation::addi>;
     template<typename T>
-    constexpr auto IsSubtractOperation = IsInCollection<T, Operation::subo, 
+    constexpr auto IsUnconditionalSubtractOperation = IsInCollection<T, Operation::subo, 
                                                            Operation::subi>;
 } // end namespace i960
 #endif // end I960_OPCODES_H__

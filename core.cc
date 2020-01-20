@@ -176,15 +176,6 @@ namespace i960 {
 		setFramePointer(tmp);
 		setRegister(SP, tmp + boundaryAlignment);
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::addo) noexcept {
-        setDest(inst, getSrc2(inst) + getSrc1(inst));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::addi) noexcept {
-        setDest<Integer>(inst, getSrc2<Integer>(inst) + getSrc1<Integer>(inst));
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::subo) noexcept {
-        setDest(inst, getSrc2(inst) - getSrc1(inst));
-    }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::mulo) noexcept {
         setDest(inst, getSrc2(inst) * getSrc1(inst));
 	}
@@ -651,9 +642,6 @@ namespace i960 {
 		// this will nop currently as I'm saving all local registers to the 
 		// stack when a call happens
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::subi) noexcept {
-        setDest<Integer>(inst, getSrc2<Integer>(inst) - getSrc1<Integer>(inst));
-    }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::modtc) noexcept {
         // the instruction has its arguments reversed for some reason...
         auto tc = getTraceControls();
