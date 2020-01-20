@@ -108,76 +108,6 @@ namespace i960 {
         return (v & 0b111'0000) >> 4;
     }
 
-    template<typename T>
-    constexpr auto IsTestOperation = false;
-#define X(op) template<> constexpr auto IsTestOperation<Operation:: test ## op > = true
-    X(g);
-    X(e);
-    X(ge);
-    X(l);
-    X(ne);
-    X(le);
-    X(o);
-#undef X
-    template<typename T>
-    constexpr auto IsCompareOrdinalAndBranchOperation = false;
-#define X(op) template<> constexpr auto IsCompareOrdinalAndBranchOperation<Operation:: cmpob ## op > = true
-    X(g);
-    X(e);
-    X(ge);
-    X(l);
-    X(ne);
-    X(le);
-#undef X
-    template<typename T>
-    constexpr auto IsCompareIntegerAndBranchOperation = false;
-
-#define X(op) template<> constexpr auto IsCompareIntegerAndBranchOperation<Operation:: cmpib ## op > = true
-    X(g);
-    X(e);
-    X(ge);
-    X(l);
-    X(ne);
-    X(le);
-    X(o);
-    X(no);
-#undef X
-
-    template<typename T>
-    constexpr auto IsSelectOperation = false;
-#define X(op) template<> constexpr auto IsSelectOperation< Operation:: sel ## op > = true
-    X(no);
-    X(g);
-    X(e);
-    X(ge);
-    X(l);
-    X(ne);
-    X(le);
-    X(o);
-#undef X
-    template<typename T>
-    constexpr auto IsConditionalBranchOperation = false;
-#define X(op) template<> constexpr auto IsConditionalBranchOperation < Operation:: b ## op > = true
-    X(g);
-    X(e);
-    X(ge);
-    X(l);
-    X(ne);
-    X(le);
-    X(o);
-#undef X
-    template<typename T>
-    constexpr auto IsFaultOperation = false;
-#define X(op) template<> constexpr auto IsFaultOperation < Operation:: fault  ## op > = true
-    X(g);
-    X(e);
-    X(ge);
-    X(l);
-    X(ne);
-    X(le);
-    X(o);
-#undef X
-
 
     class Core {
         public:
@@ -363,39 +293,6 @@ namespace i960 {
                 // lowest three bits of the opcode like before.
                 return lowestThreeBitsOfMajorOpcode(value);
             }
-            using ConditionalAddOrdinalOperation = std::variant<Operation::addono,
-                                                                Operation::addog,
-                                                                Operation::addoe,
-                                                                Operation::addoge,
-                                                                Operation::addol,
-                                                                Operation::addone,
-                                                                Operation::addole,
-                                                                Operation::addoo>;
-            using ConditionalAddIntegerOperation = std::variant<Operation::addino,
-                                                                Operation::addig,
-                                                                Operation::addie,
-                                                                Operation::addige,
-                                                                Operation::addil,
-                                                                Operation::addine,
-                                                                Operation::addile,
-                                                                Operation::addio>;
-            using ConditionalSubtractOrdinalOperation = std::variant<Operation::subono,
-                                                                Operation::subog,
-                                                                Operation::suboe,
-                                                                Operation::suboge,
-                                                                Operation::subol,
-                                                                Operation::subone,
-                                                                Operation::subole,
-                                                                Operation::suboo>;
-            using ConditionalSubtractIntegerOperation = std::variant<Operation::subino,
-                                                                Operation::subig,
-                                                                Operation::subie,
-                                                                Operation::subige,
-                                                                Operation::subil,
-                                                                Operation::subine,
-                                                                Operation::subile,
-                                                                Operation::subio>;
-
             template<typename T, std::enable_if_t<IsSelectOperation<std::decay_t<T>>, int> = 0> 
             void performOperation(const REGFormatInstruction& inst, T) noexcept {
                 if (auto mask = getSelectMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
@@ -404,11 +301,49 @@ namespace i960 {
                     setDest(inst, getSrc1(inst));
                 }
             }
+            template<typename T, std::enable_if_t<IsConditionalSubtractIntegerOperation<std::decay_t<T>>, int> = 0> 
+            void performOperation(const REGFormatInstruction& inst, T) noexcept {
+                auto s1 = getSrc1<Integer>(inst);
+                auto s2 = getSrc1<Integer>(inst);
+                if (auto mask = getConditionalSubtractMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
+                    setDest<Integer>(inst, s2 - s1);
+                }
+                if ((getMostSignificantBit(s1) != getMostSignificantBit(s2)) && (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
+                    if (_ac.maskIntegerOverflow()) {
+                        _ac.setIntegerOverflowFlag(true);
+                    } else {
+                        generateFault(ArithmeticFaultSubtype::IntegerOverflow);
+                    }
+                }
+            }
+            template<typename T, std::enable_if_t<IsConditionalSubtractOrdinalOperation<std::decay_t<T>>, int> = 0> 
+            void performOperation(const REGFormatInstruction& inst, T) noexcept {
+                if (auto mask = getConditionalSubtractMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
+                    setDest(inst, getSrc2(inst) - getSrc1(inst));
+                }
+            }
+            template<typename T, std::enable_if_t<IsConditionalAddIntegerOperation<std::decay_t<T>>, int> = 0> 
+            void performOperation(const REGFormatInstruction& inst, T) noexcept {
+                auto s1 = getSrc1<Integer>(inst);
+                auto s2 = getSrc1<Integer>(inst);
+                if (auto mask = getConditionalAddMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
+                    setDest<Integer>(inst, s1 + s2);
+                }
+                if ((getMostSignificantBit(s1) == getMostSignificantBit(s2)) && (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
+                    if (_ac.maskIntegerOverflow()) {
+                        _ac.setIntegerOverflowFlag(true);
+                    } else {
+                        generateFault(ArithmeticFaultSubtype::IntegerOverflow);
+                    }
+                }
+            }
+            template<typename T, std::enable_if_t<IsConditionalAddOrdinalOperation<std::decay_t<T>>, int> = 0> 
+            void performOperation(const REGFormatInstruction& inst, T) noexcept {
+                if (auto mask = getConditionalAddMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
+                    setDest(inst, getSrc1(inst) + getSrc2(inst));
+                }
+            }
 #define X(title) void performOperation(const REGFormatInstruction& inst, title ) noexcept
-            X(ConditionalAddIntegerOperation);
-            X(ConditionalAddOrdinalOperation);
-            X(ConditionalSubtractIntegerOperation);
-            X(ConditionalSubtractOrdinalOperation);
             X(Operation::inten);
             X(Operation::intdis);
             X(Operation::sysctl);

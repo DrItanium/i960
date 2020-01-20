@@ -45,48 +45,6 @@ namespace i960 {
             generateFault(ConstraintFaultSubtype::Range);
         }
     }
-    void Core::performOperation(const REGFormatInstruction& inst, ConditionalAddOrdinalOperation) noexcept {
-        if (auto mask = getConditionalAddMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-            setDest(inst, getSrc1(inst) + getSrc2(inst));
-        }
-    }
-
-    void Core::performOperation(const REGFormatInstruction& inst, ConditionalAddIntegerOperation) noexcept {
-        auto s1 = getSrc1<Integer>(inst);
-        auto s2 = getSrc1<Integer>(inst);
-        if (auto mask = getConditionalAddMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-            setDest<Integer>(inst, s1 + s2);
-        }
-        if ((getMostSignificantBit(s1) == getMostSignificantBit(s2)) && (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
-            if (_ac.maskIntegerOverflow()) {
-                _ac.setIntegerOverflowFlag(true);
-			} else {
-				generateFault(ArithmeticFaultSubtype::IntegerOverflow);
-			}
-		}
-    }
-
-    void Core::performOperation(const REGFormatInstruction& inst, ConditionalSubtractOrdinalOperation) noexcept {
-        if (auto mask = getConditionalSubtractMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-            setDest(inst, getSrc2(inst) - getSrc1(inst));
-        }
-    }
-
-    void Core::performOperation(const REGFormatInstruction& inst, ConditionalSubtractIntegerOperation) noexcept {
-        auto s1 = getSrc1<Integer>(inst);
-        auto s2 = getSrc1<Integer>(inst);
-        if (auto mask = getConditionalSubtractMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-            setDest<Integer>(inst, s2 - s1);
-        }
-        if ((getMostSignificantBit(s1) != getMostSignificantBit(s2)) && (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
-            if (_ac.maskIntegerOverflow()) {
-                _ac.setIntegerOverflowFlag(true);
-			} else {
-				generateFault(ArithmeticFaultSubtype::IntegerOverflow);
-			}
-		}
-    }
-
 	Core::Core(const CoreInformation& info, MemoryInterface& mem) : _mem(mem), _deviceId(info) { }
 	Ordinal Core::getStackPointerAddress() const noexcept {
         return _localRegisters[SP.getOffset()].get<Ordinal>();
