@@ -302,63 +302,36 @@ namespace i960 {
                 }
             }
 
-            template<typename T, std::enable_if_t<IsConditionalSubtractOperation<T>, int> = 0>
-            void performOperation(const REGFormatInstruction& inst, T) noexcept {
-                static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add/subtract operation!");
-                using K = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
-                auto s2 = getSrc2<K>(inst);
-                auto s1 = getSrc1<K>(inst);
-                if (auto mask = getConditionalSubtractMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-                    setDest<K>(inst, s2 - s1);
-                }
-                if constexpr (CheckForOverflow<T>) {
-                    if ((getMostSignificantBit(s1) != getMostSignificantBit(s2)) && (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
-                        if (_ac.maskIntegerOverflow()) {
-                            _ac.setIntegerOverflowFlag(true);
-                        } else {
-                            generateFault(ArithmeticFaultSubtype::IntegerOverflow);
-                        }
-                    }
-                }
-            }
-            template<typename T, std::enable_if_t<IsConditionalAddOperation<T>, int> = 0>
-            void performOperation(const REGFormatInstruction& inst, T) noexcept {
-                static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add/subtract operation!");
-                using K = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
-                auto s2 = getSrc2<K>(inst);
-                auto s1 = getSrc1<K>(inst);
-                if (auto mask = getConditionalSubtractMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-                    setDest<K>(inst, s2 + s1);
-                }
-                if constexpr (CheckForOverflow<T>) {
-                    if ((getMostSignificantBit(s1) != getMostSignificantBit(s2)) && (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
-                        if (_ac.maskIntegerOverflow()) {
-                            _ac.setIntegerOverflowFlag(true);
-                        } else {
-                            generateFault(ArithmeticFaultSubtype::IntegerOverflow);
-                        }
-                    }
-                }
-            }
-            template<typename T, std::enable_if_t<IsUnconditionalAddOperation<T> ||
-                                                  IsUnconditionalSubtractOperation<T> ||
+            template<typename T, std::enable_if_t<IsAddOperation<T> ||
+                                                  IsSubtractOperation<T> ||
                                                   IsMultiplyOperation<T>, int> = 0>
             void performOperation(const REGFormatInstruction& inst, T) noexcept {
                 static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add/subtract operation!");
                 using K = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
+                bool updateDestination = true;
                 K result = 0;
                 auto s2 = getSrc2<K>(inst);
                 auto s1 = getSrc1<K>(inst);
-                if constexpr (IsUnconditionalAddOperation<T>) {
+                if constexpr (IsAddOperation<T>) {
                     result = s2 + s1;
-                } else if constexpr (IsUnconditionalSubtractOperation<T>) {
+                    if constexpr (IsConditionalAddOperation<T>) {
+                        auto mask = getConditionalAddMask(inst.getOpcode());
+                        updateDestination = (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode());
+                    }
+                } else if constexpr (IsSubtractOperation<T>) {
                     result = s2 - s1;
+                    if constexpr (IsConditionalSubtractOperation<T>) {
+                        auto mask = getConditionalSubtractMask(inst.getOpcode());
+                        updateDestination = (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode());
+                    }
                 } else if constexpr (IsMultiplyOperation<T>) {
                     result = s2 * s1;
                 } else {
                     static_assert(false_v<T>, "Unimplemented operation");
                 }
-                setDest<K>(inst, result);
+                if (updateDestination) {
+                    setDest<K>(inst, result);
+                }
                 if constexpr (CheckForOverflow<T>) {
                     if ((getMostSignificantBit(s1) == getMostSignificantBit(s2)) && 
                             (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
