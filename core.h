@@ -349,6 +349,24 @@ namespace i960 {
                     static_assert(!IsIntegerOperation<T> && !IsOrdinalOperation<T>, "Unimplemented conditional subtract operation!");
                 }
             }
+            template<typename T, std::enable_if_t<IsUnconditionalAddOperation<T> ||
+                                                  IsUnconditionalSubtractOperation<T>, int> = 0>
+            void performOperation(const REGFormatInstruction& inst, T) noexcept {
+                static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add/subtract operation!");
+                using K = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
+                K result = 0;
+                auto src2 = getSrc2<K>(inst);
+                auto src1 = getSrc1<K>(inst);
+                if constexpr (IsUnconditionalAddOperation<T>) {
+                    result = src2 + src1;
+                } else if constexpr (IsUnconditionalSubtractOperation<T>) {
+                    result = src2 - src1;
+                } else {
+                    static_assert(false_v<T>, "Unimplemented add/subtract operation");
+                }
+                setDest<K>(inst, result);
+            }
+#if 0
             template<typename T, std::enable_if_t<IsUnconditionalAddOperation<T>, int> = 0>
             void performOperation(const REGFormatInstruction& inst, T) noexcept {
                 static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add operation!");
@@ -361,6 +379,7 @@ namespace i960 {
                 using K = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
                 setDest<K>(inst, getSrc2<K>(inst) - getSrc1<K>(inst));
             }
+#endif
 #define X(title) void performOperation(const REGFormatInstruction& inst, title ) noexcept
             X(Operation::inten);
             X(Operation::intdis);
