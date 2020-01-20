@@ -313,10 +313,23 @@ namespace i960 {
                 auto s2 = getSrc2<K>(inst);
                 auto s1 = getSrc1<K>(inst);
                 if constexpr (IsAddOperation<T>) {
-                    result = s2 + s1;
-                    if constexpr (IsConditionalAddOperation<T>) {
-                        auto mask = getConditionalAddMask(inst.getOpcode());
-                        updateDestination = (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode());
+                    if constexpr (IsAddWithCarryOperation<T>) {
+                        LongOrdinal intermediate = static_cast<LongOrdinal>(s1) + static_cast<LongOrdinal>(s2) + static_cast<LongOrdinal>(_ac.getCarryValue());
+                        _ac.clearConditionCode();
+                        auto destReg = getRegister(inst.getSrcDest());
+                        // detect overflow
+                        if (auto msb2 = getMostSignificantBit(s2) ; (msb2 == getMostSignificantBit(s1)) && (msb2 != destReg.mostSignificantBit())) {
+                            _ac.setConditionCode(_ac.getConditionCode() | 0b001);
+                        }
+                        // mark carry out bit
+                        _ac.setConditionCode(_ac.getConditionCode() | ((result & 0x1'0000'0000) ? 0b010 : 0b000));
+                        result = static_cast<Ordinal>(intermediate); 
+                    } else {
+                        result = s2 + s1;
+                        if constexpr (IsConditionalAddOperation<T>) {
+                            auto mask = getConditionalAddMask(inst.getOpcode());
+                            updateDestination = (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode());
+                        }
                     }
                 } else if constexpr (IsSubtractOperation<T>) {
                     result = s2 - s1;
@@ -404,7 +417,6 @@ namespace i960 {
             X(Operation::notbit);
             X(Operation::notand);
             X(Operation::opnot);
-            X(Operation::addc);
             X(Operation::modac);
             X(Operation::modpc);
             X(Operation::divi);

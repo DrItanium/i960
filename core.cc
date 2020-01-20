@@ -654,21 +654,6 @@ namespace i960 {
         _ac.setRawValue((src & mask) | (tmp & (~mask)));
         setRegister<Ordinal>(inst.getSrc1(), tmp);
 	}
-    constexpr auto mostSignificantBit(Ordinal input) noexcept {
-        return (input & 0x8000'0000);
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::addc) noexcept {
-        auto src1Value = getRegisterValue<Ordinal>(inst.getSrc1());
-        auto src2Value = getRegisterValue<Ordinal>(inst.getSrc2());
-        auto destReg = getRegister(inst.getSrcDest());
-        LongOrdinal result = static_cast<LongOrdinal>(src1Value) + static_cast<LongOrdinal>(src2Value) + _ac.getCarryValue();
-        destReg.set<Ordinal>(static_cast<Ordinal>(result));
-        _ac.clearConditionCode(); // odd that they would do this first as it breaks their action description in the manual
-        if (auto msb2 = mostSignificantBit(src2Value) ; (msb2 == mostSignificantBit(src1Value)) && (msb2 != destReg.mostSignificantBit())) {
-            _ac.setConditionCode(_ac.getConditionCode() | 0b001);
-        }
-        _ac.setConditionCode(_ac.getConditionCode() | ((result >> 31 & 0b10)));
-    }
     void Core::freeCurrentRegisterSet() noexcept {
         /// @todo implement
     }

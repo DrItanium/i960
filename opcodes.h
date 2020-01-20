@@ -490,7 +490,8 @@ namespace i960 {
                                                           Operation::subo,
                                                           Operation::mulo,
                                                           Operation::divo,
-                                                          Operation::remo>;
+                                                          Operation::remo, 
+                                                          Operation::addc /* really isn't ordinal or integer kinds but this is the closest */>;
     template<typename T>
     constexpr auto IsIntegerOperation = IsConditionalAddIntegerOperation<T> ||
                                         IsConditionalSubtractIntegerOperation<T> ||
@@ -516,7 +517,9 @@ namespace i960 {
                                                            Operation::subi>;
 
     template<typename T>
-    constexpr auto IsAddOperation = IsUnconditionalAddOperation<T> || IsConditionalAddOperation<T>;
+    constexpr auto IsAddWithCarryOperation = IsInCollection<T, Operation::addc>;
+    template<typename T>
+    constexpr auto IsAddOperation = IsUnconditionalAddOperation<T> || IsConditionalAddOperation<T> || IsAddWithCarryOperation<T>;
     template<typename T>
     constexpr auto IsSubtractOperation = IsUnconditionalSubtractOperation<T> || IsConditionalSubtractOperation<T>;
     template<typename T>
