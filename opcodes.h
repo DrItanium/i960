@@ -468,12 +468,49 @@ namespace i960 {
     X(o);
 #undef X
     template<typename T>
+    constexpr auto IsConditionalSubtractOperation = IsConditionalSubtractIntegerOperation<std::decay_t<T>> || IsConditionalSubtractOrdinalOperation<std::decay_t<T>>;
+    template<typename T, typename ... Kinds>
+    constexpr auto IsInCollection = (std::is_same_v<std::decay_t<T>, std::decay_t<Kinds>> || ...);
+    template<typename T>
     constexpr auto IsOrdinalOperation = IsConditionalAddOrdinalOperation<T> ||
                                         IsConditionalSubtractOrdinalOperation<T> ||
-                                        IsCompareOrdinalAndBranchOperation<T>;
+                                        IsCompareOrdinalAndBranchOperation<T> ||
+                                        IsInCollection<T, Operation::addo,
+                                                          Operation::cmpob,
+                                                          Operation::cmpos,
+                                                          Operation::cmpo,
+                                                          Operation::eshro,
+                                                          Operation::cmpdeco,
+                                                          Operation::cmpinco,
+                                                          Operation::concmpo,
+                                                          Operation::shlo,
+                                                          Operation::shro,
+                                                          Operation::subo,
+                                                          Operation::mulo,
+                                                          Operation::divo,
+                                                          Operation::remo>;
     template<typename T>
     constexpr auto IsIntegerOperation = IsConditionalAddIntegerOperation<T> ||
                                         IsConditionalSubtractIntegerOperation<T> ||
-                                        IsCompareIntegerAndBranchOperation<T>;
+                                        IsCompareIntegerAndBranchOperation<T> ||
+                                        IsInCollection<T, Operation::addi,
+                                                          Operation::cmpib,
+                                                          Operation::cmpis,
+                                                          Operation::cmpi,
+                                                          Operation::cmpdeci,
+                                                          Operation::cmpinci,
+                                                          Operation::concmpi,
+                                                          Operation::shli,
+                                                          Operation::shri,
+                                                          Operation::subi,
+                                                          Operation::muli,
+                                                          Operation::divi,
+                                                          Operation::remi>;
+    template<typename T>
+    constexpr auto IsAddOperation = IsInCollection<T, Operation::addo, 
+                                                      Operation::addi>;
+    template<typename T>
+    constexpr auto IsSubtractOperation = IsInCollection<T, Operation::subo, 
+                                                           Operation::subi>;
 } // end namespace i960
 #endif // end I960_OPCODES_H__

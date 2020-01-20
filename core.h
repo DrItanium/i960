@@ -301,27 +301,6 @@ namespace i960 {
                     setDest(inst, getSrc1(inst));
                 }
             }
-            template<typename T, std::enable_if_t<IsConditionalSubtractIntegerOperation<std::decay_t<T>>, int> = 0> 
-            void performOperation(const REGFormatInstruction& inst, T) noexcept {
-                auto s1 = getSrc1<Integer>(inst);
-                auto s2 = getSrc1<Integer>(inst);
-                if (auto mask = getConditionalSubtractMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-                    setDest<Integer>(inst, s2 - s1);
-                }
-                if ((getMostSignificantBit(s1) != getMostSignificantBit(s2)) && (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
-                    if (_ac.maskIntegerOverflow()) {
-                        _ac.setIntegerOverflowFlag(true);
-                    } else {
-                        generateFault(ArithmeticFaultSubtype::IntegerOverflow);
-                    }
-                }
-            }
-            template<typename T, std::enable_if_t<IsConditionalSubtractOrdinalOperation<std::decay_t<T>>, int> = 0> 
-            void performOperation(const REGFormatInstruction& inst, T) noexcept {
-                if (auto mask = getConditionalSubtractMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-                    setDest(inst, getSrc2(inst) - getSrc1(inst));
-                }
-            }
             template<typename T, std::enable_if_t<IsConditionalAddIntegerOperation<std::decay_t<T>>, int> = 0> 
             void performOperation(const REGFormatInstruction& inst, T) noexcept {
                 auto s1 = getSrc1<Integer>(inst);
@@ -341,6 +320,30 @@ namespace i960 {
             void performOperation(const REGFormatInstruction& inst, T) noexcept {
                 if (auto mask = getConditionalAddMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
                     setDest(inst, getSrc1(inst) + getSrc2(inst));
+                }
+            }
+
+            template<typename T, std::enable_if_t<IsConditionalSubtractOperation<T>, int> = 0>
+            void performOperation(const REGFormatInstruction& inst, T) noexcept {
+                if constexpr (IsOrdinalOperation<T>) {
+                    if (auto mask = getConditionalSubtractMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
+                        setDest(inst, getSrc2(inst) - getSrc1(inst));
+                    }
+                } else if constexpr (IsIntegerOperation<T>) {
+                    auto s1 = getSrc1<Integer>(inst);
+                    auto s2 = getSrc1<Integer>(inst);
+                    if (auto mask = getConditionalSubtractMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
+                        setDest<Integer>(inst, s2 - s1);
+                    }
+                    if ((getMostSignificantBit(s1) != getMostSignificantBit(s2)) && (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
+                        if (_ac.maskIntegerOverflow()) {
+                            _ac.setIntegerOverflowFlag(true);
+                        } else {
+                            generateFault(ArithmeticFaultSubtype::IntegerOverflow);
+                        }
+                    }
+                } else {
+                    static_assert(!IsIntegerOperation<T> && !IsOrdinalOperation<T>, "Unimplemented conditional subtract operation!");
                 }
             }
 #define X(title) void performOperation(const REGFormatInstruction& inst, title ) noexcept
