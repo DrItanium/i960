@@ -4,7 +4,6 @@ I960JX_OBJS := Operand.o \
 	Instruction.o
 I960JX_SIM_OBJS := sim960jx.o \
 	core.o \
-	dispatcher.o \
 	ProcessControls.o \
 	NormalRegister.o \
 	QuadRegister.o \
@@ -95,10 +94,5 @@ core.o: core.cc types.h core.h NormalRegister.h ProcessControls.h \
  ConditionCode.h ProcessorControlBlock.h MemoryMap.h StartupRecord.h
 decode960jx.o: decode960jx.cc types.h opcodes.h opcodes.def Instruction.h \
  Operand.h
-dispatcher.o: dispatcher.cc types.h core.h NormalRegister.h \
- ProcessControls.h TripleRegister.h QuadRegister.h ArithmeticControls.h \
- memiface.h Operand.h Instruction.h opcodes.h opcodes.def \
- InternalDataRam.h ConditionCode.h ProcessorControlBlock.h MemoryMap.h \
- StartupRecord.h
 sim960jx.o: sim960jx.cc types.h NormalRegister.h ProcessControls.h \
  ArithmeticControls.h Operand.h opcodes.h opcodes.def Instruction.h
