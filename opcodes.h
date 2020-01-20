@@ -514,5 +514,19 @@ namespace i960 {
     template<typename T>
     constexpr auto IsUnconditionalSubtractOperation = IsInCollection<T, Operation::subo, 
                                                            Operation::subi>;
+    template<typename T>
+    constexpr auto IsMultiplyOperation  = IsInCollection<T, Operation::mulo, 
+                                                            Operation::muli>;
+    template<typename T>
+    constexpr auto IsDivideOperation    = IsInCollection<T, Operation::divo, 
+                                                           Operation::divi>;
+
+    template<typename T>
+    constexpr auto IsRemainderOperation = IsInCollection<T, Operation::remo, 
+                                                            Operation::remi>;
+    template<typename T>
+    constexpr auto CheckForOverflow = IsInCollection<T, Operation::muli> ||
+                                       IsConditionalSubtractIntegerOperation<T> ||
+                                       IsConditionalAddIntegerOperation<T>;
 } // end namespace i960
 #endif // end I960_OPCODES_H__

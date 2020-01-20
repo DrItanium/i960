@@ -176,9 +176,6 @@ namespace i960 {
 		setFramePointer(tmp);
 		setRegister(SP, tmp + boundaryAlignment);
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::mulo) noexcept {
-        setDest(inst, getSrc2(inst) * getSrc1(inst));
-	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::divo) noexcept {
         if (auto denominator = getSrc1<Ordinal>(inst); denominator == 0) {
 			generateFault(ArithmeticFaultSubtype::ZeroDivide);
@@ -572,19 +569,6 @@ namespace i960 {
     void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpo) noexcept {
         compare<Ordinal>(getSrc1(inst), getSrc2(inst));
     }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::muli) noexcept {
-        auto s1 = getSrc2<Integer>(inst);
-        auto s2 = getSrc1<Integer>(inst);
-        setDest<Integer>(inst, s1 * s2);
-        if ((getMostSignificantBit(s1) == getMostSignificantBit(s2)) && 
-                (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
-            if (_ac.maskIntegerOverflow()) {
-                _ac.setIntegerOverflowFlag(true);
-			} else {
-				generateFault(ArithmeticFaultSubtype::IntegerOverflow);
-			}
-		}
-	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::remi) noexcept {
 		if (auto denominator = getSrc1<Integer>(inst); denominator == 0) {
 			generateFault(ArithmeticFaultSubtype::ZeroDivide);

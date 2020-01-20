@@ -301,43 +301,17 @@ namespace i960 {
                     setDest(inst, getSrc1(inst));
                 }
             }
-            template<typename T, std::enable_if_t<IsConditionalAddOperation<std::decay_t<T>>, int> = 0>
-            void performOperation(const REGFormatInstruction& inst, T) noexcept {
-                if constexpr (IsOrdinalOperation<T>) {
-                    if (auto mask = getConditionalAddMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-                        setDest(inst, getSrc1(inst) + getSrc2(inst));
-                    }
-                } else if constexpr (IsIntegerOperation<T>) {
-                    auto s1 = getSrc1<Integer>(inst);
-                    auto s2 = getSrc1<Integer>(inst);
-                    if (auto mask = getConditionalAddMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-                        setDest<Integer>(inst, s1 + s2);
-                    }
-                    if ((getMostSignificantBit(s1) == getMostSignificantBit(s2)) && (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
-                        if (_ac.maskIntegerOverflow()) {
-                            _ac.setIntegerOverflowFlag(true);
-                        } else {
-                            generateFault(ArithmeticFaultSubtype::IntegerOverflow);
-                        }
-                    }
-
-                } else {
-                    static_assert(!IsIntegerOperation<T> && !IsOrdinalOperation<T>, "Unimplemented conditional add operation!");
-                }
-            }
 
             template<typename T, std::enable_if_t<IsConditionalSubtractOperation<T>, int> = 0>
             void performOperation(const REGFormatInstruction& inst, T) noexcept {
-                if constexpr (IsOrdinalOperation<T>) {
-                    if (auto mask = getConditionalSubtractMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-                        setDest(inst, getSrc2(inst) - getSrc1(inst));
-                    }
-                } else if constexpr (IsIntegerOperation<T>) {
-                    auto s1 = getSrc1<Integer>(inst);
-                    auto s2 = getSrc1<Integer>(inst);
-                    if (auto mask = getConditionalSubtractMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-                        setDest<Integer>(inst, s2 - s1);
-                    }
+                static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add/subtract operation!");
+                using K = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
+                auto s2 = getSrc2<K>(inst);
+                auto s1 = getSrc1<K>(inst);
+                if (auto mask = getConditionalSubtractMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
+                    setDest<K>(inst, s2 - s1);
+                }
+                if constexpr (CheckForOverflow<T>) {
                     if ((getMostSignificantBit(s1) != getMostSignificantBit(s2)) && (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
                         if (_ac.maskIntegerOverflow()) {
                             _ac.setIntegerOverflowFlag(true);
@@ -345,41 +319,57 @@ namespace i960 {
                             generateFault(ArithmeticFaultSubtype::IntegerOverflow);
                         }
                     }
-                } else {
-                    static_assert(!IsIntegerOperation<T> && !IsOrdinalOperation<T>, "Unimplemented conditional subtract operation!");
+                }
+            }
+            template<typename T, std::enable_if_t<IsConditionalAddOperation<T>, int> = 0>
+            void performOperation(const REGFormatInstruction& inst, T) noexcept {
+                static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add/subtract operation!");
+                using K = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
+                auto s2 = getSrc2<K>(inst);
+                auto s1 = getSrc1<K>(inst);
+                if (auto mask = getConditionalSubtractMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
+                    setDest<K>(inst, s2 + s1);
+                }
+                if constexpr (CheckForOverflow<T>) {
+                    if ((getMostSignificantBit(s1) != getMostSignificantBit(s2)) && (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
+                        if (_ac.maskIntegerOverflow()) {
+                            _ac.setIntegerOverflowFlag(true);
+                        } else {
+                            generateFault(ArithmeticFaultSubtype::IntegerOverflow);
+                        }
+                    }
                 }
             }
             template<typename T, std::enable_if_t<IsUnconditionalAddOperation<T> ||
-                                                  IsUnconditionalSubtractOperation<T>, int> = 0>
+                                                  IsUnconditionalSubtractOperation<T> ||
+                                                  IsMultiplyOperation<T>, int> = 0>
             void performOperation(const REGFormatInstruction& inst, T) noexcept {
                 static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add/subtract operation!");
                 using K = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
                 K result = 0;
-                auto src2 = getSrc2<K>(inst);
-                auto src1 = getSrc1<K>(inst);
+                auto s2 = getSrc2<K>(inst);
+                auto s1 = getSrc1<K>(inst);
                 if constexpr (IsUnconditionalAddOperation<T>) {
-                    result = src2 + src1;
+                    result = s2 + s1;
                 } else if constexpr (IsUnconditionalSubtractOperation<T>) {
-                    result = src2 - src1;
+                    result = s2 - s1;
+                } else if constexpr (IsMultiplyOperation<T>) {
+                    result = s2 * s1;
                 } else {
-                    static_assert(false_v<T>, "Unimplemented add/subtract operation");
+                    static_assert(false_v<T>, "Unimplemented operation");
                 }
                 setDest<K>(inst, result);
+                if constexpr (CheckForOverflow<T>) {
+                    if ((getMostSignificantBit(s1) == getMostSignificantBit(s2)) && 
+                            (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
+                        if (_ac.maskIntegerOverflow()) {
+                            _ac.setIntegerOverflowFlag(true);
+                        } else {
+                            generateFault(ArithmeticFaultSubtype::IntegerOverflow);
+                        }
+                    }
+                }
             }
-#if 0
-            template<typename T, std::enable_if_t<IsUnconditionalAddOperation<T>, int> = 0>
-            void performOperation(const REGFormatInstruction& inst, T) noexcept {
-                static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add operation!");
-                using K = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
-                setDest<K>(inst, getSrc2<K>(inst) + getSrc1<K>(inst));
-            }
-            template<typename T, std::enable_if_t<IsUnconditionalSubtractOperation<T>, int> = 0>
-            void performOperation(const REGFormatInstruction& inst, T) noexcept {
-                static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add operation!");
-                using K = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
-                setDest<K>(inst, getSrc2<K>(inst) - getSrc1<K>(inst));
-            }
-#endif
 #define X(title) void performOperation(const REGFormatInstruction& inst, title ) noexcept
             X(Operation::inten);
             X(Operation::intdis);
@@ -431,8 +421,6 @@ namespace i960 {
             X(Operation::addc);
             X(Operation::modac);
             X(Operation::modpc);
-            X(Operation::muli);
-            X(Operation::mulo);
             X(Operation::divi);
             X(Operation::divo);
             X(Operation::modtc);
