@@ -34,9 +34,6 @@ namespace i960 {
             setDest(inst, 0);
         }
     }
-    void Core::performOperation(const COBRFormatInstruction& inst, TestOperation) noexcept {
-        setDest(inst, ((lowestThreeBitsOfMajorOpcode(inst.getOpcode()) & _ac.getConditionCode()) != 0) ? 1 : 0);
-    }
     void Core::performOperation(const COBRFormatInstruction& inst, CompareOrdinalAndBranchOperation) noexcept {
         // use variants as a side effect :D
         compare<Ordinal>(getSrc(inst), getSrc2(inst));

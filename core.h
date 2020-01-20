@@ -108,6 +108,27 @@ namespace i960 {
         return (v & 0b111'0000) >> 4;
     }
 
+    template<typename T>
+    constexpr auto IsTestOperation = false;
+#if 0
+            using TestOperation = std::variant<Operation::testg,
+                                               Operation::teste,
+                                               Operation::testge,
+                                               Operation::testl,
+                                               Operation::testne,
+                                               Operation::testle,
+                                               Operation::testo>;
+#endif
+#define X(op) template<> constexpr auto IsTestOperation<Operation:: test ## op > = true
+    X(g);
+    X(e);
+    X(ge);
+    X(l);
+    X(ne);
+    X(le);
+    X(o);
+#undef X
+
     class Core {
         public:
             static constexpr auto targetSeries = ProcessorSeries::Jx;
@@ -421,14 +442,10 @@ namespace i960 {
 
         private:
             // COBR format decls
-            using TestOperation = std::variant<Operation::testg,
-                                               Operation::teste,
-                                               Operation::testge,
-                                               Operation::testl,
-                                               Operation::testne,
-                                               Operation::testle,
-                                               Operation::testo>;
-            void performOperation(const COBRFormatInstruction& inst, TestOperation) noexcept;
+            template<typename T, std::enable_if_t<IsTestOperation<std::decay_t<T>>, int> = 0>
+            void performOperation(const COBRFormatInstruction& inst, T) noexcept {
+                setDest(inst, ((lowestThreeBitsOfMajorOpcode(inst.getOpcode()) & _ac.getConditionCode()) != 0) ? 1 : 0);
+            }
             using CompareOrdinalAndBranchOperation = std::variant<Operation::cmpobg, 
                                                                   Operation::cmpobe, 
                                                                   Operation::cmpobge, 
