@@ -34,13 +34,6 @@ namespace i960 {
             setDest(inst, 0);
         }
     }
-    void Core::performOperation(const COBRFormatInstruction& inst, CompareIntegerAndBranchOperation) noexcept {
-        compare<Integer>(getSrc<Integer>(inst), getSrc2<Integer>(inst));
-        if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) != 0) {
-            _instructionPointer += (inst.getDisplacement() * 4);
-            _instructionPointer = computeAlignedAddress(_instructionPointer);
-        }
-    }
     void Core::performOperation(const CTRLFormatInstruction& inst, Operation::bno) noexcept {
         if (_ac.getConditionCode() == 0) {
             auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
@@ -49,17 +42,6 @@ namespace i960 {
     }
     void Core::performOperation(const CTRLFormatInstruction&, Operation::faultno) noexcept {
         if (_ac.getConditionCode() == 0b000) {
-            generateFault(ConstraintFaultSubtype::Range);
-        }
-    }
-    void Core::performOperation(const CTRLFormatInstruction& inst, ConditionalBranchOperation) noexcept {
-        if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-            auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
-            _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
-        }
-    }
-    void Core::performOperation(const CTRLFormatInstruction& inst, FaultOperation) noexcept {
-        if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); mask && _ac.getConditionCode() != 0b000) {
             generateFault(ConstraintFaultSubtype::Range);
         }
     }
@@ -105,13 +87,6 @@ namespace i960 {
 		}
     }
 
-    void Core::performOperation(const REGFormatInstruction& inst, SelectOperation) noexcept {
-        if (auto mask = getSelectMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-            setDest(inst, getSrc2(inst));
-        } else {
-            setDest(inst, getSrc1(inst));
-        }
-    }
 	Core::Core(const CoreInformation& info, MemoryInterface& mem) : _mem(mem), _deviceId(info) { }
 	Ordinal Core::getStackPointerAddress() const noexcept {
         return _localRegisters[SP.getOffset()].get<Ordinal>();

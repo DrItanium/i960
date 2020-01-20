@@ -109,7 +109,12 @@ namespace i960::Opcode {
                 constexpr auto isUnknown() const noexcept { return isUndefined(); }
 			    constexpr operator OpcodeValue() const noexcept { return _actualOpcode; }
                 constexpr bool operator==(const DecodedOpcode& other) noexcept {
-                    return (other._actualOpcode == _actualOpcode);
+                    return (other._actualOpcode == _actualOpcode) &&
+                           (other._arguments == _arguments) &&
+                           (other._class == _class);
+                }
+                constexpr auto lowestThreeBitsOfMajorOpcode() const noexcept {
+                    return (getActualOpcode() & 0b111'0000) >> 4;
                 }
             private:
                 Class _class;

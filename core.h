@@ -110,15 +110,6 @@ namespace i960 {
 
     template<typename T>
     constexpr auto IsTestOperation = false;
-#if 0
-            using TestOperation = std::variant<Operation::testg,
-                                               Operation::teste,
-                                               Operation::testge,
-                                               Operation::testl,
-                                               Operation::testne,
-                                               Operation::testle,
-                                               Operation::testo>;
-#endif
 #define X(op) template<> constexpr auto IsTestOperation<Operation:: test ## op > = true
     X(g);
     X(e);
@@ -128,14 +119,6 @@ namespace i960 {
     X(le);
     X(o);
 #undef X
-#if 0
-            using CompareOrdinalAndBranchOperation = std::variant<Operation::cmpobg, 
-                                                                  Operation::cmpobe, 
-                                                                  Operation::cmpobge, 
-                                                                  Operation::cmpobl,
-                                                                  Operation::cmpobne,
-                                                                  Operation::cmpoble>;
-#endif
     template<typename T>
     constexpr auto IsCompareOrdinalAndBranchOperation = false;
 #define X(op) template<> constexpr auto IsCompareOrdinalAndBranchOperation<Operation:: cmpob ## op > = true
@@ -145,6 +128,54 @@ namespace i960 {
     X(l);
     X(ne);
     X(le);
+#undef X
+    template<typename T>
+    constexpr auto IsCompareIntegerAndBranchOperation = false;
+
+#define X(op) template<> constexpr auto IsCompareIntegerAndBranchOperation<Operation:: cmpib ## op > = true
+    X(g);
+    X(e);
+    X(ge);
+    X(l);
+    X(ne);
+    X(le);
+    X(o);
+    X(no);
+#undef X
+
+    template<typename T>
+    constexpr auto IsSelectOperation = false;
+#define X(op) template<> constexpr auto IsSelectOperation< Operation:: sel ## op > = true
+    X(no);
+    X(g);
+    X(e);
+    X(ge);
+    X(l);
+    X(ne);
+    X(le);
+    X(o);
+#undef X
+    template<typename T>
+    constexpr auto IsConditionalBranchOperation = false;
+#define X(op) template<> constexpr auto IsConditionalBranchOperation < Operation:: b ## op > = true
+    X(g);
+    X(e);
+    X(ge);
+    X(l);
+    X(ne);
+    X(le);
+    X(o);
+#undef X
+    template<typename T>
+    constexpr auto IsFaultOperation = false;
+#define X(op) template<> constexpr auto IsFaultOperation < Operation:: fault  ## op > = true
+    X(g);
+    X(e);
+    X(ge);
+    X(l);
+    X(ne);
+    X(le);
+    X(o);
 #undef X
 
 
@@ -364,17 +395,16 @@ namespace i960 {
                                                                 Operation::subine,
                                                                 Operation::subile,
                                                                 Operation::subio>;
-            using SelectOperation = std::variant<Operation::selno,
-                                                 Operation::selg,
-                                                 Operation::sele,
-                                                 Operation::selge,
-                                                 Operation::sell,
-                                                 Operation::selne,
-                                                 Operation::selle,
-                                                 Operation::selo>;
 
+            template<typename T, std::enable_if_t<IsSelectOperation<std::decay_t<T>>, int> = 0> 
+            void performOperation(const REGFormatInstruction& inst, T) noexcept {
+                if (auto mask = getSelectMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
+                    setDest(inst, getSrc2(inst));
+                } else {
+                    setDest(inst, getSrc1(inst));
+                }
+            }
 #define X(title) void performOperation(const REGFormatInstruction& inst, title ) noexcept
-            X(SelectOperation);
             X(ConditionalAddIntegerOperation);
             X(ConditionalAddOrdinalOperation);
             X(ConditionalSubtractIntegerOperation);
@@ -474,42 +504,38 @@ namespace i960 {
                     _instructionPointer = computeAlignedAddress(_instructionPointer);
                 }
             }
-            using CompareIntegerAndBranchOperation = std::variant<Operation::cmpibg, 
-                                                                  Operation::cmpibe, 
-                                                                  Operation::cmpibge, 
-                                                                  Operation::cmpibl,
-                                                                  Operation::cmpibne,
-                                                                  Operation::cmpible,
-                                                                  Operation::cmpibo, // always branches
-                                                                  Operation::cmpibno>; // never branches
-            void performOperation(const COBRFormatInstruction&, CompareIntegerAndBranchOperation) noexcept;
+            template<typename T, std::enable_if_t<IsCompareIntegerAndBranchOperation<std::decay_t<T>>, int> = 0>
+            void performOperation(const COBRFormatInstruction& inst, T) noexcept {
+                compare<Integer>(getSrc<Integer>(inst), getSrc2<Integer>(inst));
+                if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) != 0) {
+                    _instructionPointer += (inst.getDisplacement() * 4);
+                    _instructionPointer = computeAlignedAddress(_instructionPointer);
+                }
+            }
             void performOperation(const COBRFormatInstruction& inst, Operation::bbc) noexcept;
             void performOperation(const COBRFormatInstruction& inst, Operation::bbs) noexcept;
             void performOperation(const COBRFormatInstruction&, Operation::testno) noexcept;
         private:
             // CTRL format instructions
-            using ConditionalBranchOperation = std::variant<Operation::bg,
-                                                            Operation::be,
-                                                            Operation::bge,
-                                                            Operation::bl,
-                                                            Operation::bne,
-                                                            Operation::ble,
-                                                            Operation::bo>;
-            using FaultOperation = std::variant<Operation::faultg,
-                                                Operation::faulte,
-                                                Operation::faultge,
-                                                Operation::faultl,
-                                                Operation::faultne,
-                                                Operation::faultle,
-                                                Operation::faulto>;
             void performOperation(const CTRLFormatInstruction&, Operation::b) noexcept;
             void performOperation(const CTRLFormatInstruction&, Operation::call) noexcept;
             void performOperation(const CTRLFormatInstruction&, Operation::ret) noexcept;
             void performOperation(const CTRLFormatInstruction&, Operation::bal) noexcept;
             void performOperation(const CTRLFormatInstruction&, Operation::bno) noexcept;
             void performOperation(const CTRLFormatInstruction&, Operation::faultno) noexcept;
-            void performOperation(const CTRLFormatInstruction&, ConditionalBranchOperation) noexcept;
-            void performOperation(const CTRLFormatInstruction&, FaultOperation) noexcept;
+            template<typename T, std::enable_if_t<IsConditionalBranchOperation<std::decay_t<T>>, int> = 0>
+            void performOperation(const CTRLFormatInstruction& inst, T) noexcept {
+                if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
+                    auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
+                    _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
+                }
+            }
+            template<typename T, std::enable_if_t<IsFaultOperation<std::decay_t<T>>, int> = 0>
+            void performOperation(const CTRLFormatInstruction& inst, T) noexcept {
+                if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); mask && _ac.getConditionCode() != 0b000) {
+                    generateFault(ConstraintFaultSubtype::Range);
+                }
+            }
 
         private:
             void syncf() noexcept;
