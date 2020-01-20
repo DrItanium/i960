@@ -25,24 +25,26 @@ namespace i960::Opcode {
          */
         enum class Arguments : EncodedOpcode {
             // not set
-            Undefined         = 0x00,
+            Undefined         = 0x0,
             // 0 args
-            None              = 0x01,
+            None              = 0x1,
             // 1 arg
-            Disp              = 0x02,
-            Mem               = 0x03,
-            RegLit            = 0x04,
-            Reg               = 0x05,
+            Disp              = 0x2,
+            Mem               = 0x3,
+            RegLit            = 0x4,
+            Reg               = 0x5,
             // 2 args
-            Mem_Reg           = 0x06,
-            Reg_Mem           = 0x07,
-            RegLit_Reg        = 0x08,
-            RegLit_RegLit     = 0x09,
+            Mem_Reg           = 0x6,
+            Reg_Mem           = 0x7,
+            RegLit_Reg        = 0x8,
+            RegLit_RegLit     = 0x9,
             // 3 args
-            RegLit_RegLit_Reg = 0x0A,
-            Reg_RegLit_Reg    = 0x0B,
-            RegLit_Reg_Disp   = 0x0C,
+            RegLit_RegLit_Reg = 0xA,
+            Reg_RegLit_Reg    = 0xB,
+            RegLit_Reg_Disp   = 0xC,
+            Count,
         };
+        static_assert(static_cast<uint8_t>(Arguments::Count) <= 0x10, "Too many argument styles defined!");
 
         template<typename T>
         constexpr EncodedOpcode FieldMask = 0xFFFF'FFFF;
@@ -57,6 +59,7 @@ namespace i960::Opcode {
             static_assert(FieldMask<R> != 0xFFFF'FFFF, "FieldMask not specified for type");
             return i960::decode<decltype(raw), R, FieldMask<R>, ShiftAmount<R>>(raw);
         }
+
         constexpr Integer getArgumentCount(Arguments args) noexcept {
             switch(args) {
                 case Arguments::None: 
@@ -79,6 +82,11 @@ namespace i960::Opcode {
                     return -1;
             }
         }
+        template<Arguments k>
+        constexpr auto ArgumentCount = getArgumentCount(k);
+        template<Arguments k>
+        constexpr auto HasArgumentCount = ArgumentCount<k> != -1;
+
         class DecodedOpcode final {
             public:
                 constexpr DecodedOpcode(Class cl, Arguments args, OpcodeValue opcode) noexcept : _class(cl), _arguments(args), _actualOpcode(opcode) { }
@@ -105,7 +113,6 @@ namespace i960::Opcode {
                 Arguments _arguments;
                 OpcodeValue _actualOpcode;
         };
-        constexpr DecodedOpcode undefinedOpcode(Class::Unknown, Arguments::Undefined, 0xFFFF);
         class Description final {
             public:
                 constexpr Description(const char* name, const DecodedOpcode& opcode) noexcept : _name(name), _opcode(opcode) { }
@@ -125,9 +132,13 @@ namespace i960::Opcode {
                 const char* _name;
                 const DecodedOpcode& _opcode;
         };
+
+        constexpr DecodedOpcode undefinedOpcode(Class::Unknown, Arguments::Undefined, 0xFFFF);
         constexpr Description undefinedOpcodeDescription("undefined/unknown", undefinedOpcode);
+
         template<OpcodeValue opcode>
         constexpr auto RetrieveDecodedOpcode = undefinedOpcode;
+
 #define o(name, code, arg, kind) \
         constexpr DecodedOpcode decoded_ ## name (i960::constructOrdinalMask(Class:: kind, Arguments:: arg , static_cast<EncodedOpcode>(code) << 16)); \
         template<> constexpr auto RetrieveDecodedOpcode<code> = decoded_ ## name ; \
