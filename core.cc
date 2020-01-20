@@ -34,14 +34,6 @@ namespace i960 {
             setDest(inst, 0);
         }
     }
-    void Core::performOperation(const COBRFormatInstruction& inst, CompareOrdinalAndBranchOperation) noexcept {
-        // use variants as a side effect :D
-        compare<Ordinal>(getSrc(inst), getSrc2(inst));
-        if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) != 0) {
-            _instructionPointer += (inst.getDisplacement() * 4);
-            _instructionPointer = computeAlignedAddress(_instructionPointer);
-        }
-    }
     void Core::performOperation(const COBRFormatInstruction& inst, CompareIntegerAndBranchOperation) noexcept {
         compare<Integer>(getSrc<Integer>(inst), getSrc2<Integer>(inst));
         if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) != 0) {

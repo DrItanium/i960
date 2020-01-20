@@ -128,6 +128,25 @@ namespace i960 {
     X(le);
     X(o);
 #undef X
+#if 0
+            using CompareOrdinalAndBranchOperation = std::variant<Operation::cmpobg, 
+                                                                  Operation::cmpobe, 
+                                                                  Operation::cmpobge, 
+                                                                  Operation::cmpobl,
+                                                                  Operation::cmpobne,
+                                                                  Operation::cmpoble>;
+#endif
+    template<typename T>
+    constexpr auto IsCompareOrdinalAndBranchOperation = false;
+#define X(op) template<> constexpr auto IsCompareOrdinalAndBranchOperation<Operation:: cmpob ## op > = true
+    X(g);
+    X(e);
+    X(ge);
+    X(l);
+    X(ne);
+    X(le);
+#undef X
+
 
     class Core {
         public:
@@ -446,12 +465,15 @@ namespace i960 {
             void performOperation(const COBRFormatInstruction& inst, T) noexcept {
                 setDest(inst, ((lowestThreeBitsOfMajorOpcode(inst.getOpcode()) & _ac.getConditionCode()) != 0) ? 1 : 0);
             }
-            using CompareOrdinalAndBranchOperation = std::variant<Operation::cmpobg, 
-                                                                  Operation::cmpobe, 
-                                                                  Operation::cmpobge, 
-                                                                  Operation::cmpobl,
-                                                                  Operation::cmpobne,
-                                                                  Operation::cmpoble>;
+            template<typename T, std::enable_if_t<IsCompareOrdinalAndBranchOperation<std::decay_t<T>>, int> = 0>
+            void performOperation(const COBRFormatInstruction& inst, T) noexcept {
+                // use variants as a side effect :D
+                compare<Ordinal>(getSrc(inst), getSrc2(inst));
+                if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) != 0) {
+                    _instructionPointer += (inst.getDisplacement() * 4);
+                    _instructionPointer = computeAlignedAddress(_instructionPointer);
+                }
+            }
             using CompareIntegerAndBranchOperation = std::variant<Operation::cmpibg, 
                                                                   Operation::cmpibe, 
                                                                   Operation::cmpibge, 
@@ -460,11 +482,10 @@ namespace i960 {
                                                                   Operation::cmpible,
                                                                   Operation::cmpibo, // always branches
                                                                   Operation::cmpibno>; // never branches
+            void performOperation(const COBRFormatInstruction&, CompareIntegerAndBranchOperation) noexcept;
             void performOperation(const COBRFormatInstruction& inst, Operation::bbc) noexcept;
             void performOperation(const COBRFormatInstruction& inst, Operation::bbs) noexcept;
             void performOperation(const COBRFormatInstruction&, Operation::testno) noexcept;
-            void performOperation(const COBRFormatInstruction&, CompareOrdinalAndBranchOperation) noexcept;
-            void performOperation(const COBRFormatInstruction&, CompareIntegerAndBranchOperation) noexcept;
         private:
             // CTRL format instructions
             using ConditionalBranchOperation = std::variant<Operation::bg,
