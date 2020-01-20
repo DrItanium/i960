@@ -563,12 +563,6 @@ namespace i960 {
 #endif
 	}
 
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpi) noexcept {
-        compare<Integer>(getSrc1<Integer>(inst), getSrc2<Integer>(inst));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpo) noexcept {
-        compare<Ordinal>(getSrc1(inst), getSrc2(inst));
-    }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::remi) noexcept {
 		if (auto denominator = getSrc1<Integer>(inst); denominator == 0) {
 			generateFault(ArithmeticFaultSubtype::ZeroDivide);
@@ -851,38 +845,6 @@ namespace i960 {
 		store(fixedAddr, tmp + src, true);
         setDest(inst, tmp);
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::concmpo) noexcept {
-        if (_ac.conditionCodeBitSet<0b100>()) {
-            auto src1 = getSrc1(inst);
-            auto src2 = getSrc2(inst);
-            _ac.setConditionCode(src1 <= src2, 0b010, 0b001);
-        }
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::concmpi) noexcept {
-        if (_ac.conditionCodeBitSet<0b100>()) {
-            auto src1 = getSrc1<Integer>(inst);
-            auto src2 = getSrc2<Integer>(inst);
-            _ac.setConditionCode(src1 <= src2, 0b010, 0b001);
-        }
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpinco) noexcept {
-		/// @todo add support for overflow detection
-        compare<Ordinal>(getSrc1(inst), getSrc2(inst));
-        setDest(inst, getSrc2(inst) + 1);
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpdeco) noexcept {
-        /// @todo add support for overflow detection
-        compare<Ordinal>(getSrc1(inst), getSrc2(inst));
-        setDest(inst, getSrc2(inst) - 1);
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpinci) noexcept {
-        compare<Integer>(getSrc1<Integer>(inst), getSrc2<Integer>(inst));
-        setDest<Integer>(inst, getSrc2<Integer>(inst) + 1); // overflow suppressed
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpdeci) noexcept {
-        compare<Integer>(getSrc1<Integer>(inst), getSrc2<Integer>(inst));
-        setDest<Integer>(inst, getSrc2<Integer>(inst) - 1);
-	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::clrbit) noexcept {
         setDest(inst, getSrc2(inst) & ~oneShiftLeft(getSrc1(inst)));
 	}
@@ -997,18 +959,6 @@ namespace i960 {
 		auto rotl8 = rotateOperation(src, 8) & 0x00FF00FF; // rotate the upper 8 bits around to the bottom
 		auto rotl24 = rotateOperation(src, 24) & 0xFF00FF00;
         setDest(inst, rotl8 + rotl24);
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpos) noexcept {
-        compare<ShortOrdinal>(getSrc1<ShortOrdinal>(inst), getSrc2<ShortOrdinal>(inst));
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpis) noexcept {
-        compare<ShortInteger>(getSrc1<ShortInteger>(inst), getSrc2<ShortInteger>(inst));
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpob) noexcept {
-        compare<ByteOrdinal>(getSrc1<ByteOrdinal>(inst), getSrc2<ByteOrdinal>(inst));
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpib) noexcept {
-        compare<ByteInteger>(getSrc1<ByteInteger>(inst), getSrc2<ByteInteger>(inst));
 	}
     void Core::performOperation(const REGFormatInstruction&, Operation::dcctl) noexcept {
 		// while I don't implement a data cache myself, this instruction must

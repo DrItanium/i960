@@ -528,5 +528,26 @@ namespace i960 {
     constexpr auto CheckForOverflow = IsInCollection<T, Operation::muli> ||
                                        IsConditionalSubtractIntegerOperation<T> ||
                                        IsConditionalAddIntegerOperation<T>;
+    template<typename T>
+    constexpr auto IsPureConditionalCompare = IsInCollection<T, Operation::concmpi, Operation::concmpo>;
+    template<typename T>
+    constexpr auto IsCompareOperation = IsInCollection<T, Operation::cmpi, 
+                                                          Operation::cmpo,
+                                                          Operation::cmpib,
+                                                          Operation::cmpob,
+                                                          Operation::cmpis,
+                                                          Operation::cmpos,
+                                                          Operation::cmpinci,
+                                                          Operation::cmpinco,
+                                                          Operation::cmpdeci,
+                                                          Operation::cmpdeco> || IsPureConditionalCompare<T>;
+    template<typename T>
+    constexpr auto IsByteCompareOperation = IsInCollection<T, Operation::cmpob, Operation::cmpib>;
+    template<typename T>
+    constexpr auto IsShortCompareOperation = IsInCollection<T, Operation::cmpos, Operation::cmpis>;
+    template<typename T>
+    constexpr auto IsCompareAndIncrementOperation = IsInCollection<T, Operation::cmpinci, Operation::cmpinco>;
+    template<typename T>
+    constexpr auto IsCompareAndDecrementOperation = IsInCollection<T, Operation::cmpdeci, Operation::cmpdeco>;
 } // end namespace i960
 #endif // end I960_OPCODES_H__

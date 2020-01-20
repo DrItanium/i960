@@ -370,6 +370,31 @@ namespace i960 {
                     }
                 }
             }
+            template<typename T, std::enable_if_t<IsCompareOperation<T>, int> = 0>
+            void performOperation(const REGFormatInstruction& inst, T) noexcept {
+                static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add/subtract operation!");
+                if constexpr (IsByteCompareOperation<T>) {
+                    using K = std::conditional_t<IsIntegerOperation<T>, ByteInteger, ByteOrdinal>;
+                    compare<K>(getSrc1<K>(inst), getSrc2<K>(inst));
+                } else if constexpr (IsShortCompareOperation<T>) {
+                    using K = std::conditional_t<IsIntegerOperation<T>, ShortInteger, ShortOrdinal>;
+                    compare<K>(getSrc1<K>(inst), getSrc2<K>(inst));
+                } else if constexpr (IsPureConditionalCompare<T>) {
+                    using K = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
+                    if (_ac.conditionCodeBitSet<0b100>()) {
+                        _ac.setConditionCode(getSrc1<K>(inst) <= getSrc2<K>(inst), 0b010, 0b001);
+                    }
+                } else {
+                    using K = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
+                    compare<K>(getSrc1<K>(inst), getSrc2<K>(inst));
+                    if constexpr (IsCompareAndDecrementOperation<T>) {
+                        setDest<K>(inst, getSrc2<K>(inst) - 1);
+                    }
+                    if constexpr (IsCompareAndIncrementOperation<T>) {
+                        setDest<K>(inst, getSrc2<K>(inst) + 1); // overflow suppressed
+                    }
+                }
+            }
 #define X(title) void performOperation(const REGFormatInstruction& inst, title ) noexcept
             X(Operation::inten);
             X(Operation::intdis);
@@ -378,12 +403,6 @@ namespace i960 {
             X(Operation::dcctl);
             X(Operation::intctl);
             X(Operation::eshro);
-            X(Operation::cmpib); 
-            X(Operation::cmpob);
-            X(Operation::cmpis); 
-            X(Operation::cmpos);
-            X(Operation::cmpi);  
-            X(Operation::cmpo);
             X(Operation::bswap);
             X(Operation::halt);
             X(Operation::opxor);
@@ -394,17 +413,11 @@ namespace i960 {
             X(Operation::emul);
             X(Operation::setbit);
             X(Operation::chkbit);
-            X(Operation::cmpdeco); 
-            X(Operation::cmpdeci);
-            X(Operation::concmpi); 
-            X(Operation::concmpo);
             X(Operation::atadd);
             X(Operation::atmod);
             X(Operation::scanbyte);
             X(Operation::modify);
             X(Operation::clrbit);
-            X(Operation::cmpinci); 
-            X(Operation::cmpinco);
             X(Operation::rotate);
             X(Operation::shrdi);
             X(Operation::shli); 
