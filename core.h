@@ -479,7 +479,7 @@ namespace i960 {
 
         private:
             // COBR format decls
-            template<typename T, std::enable_if_t<Opcode::IsCompareAndBranchFormat<T::Opcode>, int> = 0>
+            template<typename T, std::enable_if_t<IsCOBRFormat<T>, int> = 0>
             void performOperation(const COBRFormatInstruction& inst, T) noexcept {
                 using K = std::decay_t<T>;
                 if constexpr (IsTestOperation<K>) {

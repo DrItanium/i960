@@ -563,5 +563,7 @@ namespace i960 {
     constexpr auto IsCompareAndIncrementOperation = IsInCollection<T, Operation::cmpinci, Operation::cmpinco>;
     template<typename T>
     constexpr auto IsCompareAndDecrementOperation = IsInCollection<T, Operation::cmpdeci, Operation::cmpdeco>;
+    template<typename T>
+    constexpr auto IsCOBRFormat = Opcode::IsCompareAndBranchFormat<T::Opcode>;
 } // end namespace i960
 #endif // end I960_OPCODES_H__
