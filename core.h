@@ -356,6 +356,44 @@ namespace i960 {
                     }
                 }
             }
+            template<typename T, std::enable_if_t<IsDivideOperation<T> ||
+                                                  IsRemainderOperation<T>, int>  = 0>
+            void performOperation(const REGFormatInstruction& inst, T) noexcept {
+                static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add/subtract operation!");
+                using K = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
+                if constexpr (IsDivideOperation<T>) {
+                    if (auto denominator = getSrc1<K>(inst); denominator == 0) {
+                        if constexpr (IsIntegerOperation<T>) {
+                            setDest<K>(inst, -1); // undefined value 
+                        }
+                        generateFault(ArithmeticFaultSubtype::ZeroDivide);
+                        return;
+                    } else {
+                        auto numerator = getSrc2<K>(inst);
+                        if constexpr (IsIntegerOperation<T>) {
+                            if (numerator == static_cast<Integer>(0x8000'0000) && denominator == -1) {
+                                setDest<K>(inst, 0x8000'0000);
+                                if (_ac.maskIntegerOverflow()) {
+                                    _ac.setIntegerOverflowFlag(true);
+                                } else {
+                                    generateFault(ArithmeticFaultSubtype::IntegerOverflow);
+                                }
+                                return;
+                            }
+                        }
+                        setDest<K>(inst, numerator / denominator);
+                    }
+                } else if constexpr (IsRemainderOperation<T>) {
+                    if (auto denominator = getSrc1<K>(inst); denominator == 0) {
+                        generateFault(ArithmeticFaultSubtype::ZeroDivide);
+                    } else {
+                        auto numerator = getSrc2<K>(inst);
+                        setDest<K>(inst, numerator - (denominator / numerator) * denominator);
+                    }
+                } else {
+                    static_assert(false_v<T>, "Unimplemented operation!");
+                }
+            }
             template<typename T, std::enable_if_t<IsCompareOperation<T>, int> = 0>
             void performOperation(const REGFormatInstruction& inst, T) noexcept {
                 static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add/subtract operation!");
@@ -419,11 +457,7 @@ namespace i960 {
             X(Operation::opnot);
             X(Operation::modac);
             X(Operation::modpc);
-            X(Operation::divi);
-            X(Operation::divo);
             X(Operation::modtc);
-            X(Operation::remi);
-            X(Operation::remo);
             X(Operation::ediv);
             X(Operation::flushreg);
             X(Operation::syncf);

@@ -532,8 +532,11 @@ namespace i960 {
     template<typename T>
     constexpr auto IsRemainderOperation = IsInCollection<T, Operation::remo, 
                                                             Operation::remi>;
+
     template<typename T>
-    constexpr auto CheckForOverflow = IsInCollection<T, Operation::muli, Operation::addi, Operation::subi> ||
+    constexpr auto CheckForDivideByZero = IsDivideOperation<T> || IsRemainderOperation<T>;
+    template<typename T>
+    constexpr auto CheckForOverflow = IsInCollection<T, Operation::muli, Operation::addi, Operation::subi, Operation::divi> ||
                                        IsConditionalSubtractIntegerOperation<T> ||
                                        IsConditionalAddIntegerOperation<T>;
     template<typename T>

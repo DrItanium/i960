@@ -176,22 +176,6 @@ namespace i960 {
 		setFramePointer(tmp);
 		setRegister(SP, tmp + boundaryAlignment);
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::divo) noexcept {
-        if (auto denominator = getSrc1<Ordinal>(inst); denominator == 0) {
-			generateFault(ArithmeticFaultSubtype::ZeroDivide);
-		} else {
-            setDest(inst, getSrc2(inst) / denominator);
-		}
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::remo) noexcept {
-		if (auto denominator = getSrc1(inst); denominator == 0) {
-			generateFault(ArithmeticFaultSubtype::ZeroDivide);
-		} else {
-			// as defined in the manual
-			auto numerator = getSrc2(inst);
-            setDest(inst, numerator - (denominator / numerator) * denominator);
-		}
-	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::chkbit) noexcept {
         auto bitpos = getSrc1(inst);
         auto src = getSrc2(inst);
@@ -418,24 +402,6 @@ namespace i960 {
             setDest(inst, remainder, quotient);
         }
     }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::divi) noexcept {
-		if (auto denominator = getSrc1<Integer>(inst); denominator == 0) {
-            setDest<Integer>(inst, -1);
-			generateFault(ArithmeticFaultSubtype::ZeroDivide);
-		} else if (auto numerator = getSrc2<Integer>(inst); (numerator == static_cast<Integer>(0x8000'0000)) && (denominator == -1)) {
-			// this one is a little strange, the manual states -2**31
-			// which is just 0x8000'0000 in signed integer, no clue why they
-			// described it like that. So I'm just going to put 0x8000'0000
-            setDest<Integer>(inst, 0x8000'0000);
-            if (_ac.maskIntegerOverflow()) {
-                _ac.setIntegerOverflowFlag(true);
-			} else {
-				generateFault(ArithmeticFaultSubtype::IntegerOverflow);
-			}
-		} else {
-            setDest<Integer>(inst, numerator / denominator);
-		}
-	}
 	constexpr Ordinal getLowestTwoBits(Ordinal address) noexcept {
 		return address & 0b11;
 	}
@@ -563,15 +529,6 @@ namespace i960 {
 #endif
 	}
 
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::remi) noexcept {
-		if (auto denominator = getSrc1<Integer>(inst); denominator == 0) {
-			generateFault(ArithmeticFaultSubtype::ZeroDivide);
-		} else {
-			// as defined in the manual
-            auto numerator = getSrc2<Integer>(inst);
-            setDest<Integer>(inst, numerator - (denominator / numerator) * denominator);
-		}
-	}
     void Core::performOperation(const MEMFormatInstruction&, Operation::stl) noexcept {
 		/// @todo check for valid register
         /// @todo reimplement and compute effective address
