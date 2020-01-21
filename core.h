@@ -481,20 +481,19 @@ namespace i960 {
             // COBR format decls
             template<typename T, std::enable_if_t<IsTestOperation<std::decay_t<T>>, int> = 0>
             void performOperation(const COBRFormatInstruction& inst, T) noexcept {
-                setDest(inst, ((lowestThreeBitsOfMajorOpcode(inst.getOpcode()) & _ac.getConditionCode()) != 0) ? 1 : 0);
-            }
-            template<typename T, std::enable_if_t<IsCompareOrdinalAndBranchOperation<std::decay_t<T>>, int> = 0>
-            void performOperation(const COBRFormatInstruction& inst, T) noexcept {
-                // use variants as a side effect :D
-                compare<Ordinal>(getSrc(inst), getSrc2(inst));
-                if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) != 0) {
-                    _instructionPointer += (inst.getDisplacement() * 4);
-                    _instructionPointer = computeAlignedAddress(_instructionPointer);
+                if constexpr (std::is_same_v<std::decay_t<T>, Operation::testno>) {
+                    setDest(inst, _ac.getConditionCode() == 0b000 ? 1 : 0);
+                } else {
+                    setDest(inst, ((lowestThreeBitsOfMajorOpcode(inst.getOpcode()) & _ac.getConditionCode()) != 0) ? 1 : 0);
                 }
             }
-            template<typename T, std::enable_if_t<IsCompareIntegerAndBranchOperation<std::decay_t<T>>, int> = 0>
+            template<typename T, std::enable_if_t<IsCompareOrdinalAndBranchOperation<std::decay_t<T>> ||
+                                                  IsCompareIntegerAndBranchOperation<std::decay_t<T>> , int> = 0>
             void performOperation(const COBRFormatInstruction& inst, T) noexcept {
-                compare<Integer>(getSrc<Integer>(inst), getSrc2<Integer>(inst));
+                static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add/subtract operation!");
+                using K = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
+                // use variants as a side effect :D
+                compare<K>(getSrc(inst), getSrc2(inst));
                 if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) != 0) {
                     _instructionPointer += (inst.getDisplacement() * 4);
                     _instructionPointer = computeAlignedAddress(_instructionPointer);
@@ -502,7 +501,6 @@ namespace i960 {
             }
             void performOperation(const COBRFormatInstruction& inst, Operation::bbc) noexcept;
             void performOperation(const COBRFormatInstruction& inst, Operation::bbs) noexcept;
-            void performOperation(const COBRFormatInstruction&, Operation::testno) noexcept;
         private:
             // CTRL format instructions
             void performOperation(const CTRLFormatInstruction&, Operation::b) noexcept;

@@ -386,6 +386,7 @@ namespace i960 {
     X(ne);
     X(le);
     X(o);
+    X(no);
 #undef X
     template<typename T>
     constexpr auto IsCompareOrdinalAndBranchOperation = false;

@@ -27,13 +27,6 @@ namespace i960 {
     constexpr Ordinal computeStackFrameStart(Ordinal framePointerAddress) noexcept {
         return framePointerAddress + 64;
     }
-    void Core::performOperation(const COBRFormatInstruction& inst, Operation::testno) noexcept {
-        if (_ac.getConditionCode() == 0b000) {
-            setDest(inst, 1);
-        } else {
-            setDest(inst, 0);
-        }
-    }
     void Core::performOperation(const CTRLFormatInstruction& inst, Operation::bno) noexcept {
         if (_ac.getConditionCode() == 0) {
             auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
