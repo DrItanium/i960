@@ -591,7 +591,9 @@ namespace i960 {
     constexpr auto IsUnaryOperation = IsInCollection<T, Operation::opnot>;
 
     template<typename T>
-    constexpr auto IsBitManipulationOperation = IsAndOperation<T> || IsOrOperation<T> || IsXorOperation<T> || IsNotOperation<T>;
+    constexpr auto IsAlgebraBitManipulationOperation = IsAndOperation<T> || IsOrOperation<T> || IsXorOperation<T> || IsNotOperation<T>;
+    template<typename T>
+    constexpr auto IsBitManipulationOperation = IsAlgebraBitManipulationOperation<T>;
     template<typename T>
     constexpr auto IsByteCompareOperation = IsInCollection<T, Operation::cmpob, Operation::cmpib>;
     template<typename T>

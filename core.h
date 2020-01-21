@@ -466,22 +466,8 @@ namespace i960 {
             static constexpr Ordinal oneShiftLeft(Ordinal position) noexcept {
                 return 1u << (0b11111 & position);
             }
-            template<typename T, std::enable_if_t<IsBitManipulationOperation<T>, int> = 0>
+            template<typename T, std::enable_if_t<IsAlgebraBitManipulationOperation<T>, int> = 0>
             void performOperation(const REGFormatInstruction& inst, T) noexcept {
-#if 0
-                X(Operation::opand);
-                X(Operation::andnot);
-                X(Operation::opor);
-                X(Operation::notbit);
-                X(Operation::notand);
-                X(Operation::opnot);
-                X(Operation::nor);
-                X(Operation::ornot);
-                X(Operation::notor);
-                X(Operation::opxor);
-                X(Operation::nand);
-                X(Operation::xnor);
-#endif
                 auto s2 = getSrc2(inst);
                 auto s1 = getSrc1(inst);
                 Ordinal result = 0;
