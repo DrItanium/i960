@@ -507,19 +507,30 @@ namespace i960 {
             void performOperation(const CTRLFormatInstruction&, Operation::call) noexcept;
             void performOperation(const CTRLFormatInstruction&, Operation::ret) noexcept;
             void performOperation(const CTRLFormatInstruction&, Operation::bal) noexcept;
-            void performOperation(const CTRLFormatInstruction&, Operation::bno) noexcept;
-            void performOperation(const CTRLFormatInstruction&, Operation::faultno) noexcept;
             template<typename T, std::enable_if_t<IsConditionalBranchOperation<std::decay_t<T>>, int> = 0>
             void performOperation(const CTRLFormatInstruction& inst, T) noexcept {
-                if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-                    auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
-                    _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
+                if constexpr (std::is_same_v<std::decay_t<T>, Operation::bno>) {
+                    if (_ac.getConditionCode() == 0) {
+                        auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
+                        _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
+                    }
+                } else {
+                    if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
+                        auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
+                        _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
+                    }
                 }
             }
             template<typename T, std::enable_if_t<IsFaultOperation<std::decay_t<T>>, int> = 0>
             void performOperation(const CTRLFormatInstruction& inst, T) noexcept {
-                if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); mask && _ac.getConditionCode() != 0b000) {
-                    generateFault(ConstraintFaultSubtype::Range);
+                if constexpr (std::is_same_v<std::decay_t<T>, Operation::faultno>) {
+                    if (_ac.getConditionCode() == 0b000) {
+                        generateFault(ConstraintFaultSubtype::Range);
+                    }
+                } else {
+                    if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); mask && _ac.getConditionCode() != 0b000) {
+                        generateFault(ConstraintFaultSubtype::Range);
+                    }
                 }
             }
 

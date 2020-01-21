@@ -27,17 +27,6 @@ namespace i960 {
     constexpr Ordinal computeStackFrameStart(Ordinal framePointerAddress) noexcept {
         return framePointerAddress + 64;
     }
-    void Core::performOperation(const CTRLFormatInstruction& inst, Operation::bno) noexcept {
-        if (_ac.getConditionCode() == 0) {
-            auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
-            _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
-        }
-    }
-    void Core::performOperation(const CTRLFormatInstruction&, Operation::faultno) noexcept {
-        if (_ac.getConditionCode() == 0b000) {
-            generateFault(ConstraintFaultSubtype::Range);
-        }
-    }
 	Core::Core(const CoreInformation& info, MemoryInterface& mem) : _mem(mem), _deviceId(info) { }
 	Ordinal Core::getStackPointerAddress() const noexcept {
         return _localRegisters[SP.getOffset()].get<Ordinal>();

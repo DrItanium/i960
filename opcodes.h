@@ -434,6 +434,7 @@ namespace i960 {
     X(ne);
     X(le);
     X(o);
+    X(no);
 #undef X
     template<typename T>
     constexpr auto IsFaultOperation = false;
@@ -445,6 +446,7 @@ namespace i960 {
     X(ne);
     X(le);
     X(o);
+    X(no);
 #undef X
     template<typename T>
     constexpr auto IsConditionalAddOrdinalOperation = false;
