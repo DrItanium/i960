@@ -754,15 +754,6 @@ namespace i960 {
     void Core::performOperation(const REGFormatInstruction& inst, Operation::setbit) noexcept {
         setDest(inst, getSrc2(inst) | oneShiftLeft(getSrc1(inst)));
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::emul) noexcept {
-        if (inst.getSrcDest().notDivisibleBy(2)) {
-            setDest<LongOrdinal>(inst, -1);
-            generateFault(OperationFaultSubtype::InvalidOperand);
-        } else {
-            setDest<LongOrdinal>(inst, static_cast<LongOrdinal>(getSrc2(inst)) *
-                                       static_cast<LongOrdinal>(getSrc1(inst)));
-        }
-	}
     void Core::performOperation(const MEMFormatInstruction&, Operation::lda) noexcept {
         /// @todo finish this
         generateFault(OperationFaultSubtype::Unimplemented);

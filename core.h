@@ -338,7 +338,17 @@ namespace i960 {
                         updateDestination = (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode());
                     }
                 } else if constexpr (IsMultiplyOperation<T>) {
-                    result = s2 * s1;
+                    if constexpr (std::is_same_v<std::decay_t<T>, Operation::emul>) {
+                        if (inst.getSrcDest().notDivisibleBy(2)) {
+                            setDest<LongOrdinal>(inst, -1);
+                            generateFault(OperationFaultSubtype::InvalidOperand);
+                        } else {
+                            setDest<LongOrdinal>(inst, static_cast<LongOrdinal>(s2) * static_cast<LongOrdinal>(s1));
+                            return;
+                        }
+                    } else {
+                        result = s2 * s1;
+                    }
                 } else {
                     static_assert(false_v<T>, "Unimplemented operation");
                 }
@@ -475,7 +485,6 @@ namespace i960 {
             X(Operation::modify);
             X(Operation::clrbit);
             X(Operation::rotate);
-            X(Operation::shrdi);
             X(Operation::nor);
             X(Operation::ornot);
             X(Operation::notor);
@@ -502,8 +511,8 @@ namespace i960 {
             X(Operation::extract);
             X(Operation::subc);
             X(Operation::eshro);
-            X(Operation::emul);
             X(Operation::ediv);
+            X(Operation::shrdi);
 #undef X
 
 

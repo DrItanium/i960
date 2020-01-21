@@ -485,6 +485,7 @@ namespace i960 {
                                                           Operation::cmpos,
                                                           Operation::cmpo,
                                                           Operation::eshro,
+                                                          Operation::emul,
                                                           Operation::cmpdeco,
                                                           Operation::cmpinco,
                                                           Operation::concmpo,
@@ -527,7 +528,8 @@ namespace i960 {
     constexpr auto IsSubtractOperation = IsUnconditionalSubtractOperation<T> || IsConditionalSubtractOperation<T>;
     template<typename T>
     constexpr auto IsMultiplyOperation  = IsInCollection<T, Operation::mulo, 
-                                                            Operation::muli>;
+                                                            Operation::muli,
+                                                            Operation::emul>;
     template<typename T>
     constexpr auto IsDivideOperation    = IsInCollection<T, Operation::divo, 
                                                            Operation::divi>;
