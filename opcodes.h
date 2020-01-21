@@ -565,5 +565,7 @@ namespace i960 {
     constexpr auto IsCompareAndDecrementOperation = IsInCollection<T, Operation::cmpdeci, Operation::cmpdeco>;
     template<typename T>
     constexpr auto IsCOBRFormat = Opcode::IsCompareAndBranchFormat<T::Opcode>;
+    template<typename T>
+    constexpr auto IsCTRLFormat = Opcode::IsControlFormat<T::Opcode>;
 } // end namespace i960
 #endif // end I960_OPCODES_H__

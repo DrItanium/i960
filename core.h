@@ -511,30 +511,33 @@ namespace i960 {
             void performOperation(const CTRLFormatInstruction&, Operation::call) noexcept;
             void performOperation(const CTRLFormatInstruction&, Operation::ret) noexcept;
             void performOperation(const CTRLFormatInstruction&, Operation::bal) noexcept;
-            template<typename T, std::enable_if_t<IsConditionalBranchOperation<std::decay_t<T>>, int> = 0>
+            template<typename T, std::enable_if_t<IsCTRLFormat<T>, int> = 0> 
             void performOperation(const CTRLFormatInstruction& inst, T) noexcept {
-                if constexpr (std::is_same_v<std::decay_t<T>, Operation::bno>) {
-                    if (_ac.getConditionCode() == 0) {
-                        auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
-                        _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
+                using K = std::decay_t<T>;
+                if constexpr (IsConditionalBranchOperation<K>) {
+                    if constexpr (std::is_same_v<K, Operation::bno>) {
+                        if (_ac.getConditionCode() == 0) {
+                            auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
+                            _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
+                        }
+                    } else {
+                        if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
+                            auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
+                            _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
+                        }
+                    }
+                } else if constexpr (IsFaultOperation<K>) {
+                    if constexpr (std::is_same_v<std::decay_t<T>, Operation::faultno>) {
+                        if (_ac.getConditionCode() == 0b000) {
+                            generateFault(ConstraintFaultSubtype::Range);
+                        }
+                    } else {
+                        if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); mask && _ac.getConditionCode() != 0b000) {
+                            generateFault(ConstraintFaultSubtype::Range);
+                        }
                     }
                 } else {
-                    if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-                        auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
-                        _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
-                    }
-                }
-            }
-            template<typename T, std::enable_if_t<IsFaultOperation<std::decay_t<T>>, int> = 0>
-            void performOperation(const CTRLFormatInstruction& inst, T) noexcept {
-                if constexpr (std::is_same_v<std::decay_t<T>, Operation::faultno>) {
-                    if (_ac.getConditionCode() == 0b000) {
-                        generateFault(ConstraintFaultSubtype::Range);
-                    }
-                } else {
-                    if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); mask && _ac.getConditionCode() != 0b000) {
-                        generateFault(ConstraintFaultSubtype::Range);
-                    }
+                    static_assert(false_v<K>, "Unimplemented ctrl format instruction");
                 }
             }
 
