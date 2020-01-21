@@ -426,7 +426,6 @@ namespace i960 {
             X(Operation::icctl);
             X(Operation::dcctl);
             X(Operation::intctl);
-            X(Operation::eshro);
             X(Operation::bswap);
             X(Operation::halt);
             X(Operation::opxor);
@@ -434,7 +433,6 @@ namespace i960 {
             X(Operation::xnor);
             X(Operation::mark);
             X(Operation::fmark);
-            X(Operation::emul);
             X(Operation::setbit);
             X(Operation::chkbit);
             X(Operation::atadd);
@@ -458,7 +456,6 @@ namespace i960 {
             X(Operation::modac);
             X(Operation::modpc);
             X(Operation::modtc);
-            X(Operation::ediv);
             X(Operation::flushreg);
             X(Operation::syncf);
             X(Operation::modi);
@@ -474,6 +471,9 @@ namespace i960 {
             X(Operation::movq);
             X(Operation::extract);
             X(Operation::subc);
+            X(Operation::eshro);
+            X(Operation::emul);
+            X(Operation::ediv);
 #undef X
 
 
