@@ -479,25 +479,29 @@ namespace i960 {
 
         private:
             // COBR format decls
-            template<typename T, std::enable_if_t<IsTestOperation<std::decay_t<T>>, int> = 0>
+            template<typename T, std::enable_if_t<Opcode::IsCompareAndBranchFormat<T::Opcode>, int> = 0>
             void performOperation(const COBRFormatInstruction& inst, T) noexcept {
-                if constexpr (std::is_same_v<std::decay_t<T>, Operation::testno>) {
-                    setDest(inst, _ac.getConditionCode() == 0b000 ? 1 : 0);
+                using K = std::decay_t<T>;
+                if constexpr (IsTestOperation<K>) {
+                    if constexpr (std::is_same_v<K, Operation::testno>) {
+                        setDest(inst, _ac.getConditionCode() == 0b000 ? 1 : 0);
+                    } else {
+                        setDest(inst, ((lowestThreeBitsOfMajorOpcode(inst.getOpcode()) & _ac.getConditionCode()) != 0) ? 1 : 0);
+                    }
+                } else if constexpr (IsCompareOrdinalAndBranchOperation<K> ||
+                                     IsCompareIntegerAndBranchOperation<K>) {
+                    static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add/subtract operation!");
+                    using Z = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
+                    // use variants as a side effect :D
+                    compare<Z>(getSrc(inst), getSrc2(inst));
+                    if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) != 0) {
+                        _instructionPointer += (inst.getDisplacement() * 4);
+                        _instructionPointer = computeAlignedAddress(_instructionPointer);
+                    }
                 } else {
-                    setDest(inst, ((lowestThreeBitsOfMajorOpcode(inst.getOpcode()) & _ac.getConditionCode()) != 0) ? 1 : 0);
+                    static_assert(false_v<K>, "Unimplemented cobr operation!");
                 }
-            }
-            template<typename T, std::enable_if_t<IsCompareOrdinalAndBranchOperation<std::decay_t<T>> ||
-                                                  IsCompareIntegerAndBranchOperation<std::decay_t<T>> , int> = 0>
-            void performOperation(const COBRFormatInstruction& inst, T) noexcept {
-                static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add/subtract operation!");
-                using K = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
-                // use variants as a side effect :D
-                compare<K>(getSrc(inst), getSrc2(inst));
-                if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) != 0) {
-                    _instructionPointer += (inst.getDisplacement() * 4);
-                    _instructionPointer = computeAlignedAddress(_instructionPointer);
-                }
+
             }
             void performOperation(const COBRFormatInstruction& inst, Operation::bbc) noexcept;
             void performOperation(const COBRFormatInstruction& inst, Operation::bbs) noexcept;
