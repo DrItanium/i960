@@ -690,27 +690,6 @@ namespace i960 {
     void Core::performOperation(const REGFormatInstruction& inst, Operation::nor) noexcept {
         setDest(inst, (~getSrc2(inst)) & (~getSrc1(inst)));
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::shro) noexcept {
-        auto result = 0u;
-        if (auto shift = getSrc1(inst); shift < 32u) {
-            result = getSrc2(inst) >> shift;
-        }
-        setDest(inst, result);
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::shri) noexcept {
-        // we want src1 to be an ordinal to prevent shifting by negative numbers
-        setDest(inst, getSrc2<Integer>(inst) >> std::abs(getSrc1<Integer>(inst)));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::shlo) noexcept {
-        auto result = 0u;
-        if (auto shift = getSrc1(inst); shift < 32u) {
-            result = getSrc2(inst) << shift;
-        } 
-        setDest(inst, result);
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::shli) noexcept {
-        setDest(inst, getSrc2<Integer>(inst) << std::abs(getSrc1<Integer>(inst)));
-	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::shrdi) noexcept {
         auto src = getSrc2<Integer>(inst);
         auto len = std::abs(getSrc1<Integer>(inst));

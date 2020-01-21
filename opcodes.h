@@ -564,8 +564,18 @@ namespace i960 {
     template<typename T>
     constexpr auto IsCompareAndDecrementOperation = IsInCollection<T, Operation::cmpdeci, Operation::cmpdeco>;
     template<typename T>
+    constexpr auto IsShiftLeftOperation = IsInCollection<T, Operation::shli, Operation::shlo>;
+    template<typename T>
+    constexpr auto IsShiftRightOperation = IsInCollection<T, Operation::shri, Operation::shro>;
+    template<typename T>
+    constexpr auto IsShiftOperation = IsShiftLeftOperation<T> || IsShiftRightOperation<T>;
+    template<typename T>
     constexpr auto IsCOBRFormat = Opcode::IsCompareAndBranchFormat<T::Opcode>;
     template<typename T>
     constexpr auto IsCTRLFormat = Opcode::IsControlFormat<T::Opcode>;
+    template<typename T>
+    constexpr auto IsREGFormat = Opcode::IsRegisterFormat<T::Opcode>;
+    template<typename T>
+    constexpr auto IsMEMFormat = Opcode::IsMemoryFormat<T::Opcode>;
 } // end namespace i960
 #endif // end I960_OPCODES_H__

@@ -419,6 +419,40 @@ namespace i960 {
                     }
                 }
             }
+            template<typename T, std::enable_if_t<IsShiftOperation<T>, int>  = 0>
+            void performOperation(const REGFormatInstruction& inst, T) noexcept {
+                static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add/subtract operation!");
+                using K = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
+                /// @todo shli generates an overflow fault, see 80960Jx manual for implementation details
+                /// @todo use the 80960Jx manual impls for shli and shri which are much slower and at most 32 cycles
+                auto s1 = getSrc1<K>(inst);
+                auto s2 = getSrc2<K>(inst);
+                if constexpr (IsIntegerOperation<T>) {
+                    // make sure we don't shift by a negative number
+                    s1 = std::abs(s1);
+                    if (s1 > 32) {
+                        s1 = 32u;
+                    } 
+                } else if constexpr (IsOrdinalOperation<T>) {
+                    if (s1 >= 32u) {
+                        // terminate early if we will shift all bits out and just
+                        // set destination to zero
+                        setDest<K>(inst, 0u);
+                        return;
+                    }
+                } else {
+                    static_assert(false_v<T>, "Shift operation neither ordinal or integer!");
+                }
+                K result = 0;
+                if constexpr (IsShiftRightOperation<T>) {
+                    result = s2 >> s1;
+                } else if constexpr (IsShiftLeftOperation<T>) {
+                    result = s2 << s1;
+                } else {
+                    static_assert(false_v<T>, "Unimplemented shift operation!");
+                }
+                setDest<K>(inst, result);
+            }
 #define X(title) void performOperation(const REGFormatInstruction& inst, title ) noexcept
             X(Operation::inten);
             X(Operation::intdis);
@@ -442,10 +476,6 @@ namespace i960 {
             X(Operation::clrbit);
             X(Operation::rotate);
             X(Operation::shrdi);
-            X(Operation::shli); 
-            X(Operation::shlo);
-            X(Operation::shri);
-            X(Operation::shro);
             X(Operation::nor);
             X(Operation::ornot);
             X(Operation::notor);
