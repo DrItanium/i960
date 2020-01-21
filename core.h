@@ -463,6 +463,64 @@ namespace i960 {
                 }
                 setDest<K>(inst, result);
             }
+            static constexpr Ordinal oneShiftLeft(Ordinal position) noexcept {
+                return 1u << (0b11111 & position);
+            }
+            template<typename T, std::enable_if_t<IsBitManipulationOperation<T>, int> = 0>
+            void performOperation(const REGFormatInstruction& inst, T) noexcept {
+#if 0
+                X(Operation::opand);
+                X(Operation::andnot);
+                X(Operation::opor);
+                X(Operation::notbit);
+                X(Operation::notand);
+                X(Operation::opnot);
+                X(Operation::nor);
+                X(Operation::ornot);
+                X(Operation::notor);
+                X(Operation::opxor);
+                X(Operation::nand);
+                X(Operation::xnor);
+#endif
+                auto s2 = getSrc2(inst);
+                auto s1 = getSrc1(inst);
+                Ordinal result = 0;
+                if constexpr (InvertSrc1<T>) {
+                    s1 = ~s1;
+                }
+                if constexpr (InvertSrc2<T>) {
+                    s2 = ~s2;
+                }
+                if constexpr (IsAndOperation<T>) {
+                    result = s2 & s1;
+                } else if constexpr (IsOrOperation<T>) {
+                    result = s2 | s1;
+                } else if constexpr (IsXorOperation<T>) {
+                    if constexpr (std::is_same_v<T, Operation::notbit>) {
+                        result = s2 ^ oneShiftLeft(s1);
+                    } else if constexpr (std::is_same_v<T, Operation::opxor>){
+                        // there is an actual implementation within the manual so I'm going to
+                        // use that instead of the xor operator.
+                        result = (s2 | s1) & ~(s2 & s1);
+                    } else if constexpr (std::is_same_v<T, Operation::xnor>){
+                        // there is an actual implementation within the manual so I'm going to
+                        // use that instead of the xor operator.
+                        result = ~(s2 | s1) | (s2 & s1);
+                    } else {
+                        static_assert (false_v<T>, "Unimplemented xor operation");
+                    }
+                } else if constexpr (IsNotOperation<T>) {
+                    if constexpr(IsUnaryOperation<T>) {
+                        result = ~s1;
+                    } else {
+                        static_assert(false_v<T>, "Unsure what to do right now");
+                    }
+                } else {
+                    static_assert(false_v<T>, "Unimplemented bit manipulation operation");
+                }
+                setDest(inst, result);
+
+            }
 #define X(title) void performOperation(const REGFormatInstruction& inst, title ) noexcept
             X(Operation::inten);
             X(Operation::intdis);
@@ -472,9 +530,6 @@ namespace i960 {
             X(Operation::intctl);
             X(Operation::bswap);
             X(Operation::halt);
-            X(Operation::opxor);
-            X(Operation::nand);
-            X(Operation::xnor);
             X(Operation::mark);
             X(Operation::fmark);
             X(Operation::setbit);
@@ -485,13 +540,6 @@ namespace i960 {
             X(Operation::modify);
             X(Operation::clrbit);
             X(Operation::rotate);
-            X(Operation::nor);
-            X(Operation::ornot);
-            X(Operation::notor);
-            X(Operation::opor);
-            X(Operation::notbit);
-            X(Operation::notand);
-            X(Operation::opnot);
             X(Operation::modac);
             X(Operation::modpc);
             X(Operation::modtc);
@@ -502,8 +550,6 @@ namespace i960 {
             X(Operation::scanbit);
             X(Operation::calls);
             X(Operation::alterbit);
-            X(Operation::opand);
-            X(Operation::andnot);
             X(Operation::mov);
             X(Operation::movl);
             X(Operation::movt);
@@ -513,6 +559,7 @@ namespace i960 {
             X(Operation::eshro);
             X(Operation::ediv);
             X(Operation::shrdi);
+
 #undef X
 
 

@@ -174,13 +174,6 @@ namespace i960 {
         }
         setDest(inst, result);
     }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::opand) noexcept {
-        setDest(inst, getSrc2<Ordinal>(inst) & 
-                      getSrc1<Ordinal>(inst));
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::andnot) noexcept {
-        setDest(inst, (getSrc2(inst)) & (~getSrc1(inst)));
-	}
 
     void Core::performOperation(const REGFormatInstruction& inst, Operation::mov) noexcept {
         setDest(inst, getSrc1(inst));
@@ -665,31 +658,6 @@ namespace i960 {
                 break;
         }
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::opnot) noexcept {
-        setDest(inst, ~getSrc1(inst));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::notand) noexcept {
-        setDest(inst, (~getSrc2(inst)) & getSrc1(inst));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::notbit) noexcept {
-        setDest(inst, xorOperation(getSrc2(inst), oneShiftLeft(getSrc1(inst))));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::notor) noexcept {
-        setDest(inst, (~getSrc2(inst)) | getSrc1(inst));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::opor) noexcept {
-        setDest(inst, (getSrc2(inst) | getSrc1(inst)));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::ornot) noexcept {
-        setDest(inst, (getSrc2(inst) | (~getSrc1(inst))));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::nand) noexcept {
-		// as shown in the manual
-        setDest(inst, (~getSrc2(inst)) | (~getSrc1(inst)));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::nor) noexcept {
-        setDest(inst, (~getSrc2(inst)) & (~getSrc1(inst)));
-	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::shrdi) noexcept {
         auto src = getSrc2<Integer>(inst);
         auto len = std::abs(getSrc1<Integer>(inst));
@@ -773,18 +741,6 @@ namespace i960 {
 			generateFault(TraceFaultSubtype::Mark);
 		}
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::xnor) noexcept {
-        auto s2 = getSrc2(inst);
-		auto s1 = getSrc1(inst);
-        setDest(inst, ~(s2 | s1) | (s2 & s1));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::opxor) noexcept {
-		// there is an actual implementation within the manual so I'm going to
-		// use that instead of the xor operator.
-		auto s2 = getSrc2(inst);
-        auto s1 = getSrc1(inst);
-        setDest(inst, (s2 | s1) & ~(s2 & s1));
-    }
     void Core::performOperation(const REGFormatInstruction&, Operation::intdis) noexcept {
 		// TODO implement
 		if (!_pc.inSupervisorMode()) {
