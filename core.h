@@ -582,30 +582,22 @@ namespace i960 {
                         _instructionPointer += (inst.getDisplacement() * 4);
                         _instructionPointer = computeAlignedAddress(_instructionPointer);
                     }
-                } else if constexpr (std::is_same_v<std::decay_t<T>, Operation::bbc>) {
-                    // check bit and branch if clear
+                } else if constexpr (IsCheckBitAndBranchIfOperation<T>) {
                     auto bitpos = getSrc(inst);
                     auto src = getSrc2(inst);
                     auto mask = computeCheckBitMask(bitpos);
-                    _ac.setConditionCode(0b010); // update condition code to not taken result since it will always be done
-                    if ((src & mask) == 0) {
-                        _ac.clearConditionCode();
+                    // bbc = check bit and branch if clear
+                    // bbs = check bit and branch if set
+                    constexpr Ordinal startingConditionCode = std::is_same_v<std::decay_t<T>, Operation::bbc> ? 0b010 : 0b000;
+                    constexpr Ordinal conditionCodeOnConditionMet = std::is_same_v<std::decay_t<T>, Operation::bbc> ? 0b000 : 0b010;
+                    constexpr Ordinal compareAgainst = std::is_same_v<std::decay_t<T>, Operation::bbc> ? 0 : 1;
+                    _ac.setConditionCode(startingConditionCode);
+                    if ((src & mask) == compareAgainst) {
+                        _ac.setConditionCode(conditionCodeOnConditionMet);
                         _instructionPointer = _instructionPointer + inst.getDisplacement();
                         // clear the lowest two bits of the instruction pointer
                         _instructionPointer &= (~0b11);
-                    } 
-                } else if constexpr (std::is_same_v<std::decay_t<T>, Operation::bbs>) {
-                    // check bit and branch if set
-                    auto bitpos = getSrc(inst);
-                    auto src = getSrc2(inst);
-                    auto mask = computeCheckBitMask(bitpos);
-                    _ac.clearConditionCode();
-                    if ((src & mask) == 1) {
-                        _ac.setConditionCode(0b010);
-                        _instructionPointer = _instructionPointer + inst.getDisplacement();
-                        // clear the lowest two bits of the instruction pointer
-                        _instructionPointer &= (~0b11);
-                    } 
+                    }
                 } else {
                     static_assert(false_v<K>, "Unimplemented cobr operation!");
                 }

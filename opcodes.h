@@ -616,6 +616,8 @@ namespace i960 {
     template<typename T>
     constexpr auto IsShiftOperation = IsShiftLeftOperation<T> || IsShiftRightOperation<T>;
     template<typename T>
+    constexpr auto IsCheckBitAndBranchIfOperation = IsInCollection<T, Operation::bbc, Operation::bbs>;
+    template<typename T>
     constexpr auto IsCOBRFormat = Opcode::IsCompareAndBranchFormat<T::Opcode>;
     template<typename T>
     constexpr auto IsCTRLFormat = Opcode::IsControlFormat<T::Opcode>;
