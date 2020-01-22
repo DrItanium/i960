@@ -560,6 +560,9 @@ namespace i960 {
 
         private:
             // COBR format decls
+            static constexpr Ordinal computeCheckBitMask(Ordinal value) noexcept {
+                return 1 << (value & 0b11111);
+            }
             template<typename T, std::enable_if_t<IsCOBRFormat<T>, int> = 0>
             void performOperation(const COBRFormatInstruction& inst, T) noexcept {
                 using K = std::decay_t<T>;
@@ -579,13 +582,34 @@ namespace i960 {
                         _instructionPointer += (inst.getDisplacement() * 4);
                         _instructionPointer = computeAlignedAddress(_instructionPointer);
                     }
+                } else if constexpr (std::is_same_v<std::decay_t<T>, Operation::bbc>) {
+                    // check bit and branch if clear
+                    auto bitpos = getSrc(inst);
+                    auto src = getSrc2(inst);
+                    auto mask = computeCheckBitMask(bitpos);
+                    _ac.setConditionCode(0b010); // update condition code to not taken result since it will always be done
+                    if ((src & mask) == 0) {
+                        _ac.clearConditionCode();
+                        _instructionPointer = _instructionPointer + inst.getDisplacement();
+                        // clear the lowest two bits of the instruction pointer
+                        _instructionPointer &= (~0b11);
+                    } 
+                } else if constexpr (std::is_same_v<std::decay_t<T>, Operation::bbs>) {
+                    // check bit and branch if set
+                    auto bitpos = getSrc(inst);
+                    auto src = getSrc2(inst);
+                    auto mask = computeCheckBitMask(bitpos);
+                    _ac.clearConditionCode();
+                    if ((src & mask) == 1) {
+                        _ac.setConditionCode(0b010);
+                        _instructionPointer = _instructionPointer + inst.getDisplacement();
+                        // clear the lowest two bits of the instruction pointer
+                        _instructionPointer &= (~0b11);
+                    } 
                 } else {
                     static_assert(false_v<K>, "Unimplemented cobr operation!");
                 }
-
             }
-            void performOperation(const COBRFormatInstruction& inst, Operation::bbc) noexcept;
-            void performOperation(const COBRFormatInstruction& inst, Operation::bbs) noexcept;
         private:
             // CTRL format instructions
             void performOperation(const CTRLFormatInstruction&, Operation::b) noexcept;
@@ -595,27 +619,27 @@ namespace i960 {
             template<typename T, std::enable_if_t<IsCTRLFormat<T>, int> = 0> 
             void performOperation(const CTRLFormatInstruction& inst, T) noexcept {
                 using K = std::decay_t<T>;
+                auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode());
                 if constexpr (IsConditionalBranchOperation<K>) {
+                    auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
+                    bool condition = false;
                     if constexpr (std::is_same_v<K, Operation::bno>) {
-                        if (_ac.getConditionCode() == 0) {
-                            auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
-                            _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
-                        }
+                        condition = _ac.getConditionCode() == 0;
                     } else {
-                        if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-                            auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
-                            _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
-                        }
+                        condition =  (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode());
+                    }
+                    if (condition) {
+                        _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
                     }
                 } else if constexpr (IsFaultOperation<K>) {
+                    auto condition = false;
                     if constexpr (std::is_same_v<std::decay_t<T>, Operation::faultno>) {
-                        if (_ac.getConditionCode() == 0b000) {
-                            generateFault(ConstraintFaultSubtype::Range);
-                        }
+                        condition = _ac.getConditionCode() == 0b000;
                     } else {
-                        if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); mask && _ac.getConditionCode() != 0b000) {
-                            generateFault(ConstraintFaultSubtype::Range);
-                        }
+                        condition = (mask && _ac.getConditionCode()) != 0b000;
+                    }
+                    if (condition) {
+                        generateFault(ConstraintFaultSubtype::Range);
                     }
                 } else {
                     static_assert(false_v<K>, "Unimplemented ctrl format instruction");

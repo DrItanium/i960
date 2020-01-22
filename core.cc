@@ -238,35 +238,6 @@ namespace i960 {
         _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
     }
 
-	constexpr Ordinal computeCheckBitMask(Ordinal value) noexcept {
-		return 1 << (value & 0b11111);
-	}
-    void Core::performOperation(const COBRFormatInstruction& inst, Operation::bbc) noexcept {
-        // check bit and branch if clear
-        auto bitpos = getSrc(inst);
-        auto src = getSrc2(inst);
-        auto mask = computeCheckBitMask(bitpos);
-        _ac.setConditionCode(0b010); // update condition code to not taken result since it will always be done
-        if ((src & mask) == 0) {
-            _ac.clearConditionCode();
-            _instructionPointer = _instructionPointer + inst.getDisplacement();
-            // clear the lowest two bits of the instruction pointer
-            _instructionPointer &= (~0b11);
-        } 
-    }
-    void Core::performOperation(const COBRFormatInstruction& inst, Operation::bbs) noexcept {
-        // check bit and branch if set
-        auto bitpos = getSrc(inst);
-        auto src = getSrc2(inst);
-        auto mask = computeCheckBitMask(bitpos);
-        _ac.clearConditionCode();
-        if ((src & mask) == 1) {
-            _ac.setConditionCode(0b010);
-            _instructionPointer = _instructionPointer + inst.getDisplacement();
-            // clear the lowest two bits of the instruction pointer
-            _instructionPointer &= (~0b11);
-        } 
-    }
 
 	// Begin Instruction::REGFormat implementations
 	/**
