@@ -126,6 +126,32 @@ namespace i960 {
     constexpr T encode(T value, R input) noexcept {
         return encode<T, R, std::get<0>(description), std::get<1>(description)>(value, input);
     }
+
+    template<typename T, typename R, T mask, T shift = static_cast<T>(0)>
+    class BitFragment final {
+        public:
+            using DataType = T;
+            using SliceType = R;
+            using InteractPair = std::tuple<DataType, DataType>;
+        public:
+            constexpr BitFragment() = default;
+            ~BitFragment() = default;
+            constexpr InteractPair getDescription() const noexcept { return _description; }
+            constexpr auto getMask() const noexcept { return std::get<0>(_description); }
+            constexpr auto getShift() const noexcept { return std::get<1>(_description); }
+            constexpr auto decode(DataType input) const noexcept {
+                return i960::decode<DataType, SliceType, _description>(input);
+            }
+            constexpr auto encode(DataType value, SliceType input) const noexcept {
+                return i960::encode<DataType, SliceType, _description>(value, input);
+            }
+            constexpr auto encode(SliceType input) const noexcept {
+                return encode(static_cast<DataType>(0), input);
+            }
+        private:
+            static constexpr InteractPair _description { mask, shift };
+
+    };
     // false_v taken from https://quuxplusone.github.io/blog/2018/04/02/false-v/
     template<typename...>
     inline constexpr bool false_v = false;
@@ -183,9 +209,9 @@ namespace i960 {
             constexpr auto getPartNumber() const noexcept { return _partNumber; }
             constexpr auto getManufacturer() const noexcept { return _manufacturer; }
             constexpr uint32_t getId() const noexcept {
-                return encode<uint32_t, uint8_t, 0xF000'0000, 28>(
-                        encode<uint32_t, uint16_t, 0x0FFF'F000, 12>(
-                            static_cast<uint32_t>(getManufacturer() << 1),
+                return encode<uint32_t, uint8_t, VersionMask>(
+                       encode<uint32_t, uint16_t, PartNumMask>(
+                       encode<uint32_t, uint16_t, ManufacturerMask>(0, getManufacturer()),
                             getPartNumber()),
                         getVersion()) | 1; // make sure lsb is 1
             }

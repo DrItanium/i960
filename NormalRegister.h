@@ -56,6 +56,10 @@ namespace i960 {
             constexpr auto mostSignificantBitClear() const noexcept {
                 return i960::mostSignificantBitClear(_value);
             }
+            template<typename R, ShiftMaskPair<Ordinal> desc>
+            constexpr R decodeField() noexcept {
+                return i960::decode<decltype(_value), R, desc>(_value);
+            }
             template<typename R, Ordinal mask, Ordinal shift = 0>
             constexpr R decodeField() noexcept {
                 return i960::decode<decltype(_value), R, mask, shift>(_value);
@@ -63,6 +67,10 @@ namespace i960 {
             template<typename T, Ordinal mask, Ordinal shift = 0>
             void encodeField(T field) noexcept {
                 _value = i960::encode<decltype(_value), T, mask, shift>(_value, field);
+            }
+            template<typename T, ShiftMaskPair<Ordinal> desc>
+            void encodeField(T field) noexcept {
+                _value = i960::encode<decltype(_value), T, desc>(_value, field);
             }
             void clear() noexcept; 
 

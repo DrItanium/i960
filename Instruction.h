@@ -114,12 +114,12 @@ namespace i960 {
     class REGFlags : public GenericFlags {
         public:
             using Parent = GenericFlags;
-            static constexpr ShiftMaskPair<Ordinal> LowerTwoBitsMask { 0b11'00000, 5 };
-            static constexpr ShiftMaskPair<Ordinal> UpperThreeBitsMask {  0b111'0000'00'00000 , 8 };
+            //static constexpr ShiftMaskPair<Ordinal> LowerTwoBitsMask { 0b11'00000, 5 };
+            //static constexpr ShiftMaskPair<Ordinal> UpperThreeBitsMask {  0b111'0000'00'00000 , 8 };
+            static constexpr BitFragment<SingleEncodedInstructionValue, ByteOrdinal, 0b11'00000, 5> LowerTwoBitsMask{};
+            static constexpr BitFragment<SingleEncodedInstructionValue, ByteOrdinal, 0b111'0000'00'00000 , 8 > UpperThreeBitsMask{};
             static constexpr ByteOrdinal decode(SingleEncodedInstructionValue value) noexcept {
-                auto lowerTwo = i960::decode<Ordinal, ByteOrdinal,  LowerTwoBitsMask>(value);
-                auto upperThree = i960::decode<Ordinal, ByteOrdinal, UpperThreeBitsMask>(value);
-                return lowerTwo | upperThree;
+                return LowerTwoBitsMask.decode(value) | UpperThreeBitsMask.decode(value);
             }
         public:
             constexpr REGFlags(const Instruction& inst) noexcept : Parent(decode(inst.getLowerHalf())) { }
@@ -129,9 +129,7 @@ namespace i960 {
             constexpr bool getSF1() const noexcept { return getFlag<0b00010>(); }
             constexpr bool getSF2() const noexcept { return getFlag<0b00001>(); }
             constexpr SingleEncodedInstructionValue encode(SingleEncodedInstructionValue value) const noexcept {
-                auto lowerTwo = i960::encode<SingleEncodedInstructionValue, ByteOrdinal, LowerTwoBitsMask>(value, getValue());
-                auto upperThree = i960::encode<SingleEncodedInstructionValue, ByteOrdinal, UpperThreeBitsMask>(value, getValue());
-                return lowerTwo | upperThree;
+                return LowerTwoBitsMask.encode(value, getValue()) | UpperThreeBitsMask.encode(value, getValue());
             }
     };
     class HasSrc1 {
