@@ -43,11 +43,12 @@ namespace i960 {
     constexpr PMCONRegisterRange_t PMCONRegisterRange = getRegisterRange<kind>();
     class PMCONRegister final {
         public:
+            static constexpr ShiftMaskPair<Ordinal> BusWidthMask { 0xC0'0000, 22 };
             static constexpr auto extractBusWidth(Ordinal value) noexcept {
-                return i960::decode<Ordinal, uint8_t, 0xC0'0000, 22>(value); 
+                return i960::decode<Ordinal, uint8_t, BusWidthMask>(value);
             }
             static constexpr auto encodeBusWidth(Ordinal base, uint8_t width) noexcept {
-                return i960::encode<Ordinal, uint8_t, 0xC0'0000, 22>(base, width);
+                return i960::encode<Ordinal, uint8_t, BusWidthMask>(base, width);
             }
             static constexpr auto encodeBusWidth(uint8_t width) noexcept {
                 return encodeBusWidth(0, width);
