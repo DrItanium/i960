@@ -98,7 +98,9 @@ namespace i960 {
             return static_cast<R>((value & mask) >> shift);
         }
     }
-    template<typename T, typename R, std::tuple<T, T> description>
+    template<typename T>
+    using ShiftMaskPair = std::tuple<T, T>;
+    template<typename T, typename R, ShiftMaskPair<T> description>
     constexpr R decode(T value) noexcept {
         return decode<T, R, std::get<0>(description), std::get<1>(description)>(value);
     }
@@ -119,6 +121,10 @@ namespace i960 {
         } else {
             return result | ((static_cast<T>(input) << shift) & mask);
         }
+    }
+    template<typename T, typename R, ShiftMaskPair<T> description>
+    constexpr T encode(T value, R input) noexcept {
+        return encode<T, R, std::get<0>(description), std::get<1>(description)>(value, input);
     }
     // false_v taken from https://quuxplusone.github.io/blog/2018/04/02/false-v/
     template<typename...>
@@ -163,13 +169,16 @@ namespace i960 {
         public:
             static constexpr uint16_t Manufacturer_Altera = 0b000'0110'1110;
             static constexpr uint16_t Manufacturer_Intel = 0b000'0000'1001;
+            static constexpr ShiftMaskPair<uint32_t> VersionMask { 0xF000'0000, 28 };
+            static constexpr ShiftMaskPair<uint32_t> PartNumMask { 0x0FFF'F000, 12 };
+            static constexpr ShiftMaskPair<uint32_t> ManufacturerMask { 0xFFE, 1 };
         public:
             constexpr IEEE1149_1DeviceIdentification(uint8_t version, uint16_t partNum, uint16_t mfgr) : _version(version & 0b1111), _partNumber(partNum), _manufacturer(mfgr & 0x7FF) { }
             constexpr IEEE1149_1DeviceIdentification(uint32_t id) noexcept :
                 IEEE1149_1DeviceIdentification(
-                decode<uint32_t, uint8_t, 0xF000'0000, 28>(id),
-                decode<uint32_t, uint16_t, 0x0FFF'F000, 12>(id),
-                decode<uint32_t, uint16_t, 0xFFE, 1>(id)) { }
+                decode<uint32_t, uint8_t, VersionMask>(id),
+                decode<uint32_t, uint16_t, PartNumMask>(id),
+                decode<uint32_t, uint16_t, ManufacturerMask>(id)) { }
             constexpr auto getVersion() const noexcept { return _version; }
             constexpr auto getPartNumber() const noexcept { return _partNumber; }
             constexpr auto getManufacturer() const noexcept { return _manufacturer; }
@@ -199,16 +208,21 @@ namespace i960 {
     };
     class HardwareDeviceIdentificationCode final : public BaseDeviceIdenficationCode<true> {
         public:
+            static constexpr ShiftMaskPair<Ordinal> VersionDecoder { 0xF000'0000, 28 };
+            static constexpr ShiftMaskPair<Ordinal> VCCDecoder { (1<< 27) , 27 };
+            static constexpr ShiftMaskPair<Ordinal> GenerationDecoder { (0b1111 << 17)  , 17 };
+            static constexpr ShiftMaskPair<Ordinal> ModelDecoder { (0b11111 << 12)  , 12 };
+        public:
             constexpr HardwareDeviceIdentificationCode(uint8_t version, bool vcc, uint8_t generation, uint8_t model) noexcept :
                 _version(version & 0b11111),
                 _vcc(vcc),
                 _gen(generation & 0b1111),
                 _model(model & 0b11111) { }
             constexpr HardwareDeviceIdentificationCode(Ordinal raw) noexcept : HardwareDeviceIdentificationCode(
-                    i960::decode<Ordinal, uint8_t, 0xF000'0000, 28>(raw),
-                    i960::decode<Ordinal, bool, (1 << 27), 27>(raw),
-                    i960::decode<Ordinal, uint8_t, (0b1111 << 17), 17>(raw),
-                    i960::decode<Ordinal, uint8_t, (0b11111 << 12), 12>(raw)) { }
+                    i960::decode<Ordinal, uint8_t, VersionDecoder>(raw),
+                    i960::decode<Ordinal, bool, VCCDecoder>(raw),
+                    i960::decode<Ordinal, uint8_t, GenerationDecoder>(raw),
+                    i960::decode<Ordinal, uint8_t, ModelDecoder>(raw)) { }
             constexpr auto getVersion() const noexcept { return _version; }
             constexpr auto getGeneration() const noexcept { return _gen; }
             constexpr auto getModel() const noexcept { return _model; }

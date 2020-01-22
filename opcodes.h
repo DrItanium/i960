@@ -377,18 +377,6 @@ namespace i960::Operation {
 namespace i960 {
 // Setup knowledge base about operations
     template<typename T>
-    constexpr auto IsTestOperation = false;
-#define X(op) template<> constexpr auto IsTestOperation<Operation:: test ## op > = true
-    X(g);
-    X(e);
-    X(ge);
-    X(l);
-    X(ne);
-    X(le);
-    X(o);
-    X(no);
-#undef X
-    template<typename T>
     constexpr auto IsCompareOrdinalAndBranchOperation = false;
 #define X(op) template<> constexpr auto IsCompareOrdinalAndBranchOperation<Operation:: cmpob ## op > = true
     X(g);
@@ -399,55 +387,15 @@ namespace i960 {
     X(le);
 #undef X
     template<typename T>
+    constexpr auto IsTestOperation = false;
+    template<typename T>
     constexpr auto IsCompareIntegerAndBranchOperation = false;
-
-#define X(op) template<> constexpr auto IsCompareIntegerAndBranchOperation<Operation:: cmpib ## op > = true
-    X(g);
-    X(e);
-    X(ge);
-    X(l);
-    X(ne);
-    X(le);
-    X(o);
-    X(no);
-#undef X
-
     template<typename T>
     constexpr auto IsSelectOperation = false;
-#define X(op) template<> constexpr auto IsSelectOperation< Operation:: sel ## op > = true
-    X(no);
-    X(g);
-    X(e);
-    X(ge);
-    X(l);
-    X(ne);
-    X(le);
-    X(o);
-#undef X
     template<typename T>
     constexpr auto IsConditionalBranchOperation = false;
-#define X(op) template<> constexpr auto IsConditionalBranchOperation < Operation:: b ## op > = true
-    X(g);
-    X(e);
-    X(ge);
-    X(l);
-    X(ne);
-    X(le);
-    X(o);
-    X(no);
-#undef X
     template<typename T>
     constexpr auto IsFaultOperation = false;
-#define X(op) template<> constexpr auto IsFaultOperation < Operation:: fault  ## op > = true
-    X(g);
-    X(e);
-    X(ge);
-    X(l);
-    X(ne);
-    X(le);
-    X(o);
-    X(no);
-#undef X
     template<typename T>
     constexpr auto IsConditionalAddOrdinalOperation = false;
     template<typename T>
@@ -460,8 +408,12 @@ namespace i960 {
     template<> constexpr auto IsConditionalAddOrdinalOperation < Operation:: addo ## op > = true; \
     template<> constexpr auto IsConditionalAddIntegerOperation < Operation:: addi ## op > = true; \
     template<> constexpr auto IsConditionalSubtractIntegerOperation < Operation:: subi ## op > = true; \
-    template<> constexpr auto IsConditionalSubtractOrdinalOperation < Operation:: subo ## op > = true
-    X(no);
+    template<> constexpr auto IsConditionalSubtractOrdinalOperation < Operation:: subo ## op > = true; \
+    template<> constexpr auto IsFaultOperation < Operation:: fault  ## op > = true; \
+    template<> constexpr auto IsConditionalBranchOperation < Operation:: b ## op > = true; \
+    template<> constexpr auto IsSelectOperation< Operation:: sel ## op > = true; \
+    template<> constexpr auto IsCompareIntegerAndBranchOperation<Operation:: cmpib ## op > = true; \
+    template<> constexpr auto IsTestOperation<Operation:: test ## op > = true
     X(g);
     X(e);
     X(ge);
@@ -469,6 +421,7 @@ namespace i960 {
     X(ne);
     X(le);
     X(o);
+    X(no);
 #undef X
     template<typename T>
     constexpr auto IsConditionalSubtractOperation = IsConditionalSubtractIntegerOperation<std::decay_t<T>> || IsConditionalSubtractOrdinalOperation<std::decay_t<T>>;
