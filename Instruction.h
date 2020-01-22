@@ -319,8 +319,8 @@ namespace i960 {
         return decode<HalfOrdinal, Ordinal, 0x0FF0, 4>(ordinal);
     }
     constexpr Ordinal encodeMajorOpcode(Ordinal input, HalfOrdinal opcode) noexcept {
-        constexpr Ordinal majorOpcodeMask = 0xFF000000;
-        return encode<Ordinal, HalfOrdinal, majorOpcodeMask, 24>(input, getMajorOpcode(opcode));
+        constexpr ShiftMaskPair<decltype(input)> MajorOpcode { 0xFF00'0000, 24 };
+        return encode<Ordinal, HalfOrdinal, MajorOpcode>(input, getMajorOpcode(opcode));
     }
     constexpr Ordinal encodeMajorOpcode(HalfOrdinal opcode) noexcept {
         return encodeMajorOpcode(0, opcode);
