@@ -563,23 +563,31 @@ namespace i960 {
     constexpr auto InvertSrc1 = IsInCollection<T, Operation::andnot, 
                                                   Operation::nor, 
                                                   Operation::nand,
-                                                  Operation::ornot>;
+                                                  Operation::ornot,
+                                                  Operation::clrbit>;
     template<typename T>
     constexpr auto InvertSrc2 = IsInCollection<T, Operation::notand, 
                                                   Operation::nand, 
                                                   Operation::nor,
                                                   Operation::notor>;
+
+    template<typename T>
+    constexpr auto OneShiftLeftSrc1 = IsInCollection<T, Operation::setbit,
+                                                        Operation::notbit,
+                                                        Operation::clrbit>;
     template<typename T>
     constexpr auto IsAndOperation = IsInCollection<T, Operation::opand, 
                                                       Operation::andnot, 
                                                       Operation::notand, 
-                                                      Operation::nor /* dst = ~s2 & ~s1 */>;
+                                                      Operation::nor, /* dst = ~s2 & ~s1 */
+                                                      Operation::clrbit>;
 
     template<typename T>
     constexpr auto IsOrOperation = IsInCollection<T, Operation::opor, 
                                                      Operation::ornot, 
                                                      Operation::notor, 
-                                                      Operation::nand /* dst = ~s2 | ~s1 */>;
+                                                     Operation::nand, /* dst = ~s2 | ~s1 */
+                                                     Operation::setbit >;
     template<typename T>
     constexpr auto IsXorOperation = IsInCollection<T, Operation::xnor, 
                                                       Operation::opxor,
@@ -591,9 +599,8 @@ namespace i960 {
     constexpr auto IsUnaryOperation = IsInCollection<T, Operation::opnot>;
 
     template<typename T>
-    constexpr auto IsAlgebraBitManipulationOperation = IsAndOperation<T> || IsOrOperation<T> || IsXorOperation<T> || IsNotOperation<T>;
-    template<typename T>
-    constexpr auto IsBitManipulationOperation = IsAlgebraBitManipulationOperation<T>;
+    constexpr auto IsBitManipulationOperation = IsAndOperation<T> || IsOrOperation<T> || IsXorOperation<T> || IsNotOperation<T> ||
+                                                IsInCollection<T, Operation::alterbit>;
     template<typename T>
     constexpr auto IsByteCompareOperation = IsInCollection<T, Operation::cmpob, Operation::cmpib>;
     template<typename T>

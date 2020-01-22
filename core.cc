@@ -163,17 +163,6 @@ namespace i960 {
         auto src = getSrc2(inst);
         _ac.setConditionCode(((src & (1 << (bitpos & 0b11111))) == 0) ? 0b000 : 0b010);
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::alterbit) noexcept {
-        Ordinal result = 0u;
-        if (auto bitpos = getSrc1(inst), src = getSrc2(inst); _ac.conditionCodeBitSet<0b010>()) {
-			// if the condition bit is clear then we clear the given bit
-            result = src & (~(1 << bitpos));
-        } else {
-			// if the condition bit is set then we set the given bit
-            result = src | (1 << bitpos);
-        }
-        setDest(inst, result);
-    }
 
     void Core::performOperation(const REGFormatInstruction& inst, Operation::mov) noexcept {
         setDest(inst, getSrc1(inst));
@@ -715,12 +704,6 @@ namespace i960 {
 		auto tmp = load(fixedAddr, true);
 		store(fixedAddr, tmp + src, true);
         setDest(inst, tmp);
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::clrbit) noexcept {
-        setDest(inst, getSrc2(inst) & ~oneShiftLeft(getSrc1(inst)));
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::setbit) noexcept {
-        setDest(inst, getSrc2(inst) | oneShiftLeft(getSrc1(inst)));
 	}
     void Core::performOperation(const MEMFormatInstruction&, Operation::lda) noexcept {
         /// @todo finish this

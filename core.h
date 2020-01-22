@@ -466,11 +466,15 @@ namespace i960 {
             static constexpr Ordinal oneShiftLeft(Ordinal position) noexcept {
                 return 1u << (0b11111 & position);
             }
-            template<typename T, std::enable_if_t<IsAlgebraBitManipulationOperation<T>, int> = 0>
+            template<typename T, std::enable_if_t<IsBitManipulationOperation<T>, int> = 0>
             void performOperation(const REGFormatInstruction& inst, T) noexcept {
                 auto s2 = getSrc2(inst);
                 auto s1 = getSrc1(inst);
                 Ordinal result = 0;
+                if constexpr (OneShiftLeftSrc1<T>) {
+                    // this comes first to support clrbit
+                    s1 = oneShiftLeft(s1);
+                }
                 if constexpr (InvertSrc1<T>) {
                     s1 = ~s1;
                 }
@@ -482,9 +486,7 @@ namespace i960 {
                 } else if constexpr (IsOrOperation<T>) {
                     result = s2 | s1;
                 } else if constexpr (IsXorOperation<T>) {
-                    if constexpr (std::is_same_v<T, Operation::notbit>) {
-                        result = s2 ^ oneShiftLeft(s1);
-                    } else if constexpr (std::is_same_v<T, Operation::opxor>){
+                    if constexpr (std::is_same_v<T, Operation::opxor>){
                         // there is an actual implementation within the manual so I'm going to
                         // use that instead of the xor operator.
                         result = (s2 | s1) & ~(s2 & s1);
@@ -493,7 +495,7 @@ namespace i960 {
                         // use that instead of the xor operator.
                         result = ~(s2 | s1) | (s2 & s1);
                     } else {
-                        static_assert (false_v<T>, "Unimplemented xor operation");
+                        result = s2 ^ s1;
                     }
                 } else if constexpr (IsNotOperation<T>) {
                     if constexpr(IsUnaryOperation<T>) {
@@ -501,6 +503,15 @@ namespace i960 {
                     } else {
                         static_assert(false_v<T>, "Unsure what to do right now");
                     }
+                } else if constexpr (std::is_same_v<std::decay_t<T>, Operation::alterbit>) {
+                    if ((_ac.getConditionCode() & 0b010) == 0) {
+                        // if the condition bit is clear then we clear the given bit
+                        performOperation<Operation::clrbit>(inst, {});
+                    } else {
+                        // if the condition bit is set then we set the given bit
+                        performOperation<Operation::setbit>(inst, {});
+                    }
+                    return;
                 } else {
                     static_assert(false_v<T>, "Unimplemented bit manipulation operation");
                 }
@@ -518,13 +529,9 @@ namespace i960 {
             X(Operation::halt);
             X(Operation::mark);
             X(Operation::fmark);
-            X(Operation::setbit);
-            X(Operation::chkbit);
             X(Operation::atadd);
             X(Operation::atmod);
             X(Operation::scanbyte);
-            X(Operation::modify);
-            X(Operation::clrbit);
             X(Operation::rotate);
             X(Operation::modac);
             X(Operation::modpc);
@@ -532,20 +539,22 @@ namespace i960 {
             X(Operation::flushreg);
             X(Operation::syncf);
             X(Operation::modi);
-            X(Operation::spanbit);
-            X(Operation::scanbit);
             X(Operation::calls);
-            X(Operation::alterbit);
             X(Operation::mov);
             X(Operation::movl);
             X(Operation::movt);
             X(Operation::movq);
-            X(Operation::extract);
+
             X(Operation::subc);
             X(Operation::eshro);
             X(Operation::ediv);
             X(Operation::shrdi);
 
+            X(Operation::extract);
+            X(Operation::modify);
+            X(Operation::chkbit);
+            X(Operation::spanbit);
+            X(Operation::scanbit);
 #undef X
 
 
