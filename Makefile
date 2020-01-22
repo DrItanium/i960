@@ -8,7 +8,6 @@ I960JX_SIM_OBJS := sim960jx.o \
 	NormalRegister.o \
 	QuadRegister.o \
 	TripleRegister.o \
-	DoubleRegister.o \
 	ArithmeticControls.o \
 	$(I960JX_OBJS)
 I960JX_DEC_OBJS := decode960jx.o \
