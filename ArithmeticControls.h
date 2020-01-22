@@ -106,13 +106,16 @@ namespace i960 {
                 return (base | shiftedIOF | shiftedIOM | shiftedNIF) & CoreArchitectureExtractMask;
             }
             static constexpr Ordinal extractConditionCode(Ordinal raw) noexcept {
-                return i960::decode<decltype(raw), Ordinal, ConditionCodeMask, 0>(raw);
+                constexpr ShiftMaskPair<decltype(raw)> MaskData { ConditionCodeMask, 0 };
+                return i960::decode<decltype(raw), Ordinal, MaskData>(raw);
             }
             static constexpr bool extractIntegerOverflowFlag(Ordinal raw) noexcept {
-                return i960::decode<decltype(raw), bool, IntegerOverflowFlagMask, 8>(raw);
+                constexpr ShiftMaskPair<decltype(raw)> MaskData { IntegerOverflowFlagMask, 8 };
+                return i960::decode<decltype(raw), bool, MaskData>(raw);
             }
             static constexpr bool extractIntegerOverflowMask(Ordinal raw) noexcept {
-                return i960::decode<decltype(raw), bool, IntegerOverflowMaskMask, 12>(raw);
+                constexpr ShiftMaskPair<decltype(raw)> MaskData { IntegerOverflowMaskMask, 12 };
+                return i960::decode<decltype(raw), bool, MaskData>(raw);
             }
             static constexpr bool extractNoImpreciseFaults(Ordinal raw) noexcept {
                 constexpr ShiftMaskPair<decltype(raw)> MaskData { NoImpreciseFaultsMask, 15 };
