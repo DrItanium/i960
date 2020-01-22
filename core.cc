@@ -325,12 +325,6 @@ namespace i960 {
             setDest(inst, remainder, quotient);
         }
     }
-	constexpr Ordinal getLowestTwoBits(Ordinal address) noexcept {
-		return address & 0b11;
-	}
-	constexpr Ordinal getLowestBit(Ordinal address) noexcept {
-		return address & 0b1;
-	}
     void Core::performOperation(const MEMFormatInstruction& , Operation::ld) noexcept {
         generateFault(OperationFaultSubtype::Unimplemented);
 	//void Core::ld(SourceRegister src, DestinationRegister dest) noexcept {

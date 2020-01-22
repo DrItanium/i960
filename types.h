@@ -17,6 +17,14 @@ namespace i960 {
     constexpr auto mostSignificantBitClear(Ordinal value) noexcept {
         return getMostSignificantBit(value) == 0;
     }
+    template<typename T>
+    constexpr T getLowestTwoBits(T address) noexcept {
+        return address & 0b11;
+    }
+    template<typename T>
+    constexpr T getLowestBit(T address) noexcept {
+        return address & 0b1;
+    }
     using LongOrdinal = std::uint64_t;
     using InstructionPointer = Ordinal;
     using ByteInteger = std::int8_t;
