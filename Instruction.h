@@ -180,9 +180,9 @@ namespace i960 {
     class COBRFlags : public GenericFlags {
         public:
             using Parent = GenericFlags;
+            static constexpr ShiftMaskPair<SingleEncodedInstructionValue> Part1 { 0b1'0000'0000'0000 , 10 };
+            static constexpr ShiftMaskPair<SingleEncodedInstructionValue> Part2 { 0b11, 0 };
             static constexpr ByteOrdinal decode(SingleEncodedInstructionValue value) noexcept {
-                constexpr ShiftMaskPair<decltype(value)> Part1 { 0b1'0000'0000'0000 , 10 };
-                constexpr ShiftMaskPair<decltype(value)> Part2 { 0b11, 0 };
                 return i960::decode<SingleEncodedInstructionValue, ByteOrdinal, Part1>(value) |
                        i960::decode<SingleEncodedInstructionValue, ByteOrdinal, Part2>(value);
             }
@@ -192,8 +192,8 @@ namespace i960 {
             constexpr bool getT()  const noexcept { return getFlag<0b010>(); }
             constexpr bool getS2() const noexcept { return getFlag<0b001>(); }
             constexpr SingleEncodedInstructionValue encode(SingleEncodedInstructionValue value) const noexcept {
-                return i960::encode<Ordinal, ByteOrdinal, 0b1'0000'0000'0000, 10>(value, getValue()) |
-                    i960::encode<Ordinal, ByteOrdinal, 0b11, 0>(value, getValue());
+                return i960::encode<Ordinal, ByteOrdinal, Part1>(value, getValue()) |
+                       i960::encode<Ordinal, ByteOrdinal, Part2>(value, getValue());
             }
     };
     class COBRFormatInstruction : public GenericFormatInstruction, public COBRFlags, public HasSrcDest, public HasSrc2 {
