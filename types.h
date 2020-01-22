@@ -98,6 +98,11 @@ namespace i960 {
             return static_cast<R>((value & mask) >> shift);
         }
     }
+    template<typename T, typename R, std::tuple<T, T> description>
+    constexpr R decode(T value) noexcept {
+        return decode<T, R, std::get<0>(description), std::get<1>(description)>(value);
+    }
+
     template<Ordinal boolMask>
     constexpr Ordinal encodeBool(bool value) noexcept {
         return value ? boolMask : 0;
