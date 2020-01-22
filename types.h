@@ -200,25 +200,19 @@ namespace i960 {
         public:
             static constexpr uint16_t Manufacturer_Altera = 0b000'0110'1110;
             static constexpr uint16_t Manufacturer_Intel = 0b000'0000'1001;
-            static constexpr ShiftMaskPair<uint32_t> VersionMask { 0xF000'0000, 28 };
-            static constexpr ShiftMaskPair<uint32_t> PartNumMask { 0x0FFF'F000, 12 };
-            static constexpr ShiftMaskPair<uint32_t> ManufacturerMask { 0xFFE, 1 };
+            static constexpr BitFragment<uint32_t, uint8_t, 0xF000'0000, 28> VersionMask {};
+            static constexpr BitFragment<uint32_t, uint16_t, 0x0FFF'F000, 12> PartNumMask {};
+            static constexpr BitFragment<uint32_t, uint16_t, 0xFFE, 1> ManufacturerMask { };
         public:
             constexpr IEEE1149_1DeviceIdentification(uint8_t version, uint16_t partNum, uint16_t mfgr) : _version(version & 0b1111), _partNumber(partNum), _manufacturer(mfgr & 0x7FF) { }
-            constexpr IEEE1149_1DeviceIdentification(uint32_t id) noexcept :
-                IEEE1149_1DeviceIdentification(
-                decode<uint32_t, uint8_t, VersionMask>(id),
-                decode<uint32_t, uint16_t, PartNumMask>(id),
-                decode<uint32_t, uint16_t, ManufacturerMask>(id)) { }
+            constexpr IEEE1149_1DeviceIdentification(uint32_t id) noexcept : IEEE1149_1DeviceIdentification(VersionMask.decode(id), PartNumMask.decode(id), ManufacturerMask.decode(id)) { }
             constexpr auto getVersion() const noexcept { return _version; }
             constexpr auto getPartNumber() const noexcept { return _partNumber; }
             constexpr auto getManufacturer() const noexcept { return _manufacturer; }
             constexpr uint32_t getId() const noexcept {
-                return encode<uint32_t, uint8_t, VersionMask>(
-                       encode<uint32_t, uint16_t, PartNumMask>(
-                       encode<uint32_t, uint16_t, ManufacturerMask>(0, getManufacturer()),
-                            getPartNumber()),
-                        getVersion()) | 1; // make sure lsb is 1
+                return ManufacturerMask.encode(getManufacturer()) |
+                       PartNumMask.encode(getPartNumber()) |
+                       VersionMask.encode(getVersion()) | 1; // make sure lsb is 1
             }
         private:
             uint8_t _version;
@@ -239,10 +233,10 @@ namespace i960 {
     };
     class HardwareDeviceIdentificationCode final : public BaseDeviceIdenficationCode<true> {
         public:
-            static constexpr ShiftMaskPair<Ordinal> VersionDecoder { 0xF000'0000, 28 };
-            static constexpr ShiftMaskPair<Ordinal> VCCDecoder { (1<< 27) , 27 };
-            static constexpr ShiftMaskPair<Ordinal> GenerationDecoder { (0b1111 << 17)  , 17 };
-            static constexpr ShiftMaskPair<Ordinal> ModelDecoder { (0b11111 << 12)  , 12 };
+            static constexpr BitFragment<Ordinal, uint8_t, 0xF000'0000, 28 > VersionDecoder {};
+            static constexpr BitFragment<Ordinal, bool, 1<<27, 27> VCCDecoder { };
+            static constexpr BitFragment<Ordinal, uint8_t, (0b1111 << 17), 17> GenerationDecoder{};
+            static constexpr BitFragment<Ordinal, uint8_t, (0b11111 << 12), 12> ModelDecoder{};
         public:
             constexpr HardwareDeviceIdentificationCode(uint8_t version, bool vcc, uint8_t generation, uint8_t model) noexcept :
                 _version(version & 0b11111),
@@ -250,22 +244,19 @@ namespace i960 {
                 _gen(generation & 0b1111),
                 _model(model & 0b11111) { }
             constexpr HardwareDeviceIdentificationCode(Ordinal raw) noexcept : HardwareDeviceIdentificationCode(
-                    i960::decode<Ordinal, uint8_t, VersionDecoder>(raw),
-                    i960::decode<Ordinal, bool, VCCDecoder>(raw),
-                    i960::decode<Ordinal, uint8_t, GenerationDecoder>(raw),
-                    i960::decode<Ordinal, uint8_t, ModelDecoder>(raw)) { }
+                    VersionDecoder.decode(raw),
+                    VCCDecoder.decode(raw),
+                    GenerationDecoder.decode(raw),
+                    ModelDecoder.decode(raw)) { }
             constexpr auto getVersion() const noexcept { return _version; }
             constexpr auto getGeneration() const noexcept { return _gen; }
             constexpr auto getModel() const noexcept { return _model; }
             constexpr Ordinal getDeviceId() const noexcept { 
-                constexpr Ordinal vccMask = 1 << 27;
-                Ordinal start = static_cast<Ordinal>(_version) << 28;
-                if (_vcc) {
-                    start |= vccMask;
-                }
+                Ordinal start = VersionDecoder.encode(_version);
+                start |= VCCDecoder.encode(_vcc);
                 start |= (static_cast<Ordinal>(getProductType() & 0b111111) << 21);
-                start |= (static_cast<Ordinal>(_gen & 0b1111) << 17);
-                start |= (static_cast<Ordinal>(_model & 0b11111) << 12);
+                start |= GenerationDecoder.encode(_gen);
+                start |= ModelDecoder.encode(_model);
                 start |= (static_cast<Ordinal>(getManufacturer()) << 1);
                 return (start | 1); // lsb must be 1
             }
