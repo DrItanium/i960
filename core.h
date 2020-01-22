@@ -306,7 +306,8 @@ namespace i960 {
                                                   IsSubtractOperation<T> ||
                                                   IsMultiplyOperation<T> ||
                                                   IsDivideOperation<T> ||
-                                                  IsRemainderOperation<T>, int> = 0>
+                                                  IsRemainderOperation<T> ||
+                                                  IsModuloOperation<T>, int> = 0>
             void performOperation(const REGFormatInstruction& inst, T) noexcept {
                 static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add/subtract operation!");
                 using K = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
@@ -381,6 +382,16 @@ namespace i960 {
                     } else {
                         auto numerator = s2;
                         result = numerator - (denominator / numerator) * denominator;
+                    }
+                } else if constexpr (IsModuloOperation<T>) {
+                    if (s1 == 0) {
+                        result = -1; // says in the manual, to assign it to an undefined value
+                        generateFault(ArithmeticFaultSubtype::ZeroDivide);
+                    } else {
+                        result = s2 - (s2 / s1) * s1;
+                        if ((s2 * s1) < 0) {
+                            result = result + s1;
+                        }
                     }
                 } else {
                     static_assert(false_v<T>, "Unimplemented operation");
@@ -533,7 +544,6 @@ namespace i960 {
             X(Operation::modtc);
             X(Operation::flushreg);
             X(Operation::syncf);
-            X(Operation::modi);
             X(Operation::calls);
             X(Operation::mov);
             X(Operation::movl);

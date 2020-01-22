@@ -295,18 +295,6 @@ namespace i960 {
         }
         setDest(inst, result);
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::modi) noexcept {
-		if (auto s1 = getSrc1<Integer>(inst); s1 == 0) {
-            setDest<Integer>(inst, -1); // says in the manual, to assign it to an undefined value
-			generateFault(ArithmeticFaultSubtype::ZeroDivide);
-		} else {
-			auto s2 = getSrc2<Integer>(inst);
-            setDest<Integer>(inst, s2 - (s2 / s1) * s1);
-			if ((s2 * s1) < 0) {
-                setDest<Integer>(inst, getSrc<Integer>(inst) + s1);
-			}
-		}
-	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::subc) noexcept {
         auto s1 = getSrc1(inst) - 1u;
         auto s2 = getSrc2(inst);

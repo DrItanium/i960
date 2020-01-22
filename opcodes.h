@@ -513,7 +513,8 @@ namespace i960 {
                                                           Operation::subi,
                                                           Operation::muli,
                                                           Operation::divi,
-                                                          Operation::remi>;
+                                                          Operation::remi,
+                                                          Operation::modi>;
     template<typename T>
     constexpr auto IsUnconditionalAddOperation = IsInCollection<T, Operation::addo, 
                                                       Operation::addi>;
@@ -539,6 +540,9 @@ namespace i960 {
     template<typename T>
     constexpr auto IsRemainderOperation = IsInCollection<T, Operation::remo, 
                                                             Operation::remi>;
+
+    template<typename T>
+    constexpr auto IsModuloOperation = IsInCollection<T, Operation::modi>;
 
     template<typename T>
     constexpr auto CheckForDivideByZero = IsDivideOperation<T> || IsRemainderOperation<T>;
