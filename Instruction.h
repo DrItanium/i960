@@ -179,8 +179,10 @@ namespace i960 {
         public:
             using Parent = GenericFlags;
             static constexpr ByteOrdinal decode(SingleEncodedInstructionValue value) noexcept {
-                return i960::decode<SingleEncodedInstructionValue, ByteOrdinal, 0b1'0000'0000'0000, 10>(value) |
-                    i960::decode<SingleEncodedInstructionValue, ByteOrdinal, 0b11>(value);
+                constexpr ShiftMaskPair<decltype(value)> Part1 { 0b1'0000'0000'0000 , 10 };
+                constexpr ShiftMaskPair<decltype(value)> Part2 { 0b11, 0 };
+                return i960::decode<SingleEncodedInstructionValue, ByteOrdinal, Part1>(value) |
+                       i960::decode<SingleEncodedInstructionValue, ByteOrdinal, Part2>(value);
             }
         public:
             constexpr COBRFlags(const Instruction& inst) : Parent(decode(inst.getLowerHalf())) { }
