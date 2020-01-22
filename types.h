@@ -152,6 +152,11 @@ namespace i960 {
             static constexpr InteractPair _description { mask, shift };
 
     };
+    template<Ordinal mask, Ordinal shift = 0>
+    using OrdinalToByteOrdinalField = BitFragment<Ordinal, ByteOrdinal, mask, shift>;
+    template<typename T, T mask, T shift = 0>
+    using SameWidthFragment = BitFragment<T, T, mask, shift>;
+
     // false_v taken from https://quuxplusone.github.io/blog/2018/04/02/false-v/
     template<typename...>
     inline constexpr bool false_v = false;

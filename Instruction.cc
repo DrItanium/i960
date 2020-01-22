@@ -41,18 +41,16 @@ namespace i960 {
     }
     template<typename R = Operand>
     constexpr auto decodeSrcDest(Ordinal input) noexcept {
-        constexpr Ordinal Mask = 0x00F80000;
-        constexpr Ordinal Shift = 19;
-        return decode<Ordinal, R, Mask, Shift>(input);
+        constexpr BitFragment<decltype(input), R, 0x00F80000, 19> srcDestMask;
+        return srcDestMask.decode(input);
     }
     template<Ordinal mask>
     constexpr auto decodeSrcDest(Ordinal input, Ordinal modeBits) noexcept {
         return Operand((modeBits & mask) != 0, decodeSrcDest<Ordinal>(input));
     }
     constexpr Ordinal encodeSrcDest(Ordinal value, Operand input) noexcept {
-        constexpr Ordinal Mask = 0x00F80000;
-        constexpr Ordinal Shift = 19;
-        return encode<Ordinal, ByteOrdinal, Mask, Shift>(value, input.getValue());
+        constexpr OrdinalToByteOrdinalField<0x00F8'0000, 19> fragment;
+        return fragment.encode(value, input.getValue());
     }
     static_assert(encodeSrcDest(0, 1_lr) == 0x00080000);
     constexpr auto encodeSrc2(Ordinal value, Operand input) noexcept {
