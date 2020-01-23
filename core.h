@@ -107,6 +107,8 @@ namespace i960 {
     constexpr Ordinal lowestThreeBitsOfMajorOpcode(OpcodeValue v) noexcept {
         return LowestThreeBitsOfMajorOpcode.decode(v);
     }
+    constexpr SameWidthFragment<Ordinal, static_cast<Ordinal>(~0b111'111)> FramePointerAddress{};
+    constexpr SameWidthFragment<Ordinal, static_cast<Ordinal>(0b11)> ProcedureKindField{};
 
 
     class Core {

@@ -56,7 +56,7 @@ namespace i960 {
 		_globalRegisters[FP.getOffset()].set(value);
 	}
 	Ordinal Core::getFramePointerAddress() const noexcept {
-		return _globalRegisters[FP.getOffset()].get<Ordinal>() & (~0b111111);
+        return FramePointerAddress.decode(_globalRegisters[FP.getOffset()].get<Ordinal>());
 	}
 	PreviousFramePointer Core::getPFP() noexcept {
         return _localRegisters[PFP.getOffset()].viewAs<PreviousFramePointer>();
@@ -65,7 +65,7 @@ namespace i960 {
         return computeAlignedAddress(value);
 	}
 	constexpr Ordinal getProcedureKind(Ordinal value) noexcept {
-		return value & 0b11;
+        return ProcedureKindField.decode(value);
 	}
 	constexpr bool isLocalProcedure(Ordinal value) noexcept {
 		return getProcedureKind(value) == 0;
@@ -625,7 +625,8 @@ namespace i960 {
 	}
 	template<Ordinal mask>
 	constexpr bool maskedEquals(Ordinal src1, Ordinal src2) noexcept {
-		return (src1 & mask) == (src2 & mask);
+        constexpr SameWidthFragment<Ordinal, mask> decoder;
+        return decoder.decode(src1) == decoder.decode(src2);
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::scanbyte) noexcept {
         _ac.clearConditionCode();
@@ -639,7 +640,8 @@ namespace i960 {
 		} 
 	}
 	constexpr Ordinal alignToWordBoundary(Ordinal value) noexcept {
-		return value & (~0x3);
+        constexpr SameWidthFragment<Ordinal, ~static_cast<Ordinal>(0x3)> decoder;
+        return decoder.decode(value);
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::atmod) noexcept {
 		// TODO implement
