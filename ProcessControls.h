@@ -35,12 +35,12 @@ namespace i960 {
                 return PriorityMask.decode(value);
             }
             static constexpr Ordinal create(bool traceEnable, bool executionMode, bool resume, bool traceFaultPending, bool state, Ordinal priority) noexcept {
-                return ((TraceEnableMask.encode(traceEnable)) |
-                       (ExecutionModeMask.encode(executionMode)) |
-                       (ResumeMask.encode(resume)) |
-                       (TraceFaultPendingMask.encode(traceFaultPending)) |
-                       (StateMask.encode(state)) |
-                       (PriorityMask.encode(priority))) & CoreArchitectureExtractMask;
+                return (TraceEnableMask.encode(traceEnable) |
+                       ExecutionModeMask.encode(executionMode) |
+                       ResumeMask.encode(resume) |
+                       TraceFaultPendingMask.encode(traceFaultPending) |
+                       StateMask.encode(state) |
+                       PriorityMask.encode(priority)) & CoreArchitectureExtractMask;
             }
         public:
             constexpr ProcessControls() noexcept = default;
