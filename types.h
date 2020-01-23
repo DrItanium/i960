@@ -157,6 +157,10 @@ namespace i960 {
     template<typename T, T mask, T shift = 0>
     using SameWidthFragment = BitFragment<T, T, mask, shift>;
 
+    template<typename T, T mask>
+    using FlagFragment = BitFragment<T, bool, mask>;
+
+
     // false_v taken from https://quuxplusone.github.io/blog/2018/04/02/false-v/
     template<typename...>
     inline constexpr bool false_v = false;
