@@ -15,7 +15,13 @@ namespace i960 {
     class COBRFormatInstruction;
     class CTRLFormatInstruction;
     using DecodedInstruction = std::variant<std::monostate, REGFormatInstruction, MEMFormatInstruction, COBRFormatInstruction, CTRLFormatInstruction>;
+    using OpcodeNumericRange = std::tuple<OpcodeValue, OpcodeValue>;
     class Instruction {
+        public:
+            static constexpr OpcodeNumericRange REGFormat { 0x580, 0x800 };
+            static constexpr OpcodeNumericRange COBRFormat { 0x200, 0x400 };
+            static constexpr OpcodeNumericRange CTRLFormat { 0x000, 0x200 };
+            static constexpr OpcodeNumericRange MEMFormat { 0x800, 0x1000 };
         public:
             /**
              * Construct a 64-bit opcode, the second EncodedInstructionValue may not
@@ -59,23 +65,26 @@ namespace i960 {
                 //  so 58:0 becomes 0x0580 and 58:C -> 0x058C
                 return getStandardOpcode() | ((_enc >> 7) & 0xF);
             }
-            template<OpcodeValue start, OpcodeValue finish>
+            template<OpcodeNumericRange range>
             constexpr auto opcodeIsInRange() const noexcept {
                 auto standardOpcode = getStandardOpcode();
-                return (standardOpcode >= start) &&
-                    (standardOpcode < finish);
+                return (standardOpcode >= std::get<0>(range)) && (standardOpcode < std::get<1>(range));
             }
             constexpr auto isREGFormat() const noexcept {
-                return opcodeIsInRange<0x580, 0x800>();
+                //return opcodeIsInRange<0x580, 0x800>();
+                return opcodeIsInRange<REGFormat>();
             }
             constexpr auto isCOBRFormat() const noexcept {
-                return opcodeIsInRange<0x200, 0x400>();
+                //return opcodeIsInRange<0x200, 0x400>();
+                return opcodeIsInRange<COBRFormat>();
             }
             constexpr auto isCTRLFormat() const noexcept {
-                return getStandardOpcode() < 0x200;
+                //return getStandardOpcode() < 0x200;
+                return opcodeIsInRange<CTRLFormat>();
             }
             constexpr auto isMEMFormat() const noexcept {
-                return (getStandardOpcode() >= 0x800);
+                //return (getStandardOpcode() >= 0x800);
+                return opcodeIsInRange<MEMFormat>();
             }
             constexpr auto getOpcode() const noexcept {
                 if (isREGFormat()) {
