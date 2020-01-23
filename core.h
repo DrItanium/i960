@@ -103,9 +103,9 @@ namespace i960 {
     constexpr bool isAlignedAddress(Ordinal value) noexcept {
         return (value & unusedAddressBits) == 0;
     }
-
+    constexpr BitFragment<OpcodeValue, Ordinal, 0b111'0000, 4> LowestThreeBitsOfMajorOpcode{};
     constexpr Ordinal lowestThreeBitsOfMajorOpcode(OpcodeValue v) noexcept {
-        return (v & 0b111'0000) >> 4;
+        return LowestThreeBitsOfMajorOpcode.decode(v);
     }
 
 
