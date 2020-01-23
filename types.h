@@ -105,10 +105,6 @@ namespace i960 {
         return decode<T, R, std::get<0>(description), std::get<1>(description)>(value);
     }
 
-    template<Ordinal boolMask>
-    constexpr Ordinal encodeBool(bool value) noexcept {
-        return value ? boolMask : 0;
-    }
     template<typename T, typename R, T mask, T shift>
     constexpr T encode(T value, R input) noexcept {
         using K = std::decay_t<R>;
