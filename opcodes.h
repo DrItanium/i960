@@ -54,10 +54,10 @@ namespace i960::Opcode {
         template<typename T>
         constexpr EncodedOpcode ShiftAmount = 0;
         template<> constexpr EncodedOpcode ShiftAmount<OpcodeValue> = 16;
-        template<typename R>
+        template<typename R, BitFragment<EncodedOpcode, R, FieldMask<R>, ShiftAmount<R>> frag = {}>
         constexpr R extractField(EncodedOpcode raw) noexcept {
-            static_assert(FieldMask<R> != 0xFFFF'FFFF, "FieldMask not specified for type");
-            return i960::decode<decltype(raw), R, FieldMask<R>, ShiftAmount<R>>(raw);
+            static_assert(frag.getMask() != 0xFFFF'FFFF, "FieldMask not specified for type!");
+            return frag.decode(raw);
         }
 
         constexpr Integer getArgumentCount(Arguments args) noexcept {
@@ -89,6 +89,8 @@ namespace i960::Opcode {
 
         class DecodedOpcode final {
             public:
+                static constexpr SameWidthFragment<OpcodeValue, 0b111'0000, 4> LowestThreeBitsOfMajorOpcode{};
+            public:
                 constexpr DecodedOpcode(Class cl, Arguments args, OpcodeValue opcode) noexcept : _class(cl), _arguments(args), _actualOpcode(opcode) { }
                 constexpr DecodedOpcode(EncodedOpcode opcode) noexcept : DecodedOpcode(extractField<Class>(opcode), extractField<Arguments>(opcode), extractField<OpcodeValue>(opcode)) { }
                 constexpr auto getEncodedOpcode() const noexcept {
@@ -114,7 +116,7 @@ namespace i960::Opcode {
                            (other._class == _class);
                 }
                 constexpr auto lowestThreeBitsOfMajorOpcode() const noexcept {
-                    return (getActualOpcode() & 0b111'0000) >> 4;
+                    return LowestThreeBitsOfMajorOpcode.decode(getActualOpcode());
                 }
             private:
                 Class _class;
