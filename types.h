@@ -131,34 +131,14 @@ namespace i960 {
     using OrdinalQuadrants = std::tuple<ByteOrdinal, ByteOrdinal, ByteOrdinal, ByteOrdinal>;
     using OrdinalHalves = std::tuple<HalfOrdinal, HalfOrdinal>;
 
-    template<typename ... Decoders>
-    constexpr std::tuple<typename Decoders::SliceType...> unpack(Ordinal input) noexcept {
-        return std::make_tuple<typename Decoders::SliceType...>(Decoders::decodePattern(input)...);
-    }
-    static_assert(std::get<3>(unpack<LowestOrdinalQuadrant, LowerOrdinalQuadrant, HigherOrdinalQuadrant, HighestOrdinalQuadrant>(0xABCDEF01)) == 0xAB);
-    constexpr OrdinalQuadrants getQuadrants(Ordinal input) noexcept {
-        return unpack<LowestOrdinalQuadrant,
-                      LowerOrdinalQuadrant,
-                      HigherOrdinalQuadrant,
-                      HighestOrdinalQuadrant>(input);
-    }
-    static_assert(std::get<3>(getQuadrants(0xFDEDABCD)) == 0xFD);
-    static_assert(std::get<2>(getQuadrants(0xFDEDABCD)) == 0xED);
-    static_assert(std::get<1>(getQuadrants(0xFDEDABCD)) == 0xAB);
-    static_assert(std::get<0>(getQuadrants(0xFDEDABCD)) == 0xCD);
-    constexpr OrdinalHalves getHalves(Ordinal input) noexcept {
-        return unpack<LowerOrdinalHalf, UpperOrdinalHalf>(input);
-    }
-
-    static_assert(std::get<1>(getHalves(0xFDEDABCD)) == 0xFDED);
-    static_assert(std::get<0>(getHalves(0xFDEDABCD)) == 0xABCD);
 
     template<typename T, typename ... Patterns>
     class BinaryEncoderDecoder final {
         public:
             using BinaryType = T;
             using UnpackedBinary = std::tuple<typename Patterns::SliceType...>;
-            static_assert(std::tuple_size_v<UnpackedBinary> > 0, "Must have at least one pattern");
+            static constexpr auto NumberOfPatterns = std::tuple_size_v<UnpackedBinary>;
+            static_assert(NumberOfPatterns > 0, "Must have at least one pattern");
             static_assert((std::is_same_v<typename Patterns::DataType, BinaryType> && ...), "All patterns must operate on the provided binary type");
         public:
             static constexpr UnpackedBinary decode(BinaryType input) noexcept {
@@ -167,14 +147,28 @@ namespace i960 {
             static constexpr BinaryType encode(typename Patterns::SliceType&& ... values) noexcept {
                 return (Patterns::encodePattern(values) | ...);
             }
+            /// @todo figure out how to unpack tuples automatically for encode procedures
 
-            template<size_t... Is>
-            static constexpr BinaryType encode(UnpackedBinary&& input) noexcept {
-                return (std::get<Is>(input) || ...);
-            }
     };
-    static_assert(std::get<1>(BinaryEncoderDecoder<Ordinal, LowerOrdinalHalf, UpperOrdinalHalf>::decode(0xFDED'ABCD)) == 0xFDED);
-    static_assert(BinaryEncoderDecoder<Ordinal, LowerOrdinalHalf, UpperOrdinalHalf>::encode(0xABCD, 0xFDED) == 0xFDED'ABCD);
+    using OrdinalHalvesEncoderDecoder = BinaryEncoderDecoder<Ordinal, LowerOrdinalHalf, UpperOrdinalHalf>;
+    using OrdinalQuadrantsEncoderDecoder = BinaryEncoderDecoder<Ordinal, LowestOrdinalQuadrant, LowerOrdinalQuadrant, HigherOrdinalQuadrant, HighestOrdinalQuadrant>;
+    static constexpr Ordinal TestValue = 0xFDED'ABCD;
+    static_assert(std::get<1>(OrdinalHalvesEncoderDecoder::decode(TestValue)) == 0xFDED);
+    static_assert(OrdinalHalvesEncoderDecoder::encode(0xABCD, 0xFDED) == TestValue);
+
+    constexpr OrdinalQuadrants getQuadrants(Ordinal input) noexcept {
+        return OrdinalQuadrantsEncoderDecoder::decode(input);
+    }
+    static_assert(std::get<3>(getQuadrants(0xFDEDABCD)) == 0xFD);
+    static_assert(std::get<2>(getQuadrants(0xFDEDABCD)) == 0xED);
+    static_assert(std::get<1>(getQuadrants(0xFDEDABCD)) == 0xAB);
+    static_assert(std::get<0>(getQuadrants(0xFDEDABCD)) == 0xCD);
+    constexpr OrdinalHalves getHalves(Ordinal input) noexcept {
+        return OrdinalHalvesEncoderDecoder::decode(input);
+    }
+
+    static_assert(std::get<1>(getHalves(0xFDEDABCD)) == 0xFDED);
+    static_assert(std::get<0>(getHalves(0xFDEDABCD)) == 0xABCD);
 
     constexpr auto getMostSignificantBit(Ordinal value) noexcept {
         return MostSignificantBitPattern.decode(value);
@@ -187,13 +181,11 @@ namespace i960 {
     }
     template<typename T>
     constexpr T getLowestTwoBits(T address) noexcept {
-        LowestTwoBitsPattern<T> tmp;
-        return tmp.decode(address);
+        return LowestTwoBitsPattern<T>::decodePattern(address);
     }
     template<typename T>
     constexpr T getLowestBit(T address) noexcept {
-        LowestBitPattern<T> tmp;
-        return tmp.decode(address);
+        return LowestBitPattern<T>::decodePattern(address);
     }
 	template<typename T>
 	constexpr auto byteCount(size_t count) noexcept {
@@ -292,19 +284,22 @@ namespace i960 {
         public:
             static constexpr uint16_t Manufacturer_Altera = 0b000'0110'1110;
             static constexpr uint16_t Manufacturer_Intel = 0b000'0000'1001;
+            using VersionPattern = BitPattern<uint32_t, uint8_t, 0xF000'0000, 28>;
+            using PartNumberPattern = BitPattern<uint32_t, uint16_t, 0x0FFF'F000, 12>;
+            using ManufacturerPattern = BitPattern<uint32_t, uint16_t, 0xFFE, 1>;
             static constexpr BitFragment<uint32_t, uint8_t, 0xF000'0000, 28> VersionMask {};
             static constexpr BitFragment<uint32_t, uint16_t, 0x0FFF'F000, 12> PartNumMask {};
             static constexpr BitFragment<uint32_t, uint16_t, 0xFFE, 1> ManufacturerMask { };
+            using ManufacturerMaskEncoder = BinaryEncoderDecoder<uint32_t, VersionPattern, PartNumberPattern, ManufacturerPattern>;
         public:
             constexpr IEEE1149_1DeviceIdentification(uint8_t version, uint16_t partNum, uint16_t mfgr) : _version(version & 0b1111), _partNumber(partNum), _manufacturer(mfgr & 0x7FF) { }
-            constexpr IEEE1149_1DeviceIdentification(uint32_t id) noexcept : IEEE1149_1DeviceIdentification(VersionMask.decode(id), PartNumMask.decode(id), ManufacturerMask.decode(id)) { }
+            constexpr IEEE1149_1DeviceIdentification(typename ManufacturerMaskEncoder::UnpackedBinary&& info) : IEEE1149_1DeviceIdentification(std::get<0>(info), std::get<1>(info), std::get<2>(info)) { }
+            constexpr IEEE1149_1DeviceIdentification(uint32_t id) noexcept : IEEE1149_1DeviceIdentification(ManufacturerMaskEncoder::decode(id)) { }
             constexpr auto getVersion() const noexcept { return _version; }
             constexpr auto getPartNumber() const noexcept { return _partNumber; }
             constexpr auto getManufacturer() const noexcept { return _manufacturer; }
             constexpr uint32_t getId() const noexcept {
-                return ManufacturerMask.encode(getManufacturer()) |
-                       PartNumMask.encode(getPartNumber()) |
-                       VersionMask.encode(getVersion()) | 1; // make sure lsb is 1
+                return ManufacturerMaskEncoder::encode(getVersion(), getPartNumber(), getManufacturer()) | 1; // make sure lsb is 1
             }
         private:
             uint8_t _version;
