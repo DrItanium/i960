@@ -59,10 +59,10 @@ namespace i960 {
             constexpr auto getMask() const noexcept { return std::get<0>(_description); }
             constexpr auto getShift() const noexcept { return std::get<1>(_description); }
             constexpr auto decode(DataType input) const noexcept {
-                return i960::decode<DataType, SliceType, _description>(input);
+                return decodePattern(input);
             }
             constexpr auto encode(DataType value, SliceType input) const noexcept {
-                return i960::encode<DataType, SliceType, _description>(value, input);
+                return encodePattern(value, input);
             }
             constexpr auto encode(SliceType input) const noexcept {
                 return encode(static_cast<DataType>(0), input);
@@ -76,6 +76,16 @@ namespace i960 {
             constexpr auto patternSetTo(DataType input, SliceType value) const noexcept {
                 return decode(input) == value;
             }
+            static constexpr auto decodePattern(DataType input) noexcept {
+                return i960::decode<DataType, SliceType, _description>(input);
+            }
+            static constexpr auto encodePattern(DataType value, SliceType input) noexcept {
+                return i960::encode<DataType, SliceType, _description>(value, input);
+            }
+            static constexpr auto encodePattern(SliceType input) noexcept {
+                return encodePattern(static_cast<DataType>(0), input);
+            }
+
         private:
             static constexpr InteractPair _description { mask, shift };
     };
@@ -101,7 +111,8 @@ namespace i960 {
     using HalfOrdinal = ShortOrdinal;
     using OpcodeValue = HalfOrdinal;
 
-    constexpr SameWidthFragment<Ordinal, 0x8000'0000> MostSignificantBitPattern;
+    using MostSignificantBitOfOrdinal = SameWidthFragment<Ordinal, 0x8000'0000>;
+    constexpr MostSignificantBitOfOrdinal MostSignificantBitPattern;
     template<typename T, std::enable_if_t<std::is_integral_v<std::decay_t<T>>, int> = 0>
     using LowestTwoBitsPattern = SameWidthFragment<T, static_cast<T>(0b11)>;
     template<typename T, std::enable_if_t<std::is_integral_v<std::decay_t<T>>, int> = 0>
@@ -122,7 +133,7 @@ namespace i960 {
 
     template<typename ... Decoders>
     constexpr std::tuple<typename Decoders::SliceType...> unpack(Ordinal input) noexcept {
-        return std::make_tuple<typename Decoders::SliceType...>(Decoders{}.decode(input)...);
+        return std::make_tuple<typename Decoders::SliceType...>(Decoders::decodePattern(input)...);
     }
     static_assert(std::get<3>(unpack<LowestOrdinalQuadrant, LowerOrdinalQuadrant, HigherOrdinalQuadrant, HighestOrdinalQuadrant>(0xABCDEF01)) == 0xAB);
     constexpr OrdinalQuadrants getQuadrants(Ordinal input) noexcept {
@@ -141,16 +152,29 @@ namespace i960 {
 
     static_assert(std::get<1>(getHalves(0xFDEDABCD)) == 0xFDED);
     static_assert(std::get<0>(getHalves(0xFDEDABCD)) == 0xABCD);
-#if 0
-    constexpr OrdinalQuadrants unpack(Ordinal input) noexcept {
-        return std::make_tuple(LowestOrdinalByte.decode(input),
-                LowerOrdinalByte.decode(input),
-                HigherOrdinalByte.decode(input),
-                HighestOrdinalByte.decode(input));
-    }
 
-    constexpr OrdinalHalves
-#endif
+    template<typename T, typename ... Patterns>
+    class BinaryEncoderDecoder final {
+        public:
+            using BinaryType = T;
+            using UnpackedBinary = std::tuple<typename Patterns::SliceType...>;
+            static_assert(std::tuple_size_v<UnpackedBinary> > 0, "Must have at least one pattern");
+            static_assert((std::is_same_v<typename Patterns::DataType, BinaryType> && ...), "All patterns must operate on the provided binary type");
+        public:
+            static constexpr UnpackedBinary decode(BinaryType input) noexcept {
+                return std::make_tuple<typename Patterns::SliceType...>(Patterns::decodePattern(input)...);
+            }
+            static constexpr BinaryType encode(typename Patterns::SliceType&& ... values) noexcept {
+                return (Patterns::encodePattern(values) | ...);
+            }
+
+            template<size_t... Is>
+            static constexpr BinaryType encode(UnpackedBinary&& input) noexcept {
+                return (std::get<Is>(input) || ...);
+            }
+    };
+    static_assert(std::get<1>(BinaryEncoderDecoder<Ordinal, LowerOrdinalHalf, UpperOrdinalHalf>::decode(0xFDED'ABCD)) == 0xFDED);
+    static_assert(BinaryEncoderDecoder<Ordinal, LowerOrdinalHalf, UpperOrdinalHalf>::encode(0xABCD, 0xFDED) == 0xFDED'ABCD);
 
     constexpr auto getMostSignificantBit(Ordinal value) noexcept {
         return MostSignificantBitPattern.decode(value);
