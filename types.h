@@ -50,6 +50,9 @@ namespace i960 {
             using SliceType = R;
             using InteractPair = std::tuple<DataType, DataType>;
         public:
+            static constexpr auto Mask = mask;
+            static constexpr auto Shift = shift;
+        public:
             constexpr BitPattern() = default;
             ~BitPattern() = default;
             constexpr InteractPair getDescription() const noexcept { return _description; }
@@ -64,9 +67,17 @@ namespace i960 {
             constexpr auto encode(SliceType input) const noexcept {
                 return encode(static_cast<DataType>(0), input);
             }
+            constexpr auto patternClear(DataType input) const noexcept {
+                return decode(input) == 0;
+            }
+            constexpr auto patternSet(DataType input) const noexcept {
+                return decode(input) != 0;
+            }
+            constexpr auto patternSetTo(DataType input, SliceType value) const noexcept {
+                return decode(input) == value;
+            }
         private:
             static constexpr InteractPair _description { mask, shift };
-
     };
     template<typename T, typename R, T mask, T shift = static_cast<T>(0)>
     using BitFragment = BitPattern<T, R, mask, shift>;
@@ -79,20 +90,74 @@ namespace i960 {
     using ByteOrdinal = std::uint8_t;
     using ShortOrdinal = std::uint16_t;
     using Ordinal = std::uint32_t;
+    using LongOrdinal = std::uint64_t;
+    using InstructionPointer = Ordinal;
+    using ByteInteger = std::int8_t;
+    using ShortInteger = std::int16_t;
+    using Integer = std::int32_t;
+    using LongInteger = std::int64_t;
+
+    using HalfInteger = ShortInteger;
+    using HalfOrdinal = ShortOrdinal;
+    using OpcodeValue = HalfOrdinal;
 
     constexpr SameWidthFragment<Ordinal, 0x8000'0000> MostSignificantBitPattern;
     template<typename T, std::enable_if_t<std::is_integral_v<std::decay_t<T>>, int> = 0>
     using LowestTwoBitsPattern = SameWidthFragment<T, static_cast<T>(0b11)>;
     template<typename T, std::enable_if_t<std::is_integral_v<std::decay_t<T>>, int> = 0>
     using LowestBitPattern = SameWidthFragment<T, static_cast<T>(0b1)>;
+    template<typename T, std::enable_if_t<std::is_integral_v<std::decay_t<T>>, int> = 0>
+    using InverseOfLowestTwoBitsPattern = SameWidthFragment<T, ~static_cast<T>(0b11)>;
+
+    constexpr BitPattern<Ordinal, ByteOrdinal, 0xFF00'0000, 24> HighestOrdinalQuadrant;
+    constexpr BitPattern<Ordinal, ByteOrdinal, 0x00FF'0000, 16> HigherOrdinalQuadrant;
+    constexpr BitPattern<Ordinal, ByteOrdinal, 0x0000'FF00, 8>  LowerOrdinalQuadrant;
+    constexpr BitPattern<Ordinal, ByteOrdinal, 0x0000'00FF>     LowestOrdinalQuadrant;
+
+    constexpr BitPattern<Ordinal, HalfOrdinal, 0xFFFF'0000, 16> UpperOrdinalHalf;
+    constexpr BitPattern<Ordinal, HalfOrdinal, 0x0000'FFFF>     LowerOrdinalHalf;
+
+
+
+    using OrdinalQuadrants = std::tuple<ByteOrdinal, ByteOrdinal, ByteOrdinal, ByteOrdinal>;
+    using OrdinalHalves = std::tuple<HalfOrdinal, HalfOrdinal>;
+
+    template<typename ... Decoders>
+    constexpr std::tuple<typename Decoders::SliceType...> unpack(Ordinal input) noexcept {
+        return std::make_tuple<typename Decoders::SliceType...>(Decoders{}.decode(input)...);
+    }
+    static_assert(std::get<3>(unpack<decltype(LowestOrdinalQuadrant), decltype(LowerOrdinalQuadrant), decltype(HigherOrdinalQuadrant), decltype(HighestOrdinalQuadrant)>(0xABCDEF01)) == 0xAB);
+    constexpr OrdinalQuadrants getQuadrants(Ordinal input) noexcept {
+        return unpack<decltype(LowestOrdinalQuadrant),
+                      decltype(LowerOrdinalQuadrant),
+                      decltype(HigherOrdinalQuadrant),
+                      decltype(HighestOrdinalQuadrant)>(input);
+    }
+    static_assert(std::get<3>(getQuadrants(0xFDEDABCD)) == 0xFD);
+    constexpr OrdinalHalves getHalves(Ordinal input) noexcept {
+        return unpack<decltype(LowerOrdinalHalf), decltype(UpperOrdinalHalf)>(input);
+    }
+
+    static_assert(std::get<1>(getHalves(0xFDEDABCD)) == 0xFDED);
+#if 0
+    constexpr OrdinalQuadrants unpack(Ordinal input) noexcept {
+        return std::make_tuple(LowestOrdinalByte.decode(input),
+                LowerOrdinalByte.decode(input),
+                HigherOrdinalByte.decode(input),
+                HighestOrdinalByte.decode(input));
+    }
+
+    constexpr OrdinalHalves
+#endif
+
     constexpr auto getMostSignificantBit(Ordinal value) noexcept {
         return MostSignificantBitPattern.decode(value);
     }
     constexpr auto mostSignificantBitSet(Ordinal value) noexcept { 
-        return getMostSignificantBit(value) != 0;
+        return MostSignificantBitPattern.patternSet(value);
     }
     constexpr auto mostSignificantBitClear(Ordinal value) noexcept {
-        return getMostSignificantBit(value) == 0;
+        return MostSignificantBitPattern.patternClear(value);
     }
     template<typename T>
     constexpr T getLowestTwoBits(T address) noexcept {
@@ -104,16 +169,6 @@ namespace i960 {
         LowestBitPattern<T> tmp;
         return tmp.decode(address);
     }
-    using LongOrdinal = std::uint64_t;
-    using InstructionPointer = Ordinal;
-    using ByteInteger = std::int8_t;
-    using ShortInteger = std::int16_t;
-    using Integer = std::int32_t;
-    using LongInteger = std::int64_t;
-
-    using HalfInteger = ShortInteger;
-    using HalfOrdinal = ShortOrdinal;
-    using OpcodeValue = HalfOrdinal;
 	template<typename T>
 	constexpr auto byteCount(size_t count) noexcept {
 		return count * sizeof(std::decay_t<T>);

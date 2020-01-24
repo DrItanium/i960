@@ -98,17 +98,19 @@ namespace i960 {
     constexpr Ordinal unusedAddressBits = 0b11;
 	constexpr Ordinal clearLowestTwoBitsMask = ~unusedAddressBits;
     constexpr Ordinal computeAlignedAddress(Ordinal value) noexcept {
-        return value & clearLowestTwoBitsMask;
+        InverseOfLowestTwoBitsPattern<Ordinal> tmp;
+        return tmp.decode(value);
     }
     constexpr bool isAlignedAddress(Ordinal value) noexcept {
-        return (value & unusedAddressBits) == 0;
+        LowestTwoBitsPattern<Ordinal> tmp;
+        return tmp.decode(value) == 0;
     }
     constexpr BitFragment<OpcodeValue, Ordinal, 0b111'0000, 4> LowestThreeBitsOfMajorOpcode{};
     constexpr Ordinal lowestThreeBitsOfMajorOpcode(OpcodeValue v) noexcept {
         return LowestThreeBitsOfMajorOpcode.decode(v);
     }
     constexpr SameWidthFragment<Ordinal, static_cast<Ordinal>(~0b111'111)> FramePointerAddress{};
-    constexpr SameWidthFragment<Ordinal, static_cast<Ordinal>(0b11)> ProcedureKindField{};
+    constexpr LowestTwoBitsPattern<Ordinal> ProcedureKindField {};
 
 
     class Core {
