@@ -5,11 +5,88 @@
 #include <variant>
 namespace i960 {
 
+    template<typename T, typename R, T mask, T shift = static_cast<T>(0)>
+    constexpr R decode(T value) noexcept {
+        using RK = std::decay_t<R>;
+        using TK = std::decay_t<T>;
+        if constexpr (std::is_same_v<RK, bool> && std::is_integral_v<TK>) {
+            // exploit explicit boolean conversion to get rid of the shift if we know we're looking
+            // at a conversion from an integral to a bool. In other cases, the explicit boolean conversion
+            // could be dependent on the shift so we have to carryout the entire operation
+            return value & mask;
+        } else {
+            return static_cast<R>((value & mask) >> shift);
+        }
+    }
+    template<typename T>
+    using ShiftMaskPair = std::tuple<T, T>;
+    template<typename T, typename R, ShiftMaskPair<T> description>
+    constexpr R decode(T value) noexcept {
+        return decode<T, R, std::get<0>(description), std::get<1>(description)>(value);
+    }
+
+    template<typename T, typename R, T mask, T shift>
+    constexpr T encode(T value, R input) noexcept {
+        using K = std::decay_t<R>;
+        if constexpr (auto result = value & (~mask) /* we always want to do this */; std::is_same_v<K, bool>) {
+            // ignore shift in this case since the mask describes the bits in the correct positions
+            if (input) {
+                result |= mask;
+            } 
+            return result;
+        } else {
+            return result | ((static_cast<T>(input) << shift) & mask);
+        }
+    }
+    template<typename T, typename R, ShiftMaskPair<T> description>
+    constexpr T encode(T value, R input) noexcept {
+        return encode<T, R, std::get<0>(description), std::get<1>(description)>(value, input);
+    }
+
+    template<typename T, typename R, T mask, T shift = static_cast<T>(0)>
+    class BitPattern final {
+        public:
+            using DataType = T;
+            using SliceType = R;
+            using InteractPair = std::tuple<DataType, DataType>;
+        public:
+            constexpr BitPattern() = default;
+            ~BitPattern() = default;
+            constexpr InteractPair getDescription() const noexcept { return _description; }
+            constexpr auto getMask() const noexcept { return std::get<0>(_description); }
+            constexpr auto getShift() const noexcept { return std::get<1>(_description); }
+            constexpr auto decode(DataType input) const noexcept {
+                return i960::decode<DataType, SliceType, _description>(input);
+            }
+            constexpr auto encode(DataType value, SliceType input) const noexcept {
+                return i960::encode<DataType, SliceType, _description>(value, input);
+            }
+            constexpr auto encode(SliceType input) const noexcept {
+                return encode(static_cast<DataType>(0), input);
+            }
+        private:
+            static constexpr InteractPair _description { mask, shift };
+
+    };
+    template<typename T, typename R, T mask, T shift = static_cast<T>(0)>
+    using BitFragment = BitPattern<T, R, mask, shift>;
+    template<typename T, T mask, T shift = 0>
+    using SameWidthFragment = BitFragment<T, T, mask, shift>;
+
+    template<typename T, T mask>
+    using FlagFragment = BitFragment<T, bool, mask>;
+
     using ByteOrdinal = std::uint8_t;
     using ShortOrdinal = std::uint16_t;
     using Ordinal = std::uint32_t;
+
+    constexpr SameWidthFragment<Ordinal, 0x8000'0000> MostSignificantBitPattern;
+    template<typename T, std::enable_if_t<std::is_integral_v<std::decay_t<T>>, int> = 0>
+    using LowestTwoBitsPattern = SameWidthFragment<T, static_cast<T>(0b11)>;
+    template<typename T, std::enable_if_t<std::is_integral_v<std::decay_t<T>>, int> = 0>
+    using LowestBitPattern = SameWidthFragment<T, static_cast<T>(0b1)>;
     constexpr auto getMostSignificantBit(Ordinal value) noexcept {
-        return value & 0x8000'0000;
+        return MostSignificantBitPattern.decode(value);
     }
     constexpr auto mostSignificantBitSet(Ordinal value) noexcept { 
         return getMostSignificantBit(value) != 0;
@@ -19,11 +96,13 @@ namespace i960 {
     }
     template<typename T>
     constexpr T getLowestTwoBits(T address) noexcept {
-        return address & 0b11;
+        LowestTwoBitsPattern<T> tmp;
+        return tmp.decode(address);
     }
     template<typename T>
     constexpr T getLowestBit(T address) noexcept {
-        return address & 0b1;
+        LowestBitPattern<T> tmp;
+        return tmp.decode(address);
     }
     using LongOrdinal = std::uint64_t;
     using InstructionPointer = Ordinal;
@@ -85,76 +164,8 @@ namespace i960 {
         return conv.getOrdinal();
     }
 
-    template<typename T, typename R, T mask, T shift = static_cast<T>(0)>
-    constexpr R decode(T value) noexcept {
-        using RK = std::decay_t<R>;
-        using TK = std::decay_t<T>;
-        if constexpr (std::is_same_v<RK, bool> && std::is_integral_v<TK>) {
-            // exploit explicit boolean conversion to get rid of the shift if we know we're looking
-            // at a conversion from an integral to a bool. In other cases, the explicit boolean conversion
-            // could be dependent on the shift so we have to carryout the entire operation
-            return value & mask;
-        } else {
-            return static_cast<R>((value & mask) >> shift);
-        }
-    }
-    template<typename T>
-    using ShiftMaskPair = std::tuple<T, T>;
-    template<typename T, typename R, ShiftMaskPair<T> description>
-    constexpr R decode(T value) noexcept {
-        return decode<T, R, std::get<0>(description), std::get<1>(description)>(value);
-    }
-
-    template<typename T, typename R, T mask, T shift>
-    constexpr T encode(T value, R input) noexcept {
-        using K = std::decay_t<R>;
-        if constexpr (auto result = value & (~mask) /* we always want to do this */; std::is_same_v<K, bool>) {
-            // ignore shift in this case since the mask describes the bits in the correct positions
-            if (input) {
-                result |= mask;
-            } 
-            return result;
-        } else {
-            return result | ((static_cast<T>(input) << shift) & mask);
-        }
-    }
-    template<typename T, typename R, ShiftMaskPair<T> description>
-    constexpr T encode(T value, R input) noexcept {
-        return encode<T, R, std::get<0>(description), std::get<1>(description)>(value, input);
-    }
-
-    template<typename T, typename R, T mask, T shift = static_cast<T>(0)>
-    class BitFragment final {
-        public:
-            using DataType = T;
-            using SliceType = R;
-            using InteractPair = std::tuple<DataType, DataType>;
-        public:
-            constexpr BitFragment() = default;
-            ~BitFragment() = default;
-            constexpr InteractPair getDescription() const noexcept { return _description; }
-            constexpr auto getMask() const noexcept { return std::get<0>(_description); }
-            constexpr auto getShift() const noexcept { return std::get<1>(_description); }
-            constexpr auto decode(DataType input) const noexcept {
-                return i960::decode<DataType, SliceType, _description>(input);
-            }
-            constexpr auto encode(DataType value, SliceType input) const noexcept {
-                return i960::encode<DataType, SliceType, _description>(value, input);
-            }
-            constexpr auto encode(SliceType input) const noexcept {
-                return encode(static_cast<DataType>(0), input);
-            }
-        private:
-            static constexpr InteractPair _description { mask, shift };
-
-    };
     template<Ordinal mask, Ordinal shift = 0>
     using OrdinalToByteOrdinalField = BitFragment<Ordinal, ByteOrdinal, mask, shift>;
-    template<typename T, T mask, T shift = 0>
-    using SameWidthFragment = BitFragment<T, T, mask, shift>;
-
-    template<typename T, T mask>
-    using FlagFragment = BitFragment<T, bool, mask>;
 
 
     // false_v taken from https://quuxplusone.github.io/blog/2018/04/02/false-v/
