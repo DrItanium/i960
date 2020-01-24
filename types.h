@@ -134,11 +134,15 @@ namespace i960 {
                       decltype(HighestOrdinalQuadrant)>(input);
     }
     static_assert(std::get<3>(getQuadrants(0xFDEDABCD)) == 0xFD);
+    static_assert(std::get<2>(getQuadrants(0xFDEDABCD)) == 0xED);
+    static_assert(std::get<1>(getQuadrants(0xFDEDABCD)) == 0xAB);
+    static_assert(std::get<0>(getQuadrants(0xFDEDABCD)) == 0xCD);
     constexpr OrdinalHalves getHalves(Ordinal input) noexcept {
         return unpack<decltype(LowerOrdinalHalf), decltype(UpperOrdinalHalf)>(input);
     }
 
     static_assert(std::get<1>(getHalves(0xFDEDABCD)) == 0xFDED);
+    static_assert(std::get<0>(getHalves(0xFDEDABCD)) == 0xABCD);
 #if 0
     constexpr OrdinalQuadrants unpack(Ordinal input) noexcept {
         return std::make_tuple(LowestOrdinalByte.decode(input),
