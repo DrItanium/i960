@@ -109,14 +109,12 @@ namespace i960 {
     template<typename T, std::enable_if_t<std::is_integral_v<std::decay_t<T>>, int> = 0>
     using InverseOfLowestTwoBitsPattern = SameWidthFragment<T, ~static_cast<T>(0b11)>;
 
-    constexpr BitPattern<Ordinal, ByteOrdinal, 0xFF00'0000, 24> HighestOrdinalQuadrant;
-    constexpr BitPattern<Ordinal, ByteOrdinal, 0x00FF'0000, 16> HigherOrdinalQuadrant;
-    constexpr BitPattern<Ordinal, ByteOrdinal, 0x0000'FF00, 8>  LowerOrdinalQuadrant;
-    constexpr BitPattern<Ordinal, ByteOrdinal, 0x0000'00FF>     LowestOrdinalQuadrant;
-
-    constexpr BitPattern<Ordinal, HalfOrdinal, 0xFFFF'0000, 16> UpperOrdinalHalf;
-    constexpr BitPattern<Ordinal, HalfOrdinal, 0x0000'FFFF>     LowerOrdinalHalf;
-
+    using HighestOrdinalQuadrant = BitPattern<Ordinal, ByteOrdinal, 0xFF00'0000, 24>;
+    using HigherOrdinalQuadrant = BitPattern<Ordinal, ByteOrdinal, 0x00FF'0000, 16>;
+    using LowerOrdinalQuadrant = BitPattern<Ordinal, ByteOrdinal, 0x0000'FF00, 8>;
+    using LowestOrdinalQuadrant = BitPattern<Ordinal, ByteOrdinal, 0x0000'00FF>;
+    using UpperOrdinalHalf = BitPattern<Ordinal, HalfOrdinal, 0xFFFF'0000, 16>;
+    using LowerOrdinalHalf = BitPattern<Ordinal, HalfOrdinal, 0x0000'FFFF>;
 
 
     using OrdinalQuadrants = std::tuple<ByteOrdinal, ByteOrdinal, ByteOrdinal, ByteOrdinal>;
@@ -126,19 +124,19 @@ namespace i960 {
     constexpr std::tuple<typename Decoders::SliceType...> unpack(Ordinal input) noexcept {
         return std::make_tuple<typename Decoders::SliceType...>(Decoders{}.decode(input)...);
     }
-    static_assert(std::get<3>(unpack<decltype(LowestOrdinalQuadrant), decltype(LowerOrdinalQuadrant), decltype(HigherOrdinalQuadrant), decltype(HighestOrdinalQuadrant)>(0xABCDEF01)) == 0xAB);
+    static_assert(std::get<3>(unpack<LowestOrdinalQuadrant, LowerOrdinalQuadrant, HigherOrdinalQuadrant, HighestOrdinalQuadrant>(0xABCDEF01)) == 0xAB);
     constexpr OrdinalQuadrants getQuadrants(Ordinal input) noexcept {
-        return unpack<decltype(LowestOrdinalQuadrant),
-                      decltype(LowerOrdinalQuadrant),
-                      decltype(HigherOrdinalQuadrant),
-                      decltype(HighestOrdinalQuadrant)>(input);
+        return unpack<LowestOrdinalQuadrant,
+                      LowerOrdinalQuadrant,
+                      HigherOrdinalQuadrant,
+                      HighestOrdinalQuadrant>(input);
     }
     static_assert(std::get<3>(getQuadrants(0xFDEDABCD)) == 0xFD);
     static_assert(std::get<2>(getQuadrants(0xFDEDABCD)) == 0xED);
     static_assert(std::get<1>(getQuadrants(0xFDEDABCD)) == 0xAB);
     static_assert(std::get<0>(getQuadrants(0xFDEDABCD)) == 0xCD);
     constexpr OrdinalHalves getHalves(Ordinal input) noexcept {
-        return unpack<decltype(LowerOrdinalHalf), decltype(UpperOrdinalHalf)>(input);
+        return unpack<LowerOrdinalHalf, UpperOrdinalHalf>(input);
     }
 
     static_assert(std::get<1>(getHalves(0xFDEDABCD)) == 0xFDED);
