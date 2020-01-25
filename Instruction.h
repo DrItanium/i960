@@ -128,6 +128,10 @@ namespace i960 {
             constexpr GenericFlags(ByteOrdinal flags) noexcept : _flags(flags) { }
             template<ByteOrdinal mask = 0xFF>
             constexpr auto getFlag() const noexcept { return (_flags & mask) != 0; }
+            template<typename Pattern>
+            constexpr auto getFlag() const noexcept { return Pattern::decodePattern(_flags) != 0; }
+            template<uint8_t position>
+            constexpr auto getFlagAtPosition() const noexcept { return ByteOrdinalFlagPattern<position>::decodePattern(_flags); }
             constexpr auto getValue() const noexcept { return _flags; }
         private:
             ByteOrdinal _flags;
@@ -137,20 +141,26 @@ namespace i960 {
             using Parent = GenericFlags;
             //static constexpr ShiftMaskPair<Ordinal> LowerTwoBitsMask { 0b11'00000, 5 };
             //static constexpr ShiftMaskPair<Ordinal> UpperThreeBitsMask {  0b111'0000'00'00000 , 8 };
-            static constexpr BitFragment<SingleEncodedInstructionValue, ByteOrdinal, 0b11'00000, 5> LowerTwoBitsMask{};
-            static constexpr BitFragment<SingleEncodedInstructionValue, ByteOrdinal, 0b111'0000'00'00000 , 8 > UpperThreeBitsMask{};
+            using LowerTwoFlagBits = BitPattern<SingleEncodedInstructionValue, ByteOrdinal, 0b11'00000, 5>;
+            using UpperThreeFlagBits = BitPattern<SingleEncodedInstructionValue, ByteOrdinal, 0b111'0000'00'00000 , 9 >;
+            using FlagsFromInstruction = BinaryEncoderDecoder<SingleEncodedInstructionValue, LowerTwoFlagBits, UpperThreeFlagBits>;
             static constexpr ByteOrdinal decode(SingleEncodedInstructionValue value) noexcept {
-                return LowerTwoBitsMask.decode(value) | UpperThreeBitsMask.decode(value);
+                auto tup = FlagsFromInstruction::decode(value);
+                return std::get<0>(tup) | std::get<1>(tup);
             }
+            static_assert(LowerTwoFlagBits::encodePattern(0b11) == 0b11'00000);
+            static_assert(UpperThreeFlagBits::encodePattern(0b11100) == 0b111'0000'00'00000);
+            static_assert((static_cast<Ordinal>(0b11100) << 9) == (static_cast<Ordinal>(0b111'0000'00'00000)));
+            static_assert(FlagsFromInstruction::encode(0, 0b11, 0b11100) == 0b111'0000'11'00000);
         public:
             constexpr REGFlags(const Instruction& inst) noexcept : Parent(decode(inst.getLowerHalf())) { }
-            constexpr bool getM1()  const noexcept { return getFlag<0b10000>(); }
-            constexpr bool getM2()  const noexcept { return getFlag<0b01000>(); }
-            constexpr bool getM3()  const noexcept { return getFlag<0b00100>(); }
-            constexpr bool getSF1() const noexcept { return getFlag<0b00010>(); }
-            constexpr bool getSF2() const noexcept { return getFlag<0b00001>(); }
+            constexpr bool getM1()  const noexcept { return getFlagAtPosition<4>(); }
+            constexpr bool getM2()  const noexcept { return getFlagAtPosition<3>(); }
+            constexpr bool getM3()  const noexcept { return getFlagAtPosition<2>(); }
+            constexpr bool getSF1() const noexcept { return getFlagAtPosition<1>(); }
+            constexpr bool getSF2() const noexcept { return getFlagAtPosition<0>(); }
             constexpr SingleEncodedInstructionValue encode(SingleEncodedInstructionValue value) const noexcept {
-                return LowerTwoBitsMask.encode(value, getValue()) | UpperThreeBitsMask.encode(value, getValue());
+                return FlagsFromInstruction::encode(value, getValue(), getValue());
             }
     };
     class HasSrc1 {

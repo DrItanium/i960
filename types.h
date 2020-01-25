@@ -126,6 +126,9 @@ namespace i960 {
     template<uint8_t index>
     using OrdinalFlagPattern = OrdinalBitPattern<bool, 1u << (index & 0b11111)>; // shift does not matter
 
+    template<uint8_t index>
+    using ByteOrdinalFlagPattern = BitPattern<ByteOrdinal, bool, 1u << (index & 0b111), (index & 0b111)>;
+
     using LowestOrdinalBitPattern = OrdinalFlagPattern<0>;
     using MostSignificantOrdinalBitPattern = OrdinalFlagPattern<31>;
     static_assert(LowestOrdinalBitPattern::decodePattern(0x1));
@@ -160,6 +163,9 @@ namespace i960 {
             }
             static constexpr BinaryType encode(typename Patterns::SliceType&& ... values) noexcept {
                 return (Patterns::encodePattern(values) | ...);
+            }
+            static constexpr BinaryType encode(BinaryType value, typename Patterns::SliceType&& ... inputs) noexcept {
+                return (Patterns::encodePattern(value, inputs) | ... );
             }
             /// @todo figure out how to unpack tuples automatically for encode procedures
 
