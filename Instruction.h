@@ -61,7 +61,6 @@ namespace i960 {
              */
             constexpr OpcodeValue getStandardOpcode() const noexcept {
                 return StandardOpcodeManipulator::decodePattern(_enc);
-                //return ((_enc >> 20) & 0x0FF0);
             }
             constexpr OpcodeValue getExtendedOpcode() const noexcept {
                 // according to the documents, reg format opcodes 
@@ -73,7 +72,6 @@ namespace i960 {
                 // (special flags), (src1)
                 //  we want to shift the lower four bits to become the lowest four bits
                 //  so 58:0 becomes 0x0580 and 58:C -> 0x058C
-                //return getStandardOpcode() | ((_enc >> 7) & 0xF);
                 return OpcodeValueGenerator::encode(getStandardOpcode(), ExtendedOpcodeManipulator::decodePattern(_enc));
 
             }
@@ -136,11 +134,10 @@ namespace i960 {
         private:
             ByteOrdinal _flags;
     };
+
     class REGFlags : public GenericFlags {
         public:
             using Parent = GenericFlags;
-            //static constexpr ShiftMaskPair<Ordinal> LowerTwoBitsMask { 0b11'00000, 5 };
-            //static constexpr ShiftMaskPair<Ordinal> UpperThreeBitsMask {  0b111'0000'00'00000 , 8 };
             using LowerTwoFlagBits = BitPattern<SingleEncodedInstructionValue, ByteOrdinal, 0b11'00000, 5>;
             using UpperThreeFlagBits = BitPattern<SingleEncodedInstructionValue, ByteOrdinal, 0b111'0000'00'00000 , 9 >;
             using FlagsFromInstruction = BinaryEncoderDecoder<SingleEncodedInstructionValue, LowerTwoFlagBits, UpperThreeFlagBits>;
@@ -165,7 +162,10 @@ namespace i960 {
     };
     class HasSrc1 {
         public:
+            using EncoderDecoder = BitPattern<SingleEncodedInstructionValue, Ordinal, 0x1F, 0>;
+        public:
             constexpr explicit HasSrc1(Operand op) : _src1(op) { }
+            constexpr explicit HasSrc1(const Instruction& inst) : _src1(EncoderDecoder::decodePattern(inst.getLowerHalf())) { }
             ~HasSrc1() = default;
             constexpr auto getSrc1() const noexcept { return _src1; }
             void setSrc1(Operand op) noexcept { _src1 = op; }
@@ -174,8 +174,13 @@ namespace i960 {
             Operand _src1;
     };
     class HasSrc2 {
+        // constexpr Ordinal Mask = 0x000C7000;
+        // constexpr Ordinal Shift = 14;
+        public:
+            using EncoderDecoder = BitPattern<SingleEncodedInstructionValue, Ordinal, 0x000'C7'000, 14>;
         public:
             constexpr explicit HasSrc2(Operand op) : _src2(op) { }
+            constexpr explicit HasSrc2(const Instruction& inst) : _src2(EncoderDecoder::decodePattern(inst.getLowerHalf())) { }
             ~HasSrc2() = default;
             constexpr auto getSrc2() const noexcept { return _src2; }
             void setSrc2(Operand op) noexcept { _src2 = op; }
@@ -184,16 +189,13 @@ namespace i960 {
     };
     class HasSrcDest {
         public:
-            using SrcDestEncoderDecoder = BitPattern<SingleEncodedInstructionValue, Operand, 0x00F80000, 19>;
+            using EncoderDecoder = BitPattern<SingleEncodedInstructionValue, Ordinal, 0x00F80000, 19>;
         public:
             constexpr explicit HasSrcDest(Operand op) : _srcDest(op) { }
-            constexpr explicit HasSrcDest(const Instruction& inst) : _srcDest(SrcDestEncoderDecoder::decodePattern(inst.getLowerHalf())) { }
+            constexpr explicit HasSrcDest(const Instruction& inst) : _srcDest(EncoderDecoder::decodePattern(inst.getLowerHalf())) { }
             ~HasSrcDest() = default;
             constexpr auto getSrcDest() const noexcept { return _srcDest; }
             void setSrcDest(Operand op) noexcept { _srcDest = op; }
-            constexpr SingleEncodedInstructionValue encode() const noexcept {
-                return SrcDestEncoderDecoder::encodePattern(_srcDest);
-            }
         private:
             Operand _srcDest;
     };

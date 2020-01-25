@@ -87,8 +87,8 @@ namespace i960 {
     }
     MEMFormatInstruction::MEMFormatInstruction(const Instruction& inst) : Base(inst), 
     HasSrcDest(inst),
-    HasSrc1(decodeSrc1(inst.getLowerHalf())),
-    HasSrc2(decodeSrc2(inst.getLowerHalf())),
+    HasSrc1(inst),
+    HasSrc2(inst),
     _mode(decodeMask(inst.getLowerHalf())),
     _offset(decode<Ordinal, ByteOrdinal, MEMAoffsetMask>(inst.getLowerHalf())),
     _scale(decode<Ordinal, ByteOrdinal, MEMBscaleMask, 7>(inst.getLowerHalf())),
@@ -120,7 +120,7 @@ namespace i960 {
     COBRFormatInstruction::COBRFormatInstruction(const Instruction& inst) : Base(inst),
     Flags(inst),
     HasSrcDest(decodeSrcDest<0b100>(inst.getLowerHalf(), Flags::getValue())),
-    HasSrc2(decodeSrc2(inst.getLowerHalf())),
+    HasSrc2(inst),
     _displacement(i960::decode<Ordinal, Integer, 0b1111'1111'1100, 0>(inst.getLowerHalf())), // we want to make a 12-bit number out of this
     _target(Operation::translate(inst.getOpcode(), Operation::COBRClass()))
     { }
