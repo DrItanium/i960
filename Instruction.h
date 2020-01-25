@@ -184,10 +184,16 @@ namespace i960 {
     };
     class HasSrcDest {
         public:
+            using SrcDestEncoderDecoder = BitPattern<SingleEncodedInstructionValue, Operand, 0x00F80000, 19>;
+        public:
             constexpr explicit HasSrcDest(Operand op) : _srcDest(op) { }
+            constexpr explicit HasSrcDest(const Instruction& inst) : _srcDest(SrcDestEncoderDecoder::decodePattern(inst.getLowerHalf())) { }
             ~HasSrcDest() = default;
             constexpr auto getSrcDest() const noexcept { return _srcDest; }
             void setSrcDest(Operand op) noexcept { _srcDest = op; }
+            constexpr SingleEncodedInstructionValue encode() const noexcept {
+                return SrcDestEncoderDecoder::encodePattern(_srcDest);
+            }
         private:
             Operand _srcDest;
     };

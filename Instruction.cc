@@ -86,7 +86,7 @@ namespace i960 {
         return Operand((modeBits & mask) != 0, decodeSrc2<Ordinal>(input));
     }
     MEMFormatInstruction::MEMFormatInstruction(const Instruction& inst) : Base(inst), 
-    HasSrcDest(decodeSrcDest(inst.getLowerHalf())),
+    HasSrcDest(inst),
     HasSrc1(decodeSrc1(inst.getLowerHalf())),
     HasSrc2(decodeSrc2(inst.getLowerHalf())),
     _mode(decodeMask(inst.getLowerHalf())),
