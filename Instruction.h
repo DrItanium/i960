@@ -22,6 +22,12 @@ namespace i960 {
             static constexpr OpcodeNumericRange COBRFormat { 0x200, 0x400 };
             static constexpr OpcodeNumericRange CTRLFormat { 0x000, 0x200 };
             static constexpr OpcodeNumericRange MEMFormat { 0x800, 0x1000 };
+            using StandardOpcodeManipulator = OrdinalBitPattern<OpcodeValue, 0xFF00'0000, 20>;
+            using ExtendedOpcodeManipulator = OrdinalBitPattern<OpcodeValue, 0b11110000000, 7>;
+            using InstructionToOpcode = BinaryEncoderDecoder<SingleEncodedInstructionValue, StandardOpcodeManipulator, ExtendedOpcodeManipulator>;
+            using OpcodeValueStandardOpcode = SameWidthFragment<OpcodeValue, 0xFF0>;
+            using OpcodeValueExtendedOpcode = SameWidthFragment<OpcodeValue, 0x00F>;
+            using OpcodeValueGenerator = BinaryEncoderDecoder<OpcodeValue, OpcodeValueStandardOpcode, OpcodeValueExtendedOpcode>;
         public:
             /**
              * Construct a 64-bit opcode, the second EncodedInstructionValue may not
@@ -43,6 +49,9 @@ namespace i960 {
             ~Instruction() = default;
             constexpr auto getLowerHalf() const noexcept { return _enc; }
             constexpr auto getUpperHalf() const noexcept { return _second; }
+            constexpr auto getOpcodeComponents() const noexcept {
+                return InstructionToOpcode::decode(_enc);
+            }
             /**
              * Extract the 8-bit opcode as a 16-bit opcode to make it common to
              * REG format instructions; The lower 4 bits will be zero unless it
@@ -51,7 +60,8 @@ namespace i960 {
              * @return the 16-bit opcode
              */
             constexpr OpcodeValue getStandardOpcode() const noexcept {
-                return ((_enc >> 20) & 0x0FF0);
+                return StandardOpcodeManipulator::decodePattern(_enc);
+                //return ((_enc >> 20) & 0x0FF0);
             }
             constexpr OpcodeValue getExtendedOpcode() const noexcept {
                 // according to the documents, reg format opcodes 
@@ -63,7 +73,9 @@ namespace i960 {
                 // (special flags), (src1)
                 //  we want to shift the lower four bits to become the lowest four bits
                 //  so 58:0 becomes 0x0580 and 58:C -> 0x058C
-                return getStandardOpcode() | ((_enc >> 7) & 0xF);
+                //return getStandardOpcode() | ((_enc >> 7) & 0xF);
+                return OpcodeValueGenerator::encode(getStandardOpcode(), ExtendedOpcodeManipulator::decodePattern(_enc));
+
             }
             template<OpcodeNumericRange range>
             constexpr auto opcodeIsInRange() const noexcept {
