@@ -97,6 +97,7 @@ namespace i960 {
     template<typename T, T mask>
     using FlagFragment = BitFragment<T, bool, mask>;
 
+
     using ByteOrdinal = std::uint8_t;
     using ShortOrdinal = std::uint16_t;
     using Ordinal = std::uint32_t;
@@ -120,12 +121,25 @@ namespace i960 {
     template<typename T, std::enable_if_t<std::is_integral_v<std::decay_t<T>>, int> = 0>
     using InverseOfLowestTwoBitsPattern = SameWidthFragment<T, ~static_cast<T>(0b11)>;
 
-    using HighestOrdinalQuadrant = BitPattern<Ordinal, ByteOrdinal, 0xFF00'0000, 24>;
-    using HigherOrdinalQuadrant = BitPattern<Ordinal, ByteOrdinal, 0x00FF'0000, 16>;
-    using LowerOrdinalQuadrant = BitPattern<Ordinal, ByteOrdinal, 0x0000'FF00, 8>;
-    using LowestOrdinalQuadrant = BitPattern<Ordinal, ByteOrdinal, 0x0000'00FF>;
-    using UpperOrdinalHalf = BitPattern<Ordinal, HalfOrdinal, 0xFFFF'0000, 16>;
-    using LowerOrdinalHalf = BitPattern<Ordinal, HalfOrdinal, 0x0000'FFFF>;
+    template<typename R, Ordinal mask, Ordinal shift = 0>
+    using OrdinalBitPattern = BitPattern<Ordinal, R, mask, shift>;
+    template<uint8_t index>
+    using OrdinalFlagPattern = OrdinalBitPattern<bool, 1u << (index & 0b11111)>; // shift does not matter
+
+    using LowestOrdinalBitPattern = OrdinalFlagPattern<0>;
+    using MostSignificantOrdinalBitPattern = OrdinalFlagPattern<31>;
+    static_assert(LowestOrdinalBitPattern::decodePattern(0x1));
+    static_assert(!LowestOrdinalBitPattern::decodePattern(0x2));
+    static_assert(MostSignificantOrdinalBitPattern::decodePattern(0x8000'0000));
+    static_assert(!MostSignificantOrdinalBitPattern::decodePattern(0x0800'0000));
+
+
+    using HighestOrdinalQuadrant = OrdinalBitPattern<ByteOrdinal, 0xFF00'0000, 24>;
+    using HigherOrdinalQuadrant =  OrdinalBitPattern<ByteOrdinal, 0x00FF'0000, 16>;
+    using LowerOrdinalQuadrant = OrdinalBitPattern<ByteOrdinal, 0x0000'FF00, 8>;
+    using LowestOrdinalQuadrant = OrdinalBitPattern<ByteOrdinal, 0x0000'00FF>;
+    using UpperOrdinalHalf = OrdinalBitPattern<HalfOrdinal, 0xFFFF'0000, 16>;
+    using LowerOrdinalHalf = OrdinalBitPattern<HalfOrdinal, 0x0000'FFFF>;
 
 
     using OrdinalQuadrants = std::tuple<ByteOrdinal, ByteOrdinal, ByteOrdinal, ByteOrdinal>;
