@@ -13,4 +13,9 @@ void TraceControls::modify(Ordinal mask, Ordinal input) noexcept {
     auto fixedMask = 0x00FF00FF & mask; // masked to prevent reserved bits from being used
     setRawValue((fixedMask & input) | (getRawValue() & (~fixedMask)));
 }
+
+void DoubleRegister::set(Ordinal lower, Ordinal upper) noexcept {
+    _lower.set<Ordinal>(lower);
+    _upper.set<Ordinal>(upper);
+}
 } // end namespace i960

@@ -35,23 +35,33 @@ namespace i960 {
             constexpr auto maskIntegerOverflow() const noexcept { return _integerOverflowMask; }
             constexpr auto noImpreciseFaults() const noexcept { return _noImpreciseFaults; }
             void setConditionCode(Ordinal value) noexcept { _conditionCode = value; }
+            void setConditionCode(bool cond, Ordinal onTrue, Ordinal onFalse) noexcept {
+                if (cond) {
+                    setConditionCode(onTrue);
+                } else {
+                    setConditionCode(onFalse);
+                }
+            }
             void setIntegerOverflowFlag(bool value) noexcept { _integerOverflowFlag = value; }
             void setIntegerOverflowMask(bool value) noexcept { _integerOverflowMask = value; }
             void setNoImpreciseFaults(bool value) noexcept { _noImpreciseFaults = value; }
             void clearConditionCode() noexcept { _conditionCode = 0; }
             template<Ordinal mask>
             constexpr auto conditionCodeIs() const noexcept { return _conditionCode == mask; }
-            constexpr auto conditionCodeIs(Ordinal mask) const noexcept { return _conditionCode == mask; }
+            template<Ordinal ... masks>
+            constexpr auto conditionCodeIsOneOf() const noexcept { 
+                return (conditionCodeIs<masks>() || ... );
+            }
             template<Ordinal mask>
             constexpr bool conditionCodeBitSet() const noexcept { return getConditionCode<mask>() != 0; }
             constexpr bool conditionCodeBitSet(Ordinal mask) const noexcept { return getConditionCode(mask) != 0; }
             constexpr bool shouldCarryOut() const noexcept {
                 // 0b01X where X is don't care
-                return conditionCodeIs<0b010>() || conditionCodeIs<0b011>();
+                return conditionCodeIsOneOf<0b010, 0b011>();
             }
             constexpr bool markedAsOverflow() const noexcept {
                 // 0b0X1 where X is don't care
-                return conditionCodeIs<0b001>() || conditionCodeIs<0b011>();
+                return conditionCodeIsOneOf<0b001, 0b011>();
             }
             constexpr bool carrySet() const noexcept { return conditionCodeBitSet<0b010>(); }
             constexpr Ordinal getCarryValue() const noexcept { return carrySet() ? 1 : 0; }
@@ -96,16 +106,20 @@ namespace i960 {
                 return (base | shiftedIOF | shiftedIOM | shiftedNIF) & CoreArchitectureExtractMask;
             }
             static constexpr Ordinal extractConditionCode(Ordinal raw) noexcept {
-                return i960::decode<decltype(raw), Ordinal, ConditionCodeMask, 0>(raw);
+                constexpr ShiftMaskPair<decltype(raw)> MaskData { ConditionCodeMask, 0 };
+                return i960::decode<decltype(raw), Ordinal, MaskData>(raw);
             }
             static constexpr bool extractIntegerOverflowFlag(Ordinal raw) noexcept {
-                return i960::decode<decltype(raw), bool, IntegerOverflowFlagMask, 8>(raw);
+                constexpr ShiftMaskPair<decltype(raw)> MaskData { IntegerOverflowFlagMask, 8 };
+                return i960::decode<decltype(raw), bool, MaskData>(raw);
             }
             static constexpr bool extractIntegerOverflowMask(Ordinal raw) noexcept {
-                return i960::decode<decltype(raw), bool, IntegerOverflowMaskMask, 12>(raw);
+                constexpr ShiftMaskPair<decltype(raw)> MaskData { IntegerOverflowMaskMask, 12 };
+                return i960::decode<decltype(raw), bool, MaskData>(raw);
             }
             static constexpr bool extractNoImpreciseFaults(Ordinal raw) noexcept {
-                return i960::decode<decltype(raw), bool, NoImpreciseFaultsMask, 15>(raw);
+                constexpr ShiftMaskPair<decltype(raw)> MaskData { NoImpreciseFaultsMask, 15 };
+                return i960::decode<decltype(raw), bool, MaskData>(raw);
             }
     };
     static_assert(ArithmeticControls::create(0b111, true, true, true) == ArithmeticControls::CoreArchitectureExtractMask, "create(CoreArchitecture) failed!");

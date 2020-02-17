@@ -41,18 +41,16 @@ namespace i960 {
     }
     template<typename R = Operand>
     constexpr auto decodeSrcDest(Ordinal input) noexcept {
-        constexpr Ordinal Mask = 0x00F80000;
-        constexpr Ordinal Shift = 19;
-        return decode<Ordinal, R, Mask, Shift>(input);
+        constexpr BitFragment<decltype(input), R, 0x00F80000, 19> srcDestMask;
+        return srcDestMask.decode(input);
     }
     template<Ordinal mask>
     constexpr auto decodeSrcDest(Ordinal input, Ordinal modeBits) noexcept {
         return Operand((modeBits & mask) != 0, decodeSrcDest<Ordinal>(input));
     }
     constexpr Ordinal encodeSrcDest(Ordinal value, Operand input) noexcept {
-        constexpr Ordinal Mask = 0x00F80000;
-        constexpr Ordinal Shift = 19;
-        return encode<Ordinal, ByteOrdinal, Mask, Shift>(value, input.getValue());
+        constexpr OrdinalToByteOrdinalField<0x00F8'0000, 19> fragment;
+        return fragment.encode(value, input.getValue());
     }
     static_assert(encodeSrcDest(0, 1_lr) == 0x00080000);
     constexpr auto encodeSrc2(Ordinal value, Operand input) noexcept {
@@ -88,9 +86,9 @@ namespace i960 {
         return Operand((modeBits & mask) != 0, decodeSrc2<Ordinal>(input));
     }
     MEMFormatInstruction::MEMFormatInstruction(const Instruction& inst) : Base(inst), 
-    HasSrcDest(decodeSrcDest(inst.getLowerHalf())),
-    HasSrc1(decodeSrc1(inst.getLowerHalf())),
-    HasSrc2(decodeSrc2(inst.getLowerHalf())),
+    HasSrcDest(inst),
+    HasSrc1(inst),
+    HasSrc2(inst),
     _mode(decodeMask(inst.getLowerHalf())),
     _offset(decode<Ordinal, ByteOrdinal, MEMAoffsetMask>(inst.getLowerHalf())),
     _scale(decode<Ordinal, ByteOrdinal, MEMBscaleMask, 7>(inst.getLowerHalf())),
@@ -122,7 +120,7 @@ namespace i960 {
     COBRFormatInstruction::COBRFormatInstruction(const Instruction& inst) : Base(inst),
     Flags(inst),
     HasSrcDest(decodeSrcDest<0b100>(inst.getLowerHalf(), Flags::getValue())),
-    HasSrc2(decodeSrc2(inst.getLowerHalf())),
+    HasSrc2(inst),
     _displacement(i960::decode<Ordinal, Integer, 0b1111'1111'1100, 0>(inst.getLowerHalf())), // we want to make a 12-bit number out of this
     _target(Operation::translate(inst.getOpcode(), Operation::COBRClass()))
     { }

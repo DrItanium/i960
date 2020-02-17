@@ -1,7 +1,6 @@
 #include "types.h"
 #include "core.h"
 #include "NormalRegister.h"
-#include "DoubleRegister.h"
 #include "TripleRegister.h"
 #include "QuadRegister.h"
 #include "opcodes.h"
@@ -27,102 +26,6 @@ namespace i960 {
     }
     constexpr Ordinal computeStackFrameStart(Ordinal framePointerAddress) noexcept {
         return framePointerAddress + 64;
-    }
-    void Core::performOperation(const COBRFormatInstruction& inst, Operation::testno) noexcept {
-        if (_ac.getConditionCode() == 0b000) {
-            setDest(inst, 1);
-        } else {
-            setDest(inst, 0);
-        }
-    }
-    void Core::performOperation(const COBRFormatInstruction& inst, TestOperation) noexcept {
-        setDest(inst, ((lowestThreeBitsOfMajorOpcode(inst.getOpcode()) & _ac.getConditionCode()) != 0) ? 1 : 0);
-    }
-    void Core::performOperation(const COBRFormatInstruction& inst, CompareOrdinalAndBranchOperation) noexcept {
-        // use variants as a side effect :D
-        compare<Ordinal>(getSrc(inst), getSrc2(inst));
-        if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) != 0) {
-            _instructionPointer += (inst.getDisplacement() * 4);
-            _instructionPointer = computeAlignedAddress(_instructionPointer);
-        }
-    }
-    void Core::performOperation(const COBRFormatInstruction& inst, CompareIntegerAndBranchOperation) noexcept {
-        compare<Integer>(getSrc<Integer>(inst), getSrc2<Integer>(inst));
-        if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) != 0) {
-            _instructionPointer += (inst.getDisplacement() * 4);
-            _instructionPointer = computeAlignedAddress(_instructionPointer);
-        }
-    }
-    void Core::performOperation(const CTRLFormatInstruction& inst, Operation::bno) noexcept {
-        if (_ac.getConditionCode() == 0) {
-            auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
-            _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
-        }
-    }
-    void Core::performOperation(const CTRLFormatInstruction&, Operation::faultno) noexcept {
-        if (_ac.getConditionCode() == 0b000) {
-            generateFault(ConstraintFaultSubtype::Range);
-        }
-    }
-    void Core::performOperation(const CTRLFormatInstruction& inst, ConditionalBranchOperation) noexcept {
-        if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-            auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
-            _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
-        }
-    }
-    void Core::performOperation(const CTRLFormatInstruction& inst, FaultOperation) noexcept {
-        if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); mask && _ac.getConditionCode() != 0b000) {
-            generateFault(ConstraintFaultSubtype::Range);
-        }
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, ConditionalAddOrdinalOperation) noexcept {
-        if (auto mask = getConditionalAddMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-            setDest(inst, getSrc1(inst) + getSrc2(inst));
-        }
-    }
-
-    void Core::performOperation(const REGFormatInstruction& inst, ConditionalAddIntegerOperation) noexcept {
-        auto s1 = getSrc1<Integer>(inst);
-        auto s2 = getSrc1<Integer>(inst);
-        if (auto mask = getConditionalAddMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-            setDest<Integer>(inst, s1 + s2);
-        }
-        if ((getMostSignificantBit(s1) == getMostSignificantBit(s2)) && (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
-            if (_ac.maskIntegerOverflow()) {
-                _ac.setIntegerOverflowFlag(true);
-			} else {
-				generateFault(ArithmeticFaultSubtype::IntegerOverflow);
-			}
-		}
-    }
-
-    void Core::performOperation(const REGFormatInstruction& inst, ConditionalSubtractOrdinalOperation) noexcept {
-        if (auto mask = getConditionalSubtractMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-            setDest(inst, getSrc2(inst) - getSrc1(inst));
-        }
-    }
-
-    void Core::performOperation(const REGFormatInstruction& inst, ConditionalSubtractIntegerOperation) noexcept {
-        auto s1 = getSrc1<Integer>(inst);
-        auto s2 = getSrc1<Integer>(inst);
-        if (auto mask = getConditionalSubtractMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-            setDest<Integer>(inst, s2 - s1);
-        }
-        if ((getMostSignificantBit(s1) != getMostSignificantBit(s2)) && (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
-            if (_ac.maskIntegerOverflow()) {
-                _ac.setIntegerOverflowFlag(true);
-			} else {
-				generateFault(ArithmeticFaultSubtype::IntegerOverflow);
-			}
-		}
-    }
-
-    void Core::performOperation(const REGFormatInstruction& inst, SelectOperation) noexcept {
-        if (auto mask = getSelectMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
-            setDest(inst, getSrc2(inst));
-        } else {
-            setDest(inst, getSrc1(inst));
-        }
     }
 	Core::Core(const CoreInformation& info, MemoryInterface& mem) : _mem(mem), _deviceId(info) { }
 	Ordinal Core::getStackPointerAddress() const noexcept {
@@ -153,7 +56,7 @@ namespace i960 {
 		_globalRegisters[FP.getOffset()].set(value);
 	}
 	Ordinal Core::getFramePointerAddress() const noexcept {
-		return _globalRegisters[FP.getOffset()].get<Ordinal>() & (~0b111111);
+        return FramePointerAddress.decode(_globalRegisters[FP.getOffset()].get<Ordinal>());
 	}
 	PreviousFramePointer Core::getPFP() noexcept {
         return _localRegisters[PFP.getOffset()].viewAs<PreviousFramePointer>();
@@ -162,7 +65,7 @@ namespace i960 {
         return computeAlignedAddress(value);
 	}
 	constexpr Ordinal getProcedureKind(Ordinal value) noexcept {
-		return value & 0b11;
+        return ProcedureKindField.decode(value);
 	}
 	constexpr bool isLocalProcedure(Ordinal value) noexcept {
 		return getProcedureKind(value) == 0;
@@ -255,56 +158,10 @@ namespace i960 {
 		setFramePointer(tmp);
 		setRegister(SP, tmp + boundaryAlignment);
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::addo) noexcept {
-        setDest(inst, getSrc2(inst) + getSrc1(inst));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::addi) noexcept {
-        setDest<Integer>(inst, getSrc2<Integer>(inst) + getSrc1<Integer>(inst));
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::subo) noexcept {
-        setDest(inst, getSrc2(inst) - getSrc1(inst));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::mulo) noexcept {
-        setDest(inst, getSrc2(inst) * getSrc1(inst));
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::divo) noexcept {
-        if (auto denominator = getSrc1<Ordinal>(inst); denominator == 0) {
-			generateFault(ArithmeticFaultSubtype::ZeroDivide);
-		} else {
-            setDest(inst, getSrc2(inst) / denominator);
-		}
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::remo) noexcept {
-		if (auto denominator = getSrc1(inst); denominator == 0) {
-			generateFault(ArithmeticFaultSubtype::ZeroDivide);
-		} else {
-			// as defined in the manual
-			auto numerator = getSrc2(inst);
-            setDest(inst, numerator - (denominator / numerator) * denominator);
-		}
-	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::chkbit) noexcept {
         auto bitpos = getSrc1(inst);
         auto src = getSrc2(inst);
         _ac.setConditionCode(((src & (1 << (bitpos & 0b11111))) == 0) ? 0b000 : 0b010);
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::alterbit) noexcept {
-        Ordinal result = 0u;
-        if (auto bitpos = getSrc1(inst), src = getSrc2(inst); _ac.conditionCodeBitSet<0b010>()) {
-			// if the condition bit is clear then we clear the given bit
-            result = src & (~(1 << bitpos));
-        } else {
-			// if the condition bit is set then we set the given bit
-            result = src | (1 << bitpos);
-        }
-        setDest(inst, result);
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::opand) noexcept {
-        setDest(inst, getSrc2<Ordinal>(inst) & 
-                      getSrc1<Ordinal>(inst));
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::andnot) noexcept {
-        setDest(inst, (getSrc2(inst)) & (~getSrc1(inst)));
 	}
 
     void Core::performOperation(const REGFormatInstruction& inst, Operation::mov) noexcept {
@@ -381,35 +238,6 @@ namespace i960 {
         _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
     }
 
-	constexpr Ordinal computeCheckBitMask(Ordinal value) noexcept {
-		return 1 << (value & 0b11111);
-	}
-    void Core::performOperation(const COBRFormatInstruction& inst, Operation::bbc) noexcept {
-        // check bit and branch if clear
-        auto bitpos = getSrc(inst);
-        auto src = getSrc2(inst);
-        auto mask = computeCheckBitMask(bitpos);
-        _ac.setConditionCode(0b010); // update condition code to not taken result since it will always be done
-        if ((src & mask) == 0) {
-            _ac.clearConditionCode();
-            _instructionPointer = _instructionPointer + inst.getDisplacement();
-            // clear the lowest two bits of the instruction pointer
-            _instructionPointer &= (~0b11);
-        } 
-    }
-    void Core::performOperation(const COBRFormatInstruction& inst, Operation::bbs) noexcept {
-        // check bit and branch if set
-        auto bitpos = getSrc(inst);
-        auto src = getSrc2(inst);
-        auto mask = computeCheckBitMask(bitpos);
-        _ac.clearConditionCode();
-        if ((src & mask) == 1) {
-            _ac.setConditionCode(0b010);
-            _instructionPointer = _instructionPointer + inst.getDisplacement();
-            // clear the lowest two bits of the instruction pointer
-            _instructionPointer &= (~0b11);
-        } 
-    }
 
 	// Begin Instruction::REGFormat implementations
 	/**
@@ -432,7 +260,6 @@ namespace i960 {
     }
     constexpr Ordinal largestOrdinal = 0xFFFF'FFFF;
     void Core::performOperation(const REGFormatInstruction& inst, Operation::scanbit) noexcept {
-	//void Core::scanbit(SourceRegister src, DestinationRegister dest) noexcept {
         // find the most significant set bit
         auto result = largestOrdinal;
         _ac.clearConditionCode();
@@ -468,18 +295,6 @@ namespace i960 {
         }
         setDest(inst, result);
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::modi) noexcept {
-		if (auto s1 = getSrc1<Integer>(inst); s1 == 0) {
-            setDest<Integer>(inst, -1); // says in the manual, to assign it to an undefined value
-			generateFault(ArithmeticFaultSubtype::ZeroDivide);
-		} else {
-			auto s2 = getSrc2<Integer>(inst);
-            setDest<Integer>(inst, s2 - (s2 / s1) * s1);
-			if ((s2 * s1) < 0) {
-                setDest<Integer>(inst, getSrc<Integer>(inst) + s1);
-			}
-		}
-	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::subc) noexcept {
         auto s1 = getSrc1(inst) - 1u;
         auto s2 = getSrc2(inst);
@@ -510,30 +325,6 @@ namespace i960 {
             setDest(inst, remainder, quotient);
         }
     }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::divi) noexcept {
-		if (auto denominator = getSrc1<Integer>(inst); denominator == 0) {
-            setDest<Integer>(inst, -1);
-			generateFault(ArithmeticFaultSubtype::ZeroDivide);
-		} else if (auto numerator = getSrc2<Integer>(inst); (numerator == static_cast<Integer>(0x8000'0000)) && (denominator == -1)) {
-			// this one is a little strange, the manual states -2**31
-			// which is just 0x8000'0000 in signed integer, no clue why they
-			// described it like that. So I'm just going to put 0x8000'0000
-            setDest<Integer>(inst, 0x8000'0000);
-            if (_ac.maskIntegerOverflow()) {
-                _ac.setIntegerOverflowFlag(true);
-			} else {
-				generateFault(ArithmeticFaultSubtype::IntegerOverflow);
-			}
-		} else {
-            setDest<Integer>(inst, numerator / denominator);
-		}
-	}
-	constexpr Ordinal getLowestTwoBits(Ordinal address) noexcept {
-		return address & 0b11;
-	}
-	constexpr Ordinal getLowestBit(Ordinal address) noexcept {
-		return address & 0b1;
-	}
     void Core::performOperation(const MEMFormatInstruction& , Operation::ld) noexcept {
         generateFault(OperationFaultSubtype::Unimplemented);
 	//void Core::ld(SourceRegister src, DestinationRegister dest) noexcept {
@@ -655,34 +446,6 @@ namespace i960 {
 #endif
 	}
 
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpi) noexcept {
-        compare<Integer>(getSrc1<Integer>(inst), getSrc2<Integer>(inst));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpo) noexcept {
-        compare<Ordinal>(getSrc1(inst), getSrc2(inst));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::muli) noexcept {
-        auto s1 = getSrc2<Integer>(inst);
-        auto s2 = getSrc1<Integer>(inst);
-        setDest<Integer>(inst, s1 * s2);
-        if ((getMostSignificantBit(s1) == getMostSignificantBit(s2)) && 
-                (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
-            if (_ac.maskIntegerOverflow()) {
-                _ac.setIntegerOverflowFlag(true);
-			} else {
-				generateFault(ArithmeticFaultSubtype::IntegerOverflow);
-			}
-		}
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::remi) noexcept {
-		if (auto denominator = getSrc1<Integer>(inst); denominator == 0) {
-			generateFault(ArithmeticFaultSubtype::ZeroDivide);
-		} else {
-			// as defined in the manual
-            auto numerator = getSrc2<Integer>(inst);
-            setDest<Integer>(inst, numerator - (denominator / numerator) * denominator);
-		}
-	}
     void Core::performOperation(const MEMFormatInstruction&, Operation::stl) noexcept {
 		/// @todo check for valid register
         /// @todo reimplement and compute effective address
@@ -731,9 +494,6 @@ namespace i960 {
 		// this will nop currently as I'm saving all local registers to the 
 		// stack when a call happens
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::subi) noexcept {
-        setDest<Integer>(inst, getSrc2<Integer>(inst) - getSrc1<Integer>(inst));
-    }
     void Core::performOperation(const REGFormatInstruction& inst, Operation::modtc) noexcept {
         // the instruction has its arguments reversed for some reason...
         auto tc = getTraceControls();
@@ -768,21 +528,6 @@ namespace i960 {
         _ac.setRawValue((src & mask) | (tmp & (~mask)));
         setRegister<Ordinal>(inst.getSrc1(), tmp);
 	}
-    constexpr auto mostSignificantBit(Ordinal input) noexcept {
-        return (input & 0x8000'0000);
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::addc) noexcept {
-        auto src1Value = getRegisterValue<Ordinal>(inst.getSrc1());
-        auto src2Value = getRegisterValue<Ordinal>(inst.getSrc2());
-        auto destReg = getRegister(inst.getSrcDest());
-        LongOrdinal result = static_cast<LongOrdinal>(src1Value) + static_cast<LongOrdinal>(src2Value) + _ac.getCarryValue();
-        destReg.set<Ordinal>(static_cast<Ordinal>(result));
-        _ac.clearConditionCode(); // odd that they would do this first as it breaks their action description in the manual
-        if (auto msb2 = mostSignificantBit(src2Value) ; (msb2 == mostSignificantBit(src1Value)) && (msb2 != destReg.mostSignificantBit())) {
-            _ac.setConditionCode(_ac.getConditionCode() | 0b001);
-        }
-        _ac.setConditionCode(_ac.getConditionCode() | ((result >> 31 & 0b10)));
-    }
     void Core::freeCurrentRegisterSet() noexcept {
         /// @todo implement
     }
@@ -855,52 +600,6 @@ namespace i960 {
                 break;
         }
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::opnot) noexcept {
-        setDest(inst, ~getSrc1(inst));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::notand) noexcept {
-        setDest(inst, (~getSrc2(inst)) & getSrc1(inst));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::notbit) noexcept {
-        setDest(inst, xorOperation(getSrc2(inst), oneShiftLeft(getSrc1(inst))));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::notor) noexcept {
-        setDest(inst, (~getSrc2(inst)) | getSrc1(inst));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::opor) noexcept {
-        setDest(inst, (getSrc2(inst) | getSrc1(inst)));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::ornot) noexcept {
-        setDest(inst, (getSrc2(inst) | (~getSrc1(inst))));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::nand) noexcept {
-		// as shown in the manual
-        setDest(inst, (~getSrc2(inst)) | (~getSrc1(inst)));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::nor) noexcept {
-        setDest(inst, (~getSrc2(inst)) & (~getSrc1(inst)));
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::shro) noexcept {
-        auto result = 0u;
-        if (auto shift = getSrc1(inst); shift < 32u) {
-            result = getSrc2(inst) >> shift;
-        }
-        setDest(inst, result);
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::shri) noexcept {
-        // we want src1 to be an ordinal to prevent shifting by negative numbers
-        setDest(inst, getSrc2<Integer>(inst) >> std::abs(getSrc1<Integer>(inst)));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::shlo) noexcept {
-        auto result = 0u;
-        if (auto shift = getSrc1(inst); shift < 32u) {
-            result = getSrc2(inst) << shift;
-        } 
-        setDest(inst, result);
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::shli) noexcept {
-        setDest(inst, getSrc2<Integer>(inst) << std::abs(getSrc1<Integer>(inst)));
-	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::shrdi) noexcept {
         auto src = getSrc2<Integer>(inst);
         auto len = std::abs(getSrc1<Integer>(inst));
@@ -926,7 +625,8 @@ namespace i960 {
 	}
 	template<Ordinal mask>
 	constexpr bool maskedEquals(Ordinal src1, Ordinal src2) noexcept {
-		return (src1 & mask) == (src2 & mask);
+        constexpr SameWidthFragment<Ordinal, mask> decoder;
+        return decoder.decode(src1) == decoder.decode(src2);
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::scanbyte) noexcept {
         _ac.clearConditionCode();
@@ -940,7 +640,8 @@ namespace i960 {
 		} 
 	}
 	constexpr Ordinal alignToWordBoundary(Ordinal value) noexcept {
-		return value & (~0x3);
+        constexpr SameWidthFragment<Ordinal, ~static_cast<Ordinal>(0x3)> decoder;
+        return decoder.decode(value);
 	}
     void Core::performOperation(const REGFormatInstruction& inst, Operation::atmod) noexcept {
 		// TODO implement
@@ -958,61 +659,6 @@ namespace i960 {
 		auto tmp = load(fixedAddr, true);
 		store(fixedAddr, tmp + src, true);
         setDest(inst, tmp);
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::concmpo) noexcept {
-        if (_ac.conditionCodeBitSet<0b100>()) {
-            auto src1 = getSrc1(inst);
-            auto src2 = getSrc2(inst);
-            if (src1 <= src2) {
-                _ac.setConditionCode(0b010);
-            } else {
-                _ac.setConditionCode(0b001);
-            }
-        }
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::concmpi) noexcept {
-        if (_ac.conditionCodeBitSet<0b100>()) {
-            auto src1 = getSrc1<Integer>(inst);
-            auto src2 = getSrc2<Integer>(inst);
-            if (src1 <= src2) {
-                _ac.setConditionCode(0b010);
-            } else {
-                _ac.setConditionCode(0b001);
-            }
-        }
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpinco) noexcept {
-		/// @todo add support for overflow detection
-        compare<Ordinal>(getSrc1(inst), getSrc2(inst));
-        setDest(inst, getSrc2(inst) + 1);
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpdeco) noexcept {
-        /// @todo add support for overflow detection
-        compare<Ordinal>(getSrc1(inst), getSrc2(inst));
-        setDest(inst, getSrc2(inst) - 1);
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpinci) noexcept {
-        compare<Integer>(getSrc1<Integer>(inst), getSrc2<Integer>(inst));
-        setDest<Integer>(inst, getSrc2<Integer>(inst) + 1); // overflow suppressed
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpdeci) noexcept {
-        compare<Integer>(getSrc1<Integer>(inst), getSrc2<Integer>(inst));
-        setDest<Integer>(inst, getSrc2<Integer>(inst) - 1);
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::clrbit) noexcept {
-        setDest(inst, getSrc2(inst) & ~oneShiftLeft(getSrc1(inst)));
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::setbit) noexcept {
-        setDest(inst, getSrc2(inst) | oneShiftLeft(getSrc1(inst)));
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::emul) noexcept {
-        if (inst.getSrcDest().notDivisibleBy(2)) {
-            setDest<LongOrdinal>(inst, -1);
-            generateFault(OperationFaultSubtype::InvalidOperand);
-        } else {
-            setDest<LongOrdinal>(inst, static_cast<LongOrdinal>(getSrc2(inst)) *
-                                       static_cast<LongOrdinal>(getSrc1(inst)));
-        }
 	}
     void Core::performOperation(const MEMFormatInstruction&, Operation::lda) noexcept {
         /// @todo finish this
@@ -1033,18 +679,6 @@ namespace i960 {
 			generateFault(TraceFaultSubtype::Mark);
 		}
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::xnor) noexcept {
-        auto s2 = getSrc2(inst);
-		auto s1 = getSrc1(inst);
-        setDest(inst, ~(s2 | s1) | (s2 & s1));
-    }
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::opxor) noexcept {
-		// there is an actual implementation within the manual so I'm going to
-		// use that instead of the xor operator.
-		auto s2 = getSrc2(inst);
-        auto s1 = getSrc1(inst);
-        setDest(inst, (s2 | s1) & ~(s2 & s1));
-    }
     void Core::performOperation(const REGFormatInstruction&, Operation::intdis) noexcept {
 		// TODO implement
 		if (!_pc.inSupervisorMode()) {
@@ -1114,18 +748,6 @@ namespace i960 {
 		auto rotl24 = rotateOperation(src, 24) & 0xFF00FF00;
         setDest(inst, rotl8 + rotl24);
 	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpos) noexcept {
-        compare<ShortOrdinal>(getSrc1<ShortOrdinal>(inst), getSrc2<ShortOrdinal>(inst));
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpis) noexcept {
-        compare<ShortInteger>(getSrc1<ShortInteger>(inst), getSrc2<ShortInteger>(inst));
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpob) noexcept {
-        compare<ByteOrdinal>(getSrc1<ByteOrdinal>(inst), getSrc2<ByteOrdinal>(inst));
-	}
-    void Core::performOperation(const REGFormatInstruction& inst, Operation::cmpib) noexcept {
-        compare<ByteInteger>(getSrc1<ByteInteger>(inst), getSrc2<ByteInteger>(inst));
-	}
     void Core::performOperation(const REGFormatInstruction&, Operation::dcctl) noexcept {
 		// while I don't implement a data cache myself, this instruction must
 		// do something!
@@ -1157,13 +779,13 @@ namespace i960 {
 		}
 	}
 	QuadRegister Core::makeQuadRegister(ByteOrdinal index) noexcept {
-		return QuadRegister(getRegister(index), getRegister(index + 1), getRegister(index + 2), getRegister(index + 3));
+        return { getRegister(index), getRegister(index + 1), getRegister(index + 2), getRegister(index + 3) };
 	}
 	TripleRegister Core::makeTripleRegister(ByteOrdinal index) noexcept {
-		return TripleRegister(getRegister(index), getRegister(index + 1), getRegister(index + 2));
+        return { getRegister(index), getRegister(index+1), getRegister(index + 2)};
 	}
 	LongRegister Core::makeLongRegister(ByteOrdinal index) noexcept {
-		return LongRegister(getRegister(index), getRegister(index + 1));
+        return { getRegister(index), getRegister(index + 1)};
 	}
 	void Core::generateFault(ByteOrdinal /*faultType*/, ByteOrdinal /*faultSubtype*/) {
 		// get the fault table base address
@@ -1382,6 +1004,18 @@ namespace i960 {
     Core::performOperation(const MEMFormatInstruction&, Operation::stos) noexcept {
         /// @todo implement computation of effective address
         generateFault(OperationFaultSubtype::Unimplemented);
+    }
+
+    void 
+    Core::dispatch(const Instruction& inst) noexcept {
+        std::visit([this](auto&& value) {
+                    using K = std::decay_t<decltype(value)>;
+                    if constexpr (std::is_same_v<K, std::monostate>) {
+                        generateFault(OperationFaultSubtype::InvalidOpcode);
+                    } else {
+                        dispatchOperation(value);
+                    }
+                }, inst.decode());
     }
       
 } // end namespace i960

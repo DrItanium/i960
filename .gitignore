@@ -4,3 +4,7 @@ sim960
 sim960mc
 sim960jx
 decode960jx
+*-cache.lib
+*.*-bak
+fp-info-cache
+

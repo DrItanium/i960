@@ -4,6 +4,7 @@
 #include "ProcessControls.h"
 #include "ArithmeticControls.h"
 #include <optional>
+#include <sstream>
 namespace i960 {
     /**
      * Describes the intermediate processor state from a fault or interrupt 
@@ -30,7 +31,7 @@ namespace i960 {
         Event,
     };
     constexpr auto isLegalValue(FaultRecordKind kind) noexcept {
-        return convert(kind) < 0x10;
+        return static_cast<std::underlying_type_t<decltype(kind)>>(kind) < 0x10;
     }
     constexpr auto convert(FaultRecordKind kind) noexcept {
         return static_cast<ByteOrdinal>(kind);
@@ -56,7 +57,7 @@ namespace i960 {
             case FaultRecordKind::Protection:
             case FaultRecordKind::Descriptor:
             case FaultRecordKind::Override:
-            case FaultRecordKind::Parallel:
+            //case FaultRecordKind::Parallel:
             case FaultRecordKind::Reserved:
                 return false;
             default:
@@ -143,7 +144,7 @@ namespace i960 {
         bool isPageRightsFailedRead() const noexcept { return isProtectionPageRights() && !flagBitIsSet(0); }
         bool isPageRightsFailedWrite() const noexcept { return isProtectionPageRights() && flagBitIsSet(1); }
         bool isPrecise() const noexcept {
-            return isPreciseFault(toFaultRecordKind(fault.type););
+            return isPreciseFault(toFaultRecordKind(fault.type));
         }
         bool isImprecise() const noexcept {
             return isImpreciseFault(toFaultRecordKind(fault.type)); 
@@ -179,7 +180,7 @@ namespace i960 {
             Ordinal getAddress() const noexcept { return _rawFaultHandlerAddress & (~0b11); }
             Ordinal getEntryType() const noexcept { return _rawFaultHandlerAddress & 0b11; }
             bool isLocalCallEntry() const noexcept { return getEntryType() == 0b00; }
-            bool isSystemCallEntry() const noexcept { return (getEntryType() == 0b10) && (magicNumber == 0x0000'027F); }
+            bool isSystemCallEntry() const noexcept { return (getEntryType() == 0b10) && (_magicNumber == 0x0000'027F); }
             Ordinal getMagicNumber() const noexcept { return _magicNumber; }
             void setMagicNumber(Ordinal value) noexcept { _magicNumber = value; }
             void setFaultHandlerAddress(Ordinal value) noexcept { _rawFaultHandlerAddress = value; }
@@ -187,7 +188,7 @@ namespace i960 {
         private:
             Ordinal _rawFaultHandlerAddress;
             Ordinal _magicNumber;
-    } __attribute__((packed));
+    };
 
     struct FaultTable {
         FaultTableEntry entries[32];
@@ -221,23 +222,23 @@ namespace i960 {
             private:
                 Ordinal _raw;
         } __attribute__((packed));
-        class IllegalInterruptVector : std::exception final {
+        class IllegalInterruptVector final : std::exception {
             public:
-                explicit IllegalInterruptVector(ByteOrdinal index) : _index(index) { }
+                explicit IllegalInterruptVector(ByteOrdinal index) noexcept : _index(index) { }
                 ~IllegalInterruptVector() = default;
-                std::string what() {
+                const char* what() const noexcept override {
                     std::stringstream ss;
                     ss << "Illegal interrupt vector index " << _index;
                     auto str = ss.str();
-                    return str;
+                    return str.c_str();
                 }
             private:
                 ByteOrdinal _index;
         };
         Ordinal pendingPriorities;
         Ordinal pendingInterrupts[8];
-        VectorEntry interruptProcedures[248];
-        VectorEntry& getVectorEntry(ByteOrdinal index)
+        InterruptTable::VectorEntry interruptProcedures[248];
+        InterruptTable::VectorEntry& getVectorEntry(ByteOrdinal index)
         {
             if (index < 8) {
                 // vector numbers below 8 are unsupported
@@ -246,7 +247,7 @@ namespace i960 {
                 return interruptProcedures[index - 8];
             }
         }
-        VectorEntry& getNMI() noexcept { return getVectorEntry(248); }
+        InterruptTable::VectorEntry& getNMI() noexcept { return getVectorEntry(248); }
         bool vectorIsReserved(ByteOrdinal index) const noexcept {
             switch(index) {
                 case 244:
@@ -262,7 +263,7 @@ namespace i960 {
 
             }
         }
-        std::optional<VectorEntry> getNMI() 
+        //std::optional<VectorEntry> getNMI() 
     } __attribute__((packed));
 
 } // end namespace i960

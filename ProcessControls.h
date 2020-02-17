@@ -4,44 +4,43 @@
 namespace i960 {
     class ProcessControls {
         public:
-            static constexpr Ordinal TraceEnableMask = 0x0000'0001;
-            static constexpr Ordinal ExecutionModeMask = 0x0000'0002;
-            static constexpr Ordinal ResumeMask = 0x0000'0200;
-            static constexpr Ordinal TraceFaultPendingMask = 0x0000'0400;
-            static constexpr Ordinal StateMask = 0x0000'2000;
-            static constexpr Ordinal PriorityMask = 0x001F'0000;
+            static constexpr FlagFragment<Ordinal, 0x0000'0001> TraceEnableMask{};
+            static constexpr FlagFragment<Ordinal, 0x0000'0002> ExecutionModeMask{};
+            static constexpr FlagFragment<Ordinal, 0x0000'0200> ResumeMask{};
+            static constexpr FlagFragment<Ordinal, 0x0000'0400> TraceFaultPendingMask{};
+            static constexpr FlagFragment<Ordinal, 0x0000'2000> StateMask{};
+            static constexpr SameWidthFragment<Ordinal, 0x001F'0000, 16> PriorityMask{};
         private:
             static constexpr Ordinal InternalPriorityMask = 0x1F;
         public:
-            static constexpr Ordinal CoreArchitectureExtractMask = constructOrdinalMask(TraceEnableMask, ExecutionModeMask, ResumeMask, TraceFaultPendingMask, StateMask, PriorityMask);
+            static constexpr Ordinal CoreArchitectureExtractMask = constructOrdinalMask(TraceEnableMask.getMask(), ExecutionModeMask.getMask(), ResumeMask.getMask(), TraceFaultPendingMask.getMask(), StateMask.getMask(), PriorityMask.getMask());
             static constexpr Ordinal CoreArchitectureReservedMask = ~CoreArchitectureExtractMask;
             static_assert(CoreArchitectureReservedMask == 0xFFE0'D9FC);
             static constexpr bool extractTraceEnable(Ordinal value) noexcept {
-                return decode<Ordinal, bool, TraceEnableMask, 0>(value);
+                return TraceEnableMask.decode(value);
             }
             static constexpr bool extractExecutionMode(Ordinal value) noexcept { 
-                return decode<Ordinal, bool, ExecutionModeMask, 0>(value);
+                return ExecutionModeMask.decode(value);
             }
             static constexpr bool extractResume(Ordinal value) noexcept {
-                return decode<Ordinal, bool, ResumeMask, 0>(value);
+                return ResumeMask.decode(value);
             }
             static constexpr bool extractTraceFaultPending(Ordinal value) noexcept {
-                return decode<Ordinal, bool, TraceFaultPendingMask, 0>(value);
+                return TraceFaultPendingMask.decode(value);
             }
             static constexpr bool extractState(Ordinal value) noexcept {
-                return decode<Ordinal, bool, StateMask, 0>(value);
+                return StateMask.decode(value);
             }
             static constexpr Ordinal extractPriority(Ordinal value) noexcept {
-                return decode<Ordinal, Ordinal, PriorityMask, 16>(value);
+                return PriorityMask.decode(value);
             }
             static constexpr Ordinal create(bool traceEnable, bool executionMode, bool resume, bool traceFaultPending, bool state, Ordinal priority) noexcept {
-                auto mte = static_cast<Ordinal>(traceEnable);
-                auto mem = static_cast<Ordinal>(executionMode) << 1;
-                auto mre = static_cast<Ordinal>(resume) << 9;
-                auto mtfp = static_cast<Ordinal>(traceFaultPending) << 10;
-                auto mst = static_cast<Ordinal>(state) << 13;
-                auto mpri = priority << 16;
-                return (mte | mem | mre | mtfp | mst | mpri) & CoreArchitectureExtractMask;
+                return (TraceEnableMask.encode(traceEnable) |
+                       ExecutionModeMask.encode(executionMode) |
+                       ResumeMask.encode(resume) |
+                       TraceFaultPendingMask.encode(traceFaultPending) |
+                       StateMask.encode(state) |
+                       PriorityMask.encode(priority)) & CoreArchitectureExtractMask;
             }
         public:
             constexpr ProcessControls() noexcept = default;

@@ -56,6 +56,10 @@ namespace i960 {
             constexpr auto mostSignificantBitClear() const noexcept {
                 return i960::mostSignificantBitClear(_value);
             }
+            template<typename R, ShiftMaskPair<Ordinal> desc>
+            constexpr R decodeField() noexcept {
+                return i960::decode<decltype(_value), R, desc>(_value);
+            }
             template<typename R, Ordinal mask, Ordinal shift = 0>
             constexpr R decodeField() noexcept {
                 return i960::decode<decltype(_value), R, mask, shift>(_value);
@@ -63,6 +67,10 @@ namespace i960 {
             template<typename T, Ordinal mask, Ordinal shift = 0>
             void encodeField(T field) noexcept {
                 _value = i960::encode<decltype(_value), T, mask, shift>(_value, field);
+            }
+            template<typename T, ShiftMaskPair<Ordinal> desc>
+            void encodeField(T field) noexcept {
+                _value = i960::encode<decltype(_value), T, desc>(_value, field);
             }
             void clear() noexcept; 
 
@@ -160,6 +168,20 @@ namespace i960 {
             void modify(Ordinal mask, Ordinal input) noexcept;
     };
 
+    class DoubleRegister final {
+        public:
+            constexpr DoubleRegister(NormalRegister& lower, NormalRegister& upper) noexcept : _lower(lower), _upper(upper) { }
+            ~DoubleRegister() = default;
+            constexpr LongOrdinal get() const noexcept { return _lower.get<LongOrdinal>() | (_upper.get<LongOrdinal>() << 32); }
+            void set(LongOrdinal value) noexcept { set(static_cast<Ordinal>(value), static_cast<Ordinal>(value >> 32)); }
+            void set(Ordinal lower, Ordinal upper) noexcept;
+            constexpr Ordinal getLowerHalf() const noexcept { return _lower.get<Ordinal>(); }
+            constexpr Ordinal getUpperHalf() const noexcept { return _upper.get<Ordinal>(); }
+        private:
+            NormalRegister& _lower;
+            NormalRegister& _upper;
+    };
+
 
 } // end namespace i960
 
@@ -170,8 +192,29 @@ constexpr T get(const i960::NormalRegister& reg) noexcept {
 }
 
 template<typename T>
-constexpr T get(const i960::NormalRegister&& reg) noexcept {
+constexpr T get(i960::NormalRegister&& reg) noexcept {
     return reg.get<T>();
+}
+template<size_t I>
+constexpr i960::Ordinal get(const i960::DoubleRegister& dr) noexcept {
+    if constexpr (I == 0) {
+        return dr.getLowerHalf();
+    } else if constexpr (I == 1) {
+        return dr.getUpperHalf();
+    } else {
+        static_assert(I >= 2, "Out of range accessor");
+    }
+}
+
+template<size_t I>
+constexpr i960::Ordinal get(i960::DoubleRegister&& dr) noexcept {
+    if constexpr (I == 0) {
+        return dr.getLowerHalf();
+    } else if constexpr (I == 1) {
+        return dr.getUpperHalf();
+    } else {
+        static_assert(I >= 2, "Out of range accessor");
+    }
 }
 } // end namespace std
 #endif // end I960_NORMAL_REGISTER_H__

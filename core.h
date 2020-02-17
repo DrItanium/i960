@@ -2,7 +2,6 @@
 #define I960_CORE_H__
 #include "types.h"
 #include "NormalRegister.h"
-#include "DoubleRegister.h"
 #include "TripleRegister.h"
 #include "QuadRegister.h"
 #include "ArithmeticControls.h"
@@ -99,15 +98,20 @@ namespace i960 {
     constexpr Ordinal unusedAddressBits = 0b11;
 	constexpr Ordinal clearLowestTwoBitsMask = ~unusedAddressBits;
     constexpr Ordinal computeAlignedAddress(Ordinal value) noexcept {
-        return value & clearLowestTwoBitsMask;
+        InverseOfLowestTwoBitsPattern<Ordinal> tmp;
+        return tmp.decode(value);
     }
     constexpr bool isAlignedAddress(Ordinal value) noexcept {
-        return (value & unusedAddressBits) == 0;
+        LowestTwoBitsPattern<Ordinal> tmp;
+        return tmp.decode(value) == 0;
     }
-
+    constexpr BitFragment<OpcodeValue, Ordinal, 0b111'0000, 4> LowestThreeBitsOfMajorOpcode{};
     constexpr Ordinal lowestThreeBitsOfMajorOpcode(OpcodeValue v) noexcept {
-        return (v & 0b111'0000) >> 4;
+        return LowestThreeBitsOfMajorOpcode.decode(v);
     }
+    constexpr SameWidthFragment<Ordinal, static_cast<Ordinal>(~0b111'111)> FramePointerAddress{};
+    constexpr LowestTwoBitsPattern<Ordinal> ProcedureKindField {};
+
 
     class Core {
         public:
@@ -293,184 +297,355 @@ namespace i960 {
                 // lowest three bits of the opcode like before.
                 return lowestThreeBitsOfMajorOpcode(value);
             }
-            using ConditionalAddOrdinalOperation = std::variant<Operation::addono,
-                                                                Operation::addog,
-                                                                Operation::addoe,
-                                                                Operation::addoge,
-                                                                Operation::addol,
-                                                                Operation::addone,
-                                                                Operation::addole,
-                                                                Operation::addoo>;
-            using ConditionalAddIntegerOperation = std::variant<Operation::addino,
-                                                                Operation::addig,
-                                                                Operation::addie,
-                                                                Operation::addige,
-                                                                Operation::addil,
-                                                                Operation::addine,
-                                                                Operation::addile,
-                                                                Operation::addio>;
-            using ConditionalSubtractOrdinalOperation = std::variant<Operation::subono,
-                                                                Operation::subog,
-                                                                Operation::suboe,
-                                                                Operation::suboge,
-                                                                Operation::subol,
-                                                                Operation::subone,
-                                                                Operation::subole,
-                                                                Operation::suboo>;
-            using ConditionalSubtractIntegerOperation = std::variant<Operation::subino,
-                                                                Operation::subig,
-                                                                Operation::subie,
-                                                                Operation::subige,
-                                                                Operation::subil,
-                                                                Operation::subine,
-                                                                Operation::subile,
-                                                                Operation::subio>;
-            using SelectOperation = std::variant<Operation::selno,
-                                                 Operation::selg,
-                                                 Operation::sele,
-                                                 Operation::selge,
-                                                 Operation::sell,
-                                                 Operation::selne,
-                                                 Operation::selle,
-                                                 Operation::selo>;
+            template<typename T, std::enable_if_t<IsSelectOperation<std::decay_t<T>>, int> = 0> 
+            void performOperation(const REGFormatInstruction& inst, T) noexcept {
+                if (auto mask = getSelectMask(inst.getOpcode()); (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode())) {
+                    setDest(inst, getSrc2(inst));
+                } else {
+                    setDest(inst, getSrc1(inst));
+                }
+            }
 
+            template<typename T, std::enable_if_t<IsAddOperation<T> ||
+                                                  IsSubtractOperation<T> ||
+                                                  IsMultiplyOperation<T> ||
+                                                  IsDivideOperation<T> ||
+                                                  IsRemainderOperation<T> ||
+                                                  IsModuloOperation<T>, int> = 0>
+            void performOperation(const REGFormatInstruction& inst, T) noexcept {
+                static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add/subtract operation!");
+                using K = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
+                bool updateDestination = true;
+                K result = 0;
+                auto s2 = getSrc2<K>(inst);
+                auto s1 = getSrc1<K>(inst);
+                if constexpr (IsAddOperation<T>) {
+                    if constexpr (IsAddWithCarryOperation<T>) {
+                        LongOrdinal intermediate = static_cast<LongOrdinal>(s1) + static_cast<LongOrdinal>(s2) + static_cast<LongOrdinal>(_ac.getCarryValue());
+                        _ac.clearConditionCode();
+                        auto destReg = getRegister(inst.getSrcDest());
+                        // detect overflow
+                        if (auto msb2 = getMostSignificantBit(s2) ; (msb2 == getMostSignificantBit(s1)) && (msb2 != destReg.mostSignificantBit())) {
+                            _ac.setConditionCode(_ac.getConditionCode() | 0b001);
+                        }
+                        // mark carry out bit
+                        _ac.setConditionCode(_ac.getConditionCode() | ((result & 0x1'0000'0000) ? 0b010 : 0b000));
+                        result = static_cast<Ordinal>(intermediate); 
+                    } else {
+                        result = s2 + s1;
+                        if constexpr (IsConditionalAddOperation<T>) {
+                            auto mask = getConditionalAddMask(inst.getOpcode());
+                            updateDestination = (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode());
+                        }
+                    }
+                } else if constexpr (IsSubtractOperation<T>) {
+                    result = s2 - s1;
+                    if constexpr (IsConditionalSubtractOperation<T>) {
+                        auto mask = getConditionalSubtractMask(inst.getOpcode());
+                        updateDestination = (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode());
+                    }
+                } else if constexpr (IsMultiplyOperation<T>) {
+                    if constexpr (std::is_same_v<std::decay_t<T>, Operation::emul>) {
+                        if (inst.getSrcDest().notDivisibleBy(2)) {
+                            setDest<LongOrdinal>(inst, -1);
+                            generateFault(OperationFaultSubtype::InvalidOperand);
+                        } else {
+                            setDest<LongOrdinal>(inst, static_cast<LongOrdinal>(s2) * static_cast<LongOrdinal>(s1));
+                            return;
+                        }
+                    } else {
+                        result = s2 * s1;
+                    }
+                } else if constexpr (IsDivideOperation<T>) {
+                    if (auto denominator = s1; denominator == 0) {
+                        if constexpr (IsIntegerOperation<T>) {
+                            result = -1; // undefined value
+                        } else {
+                            updateDestination = false;
+                        }
+                        generateFault(ArithmeticFaultSubtype::ZeroDivide);
+                    } else {
+                        auto numerator = s2;
+                        if constexpr (IsIntegerOperation<T>) {
+                            if (numerator == static_cast<Integer>(0x8000'0000) && denominator == -1) {
+                                result = 0x8000'0000;
+                                if (_ac.maskIntegerOverflow()) {
+                                    _ac.setIntegerOverflowFlag(true);
+                                } else {
+                                    generateFault(ArithmeticFaultSubtype::IntegerOverflow);
+                                }
+                            }
+                        }
+                        result = numerator / denominator;
+                        //setDest<K>(inst, numerator / denominator);
+                    }
+                } else if constexpr (IsRemainderOperation<T>) {
+                    if (auto denominator = s1; denominator == 0) {
+                        generateFault(ArithmeticFaultSubtype::ZeroDivide);
+                        updateDestination = false;
+                    } else {
+                        auto numerator = s2;
+                        result = numerator - (denominator / numerator) * denominator;
+                    }
+                } else if constexpr (IsModuloOperation<T>) {
+                    if (s1 == 0) {
+                        result = -1; // says in the manual, to assign it to an undefined value
+                        generateFault(ArithmeticFaultSubtype::ZeroDivide);
+                    } else {
+                        result = s2 - (s2 / s1) * s1;
+                        if ((s2 * s1) < 0) {
+                            result = result + s1;
+                        }
+                    }
+                } else {
+                    static_assert(false_v<T>, "Unimplemented operation");
+                }
+                if (updateDestination) {
+                    setDest<K>(inst, result);
+                }
+                if constexpr (CheckForOverflow<T>) {
+                    if ((getMostSignificantBit(s1) == getMostSignificantBit(s2)) && 
+                            (getMostSignificantBit(s2) != getMostSignificantBit(getSrc<Integer>(inst)))) {
+                        if (_ac.maskIntegerOverflow()) {
+                            _ac.setIntegerOverflowFlag(true);
+                        } else {
+                            generateFault(ArithmeticFaultSubtype::IntegerOverflow);
+                        }
+                    }
+                }
+            }
+            template<typename T, std::enable_if_t<IsCompareOperation<T>, int> = 0>
+            void performOperation(const REGFormatInstruction& inst, T) noexcept {
+                static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add/subtract operation!");
+                if constexpr (IsByteCompareOperation<T>) {
+                    using K = std::conditional_t<IsIntegerOperation<T>, ByteInteger, ByteOrdinal>;
+                    compare<K>(getSrc1<K>(inst), getSrc2<K>(inst));
+                } else if constexpr (IsShortCompareOperation<T>) {
+                    using K = std::conditional_t<IsIntegerOperation<T>, ShortInteger, ShortOrdinal>;
+                    compare<K>(getSrc1<K>(inst), getSrc2<K>(inst));
+                } else if constexpr (IsPureConditionalCompare<T>) {
+                    using K = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
+                    if (_ac.conditionCodeBitSet<0b100>()) {
+                        _ac.setConditionCode(getSrc1<K>(inst) <= getSrc2<K>(inst), 0b010, 0b001);
+                    }
+                } else {
+                    using K = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
+                    compare<K>(getSrc1<K>(inst), getSrc2<K>(inst));
+                    if constexpr (IsCompareAndDecrementOperation<T>) {
+                        setDest<K>(inst, getSrc2<K>(inst) - 1);
+                    }
+                    if constexpr (IsCompareAndIncrementOperation<T>) {
+                        setDest<K>(inst, getSrc2<K>(inst) + 1); // overflow suppressed
+                    }
+                }
+            }
+            template<typename T, std::enable_if_t<IsShiftOperation<T>, int>  = 0>
+            void performOperation(const REGFormatInstruction& inst, T) noexcept {
+                static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add/subtract operation!");
+                using K = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
+                /// @todo shli generates an overflow fault, see 80960Jx manual for implementation details
+                /// @todo use the 80960Jx manual impls for shli and shri which are much slower and at most 32 cycles
+                auto s1 = getSrc1<K>(inst);
+                auto s2 = getSrc2<K>(inst);
+                if constexpr (IsIntegerOperation<T>) {
+                    // make sure we don't shift by a negative number
+                    s1 = std::abs(s1);
+                    if (s1 > 32) {
+                        s1 = 32u;
+                    } 
+                } else if constexpr (IsOrdinalOperation<T>) {
+                    if (s1 >= 32u) {
+                        // terminate early if we will shift all bits out and just
+                        // set destination to zero
+                        setDest<K>(inst, 0u);
+                        return;
+                    }
+                } else {
+                    static_assert(false_v<T>, "Shift operation neither ordinal or integer!");
+                }
+                K result = 0;
+                if constexpr (IsShiftRightOperation<T>) {
+                    result = s2 >> s1;
+                } else if constexpr (IsShiftLeftOperation<T>) {
+                    result = s2 << s1;
+                } else {
+                    static_assert(false_v<T>, "Unimplemented shift operation!");
+                }
+                setDest<K>(inst, result);
+            }
+            static constexpr Ordinal oneShiftLeft(Ordinal position) noexcept {
+                return 1u << (0b11111 & position);
+            }
+            template<typename T, std::enable_if_t<IsBitManipulationOperation<T>, int> = 0>
+            void performOperation(const REGFormatInstruction& inst, T) noexcept {
+                auto s2 = getSrc2(inst);
+                auto s1 = getSrc1(inst);
+                Ordinal result = 0;
+                if constexpr (OneShiftLeftSrc1<T>) {
+                    // this comes first to support clrbit
+                    s1 = oneShiftLeft(s1);
+                }
+                if constexpr (InvertSrc1<T>) {
+                    s1 = ~s1;
+                }
+                if constexpr (InvertSrc2<T>) {
+                    s2 = ~s2;
+                }
+                if constexpr (IsAndOperation<T>) {
+                    result = s2 & s1;
+                } else if constexpr (IsOrOperation<T>) {
+                    result = s2 | s1;
+                } else if constexpr (IsXorOperation<T>) {
+                    if constexpr (std::is_same_v<T, Operation::opxor>){
+                        // there is an actual implementation within the manual so I'm going to
+                        // use that instead of the xor operator.
+                        result = (s2 | s1) & ~(s2 & s1);
+                    } else if constexpr (std::is_same_v<T, Operation::xnor>){
+                        // there is an actual implementation within the manual so I'm going to
+                        // use that instead of the xor operator.
+                        result = ~(s2 | s1) | (s2 & s1);
+                    } else {
+                        result = s2 ^ s1;
+                    }
+                } else if constexpr (IsNotOperation<T>) {
+                    if constexpr(IsUnaryOperation<T>) {
+                        result = ~s1;
+                    } else {
+                        static_assert(false_v<T>, "Unsure what to do right now");
+                    }
+                } else if constexpr (std::is_same_v<std::decay_t<T>, Operation::alterbit>) {
+                    if ((_ac.getConditionCode() & 0b010) == 0) {
+                        // if the condition bit is clear then we clear the given bit
+                        performOperation<Operation::clrbit>(inst, {});
+                    } else {
+                        // if the condition bit is set then we set the given bit
+                        performOperation<Operation::setbit>(inst, {});
+                    }
+                    return;
+                } else {
+                    static_assert(false_v<T>, "Unimplemented bit manipulation operation");
+                }
+                setDest(inst, result);
+
+            }
 #define X(title) void performOperation(const REGFormatInstruction& inst, title ) noexcept
-            X(SelectOperation);
-            X(ConditionalAddIntegerOperation);
-            X(ConditionalAddOrdinalOperation);
-            X(ConditionalSubtractIntegerOperation);
-            X(ConditionalSubtractOrdinalOperation);
             X(Operation::inten);
             X(Operation::intdis);
             X(Operation::sysctl);
             X(Operation::icctl);
             X(Operation::dcctl);
             X(Operation::intctl);
-            X(Operation::eshro);
-            X(Operation::cmpib); 
-            X(Operation::cmpob);
-            X(Operation::cmpis); 
-            X(Operation::cmpos);
-            X(Operation::cmpi);  
-            X(Operation::cmpo);
             X(Operation::bswap);
             X(Operation::halt);
-            X(Operation::opxor);
-            X(Operation::nand);
-            X(Operation::xnor);
             X(Operation::mark);
             X(Operation::fmark);
-            X(Operation::emul);
-            X(Operation::setbit);
-            X(Operation::chkbit);
-            X(Operation::cmpdeco); 
-            X(Operation::cmpdeci);
-            X(Operation::concmpi); 
-            X(Operation::concmpo);
             X(Operation::atadd);
             X(Operation::atmod);
             X(Operation::scanbyte);
-            X(Operation::modify);
-            X(Operation::clrbit);
-            X(Operation::cmpinci); 
-            X(Operation::cmpinco);
             X(Operation::rotate);
-            X(Operation::shrdi);
-            X(Operation::shli); 
-            X(Operation::shlo);
-            X(Operation::shri);
-            X(Operation::shro);
-            X(Operation::nor);
-            X(Operation::ornot);
-            X(Operation::notor);
-            X(Operation::opor);
-            X(Operation::notbit);
-            X(Operation::notand);
-            X(Operation::opnot);
-            X(Operation::addc);
             X(Operation::modac);
             X(Operation::modpc);
-            X(Operation::subi);
-            X(Operation::subo);
-            X(Operation::muli);
-            X(Operation::mulo);
-            X(Operation::divi);
-            X(Operation::divo);
             X(Operation::modtc);
-            X(Operation::remi);
-            X(Operation::remo);
-            X(Operation::ediv);
             X(Operation::flushreg);
             X(Operation::syncf);
-            X(Operation::modi);
-            X(Operation::spanbit);
-            X(Operation::scanbit);
             X(Operation::calls);
-            X(Operation::addo);
-            X(Operation::addi);
-            X(Operation::alterbit);
-            X(Operation::opand);
-            X(Operation::andnot);
             X(Operation::mov);
             X(Operation::movl);
             X(Operation::movt);
             X(Operation::movq);
-            X(Operation::extract);
+
             X(Operation::subc);
+            X(Operation::eshro);
+            X(Operation::ediv);
+            X(Operation::shrdi);
+
+            X(Operation::extract);
+            X(Operation::modify);
+            X(Operation::chkbit);
+            X(Operation::spanbit);
+            X(Operation::scanbit);
 #undef X
+
+
         private:
             // COBR format decls
-            using TestOperation = std::variant<Operation::testg,
-                                               Operation::teste,
-                                               Operation::testge,
-                                               Operation::testl,
-                                               Operation::testne,
-                                               Operation::testle,
-                                               Operation::testo>;
-            using CompareOrdinalAndBranchOperation = std::variant<Operation::cmpobg, 
-                                                                  Operation::cmpobe, 
-                                                                  Operation::cmpobge, 
-                                                                  Operation::cmpobl,
-                                                                  Operation::cmpobne,
-                                                                  Operation::cmpoble>;
-            using CompareIntegerAndBranchOperation = std::variant<Operation::cmpibg, 
-                                                                  Operation::cmpibe, 
-                                                                  Operation::cmpibge, 
-                                                                  Operation::cmpibl,
-                                                                  Operation::cmpibne,
-                                                                  Operation::cmpible,
-                                                                  Operation::cmpibo, // always branches
-                                                                  Operation::cmpibno>; // never branches
-            void performOperation(const COBRFormatInstruction& inst, Operation::bbc) noexcept;
-            void performOperation(const COBRFormatInstruction& inst, Operation::bbs) noexcept;
-            void performOperation(const COBRFormatInstruction&, Operation::testno) noexcept;
-            void performOperation(const COBRFormatInstruction&, TestOperation) noexcept;
-            void performOperation(const COBRFormatInstruction&, CompareOrdinalAndBranchOperation) noexcept;
-            void performOperation(const COBRFormatInstruction&, CompareIntegerAndBranchOperation) noexcept;
+            static constexpr Ordinal computeCheckBitMask(Ordinal value) noexcept {
+                return 1 << (value & 0b11111);
+            }
+            template<typename T, std::enable_if_t<IsCOBRFormat<T>, int> = 0>
+            void performOperation(const COBRFormatInstruction& inst, T) noexcept {
+                using K = std::decay_t<T>;
+                if constexpr (IsTestOperation<K>) {
+                    if constexpr (std::is_same_v<K, Operation::testno>) {
+                        setDest(inst, _ac.getConditionCode() == 0b000 ? 1 : 0);
+                    } else {
+                        setDest(inst, ((lowestThreeBitsOfMajorOpcode(inst.getOpcode()) & _ac.getConditionCode()) != 0) ? 1 : 0);
+                    }
+                } else if constexpr (IsCompareOrdinalAndBranchOperation<K> ||
+                                     IsCompareIntegerAndBranchOperation<K>) {
+                    static_assert(IsIntegerOperation<T> || IsOrdinalOperation<T>, "Unimplemented unconditional add/subtract operation!");
+                    using Z = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
+                    // use variants as a side effect :D
+                    compare<Z>(getSrc(inst), getSrc2(inst));
+                    if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) != 0) {
+                        _instructionPointer += (inst.getDisplacement() * 4);
+                        _instructionPointer = computeAlignedAddress(_instructionPointer);
+                    }
+                } else if constexpr (IsCheckBitAndBranchIfOperation<T>) {
+                    auto bitpos = getSrc(inst);
+                    auto src = getSrc2(inst);
+                    auto mask = computeCheckBitMask(bitpos);
+                    // bbc = check bit and branch if clear
+                    // bbs = check bit and branch if set
+                    constexpr Ordinal startingConditionCode = std::is_same_v<std::decay_t<T>, Operation::bbc> ? 0b010 : 0b000;
+                    constexpr Ordinal conditionCodeOnConditionMet = std::is_same_v<std::decay_t<T>, Operation::bbc> ? 0b000 : 0b010;
+                    constexpr Ordinal compareAgainst = std::is_same_v<std::decay_t<T>, Operation::bbc> ? 0 : 1;
+                    _ac.setConditionCode(startingConditionCode);
+                    if ((src & mask) == compareAgainst) {
+                        _ac.setConditionCode(conditionCodeOnConditionMet);
+                        _instructionPointer = _instructionPointer + inst.getDisplacement();
+                        // clear the lowest two bits of the instruction pointer
+                        _instructionPointer &= (~0b11);
+                    }
+                } else {
+                    static_assert(false_v<K>, "Unimplemented cobr operation!");
+                }
+            }
         private:
             // CTRL format instructions
-            using ConditionalBranchOperation = std::variant<Operation::bg,
-                                                            Operation::be,
-                                                            Operation::bge,
-                                                            Operation::bl,
-                                                            Operation::bne,
-                                                            Operation::ble,
-                                                            Operation::bo>;
-            using FaultOperation = std::variant<Operation::faultg,
-                                                Operation::faulte,
-                                                Operation::faultge,
-                                                Operation::faultl,
-                                                Operation::faultne,
-                                                Operation::faultle,
-                                                Operation::faulto>;
             void performOperation(const CTRLFormatInstruction&, Operation::b) noexcept;
             void performOperation(const CTRLFormatInstruction&, Operation::call) noexcept;
             void performOperation(const CTRLFormatInstruction&, Operation::ret) noexcept;
             void performOperation(const CTRLFormatInstruction&, Operation::bal) noexcept;
-            void performOperation(const CTRLFormatInstruction&, Operation::bno) noexcept;
-            void performOperation(const CTRLFormatInstruction&, Operation::faultno) noexcept;
-            void performOperation(const CTRLFormatInstruction&, ConditionalBranchOperation) noexcept;
-            void performOperation(const CTRLFormatInstruction&, FaultOperation) noexcept;
+            template<typename T, std::enable_if_t<IsCTRLFormat<T>, int> = 0> 
+            void performOperation(const CTRLFormatInstruction& inst, T) noexcept {
+                using K = std::decay_t<T>;
+                auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode());
+                if constexpr (IsConditionalBranchOperation<K>) {
+                    auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
+                    bool condition = false;
+                    if constexpr (std::is_same_v<K, Operation::bno>) {
+                        condition = _ac.getConditionCode() == 0;
+                    } else {
+                        condition =  (mask & _ac.getConditionCode()) || (mask == _ac.getConditionCode());
+                    }
+                    if (condition) {
+                        _instructionPointer = computeAlignedAddress(tmp + _instructionPointer);
+                    }
+                } else if constexpr (IsFaultOperation<K>) {
+                    auto condition = false;
+                    if constexpr (std::is_same_v<std::decay_t<T>, Operation::faultno>) {
+                        condition = _ac.getConditionCode() == 0b000;
+                    } else {
+                        condition = (mask && _ac.getConditionCode()) != 0b000;
+                    }
+                    if (condition) {
+                        generateFault(ConstraintFaultSubtype::Range);
+                    }
+                } else {
+                    static_assert(false_v<K>, "Unimplemented ctrl format instruction");
+                }
+            }
 
         private:
             void syncf() noexcept;

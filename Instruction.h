@@ -15,7 +15,19 @@ namespace i960 {
     class COBRFormatInstruction;
     class CTRLFormatInstruction;
     using DecodedInstruction = std::variant<std::monostate, REGFormatInstruction, MEMFormatInstruction, COBRFormatInstruction, CTRLFormatInstruction>;
+    using OpcodeNumericRange = std::tuple<OpcodeValue, OpcodeValue>;
     class Instruction {
+        public:
+            static constexpr OpcodeNumericRange REGFormat { 0x580, 0x800 };
+            static constexpr OpcodeNumericRange COBRFormat { 0x200, 0x400 };
+            static constexpr OpcodeNumericRange CTRLFormat { 0x000, 0x200 };
+            static constexpr OpcodeNumericRange MEMFormat { 0x800, 0x1000 };
+            using StandardOpcodeManipulator = OrdinalBitPattern<OpcodeValue, 0xFF00'0000, 20>;
+            using ExtendedOpcodeManipulator = OrdinalBitPattern<OpcodeValue, 0b11110000000, 7>;
+            using InstructionToOpcode = BinaryEncoderDecoder<SingleEncodedInstructionValue, StandardOpcodeManipulator, ExtendedOpcodeManipulator>;
+            using OpcodeValueStandardOpcode = SameWidthFragment<OpcodeValue, 0xFF0>;
+            using OpcodeValueExtendedOpcode = SameWidthFragment<OpcodeValue, 0x00F>;
+            using OpcodeValueGenerator = BinaryEncoderDecoder<OpcodeValue, OpcodeValueStandardOpcode, OpcodeValueExtendedOpcode>;
         public:
             /**
              * Construct a 64-bit opcode, the second EncodedInstructionValue may not
@@ -37,6 +49,9 @@ namespace i960 {
             ~Instruction() = default;
             constexpr auto getLowerHalf() const noexcept { return _enc; }
             constexpr auto getUpperHalf() const noexcept { return _second; }
+            constexpr auto getOpcodeComponents() const noexcept {
+                return InstructionToOpcode::decode(_enc);
+            }
             /**
              * Extract the 8-bit opcode as a 16-bit opcode to make it common to
              * REG format instructions; The lower 4 bits will be zero unless it
@@ -45,7 +60,7 @@ namespace i960 {
              * @return the 16-bit opcode
              */
             constexpr OpcodeValue getStandardOpcode() const noexcept {
-                return ((_enc >> 20) & 0x0FF0);
+                return StandardOpcodeManipulator::decodePattern(_enc);
             }
             constexpr OpcodeValue getExtendedOpcode() const noexcept {
                 // according to the documents, reg format opcodes 
@@ -57,25 +72,29 @@ namespace i960 {
                 // (special flags), (src1)
                 //  we want to shift the lower four bits to become the lowest four bits
                 //  so 58:0 becomes 0x0580 and 58:C -> 0x058C
-                return getStandardOpcode() | ((_enc >> 7) & 0xF);
+                return OpcodeValueGenerator::encode(getStandardOpcode(), ExtendedOpcodeManipulator::decodePattern(_enc));
+
             }
-            template<OpcodeValue start, OpcodeValue finish>
+            template<OpcodeNumericRange range>
             constexpr auto opcodeIsInRange() const noexcept {
                 auto standardOpcode = getStandardOpcode();
-                return (standardOpcode >= start) &&
-                    (standardOpcode < finish);
+                return (standardOpcode >= std::get<0>(range)) && (standardOpcode < std::get<1>(range));
             }
             constexpr auto isREGFormat() const noexcept {
-                return opcodeIsInRange<0x580, 0x800>();
+                //return opcodeIsInRange<0x580, 0x800>();
+                return opcodeIsInRange<REGFormat>();
             }
             constexpr auto isCOBRFormat() const noexcept {
-                return opcodeIsInRange<0x200, 0x400>();
+                //return opcodeIsInRange<0x200, 0x400>();
+                return opcodeIsInRange<COBRFormat>();
             }
             constexpr auto isCTRLFormat() const noexcept {
-                return getStandardOpcode() < 0x200;
+                //return getStandardOpcode() < 0x200;
+                return opcodeIsInRange<CTRLFormat>();
             }
             constexpr auto isMEMFormat() const noexcept {
-                return (getStandardOpcode() >= 0x800);
+                //return (getStandardOpcode() >= 0x800);
+                return opcodeIsInRange<MEMFormat>();
             }
             constexpr auto getOpcode() const noexcept {
                 if (isREGFormat()) {
@@ -107,34 +126,46 @@ namespace i960 {
             constexpr GenericFlags(ByteOrdinal flags) noexcept : _flags(flags) { }
             template<ByteOrdinal mask = 0xFF>
             constexpr auto getFlag() const noexcept { return (_flags & mask) != 0; }
+            template<typename Pattern>
+            constexpr auto getFlag() const noexcept { return Pattern::decodePattern(_flags) != 0; }
+            template<uint8_t position>
+            constexpr auto getFlagAtPosition() const noexcept { return ByteOrdinalFlagPattern<position>::decodePattern(_flags); }
             constexpr auto getValue() const noexcept { return _flags; }
         private:
             ByteOrdinal _flags;
     };
+
     class REGFlags : public GenericFlags {
         public:
             using Parent = GenericFlags;
+            using LowerTwoFlagBits = BitPattern<SingleEncodedInstructionValue, ByteOrdinal, 0b11'00000, 5>;
+            using UpperThreeFlagBits = BitPattern<SingleEncodedInstructionValue, ByteOrdinal, 0b111'0000'00'00000 , 9 >;
+            using FlagsFromInstruction = BinaryEncoderDecoder<SingleEncodedInstructionValue, LowerTwoFlagBits, UpperThreeFlagBits>;
             static constexpr ByteOrdinal decode(SingleEncodedInstructionValue value) noexcept {
-                auto lowerTwo = i960::decode<Ordinal, ByteOrdinal, 0b11'00000, 5>(value);
-                auto upperThree = i960::decode<Ordinal, ByteOrdinal, 0b111'0000'00'00000, 8>(value);
-                return lowerTwo | upperThree;
+                auto tup = FlagsFromInstruction::decode(value);
+                return std::get<0>(tup) | std::get<1>(tup);
             }
+            static_assert(LowerTwoFlagBits::encodePattern(0b11) == 0b11'00000);
+            static_assert(UpperThreeFlagBits::encodePattern(0b11100) == 0b111'0000'00'00000);
+            static_assert((static_cast<Ordinal>(0b11100) << 9) == (static_cast<Ordinal>(0b111'0000'00'00000)));
+            static_assert(FlagsFromInstruction::encode(0, 0b11, 0b11100) == 0b111'0000'11'00000);
         public:
             constexpr REGFlags(const Instruction& inst) noexcept : Parent(decode(inst.getLowerHalf())) { }
-            constexpr bool getM1()  const noexcept { return getFlag<0b10000>(); }
-            constexpr bool getM2()  const noexcept { return getFlag<0b01000>(); }
-            constexpr bool getM3()  const noexcept { return getFlag<0b00100>(); }
-            constexpr bool getSF1() const noexcept { return getFlag<0b00010>(); }
-            constexpr bool getSF2() const noexcept { return getFlag<0b00001>(); }
+            constexpr bool getM1()  const noexcept { return getFlagAtPosition<4>(); }
+            constexpr bool getM2()  const noexcept { return getFlagAtPosition<3>(); }
+            constexpr bool getM3()  const noexcept { return getFlagAtPosition<2>(); }
+            constexpr bool getSF1() const noexcept { return getFlagAtPosition<1>(); }
+            constexpr bool getSF2() const noexcept { return getFlagAtPosition<0>(); }
             constexpr SingleEncodedInstructionValue encode(SingleEncodedInstructionValue value) const noexcept {
-                auto lowerTwo = i960::encode<SingleEncodedInstructionValue, ByteOrdinal, 0b11'00000, 5>(value, getValue());
-                auto upperThree = i960::encode<SingleEncodedInstructionValue, ByteOrdinal, 0b111'0000'00'00000, 8>(value, getValue());
-                return lowerTwo | upperThree;
+                return FlagsFromInstruction::encode(value, getValue(), getValue());
             }
     };
     class HasSrc1 {
         public:
+            using EncoderDecoder = BitPattern<SingleEncodedInstructionValue, Ordinal, 0x1F, 0>;
+        public:
             constexpr explicit HasSrc1(Operand op) : _src1(op) { }
+            constexpr explicit HasSrc1(const Instruction& inst) : _src1(EncoderDecoder::decodePattern(inst.getLowerHalf())) { }
             ~HasSrc1() = default;
             constexpr auto getSrc1() const noexcept { return _src1; }
             void setSrc1(Operand op) noexcept { _src1 = op; }
@@ -143,8 +174,13 @@ namespace i960 {
             Operand _src1;
     };
     class HasSrc2 {
+        // constexpr Ordinal Mask = 0x000C7000;
+        // constexpr Ordinal Shift = 14;
+        public:
+            using EncoderDecoder = BitPattern<SingleEncodedInstructionValue, Ordinal, 0x000'C7'000, 14>;
         public:
             constexpr explicit HasSrc2(Operand op) : _src2(op) { }
+            constexpr explicit HasSrc2(const Instruction& inst) : _src2(EncoderDecoder::decodePattern(inst.getLowerHalf())) { }
             ~HasSrc2() = default;
             constexpr auto getSrc2() const noexcept { return _src2; }
             void setSrc2(Operand op) noexcept { _src2 = op; }
@@ -153,7 +189,10 @@ namespace i960 {
     };
     class HasSrcDest {
         public:
+            using EncoderDecoder = BitPattern<SingleEncodedInstructionValue, Ordinal, 0x00F80000, 19>;
+        public:
             constexpr explicit HasSrcDest(Operand op) : _srcDest(op) { }
+            constexpr explicit HasSrcDest(const Instruction& inst) : _srcDest(EncoderDecoder::decodePattern(inst.getLowerHalf())) { }
             ~HasSrcDest() = default;
             constexpr auto getSrcDest() const noexcept { return _srcDest; }
             void setSrcDest(Operand op) noexcept { _srcDest = op; }
@@ -178,9 +217,10 @@ namespace i960 {
     class COBRFlags : public GenericFlags {
         public:
             using Parent = GenericFlags;
+            static constexpr BitFragment<SingleEncodedInstructionValue, ByteOrdinal, 0b1'0000'0000'0000, 10> Part1{};
+            static constexpr BitFragment<SingleEncodedInstructionValue, ByteOrdinal, 0b11, 0> Part2{};
             static constexpr ByteOrdinal decode(SingleEncodedInstructionValue value) noexcept {
-                return i960::decode<SingleEncodedInstructionValue, ByteOrdinal, 0b1'0000'0000'0000, 10>(value) |
-                    i960::decode<SingleEncodedInstructionValue, ByteOrdinal, 0b11>(value);
+                return Part1.decode(value) | Part2.decode(value);
             }
         public:
             constexpr COBRFlags(const Instruction& inst) : Parent(decode(inst.getLowerHalf())) { }
@@ -188,8 +228,7 @@ namespace i960 {
             constexpr bool getT()  const noexcept { return getFlag<0b010>(); }
             constexpr bool getS2() const noexcept { return getFlag<0b001>(); }
             constexpr SingleEncodedInstructionValue encode(SingleEncodedInstructionValue value) const noexcept {
-                return i960::encode<Ordinal, ByteOrdinal, 0b1'0000'0000'0000, 10>(value, getValue()) |
-                    i960::encode<Ordinal, ByteOrdinal, 0b11, 0>(value, getValue());
+                return Part1.encode(value, getValue()) | Part2.encode(value, getValue());
             }
     };
     class COBRFormatInstruction : public GenericFormatInstruction, public COBRFlags, public HasSrcDest, public HasSrc2 {
@@ -317,8 +356,8 @@ namespace i960 {
         return decode<HalfOrdinal, Ordinal, 0x0FF0, 4>(ordinal);
     }
     constexpr Ordinal encodeMajorOpcode(Ordinal input, HalfOrdinal opcode) noexcept {
-        constexpr Ordinal majorOpcodeMask = 0xFF000000;
-        return encode<Ordinal, HalfOrdinal, majorOpcodeMask, 24>(input, getMajorOpcode(opcode));
+        constexpr ShiftMaskPair<decltype(input)> MajorOpcode { 0xFF00'0000, 24 };
+        return encode<Ordinal, HalfOrdinal, MajorOpcode>(input, getMajorOpcode(opcode));
     }
     constexpr Ordinal encodeMajorOpcode(HalfOrdinal opcode) noexcept {
         return encodeMajorOpcode(0, opcode);

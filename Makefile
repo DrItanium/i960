@@ -1,16 +1,13 @@
 include config.mk
 
-I960JX_OBJS := opcodes.o \
-	Operand.o \
+I960JX_OBJS := Operand.o \
 	Instruction.o
 I960JX_SIM_OBJS := sim960jx.o \
 	core.o \
-	dispatcher.o \
 	ProcessControls.o \
 	NormalRegister.o \
 	QuadRegister.o \
 	TripleRegister.o \
-	DoubleRegister.o \
 	ArithmeticControls.o \
 	$(I960JX_OBJS)
 I960JX_DEC_OBJS := decode960jx.o \
@@ -57,40 +54,9 @@ clean:
 
 
 
-ArithmeticControls.o: ArithmeticControls.cc types.h ArithmeticControls.h
-DoubleRegister.o: DoubleRegister.cc types.h DoubleRegister.h \
- NormalRegister.h ProcessControls.h
-NormalRegister.o: NormalRegister.cc NormalRegister.h types.h \
- ProcessControls.h
-Operand.o: Operand.cc Operand.h types.h
-ProcessControls.o: ProcessControls.cc ProcessControls.h types.h
-QuadRegister.o: QuadRegister.cc types.h QuadRegister.h NormalRegister.h \
- ProcessControls.h
-TripleRegister.o: TripleRegister.cc types.h TripleRegister.h \
- NormalRegister.h ProcessControls.h
-core.o: core.cc types.h core.h NormalRegister.h ProcessControls.h \
- DoubleRegister.h TripleRegister.h QuadRegister.h ArithmeticControls.h \
- memiface.h Operand.h Instruction.h InternalDataRam.h ConditionCode.h \
- conditional_kinds.def opcodes.h opcodes.def \
- ProcessorControlBlock.h MemoryMap.h
-
-decode960jx.o: decode960jx.cc types.h opcodes.h Instruction.h Operand.h \
- opcodes.def
-dispatcher.o: dispatcher.cc types.h core.h NormalRegister.h \
- ProcessControls.h DoubleRegister.h TripleRegister.h QuadRegister.h \
- ArithmeticControls.h memiface.h Operand.h Instruction.h \
- InternalDataRam.h ConditionCode.h conditional_kinds.def opcodes.h \
- opcodes.def
-opcodes.o: opcodes.cc types.h opcodes.h Instruction.h Operand.h \
- opcodes.def
-sim960jx.o: sim960jx.cc types.h NormalRegister.h ProcessControls.h \
- ArithmeticControls.h Operand.h opcodes.h Instruction.h \
- opcodes.def
 ArithmeticControls.o: ArithmeticControls.h types.h
 ConditionCode.o: ConditionCode.h types.h
-DoubleRegister.o: DoubleRegister.h types.h NormalRegister.h \
- ProcessControls.h
-Instruction.o: Instruction.h types.h Operand.h
+Instruction.o: Instruction.h types.h Operand.h opcodes.h opcodes.def
 InternalDataRam.o: InternalDataRam.h types.h
 MemoryMap.o: MemoryMap.h types.h
 NormalRegister.o: NormalRegister.h types.h ProcessControls.h
@@ -100,14 +66,32 @@ ProcessControls.o: ProcessControls.h types.h
 ProcessorControlBlock.o: ProcessorControlBlock.h types.h
 QuadRegister.o: QuadRegister.h types.h NormalRegister.h ProcessControls.h
 Records.o: Records.h types.h ProcessControls.h ArithmeticControls.h
+StartupRecord.o: StartupRecord.h types.h
 TripleRegister.o: TripleRegister.h types.h NormalRegister.h \
  ProcessControls.h
-bus.o: bus.h
 core.o: core.h types.h NormalRegister.h ProcessControls.h \
- DoubleRegister.h TripleRegister.h QuadRegister.h ArithmeticControls.h \
- memiface.h Operand.h Instruction.h InternalDataRam.h ConditionCode.h \
- conditional_kinds.def
+ TripleRegister.h QuadRegister.h ArithmeticControls.h memiface.h \
+ Operand.h Instruction.h opcodes.h opcodes.def InternalDataRam.h \
+ ConditionCode.h ProcessorControlBlock.h MemoryMap.h StartupRecord.h
 memiface.o: memiface.h types.h
-opcodes.o: opcodes.h types.h Instruction.h Operand.h opcodes.def
-operations.o: operations.h types.h
+opcodes.o: opcodes.h types.h opcodes.def
 types.o: types.h
+ArithmeticControls.o: ArithmeticControls.cc types.h ArithmeticControls.h
+Instruction.o: Instruction.cc Instruction.h types.h Operand.h opcodes.h \
+ opcodes.def
+NormalRegister.o: NormalRegister.cc NormalRegister.h types.h \
+ ProcessControls.h
+Operand.o: Operand.cc Operand.h types.h
+ProcessControls.o: ProcessControls.cc ProcessControls.h types.h
+QuadRegister.o: QuadRegister.cc types.h QuadRegister.h NormalRegister.h \
+ ProcessControls.h
+TripleRegister.o: TripleRegister.cc types.h TripleRegister.h \
+ NormalRegister.h ProcessControls.h
+core.o: core.cc types.h core.h NormalRegister.h ProcessControls.h \
+ TripleRegister.h QuadRegister.h ArithmeticControls.h memiface.h \
+ Operand.h Instruction.h opcodes.h opcodes.def InternalDataRam.h \
+ ConditionCode.h ProcessorControlBlock.h MemoryMap.h StartupRecord.h
+decode960jx.o: decode960jx.cc types.h opcodes.h opcodes.def Instruction.h \
+ Operand.h
+sim960jx.o: sim960jx.cc types.h NormalRegister.h ProcessControls.h \
+ ArithmeticControls.h Operand.h opcodes.h opcodes.def Instruction.h
