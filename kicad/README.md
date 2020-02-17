@@ -26,9 +26,5 @@ A special thanks to https://github.com/sparkfun/StupidArduinos (Thanks
 Sparkfun, you ROCK!) for publishing the source code to their Pro Micro-ATX. I
 lifted the Micro ATX board design directly from it. 
 
-One final thing, if you are curious and get the boards printed please note that
-they are four layer boards and the breakout board uses blind vias. So your
-choice of pcb manufacturers is quite limited. The MicroATX board does not use
-blind vias so you could use OshPark if you wanted but it was nearly a $1000 USD
-for three boards! I use AISLER (https://aisler.net/) and haven't had any problems with them. 
-They are also very well priced too!
+One final thing, if you are curious and get the boards printed please note that they are four layer boards. 
+So your choice of pcb manufacturers is quite limited. 
