@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A2 23386 16535
 encoding utf-8
-Sheet 1 1
+Sheet 1 2
 Title "i960Sx MicroAtx Motherboard"
 Date "2020-02-22"
 Rev "REV2"
@@ -156,4 +156,10 @@ F 3 "~" H 900 7350 50  0001 C CNN
 	1    900  7350
 	1    0    0    -1  
 $EndComp
+$Sheet
+S 2600 1400 1800 1000
+U 5E526074
+F0 "PCIExpressPort1" 50
+F1 "PCIExpressCustomPort.sch" 50
+$EndSheet
 $EndSCHEMATC
