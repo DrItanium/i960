@@ -1,0 +1,151 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 2
+Title "80960Sx Buffered Interface Board"
+Date "2020-03-01"
+Rev "3"
+Comp "Joshua Scoggins"
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L Oscillator:OCXO-14 X1
+U 1 1 5E620522
+P -2250 -250
+F 0 "X1" H -1906 -204 50  0000 L CNN
+F 1 "OCXO-14" H -1906 -295 50  0000 L CNN
+F 2 "Oscillator:Oscillator_DIP-14" H -1800 -600 50  0001 C CNN
+F 3 "http://www.petermann-technik.de/fileadmin/petermann/pdf/crystal-oscillators/OCXO-14_PETERMANN-TECHNIK.pdf" H -2550 -150 50  0001 C CNN
+	1    -2250 -250
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0112
+U 1 1 5E620B0A
+P -2250 200
+F 0 "#PWR0112" H -2250 -50 50  0001 C CNN
+F 1 "GND" H -2245 27  50  0000 C CNN
+F 2 "" H -2250 200 50  0001 C CNN
+F 3 "" H -2250 200 50  0001 C CNN
+	1    -2250 200 
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+5V #PWR0113
+U 1 1 5E6211B3
+P -2250 -800
+F 0 "#PWR0113" H -2250 -950 50  0001 C CNN
+F 1 "+5V" H -2235 -627 50  0000 C CNN
+F 2 "" H -2250 -800 50  0001 C CNN
+F 3 "" H -2250 -800 50  0001 C CNN
+	1    -2250 -800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	-1500 -250 -1950 -250
+Text Label -1500 -250 0    50   ~ 0
+CLK2
+Wire Wire Line
+	-2250 50   -2250 200 
+Wire Wire Line
+	-2250 -550 -2250 -800
+NoConn ~ -2750 -250
+$Comp
+L power:PWR_FLAG #FLG0102
+U 1 1 5E694ACD
+P 9500 -1450
+F 0 "#FLG0102" H 9500 -1375 50  0001 C CNN
+F 1 "PWR_FLAG" H 9500 -1277 50  0000 C CNN
+F 2 "" H 9500 -1450 50  0001 C CNN
+F 3 "~" H 9500 -1450 50  0001 C CNN
+	1    9500 -1450
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0130
+U 1 1 5E695EA7
+P 9450 -1050
+F 0 "#PWR0130" H 9450 -1300 50  0001 C CNN
+F 1 "GND" H 9455 -1223 50  0000 C CNN
+F 2 "" H 9450 -1050 50  0001 C CNN
+F 3 "" H 9450 -1050 50  0001 C CNN
+	1    9450 -1050
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9450 -1050 9450 -1450
+Wire Wire Line
+	9450 -1450 9500 -1450
+Wire Wire Line
+	9100 -1050 9100 -1450
+$Comp
+L power:+5V #PWR0129
+U 1 1 5E687F6F
+P 9100 -1050
+F 0 "#PWR0129" H 9100 -1200 50  0001 C CNN
+F 1 "+5V" H 9115 -877 50  0000 C CNN
+F 2 "" H 9100 -1050 50  0001 C CNN
+F 3 "" H 9100 -1050 50  0001 C CNN
+	1    9100 -1050
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:PWR_FLAG #FLG0101
+U 1 1 5E685A7B
+P 9100 -1450
+F 0 "#FLG0101" H 9100 -1375 50  0001 C CNN
+F 1 "PWR_FLAG" H 9100 -1277 50  0000 C CNN
+F 2 "" H 9100 -1450 50  0001 C CNN
+F 3 "~" H 9100 -1450 50  0001 C CNN
+	1    9100 -1450
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:LED D1
+U 1 1 5E5AF325
+P 2750 2700
+F 0 "D1" V 2697 2779 50  0000 L CNN
+F 1 "POWER LED" V 2788 2779 50  0000 L CNN
+F 2 "LED_THT:LED_D5.0mm" H 2750 2700 50  0001 C CNN
+F 3 "~" H 2750 2700 50  0001 C CNN
+	1    2750 2700
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R2
+U 1 1 5E5AFEB4
+P 2750 3250
+F 0 "R2" H 2820 3296 50  0000 L CNN
+F 1 "330" H 2820 3205 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 2680 3250 50  0001 C CNN
+F 3 "~" H 2750 3250 50  0001 C CNN
+	1    2750 3250
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2750 3100 2750 2850
+Wire Wire Line
+	2750 3400 2750 4000
+$Comp
+L power:+5V #PWR01
+U 1 1 5E628474
+P 2750 4000
+F 0 "#PWR01" H 2750 3850 50  0001 C CNN
+F 1 "+5V" H 2765 4173 50  0000 C CNN
+F 2 "" H 2750 4000 50  0001 C CNN
+F 3 "" H 2750 4000 50  0001 C CNN
+	1    2750 4000
+	-1   0    0    1   
+$EndComp
+$Sheet
+S 1050 1350 1700 700 
+U 5E5D51D3
+F0 "80960 CPU" 50
+F1 "MPU.sch" 50
+$EndSheet
+$EndSCHEMATC
