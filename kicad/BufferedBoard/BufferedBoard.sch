@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 1 4
+Sheet 1 5
 Title "80960Sx Buffered Interface Board"
 Date "2020-03-01"
 Rev "1"

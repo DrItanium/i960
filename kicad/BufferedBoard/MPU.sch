@@ -3,7 +3,7 @@ EELAYER 30 0
 EELAYER END
 $Descr A3 16535 11693
 encoding utf-8
-Sheet 2 4
+Sheet 2 5
 Title "80960Sx Buffered Interface Board"
 Date "2020-03-01"
 Rev "1"
@@ -611,33 +611,33 @@ Wire Wire Line
 	4500 3450 5000 3450
 Wire Wire Line
 	4500 3350 5000 3350
-Text Label 2200 5050 2    50   ~ 0
+Text Label 2200 5050 0    50   ~ 0
 AD1
-Text Label 2200 4950 2    50   ~ 0
+Text Label 2200 4950 0    50   ~ 0
 AD2
-Text Label 2200 4850 2    50   ~ 0
+Text Label 2200 4850 0    50   ~ 0
 AD3
-Text Label 2200 4750 2    50   ~ 0
+Text Label 2200 4750 0    50   ~ 0
 AD4
-Text Label 2200 4650 2    50   ~ 0
+Text Label 2200 4650 0    50   ~ 0
 AD5
-Text Label 2200 4550 2    50   ~ 0
+Text Label 2200 4550 0    50   ~ 0
 AD6
-Text Label 2200 4450 2    50   ~ 0
+Text Label 2200 4450 0    50   ~ 0
 AD7
-Text Label 2200 4350 2    50   ~ 0
+Text Label 2200 4350 0    50   ~ 0
 AD8
-Text Label 2200 4250 2    50   ~ 0
+Text Label 2200 4250 0    50   ~ 0
 AD9
-Text Label 2200 4150 2    50   ~ 0
+Text Label 2200 4150 0    50   ~ 0
 AD10
-Text Label 2200 4050 2    50   ~ 0
+Text Label 2200 4050 0    50   ~ 0
 AD11
-Text Label 2200 3950 2    50   ~ 0
+Text Label 2200 3950 0    50   ~ 0
 AD12
-Text Label 2200 3850 2    50   ~ 0
+Text Label 2200 3850 0    50   ~ 0
 AD13
-Text Label 2200 3750 2    50   ~ 0
+Text Label 2200 3750 0    50   ~ 0
 AD14
 Wire Wire Line
 	2700 5050 2200 5050
@@ -667,7 +667,7 @@ Wire Wire Line
 	2700 3850 2200 3850
 Wire Wire Line
 	2700 3750 2200 3750
-Text Label 2200 3650 2    50   ~ 0
+Text Label 2200 3650 0    50   ~ 0
 AD15
 Wire Wire Line
 	2700 3650 2200 3650
@@ -677,10 +677,8 @@ Wire Wire Line
 	2700 3450 2200 3450
 Wire Wire Line
 	2700 3350 2200 3350
-Text Label 2350 5150 2    50   ~ 0
+Text Label 2200 5150 0    50   ~ 0
 D0
-Wire Wire Line
-	2350 5150 2700 5150
 Wire Wire Line
 	2700 5300 2350 5300
 Wire Wire Line
@@ -780,24 +778,6 @@ Text Label 3700 1100 1    50   ~ 0
 VCC1
 Text Label 3800 1100 1    50   ~ 0
 VCC0
-Text HLabel 2200 2050 0    50   Input ~ 0
-A31
-Text HLabel 2200 2150 0    50   Input ~ 0
-A30
-Text HLabel 2200 2250 0    50   Input ~ 0
-A29
-Text HLabel 2200 2350 0    50   Input ~ 0
-A28
-Text HLabel 2200 2450 0    50   Input ~ 0
-A27
-Text HLabel 2200 2550 0    50   Input ~ 0
-A26
-Text HLabel 2200 2650 0    50   Input ~ 0
-A25
-Text HLabel 2200 2750 0    50   Input ~ 0
-A24
-Text HLabel 2200 2850 0    50   Input ~ 0
-A23
 Wire Wire Line
 	2700 2350 2200 2350
 Wire Wire Line
@@ -810,20 +790,6 @@ Wire Wire Line
 	2700 2750 2200 2750
 Wire Wire Line
 	2200 2850 2700 2850
-Text HLabel 2200 2950 0    50   Input ~ 0
-A22
-Text HLabel 2200 3050 0    50   Input ~ 0
-A21
-Text HLabel 2200 3150 0    50   Input ~ 0
-A20
-Text HLabel 2200 3250 0    50   Input ~ 0
-A19
-Text HLabel 2200 3350 0    50   Input ~ 0
-A18
-Text HLabel 2200 3450 0    50   Input ~ 0
-A17
-Text HLabel 2200 3550 0    50   Input ~ 0
-A16
 Text HLabel 2350 5300 0    50   Input ~ 0
 A2
 Text HLabel 2350 5400 0    50   Input ~ 0
@@ -920,29 +886,330 @@ F21 "RCLK" I R 11300 7500 50
 F22 "~OE" I R 11300 7600 50 
 $EndSheet
 $Sheet
-S 7150 5950 550  3650
+S 6450 5950 550  3650
 U 5E6A0ABB
 F0 "Address Latch" 50
-F1 "ADWriteLines.sch" 50
-F2 "D0" I L 7150 6050 50 
-F3 "AD1" I L 7150 6150 50 
-F4 "AD2" I L 7150 6250 50 
-F5 "AD3" I L 7150 6350 50 
-F6 "AD4" I L 7150 6450 50 
-F7 "AD5" I L 7150 6550 50 
-F8 "AD6" I L 7150 6650 50 
-F9 "AD7" I L 7150 6750 50 
-F10 "AD8" I L 7150 6850 50 
-F11 "AD9" I L 7150 6950 50 
-F12 "AD10" I L 7150 7050 50 
-F13 "AD11" I L 7150 7150 50 
-F14 "AD12" I L 7150 7250 50 
-F15 "AD13" I L 7150 7350 50 
-F16 "AD14" I L 7150 7450 50 
-F17 "AD15" I L 7150 7550 50 
-F18 "AD_OUT" O R 7700 9250 50 
-F19 "SH,~LD" I R 7700 9350 50 
-F20 "CLK" I R 7700 9450 50 
-F21 "~POPULATE" I R 7700 9550 50 
+F1 "AddressLines.sch" 50
+F2 "AD1" I L 6450 6150 50 
+F3 "AD2" I L 6450 6250 50 
+F4 "AD3" I L 6450 6350 50 
+F5 "AD4" I L 6450 6450 50 
+F6 "AD5" I L 6450 6550 50 
+F7 "AD6" I L 6450 6650 50 
+F8 "AD7" I L 6450 6750 50 
+F9 "AD8" I L 6450 6850 50 
+F10 "AD9" I L 6450 6950 50 
+F11 "AD10" I L 6450 7050 50 
+F12 "AD11" I L 6450 7150 50 
+F13 "AD12" I L 6450 7250 50 
+F14 "AD13" I L 6450 7350 50 
+F15 "AD14" I L 6450 7450 50 
+F16 "AD15" I L 6450 7550 50 
+F17 "AD_OUT" O R 7000 9250 50 
+F18 "SH,~LD" I R 7000 9350 50 
+F19 "CLK" I R 7000 9450 50 
+F20 "~POPULATE" I R 7000 9550 50 
+F21 "A16" I L 6450 7650 50 
+F22 "A17" I L 6450 7750 50 
+F23 "A18" I L 6450 7850 50 
+F24 "A19" I L 6450 7950 50 
+F25 "A20" I L 6450 8050 50 
+F26 "A21" I L 6450 8150 50 
+F27 "A22" I L 6450 8250 50 
+F28 "A23" I L 6450 8350 50 
+F29 "A24" I L 6450 8450 50 
+F30 "A25" I L 6450 8550 50 
+F31 "A26" I L 6450 8650 50 
+F32 "A27" I L 6450 8750 50 
+F33 "A28" I L 6450 8850 50 
+F34 "A29" I L 6450 8950 50 
+F35 "A30" I L 6450 9050 50 
+F36 "A31" I L 6450 9150 50 
 $EndSheet
+Text Label 2200 2050 0    50   ~ 0
+A31
+Text Label 2200 2150 0    50   ~ 0
+A30
+Text Label 2200 2250 0    50   ~ 0
+A29
+Text Label 2200 2350 0    50   ~ 0
+A28
+Text Label 2200 2450 0    50   ~ 0
+A27
+Text Label 2200 2550 0    50   ~ 0
+A26
+Text Label 2200 2650 0    50   ~ 0
+A25
+Text Label 2200 2750 0    50   ~ 0
+A24
+Text Label 2200 2850 0    50   ~ 0
+A23
+Text Label 2200 2950 0    50   ~ 0
+A22
+Text Label 2200 3050 0    50   ~ 0
+A21
+Text Label 2200 3150 0    50   ~ 0
+A20
+Text Label 2200 3250 0    50   ~ 0
+A19
+Text Label 2200 3350 0    50   ~ 0
+A18
+Text Label 2200 3450 0    50   ~ 0
+A17
+Text Label 2200 3550 0    50   ~ 0
+A16
+Wire Wire Line
+	2200 5150 2700 5150
+Text Label 5950 6150 0    50   ~ 0
+AD1
+Text Label 5950 6250 0    50   ~ 0
+AD2
+Text Label 5950 6350 0    50   ~ 0
+AD3
+Text Label 5950 6450 0    50   ~ 0
+AD4
+Text Label 5950 6550 0    50   ~ 0
+AD5
+Text Label 5950 6650 0    50   ~ 0
+AD6
+Text Label 5950 6750 0    50   ~ 0
+AD7
+Text Label 5950 6850 0    50   ~ 0
+AD8
+Text Label 5950 6950 0    50   ~ 0
+AD9
+Text Label 5950 7050 0    50   ~ 0
+AD10
+Text Label 5950 7150 0    50   ~ 0
+AD11
+Text Label 5950 7250 0    50   ~ 0
+AD12
+Text Label 5950 7350 0    50   ~ 0
+AD13
+Text Label 5950 7450 0    50   ~ 0
+AD14
+Wire Wire Line
+	6450 6150 5950 6150
+Wire Wire Line
+	6450 6250 5950 6250
+Wire Wire Line
+	6450 6350 5950 6350
+Wire Wire Line
+	6450 6450 5950 6450
+Wire Wire Line
+	6450 6650 5950 6650
+Wire Wire Line
+	6450 6750 5950 6750
+Wire Wire Line
+	6450 6850 5950 6850
+Wire Wire Line
+	6450 6950 5950 6950
+Wire Wire Line
+	6450 7050 5950 7050
+Wire Wire Line
+	6450 7150 5950 7150
+Wire Wire Line
+	6450 7250 5950 7250
+Wire Wire Line
+	6450 7350 5950 7350
+Wire Wire Line
+	6450 7450 5950 7450
+Text Label 5950 7550 0    50   ~ 0
+AD15
+Wire Wire Line
+	6450 7550 5950 7550
+Wire Wire Line
+	6450 7650 5950 7650
+Wire Wire Line
+	6450 7750 5950 7750
+Wire Wire Line
+	6450 7850 5950 7850
+Wire Wire Line
+	6450 7950 5950 7950
+Wire Wire Line
+	5950 8050 6450 8050
+Wire Wire Line
+	6450 8150 5950 8150
+Wire Wire Line
+	5950 8250 6450 8250
+Wire Wire Line
+	5950 8950 6450 8950
+Wire Wire Line
+	6450 9050 5950 9050
+Wire Wire Line
+	5950 9150 6450 9150
+Wire Wire Line
+	6450 8850 5950 8850
+Wire Wire Line
+	5950 8750 6450 8750
+Wire Wire Line
+	6450 8650 5950 8650
+Wire Wire Line
+	5950 8550 6450 8550
+Wire Wire Line
+	6450 8450 5950 8450
+Wire Wire Line
+	5950 8350 6450 8350
+Text Label 5950 9150 0    50   ~ 0
+A31
+Text Label 5950 9050 0    50   ~ 0
+A30
+Text Label 5950 8950 0    50   ~ 0
+A29
+Text Label 5950 8850 0    50   ~ 0
+A28
+Text Label 5950 8750 0    50   ~ 0
+A27
+Text Label 5950 8650 0    50   ~ 0
+A26
+Text Label 5950 8550 0    50   ~ 0
+A25
+Text Label 5950 8450 0    50   ~ 0
+A24
+Text Label 5950 8350 0    50   ~ 0
+A23
+Text Label 5950 8250 0    50   ~ 0
+A22
+Text Label 5950 8150 0    50   ~ 0
+A21
+Text Label 5950 8050 0    50   ~ 0
+A20
+Text Label 5950 7950 0    50   ~ 0
+A19
+Text Label 5950 7850 0    50   ~ 0
+A18
+Text Label 5950 7750 0    50   ~ 0
+A17
+Text Label 5950 7650 0    50   ~ 0
+A16
+Wire Wire Line
+	6450 6550 5950 6550
+Text Label 8400 6150 0    50   ~ 0
+AD1
+Text Label 8400 6250 0    50   ~ 0
+AD2
+Text Label 8400 6350 0    50   ~ 0
+AD3
+Text Label 8400 6450 0    50   ~ 0
+AD4
+Text Label 8400 6550 0    50   ~ 0
+AD5
+Text Label 8400 6650 0    50   ~ 0
+AD6
+Text Label 8400 6750 0    50   ~ 0
+AD7
+Text Label 8400 6850 0    50   ~ 0
+AD8
+Text Label 8400 6950 0    50   ~ 0
+AD9
+Text Label 8400 7050 0    50   ~ 0
+AD10
+Text Label 8400 7150 0    50   ~ 0
+AD11
+Text Label 8400 7250 0    50   ~ 0
+AD12
+Text Label 8400 7350 0    50   ~ 0
+AD13
+Text Label 8400 7450 0    50   ~ 0
+AD14
+Wire Wire Line
+	8900 6150 8400 6150
+Wire Wire Line
+	8900 6250 8400 6250
+Wire Wire Line
+	8900 6350 8400 6350
+Wire Wire Line
+	8900 6450 8400 6450
+Wire Wire Line
+	8900 6650 8400 6650
+Wire Wire Line
+	8900 6750 8400 6750
+Wire Wire Line
+	8900 6850 8400 6850
+Wire Wire Line
+	8900 6950 8400 6950
+Wire Wire Line
+	8900 7050 8400 7050
+Wire Wire Line
+	8900 7150 8400 7150
+Wire Wire Line
+	8900 7250 8400 7250
+Wire Wire Line
+	8900 7350 8400 7350
+Wire Wire Line
+	8900 7450 8400 7450
+Text Label 8400 7550 0    50   ~ 0
+AD15
+Wire Wire Line
+	8900 7550 8400 7550
+Text Label 8400 6050 0    50   ~ 0
+D0
+Wire Wire Line
+	8400 6050 8900 6050
+Wire Wire Line
+	8900 6550 8400 6550
+Text Label 10300 5700 0    50   ~ 0
+AD1
+Text Label 10300 5800 0    50   ~ 0
+AD2
+Text Label 10300 5900 0    50   ~ 0
+AD3
+Text Label 10300 6000 0    50   ~ 0
+AD4
+Text Label 10300 6100 0    50   ~ 0
+AD5
+Text Label 10300 6200 0    50   ~ 0
+AD6
+Text Label 10300 6300 0    50   ~ 0
+AD7
+Text Label 10300 6400 0    50   ~ 0
+AD8
+Text Label 10300 6500 0    50   ~ 0
+AD9
+Text Label 10300 6600 0    50   ~ 0
+AD10
+Text Label 10300 6700 0    50   ~ 0
+AD11
+Text Label 10300 6800 0    50   ~ 0
+AD12
+Text Label 10300 6900 0    50   ~ 0
+AD13
+Text Label 10300 7000 0    50   ~ 0
+AD14
+Wire Wire Line
+	10800 5700 10300 5700
+Wire Wire Line
+	10800 5800 10300 5800
+Wire Wire Line
+	10800 5900 10300 5900
+Wire Wire Line
+	10800 6000 10300 6000
+Wire Wire Line
+	10800 6200 10300 6200
+Wire Wire Line
+	10800 6300 10300 6300
+Wire Wire Line
+	10800 6400 10300 6400
+Wire Wire Line
+	10800 6500 10300 6500
+Wire Wire Line
+	10800 6600 10300 6600
+Wire Wire Line
+	10800 6700 10300 6700
+Wire Wire Line
+	10800 6800 10300 6800
+Wire Wire Line
+	10800 6900 10300 6900
+Wire Wire Line
+	10800 7000 10300 7000
+Text Label 10300 7100 0    50   ~ 0
+AD15
+Wire Wire Line
+	10800 7100 10300 7100
+Text Label 10300 5600 0    50   ~ 0
+D0
+Wire Wire Line
+	10300 5600 10800 5600
+Wire Wire Line
+	10800 6100 10300 6100
 $EndSCHEMATC
