@@ -790,17 +790,17 @@ Wire Wire Line
 	2700 2750 2200 2750
 Wire Wire Line
 	2200 2850 2700 2850
-Text HLabel 2350 5300 0    50   Input ~ 0
+Text HLabel 2350 5300 0    50   3State ~ 0
 A2
-Text HLabel 2350 5400 0    50   Input ~ 0
+Text HLabel 2350 5400 0    50   3State ~ 0
 A3
-Text HLabel 2350 5500 0    50   Input ~ 0
+Text HLabel 2350 5500 0    50   3State ~ 0
 A1
 Text HLabel 5450 5250 2    50   Input ~ 0
 ~LOCK
 Text HLabel 5450 5150 2    50   Input ~ 0
 WR
-Text HLabel 5000 5050 2    50   Input ~ 0
+Text HLabel 5000 5050 2    50   3State ~ 0
 ~BLAST
 Text HLabel 5000 4950 2    50   Input ~ 0
 DTR
@@ -810,7 +810,7 @@ Text HLabel 5000 4700 2    50   Input ~ 0
 ~RESET
 Text HLabel 4900 4600 2    50   Input ~ 0
 CLK2
-Text HLabel 5000 4500 2    50   Input ~ 0
+Text HLabel 5000 4500 2    50   3State ~ 0
 HLDA
 Text HLabel 5000 4400 2    50   Input ~ 0
 HOLD
@@ -821,13 +821,13 @@ ALE
 Text HLabel 5000 4100 2    50   Input ~ 0
 ~AS
 Text HLabel 5000 3350 2    50   Input ~ 0
-INT0
+~INT0
 Text HLabel 5000 3450 2    50   Input ~ 0
 INT1
 Text HLabel 5000 3550 2    50   Input ~ 0
 INT2
 Text HLabel 5000 3650 2    50   Input ~ 0
-INT3
+~INT3
 $Sheet
 S 8900 5950 550  3650
 U 5E65DE33
@@ -854,9 +854,9 @@ F19 "SH,~LD" I R 9450 9350 50
 F20 "CLK" I R 9450 9450 50 
 F21 "~POPULATE" I R 9450 9550 50 
 $EndSheet
-Text HLabel 2350 5650 0    50   Input ~ 0
+Text HLabel 2350 5650 0    50   3State ~ 0
 ~BE0
-Text HLabel 2350 5750 0    50   Input ~ 0
+Text HLabel 2350 5750 0    50   3State ~ 0
 ~BE1
 $Sheet
 S 10800 5550 500  2500
@@ -1212,4 +1212,44 @@ Wire Wire Line
 	10300 5600 10800 5600
 Wire Wire Line
 	10800 6100 10300 6100
+Wire Wire Line
+	7000 9250 7550 9250
+Wire Wire Line
+	7000 9350 7550 9350
+Wire Wire Line
+	7000 9450 7550 9450
+Wire Wire Line
+	7000 9550 7550 9550
+Wire Wire Line
+	9450 9250 9850 9250
+Wire Wire Line
+	9450 9350 9850 9350
+Wire Wire Line
+	9450 9450 9850 9450
+Wire Wire Line
+	9450 9550 9850 9550
+Wire Wire Line
+	11300 7200 11800 7200
+Wire Wire Line
+	11300 7300 11800 7300
+Wire Wire Line
+	11300 7400 11800 7400
+Wire Wire Line
+	11300 7500 11800 7500
+Wire Wire Line
+	11300 7600 11800 7600
+Text HLabel 11800 7200 2    50   Input ~ 0
+LOAD_PORT_SERIAL_IN
+Text HLabel 7550 9250 2    50   Output ~ 0
+ADDRESS_OUT
+Text HLabel 7550 9450 2    50   Input ~ 0
+EXTERNAL_CLOCK_OUT
+Text HLabel 9850 9450 2    50   Input ~ 0
+EXTERNAL_CLOCK_OUT
+Text HLabel 9850 9250 2    50   Output ~ 0
+DATA_OUT
+Text Label 5950 6050 0    50   ~ 0
+D0
+Wire Wire Line
+	6450 6050 5950 6050
 $EndSCHEMATC
