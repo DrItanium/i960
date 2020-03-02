@@ -3,11 +3,11 @@ EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 3 3
+Sheet 3 4
 Title ""
-Date ""
-Rev ""
-Comp ""
+Date "2020-03-01"
+Rev "1"
+Comp "Joshua Scoggins"
 Comment1 ""
 Comment2 ""
 Comment3 ""
@@ -161,9 +161,9 @@ CLK
 Text HLabel 1100 4050 0    50   Input ~ 0
 CLK
 Text HLabel 1100 2350 0    50   Input ~ 0
-~ABSORB
+~POPULATE
 Text HLabel 1100 4250 0    50   Input ~ 0
-~ABSORB
+~POPULATE
 $Comp
 L Device:C C?
 U 1 1 5E66B5EC
