@@ -41,6 +41,9 @@ $(I960JX_DEC_PROG): $(I960JX_DEC_OBJS)
 .cc.o :
 	@echo CXX $<
 	@${CXX} ${CXXFLAGS} -c $< -o $@
+.cpp.o :
+	@echo CXX $<
+	@${CXX} ${CXXFLAGS} -c $< -o $@
 
 clean: 
 	@echo Cleaning...
