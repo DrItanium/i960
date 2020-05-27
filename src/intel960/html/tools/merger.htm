@@ -1,0 +1,87 @@
+<HTML>
+
+<HEAD>
+
+<TITLE>Profile Merger (gmpf960)</TITLE>
+
+<META NAME="AUTHOR" CONTENT="David M. Gaffney">
+<META NAME="GENERATOR" CONTENT="Internet Assistant for Microsoft Word 2.0z Beta">
+</HEAD>
+
+<BODY>
+
+<H1>
+<CENTER>
+gmpf960 Profile Merger 
+</CENTER>
+</H1>
+
+<HR>
+
+<P>
+The gmpf960 utility merges the profile data from multiple executions
+of an instrumented program into a single file. gcdm960, the optimization
+decision making utility, uses this merged profile data as input.
+<P>
+The invocation command is:
+<P>
+<TT><B><FONT SIZE=4 FACE="Courier New">gmpf960</FONT></B><FONT SIZE=4 FACE="Courier New">
+[ <B>-</B><I>option</I> ]... { <B>-spf</B> | <B>-o </B>} <I>outfile</I>
+<I>infile</I> ...</FONT></TT> 
+<P>
+In Windows*, you can use a <TT><B><FONT SIZE=4 FACE="Courier New">/</FONT></B></TT>
+character instead of the <TT><B><FONT SIZE=4 FACE="Courier New">-</FONT></B></TT>
+character preceding each option. The options are listed below.
+<P>
+Using <TT><B><FONT SIZE=4 FACE="Courier New">spf </FONT></B><I><FONT SIZE=4 FACE="Courier New">outfile
+</FONT></I></TT>creates an output file containing a self-contained
+profile.
+<P>
+Using<TT><FONT SIZE=4 FACE="Courier New"> <B>o </B><I>outfile
+</I></FONT></TT>creates an output file containing a raw profile.
+<P>
+Use <TT><I><FONT SIZE=4 FACE="Courier New">infile</FONT></I></TT>
+to specify an input file. 
+<HR>
+
+<H2><FONT SIZE=5>Options</FONT></H2>
+
+<UL>
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">h<BR>
+</FONT></B></TT>prints help to <TT><B><FONT SIZE=4 FACE="Courier New">stdout</FONT></B></TT>
+and exits.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">rprofile<BR>
+</FONT></B></TT>prints how many times the counters for each block
+were incremented to <TT><B><FONT SIZE=4 FACE="Courier New">stdout</FONT></B></TT>.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">t<BR>
+</FONT></B></TT>specifies that all input files are in text format.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">v960<BR>
+</FONT></B></TT>displays version and exits.
+<LI><TT><B><FONT SIZE=4 FACE="Courier New">Z </FONT></B><I><FONT SIZE=4 FACE="Courier New">pdb_dir
+<BR>
+</FONT></I></TT>specifies program database (PDB) directory. If
+the merged output or any of the inputs is a self-contained profile,
+you must specify the PDB with the <TT><B><FONT SIZE=4 FACE="Courier New">Z</FONT></B></TT>
+option or via the <TT><B><FONT SIZE=4 FACE="Courier New">G960PDB</FONT></B></TT>
+or <TT><B><FONT SIZE=4 FACE="Courier New">I960PDB</FONT></B></TT>
+environment variable. 
+</UL>
+
+<P>
+See Chapters 4 through 6 of your compiler manual for related information.
+<HR>
+
+<P>
+<A HREF="#top"><IMG SRC="../icons/uparw.gif" ALIGN="BOTTOM"></A><I>Return
+to the top of this page.</I> 
+<P>
+<A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the ic960 Interface Index.</I> 
+<P>
+<A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" ALIGN="BOTTOM"></A><I>Go
+to the gcc960 Interface Index.</I> 
+</BODY>
+
+</HTML>
+
+

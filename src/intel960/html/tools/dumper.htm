@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>Dumper (dmp960/gdmp960) </TITLE>
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.0b6Gold (WinNT; I) [Netscape]">
+</HEAD>
+<BODY>
+
+<H1 ALIGN=CENTER>dmp960/gdmp960<A NAME="top"></A>Dumper/Disassembler</H1>
+
+<P>
+<HR></P>
+
+<P>The dumper/disassembler provides access to binary information in executable
+or relocatable object files. The dmp960/gdmp960 utility combines the features
+of traditional disassemblers and dumpers.</P>
+
+<P>The invocation command is:</P>
+
+<DL>
+<DT><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>dmp960</B> | <B>gdmp960</B>
+[ <I>option</I> ]... <I>filename</I>...</FONT></FONT></TT></DT>
+</DL>
+
+<P>The options (listed below) either select which part of the object file
+to display, or control the formatting of the display. The default selection
+option is <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>d</FONT></FONT></TT></B>,
+which dumps the sections of an object file that are loaded in target memory.
+Each option must be preceded by a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>-</FONT></FONT></TT></B>
+character. (In Windows*, you can also use a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>/</FONT></FONT></TT></B>
+character.)
+<HR></P>
+
+<H3><A NAME="options"></A>Options</H3>
+
+<P>
+<HR></P>
+
+<UL>
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>a<BR>
+</FONT></FONT></TT></B>Disassembles all sections in an object file. Use
+this to examine the raw DWARF information in a file.</LI>
+
+<LI><TT><B>A</B><I>{ SA | SB | KA |KB | CA | CF | JA | JD | JF | HA | HD
+| HT | RP | CORE0 | CORE1 | CORE2 | CORE3}<BR>
+</I></TT>Outputs assembly language code specific to any i960 processor
+type. The <TT>CORE0-3</TT> options let you create code that is compatible
+with a group of processors. Here are the types of i960 processors that
+are supported by each <TT>CORE </TT>switch:<BR>
+<TT>CORE0</TT>	=<TT> </TT>Jx, Hx, RP<BR>
+<TT>CORE1</TT>	= All 80960 architectures<BR>
+<TT>CORE2</TT>	= Jx, Hx, RP<BR>
+<TT>CORE3	= </TT>Cx, Jx, Hx</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>c<BR>
+</FONT></FONT></TT></B>Displays the string table.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>D<BR>
+</FONT></FONT></TT></B>Disassembles sections as hexadecimal bytes, regardless
+of the section type. The physical address of every fourth word appears
+at the beginning of each line.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>d<BR>
+</FONT></FONT></TT></B>Disassembles all sections loaded into target memory.
+Unless otherwise specified, text sections appear as assembly language,
+and data sections appear as hexadecimal bytes. If no options are specified
+when invoking the dumper, -d is assumed as the default option.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>e<BR>
+</FONT></FONT></TT></B>Applies all command line options to each member of an 
+archive file.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>F </B><I>function<BR>
+</I></FONT></FONT></TT>Disassembles the specified COFF or ELF function.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>f<BR>
+</FONT></FONT></TT></B>Displays the file header.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>g</B>[<I>arg</I>]<B>…<BR>
+</B></FONT></FONT></TT>Dumps one or more .debug_* sections. The default
+argument is i (.debug_info). Use the following arguments to specify a different
+section, or multiple sections:<BR>
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>i</FONT></FONT></TT></B>
+dump <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>.debug_info<BR>
+l</FONT></FONT></TT></B> dump <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>.debug_line<BR>
+f</FONT></FONT></TT></B> dump <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>.debug_frame<BR>
+p</FONT></FONT></TT></B> dump <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>.debug_pubnames<BR>
+a</FONT></FONT></TT></B> dump <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>.debug_aranges<BR>
+m</FONT></FONT></TT></B> dump <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>.debug_macinfo<BR>
+A</FONT></FONT></TT></B> dump all <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>.debug_*</FONT></FONT></TT></B>
+sections</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>h<BR>
+</FONT></FONT></TT></B>Displays the section headers.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>help<BR>
+</FONT></FONT></TT></B>Displays help information and exits.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>i<BR>
+</FONT></FONT></TT></B>Display the COFF optional header.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>l<BR>
+</FONT></FONT></TT></B>Displays the line numbers.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>m<BR>
+</FONT></FONT></TT></B>Displays the memory map (section layout) of the
+file.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>n </B><I>section<BR>
+</I></FONT></FONT></TT>Displays the requested information for only the
+specified section.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>O <i>filename</i><BR>
+</FONT></FONT></TT></B>displays the requested information for only the specified file within an archive.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>o<BR>
+</FONT></FONT></TT></B>Displays the disassembled addresses in octal. The
+default is hex.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>p<BR>
+</FONT></FONT></TT></B>Suppresses all the header displays, producing a
+parseable output.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>q<BR>
+</FONT></FONT></TT></B>Queries the file and display its type.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>r<BR>
+</FONT></FONT></TT></B>Displays relocation entries.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>s<BR>
+</FONT></FONT></TT></B>Performs symbolic disassembly. Displays labels symbolically
+instead of numerically whenever possible. Applies only to the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>d</FONT></FONT></TT></B>
+option.</LI>
+
+<LI>S<BR>
+Instructs the disassembler to output symbol labels rather than their values
+for any symbols for which you have specified the absolute address. This
+option works in conjunction with the -s (lowercase) option, which instructs
+the disassembler to perform symbolic disassembly. </LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>T<BR>
+</FONT></FONT></TT></B>Displays the disassembled section as assembly language,
+regardless of the section type.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>t<BR>
+</FONT></FONT></TT></B>Displays the object file symbol-table entries, or an archive’s symbol list.  
+</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>V<BR>
+</FONT></FONT></TT></B>displays the dumper version and creation date, and
+continues processing.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>v960<BR>
+</FONT></FONT></TT></B>displays the dumper version and creation date, and
+stops processing.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>x<BR>
+</FONT></FONT></TT></B>is ignored unless used with -t. Displays the COFF
+symbol-table entries as hexadecimal numbers instead of a symbolic translation
+of COFF information. By default, the dumper produces symbolic information.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>z<BR>
+</FONT></FONT></TT></B>suppresses the translation of zeros into .word directives
+for text-type disassembly.</LI>
+</UL>
+
+<P>
+<HR></P>
+
+<P><A HREF="#top"><IMG SRC="../icons/uparw.gif" BORDER=2 HEIGHT=60 WIDTH=60 ALIGN=BOTTOM></A><I>Return
+to the top of this page.</I></P>
+
+<P><A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the ic960 Interface Index.</I></P>
+
+<P><A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the gcc960 Interface Index.</I></P>
+
+</BODY>
+</HTML>

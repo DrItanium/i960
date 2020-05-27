@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>COFF to IEEE-695 Converter (cvt960)</TITLE>
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.0b6Gold (WinNT; I) [Netscape]">
+</HEAD>
+<BODY>
+
+<H1 ALIGN=CENTER>COFF to IEEE-695<A NAME="top"></A>Converter (cvt960)</H1>
+
+<P>
+<HR></P>
+
+<P>The cvt960 utility converts a COFF file to IEEE-695 format.</P>
+
+<P><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>cvt960 </B>[ <B>-</B><I>option</I><B>
+</B>]...</FONT></FONT></TT></P>
+
+<P>Each option must be preceded by a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>-</FONT></FONT></TT></B>
+character. (In Windows*, you can also use a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>/</FONT></FONT></TT></B>
+character.) The options are listed below.</P>
+
+<P>
+<HR></P>
+
+<H2>Options</H2>
+
+<P>
+<HR></P>
+
+<UL>
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>a<BR>
+</FONT></FONT></TT></B>Converts files for use with the MRI Xray user interface.
+Use this option when converting files to be used with XICE production release
+5.00 and earlier and XICE engineering release x263 and earlier. Later XICE
+versions do not need this option, and may not tolerate its effects.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>A</B><I>arch<BR>
+</I></FONT></FONT></TT>Specifies an 80960 architecture tag for
+the IEEE-695 output file. <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>arch</FONT></FONT></TT></I>
+can be <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>CORE0</FONT></FONT></TT></B>, 
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>CORE1</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>CORE2</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>CORE3</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>KA</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>SA</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>KB</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>SB</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>CA</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>CF</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>JA</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>JD</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>JF</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>HA</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>HD</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>HT</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>RP</FONT></FONT></TT></B>.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>c<BR>
+</FONT></FONT></TT></B>Specifies emitting column zero instead of column
+1 when translating COFF line numbers into IEEE-695 line numbers.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>h<BR>
+</FONT></FONT></TT></B>Displays help information about the converter and
+exits.</LI>
+
+<LI><FONT FACE="Courier New"><FONT SIZE=+1><B>i</B><I><TT> input-file<BR>
+</TT></I></FONT></FONT>Specifies an input COFF file. The default input
+filename is a.out.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>o </B><I>output-file<BR>
+</I></FONT></FONT></TT>names the IEEE-695 output file. The default output
+file is the input filename with the extension replaced by .x. When the
+input filename has no suffix, the converter appends .x..</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>s<BR>
+</FONT></FONT></TT></B>suppresses the IEEE-695 public and debug parts.
+The converted file contains no line number, symbol table, or debug information.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>V<BR>
+</FONT></FONT></TT></B>displays converter version information and continues
+processing.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>v960<BR>
+</FONT></FONT></TT></B>displays converter version information and stops
+processing.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>w<BR>
+</FONT></FONT></TT></B>Suppresses warning messages.</LI>
+
+<LI><B><TT><FONT SIZE=+1>z<BR>
+</FONT></TT></B>writes constant time stamp and command line to output file.
+Time Zero instead of the current time and date for the COFF output-file
+time stamp. Time Zero is 4:00, 31 December, 1969.</LI>
+</UL>
+
+<P>
+<HR></P>
+
+<H2>Limitations</H2>
+
+<H3>
+<HR>Position-Independent Code, Data, and Symbols </H3>
+
+<P>The converter translates position-independent code and data correctly,
+but position-independent code symbols and position-independent data symbols
+lose the flags that mark them as position-independent.</P>
+
+<H3>Archives and Relocatable Objects</H3>
+
+<P>Use the converter only on COFF absolute-executable load modules. The
+converter does not translate archives or relocatable objects.</P>
+
+<H3>Unreferenced Types</H3>
+
+<P>The converter does not produce type definitions for high-level types
+that are not referenced. This omission helps to reduce the size of the
+IEEE-695 module where the C <TT>#include</TT> mechanism has produced a
+large number of unreferenced type definitions, such as structure tags.
+</P>
+
+<H3>Global Uninitialized Symbols</H3>
+
+<P>With IEEE-695, every symbol is owned by some source module. The structure
+of the COFF symbol table, however, dictates that symbols for global, uninitialized
+variables belong to no specific source module. In order to translate COFF
+global variables, the converter produces a module in <TT>.bss </TT>strictly
+for symbols that are not accounted for in any other module. This module
+is named <TT>.global_non_init</TT>. A single-module section is produced
+for <TT>.global_non_init</TT>, which extends from the lowest-addressed
+symbol in the module to the end of the <TT>.bss</TT> section.</P>
+
+<H3>Compilation/Assembly Information</H3>
+
+<P>COFF does not include source file path information, and the compiler
+and assembler tools before V3.0 do not supply the time of compilation and
+assembly for source modules. The converter does not supply this information.</P>
+
+<H3>COFF Line Numbers</H3>
+
+<P>COFF does not provide column information for source coordinates and
+the converter does not provide that information. Column numbers in the
+IEEE-695 output module are 0. </P>
+
+<P>The converter translates each COFF line-number record to a IEEE-695
+ATN/ASN pair, possibly causing one-to-many mappings in the output module
+numbers, as in the following examples: </P>
+
+<UL>
+<LI>COFF source-line information provides the same code address for the
+line of a function block's { token and the first executable line of code.
+Using the code fragment below, for example, the converter puts the line
+containing { and the line containing <TT>int foo = 1</TT> (lines 2 and
+4) in the COFF symbol table with the same code address.</LI>
+
+<P><TT>	1: main()<BR>
+2: {<BR>
+3:<BR>
+	4: int foo = 1; </TT></P>
+
+<LI>	COFF source-line information provides multiple addresses for the same
+source line under some conditions. For example, a<TT> while</TT> loop associates
+the source line of the <TT>while </TT>statement with the machine address
+of the branch to the loop-condition test at the end of the loop. The machine
+code associated with the loop-condition test produces an additional line-number
+entry with the same row number as the branch. These two line number groups
+are translated for the <TT>while </TT>loop with the same line number and
+different addresses.</LI>
+</UL>
+
+<H3>COFF Symbol Translation</H3>
+
+<P>The compiler prefixes most C language names with an underscore (_) when
+creating COFF symbols. When the converter finds a symbol with an initial
+underscore and a <TT>.file</TT> symbol ending in <TT>.c</TT> or <TT>.i</TT>,
+it treats the symbol as a C name with the underscore prefix. The converter
+strips out the initial underscore and places the symbol in the B3 block
+corresponding to that COFF module. The B3 block describes high-level debug
+information. </P>
+
+<P>COFF symbols that come from any source modules whose <TT>.file</TT>
+symbol does not end in <TT>.c </TT>or <TT>.i</TT> are considered assembly
+language symbols. The converter leaves any initial underscores intact and
+places the symbols in the B10 block, which describes assembly-level debug
+information. The symbols are given IEEE-695 assembler-static attributes
+and built-in types. </P>
+
+<P>
+<HR></P>
+
+<P><A HREF="#top"><IMG SRC="../icons/uparw.gif" BORDER=2 HEIGHT=60 WIDTH=60 ALIGN=BOTTOM></A><I>Return
+to the top of this page.</I></P>
+
+<P><A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the ic960 Interface Index.</I></P>
+
+<P><A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the gcc960 Interface Index.</I></P>
+
+</BODY>
+</HTML>

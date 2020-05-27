@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>Stripper (gstrip96[0]/str960)</TITLE>
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.0b6Gold (WinNT; I) [Netscape]">
+</HEAD>
+<BODY>
+
+<H1 ALIGN=CENTER>gstrip96[0]/str960 Stripper</H1>
+
+<P>
+<HR></P>
+
+<P>The gstrip960/str960 object stripper removes symbols and relocations
+from an object file. The invocation command is:</P>
+
+<P><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>gstrip96</B>[<B>0</B>]
+| <B>str960</B> [ <B>-</B><I>option</I> ]... <I>filename<B> </B></I>...</FONT></FONT></TT></P>
+
+<P>In Windows*, gstrip960 is named gstrip96, because of the original eight-character
+filename limit.</P>
+
+<P><A NAME="DDE_LINK2"></A>Each option must be preceded by a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>-</FONT></FONT></TT></B>
+character. (In Windows*, you can also use a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>/</FONT></FONT></TT></B>
+character.) The options are listed below.</P>
+
+<P><I><TT><FONT FACE="Courier New"><FONT SIZE=+1>filename</FONT></FONT></TT></I>
+identifies a linked object file to be stripped.
+<HR></P>
+
+<UL>
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>a<BR>
+</FONT></FONT></TT></B>Strips all symbols. This is the default.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>b<BR>
+</FONT></FONT></TT></B>Strips the local symbols and line numbers only,
+retaining the block information.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>C<BR>
+</FONT></FONT></TT></B>Strips CCINFO only.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>h<BR>
+</FONT></FONT></TT></B>Displays help information and exits.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>l<BR>
+</FONT></FONT></TT></B>Strips line numbers only.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>r<BR>
+</FONT></FONT></TT></B>Strips files containing relocation information,
+revising the remaining relocation indexes. External and static symbols
+remain.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>V<BR>
+</FONT></FONT></TT></B>Prints version informat to <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>stdout</FONT></FONT></TT></B>
+and processes the rest of the specified operations.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>v960<BR>
+</FONT></FONT></TT></B>Displays the stripper version number and the date
+and time the stripper was created, then stops processing.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>x<BR>
+</FONT></FONT></TT></B>Strips all except static and external symbol information.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>z<BR>
+</FONT></FONT></TT></B>Suppress writing a time-stamp in the COFF file header.</LI>
+</UL>
+
+<P>
+<HR></P>
+
+<P><A HREF="#top"><IMG SRC="../icons/uparw.gif" BORDER=2 HEIGHT=60 WIDTH=60 ALIGN=BOTTOM></A><I>Return
+to the top of this page.</I></P>
+
+<P><A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the ic960 Interface Index.</I></P>
+
+<P><A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the gcc960 Interface Index.</I></P>
+
+</BODY>
+</HTML>

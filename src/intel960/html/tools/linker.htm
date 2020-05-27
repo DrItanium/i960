@@ -1,0 +1,677 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>Linker (gld960/lnk960)</TITLE>
+   <META NAME="AUTHOR" CONTENT="David M. Gaffney">
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.0b6Gold (WinNT; I) [Netscape]">
+</HEAD>
+<BODY>
+
+<H1 ALIGN=CENTER>gld960/lnk960<A NAME="top"></A>Linker</H1>
+
+<P>
+<HR></P>
+
+<P>The linker invocation commands are:</P>
+
+<P><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>gld960</B> { <B>-</B>
+| <B>/</B> } [<B>-</B><I>option</I>]... [<I>file</I>]...</FONT></FONT></TT></P>
+
+<P><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>lnk960</B> { <B>-</B>
+| <B>/</B> } [<B>-</B><I>option</I>]... [<I>file</I>]...</FONT></FONT></TT></P>
+
+<P>Each invocation option must be preceded by a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>-</FONT></FONT></TT></B>
+character. (In Windows*, you can also use a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>/</FONT></FONT></TT></B>
+character.) Options are described below.</P>
+
+<P>You can specify one or more input files when invoking the linker. These
+files can be linker directive files, object files, or libraries.
+<HR></P>
+
+<H2><A NAME="options"></A>Linker Options</H2>
+
+<P>
+<HR></P>
+
+<P>Choose an option from the list below, or scroll through this document
+to view all options.</P>
+
+<UL>
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>A</B><I>architecture</I>
+<A HREF="#architecture">Architecture</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>B</B><I>section-name
+section-start-address</I> <A HREF="#section_start_address">Section start
+address</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>C</B> <A HREF="#architecture">Startup
+alternative</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>c</B> <A HREF="#circular_search">Circular
+search</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>D</B> <A HREF="#Don't_compress_CAVE_sections">Don't compress CAVE sections.</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>dc</B> | <B>dp</B> <A HREF="#define_common_symbol_space">Define
+common symbol space</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>defsym </B><I>symbol</I><B>=</B><I>expression</I>
+<A HREF="#define_symbol">Define symbol</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>e</B><I>symbol</I> <A HREF="#entry_point">Entry
+point</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>Fbout</B> | <B>Fcoff</B>
+| <B>Felf</B> <A HREF="#format">Format</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>f</B><I>value</I> <A HREF="#fill">Fill</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>G</B> <A HREF="#big_endian">Big-endian</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>gcdm</B> <A HREF="#gcdm">Decision
+Maker</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>H</B> <A HREF="#sort_common">Sort
+common symbols</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>h</B> <A HREF="#help">Help</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>J</B> <A HREF="#compress">Compress</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>L</B><I>dir</I> <A HREF="#library_search_path">Library
+search path</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>l</B><I>abbr</I> <A HREF="#library_input">Library
+input</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>M</B> <A HREF="#multiple_definition_warning">Multiple
+definition warning</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>m</B> <A HREF="#memory_map">Memory
+map</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>N </B><I>file</I> <A HREF="#name_map_file">Name
+map file</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>n</B> <A HREF="#noinhibit_output">Noinhibit
+output</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>Ob</B> | <B>Os</B> <A HREF="#optimization_inhibit">Optimization
+inhibit</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>o</B><I>filename</I>
+<A HREF="#output">Output filename</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>P</B> <A HREF="#profiling">Profiling</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>pb</B> | <B>pc</B>| <B>pd</B>
+<A HREF="#position_independence">Position independence</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>q</B> { <B>o</B> | <B>n</B>
+| <B>b</B> } <A HREF="#search_rules">Search rules</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>R</B><I>filename</I>
+<A HREF="#read_symbols_only">Read symbols only</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>r</B> <A HREF="#relocation">Relocation</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>S</B> | <B>s</B> <A HREF="#strip">Strip</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>T</B> { <B>bss</B> |
+<B>data</B> | <B>text</B> } <I>addr</I> <A HREF="#section_start_address">Section
+start address</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>T</B><I>filename</I>
+<A HREF="#target">Target</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>u</B><I>symbol</I> <A HREF="#unresolved_symbol">Unresolved
+symbol</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>V</B> <A HREF="#version">Version</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>v</B> <A HREF="#verbose">Verbose</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>v960</B> <A HREF="#version_stop">Version;
+stop</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>W</B> <A HREF="#warnings">Warnings</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>X</B> | <B>x</B> <A HREF="#xcompress">Compress</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>y </B><I>sym</I> <A HREF="#trace_symbol">Trace
+symbol</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>Z </B><I>pdb_dir</I>
+<A HREF="#specify_PDB">Specify PDB</A></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>z</B> <A HREF="#time_stamp_suppression">Time
+stamp suppression</A></FONT></FONT></TT></LI>
+</UL>
+
+<P>
+<HR></P>
+
+<P><A NAME="architecture"></A><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>A
+</B>{<B> SA </B>| <B>SB | KA </B>|<B> KB </B>|<B> CA </B>|<B> CF </B>|
+<B>JA </B>|<B> JF </B>|<B> JD </B>| <B>HA </B>|<B> HD </B>|<B> HT </B>|<B>
+RP </B>|<B> CORE0 | CORE1 | CORE2 | CORE3 </B>}</FONT></FONT></TT></P>
+
+<P><B>(Architecture)</B></P>
+
+<P>Use <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>A</FONT></FONT></TT></B>
+to identify a member of the i960 processor family as the output target.
+The <B><TT>CORE0-3</TT></B> options let you create code that is compatible
+with a group of processors. Here are the types of i960 processors that
+are supported by each <B><TT>CORE </TT></B>switch:<BR>
+<BR>
+<B><TT>CORE0</TT></B>	= Jx, Hx, RP<BR>
+<B><TT>CORE1	</TT></B>= All 80960 architectures <BR>
+<B><TT>CORE2	</TT></B>= Jx, Hx, RP<BR>
+<B><TT>CORE3	</TT></B>= Cx, Jx, Hx<BR>
+<BR>
+If the linker is invoked as gld960 and no <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>A</FONT></FONT></TT></B>
+option is given, the target processor is set from the linker directive
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>OUTPUT_ARCH</FONT></FONT></TT></B>
+or, if that is not set, the environment variable <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>G960ARCH</FONT></FONT></TT></B>.</P>
+
+<P>If the linker is invoked as lnk960 and no <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>A</FONT></FONT></TT></B>
+option is given, the target processor is set from the linker directive
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>OUTPUT_ARCH</FONT></FONT></TT></B>
+or, if that is not set, from the environmental variable <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>I960ARCH</FONT></FONT></TT></B>.
+If no target processor is specified, the linker produces KB processor output.
+<HR></P>
+
+<P><A NAME="section_start_address"></A><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>B</B><I>section-name
+section-start-address</I></FONT></FONT></TT><B> (Section start address)</B></P>
+
+<P>Use <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>B</FONT></FONT></TT></B>
+to specify a starting address for an output section. This option overrides
+start addresses given either in <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>SECTIONS</FONT></FONT></TT></B>
+directives or with the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>T</FONT></FONT></TT></B>
+option.</P>
+
+<P>For the <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>section-start-address</FONT></FONT></TT></I>,
+use either a constant in octal, decimal, or hexadecimal notation or a symbolic
+expression. To distinguish a constant <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>section-start-address</FONT></FONT></TT></I>
+from a symbol name, begin the address with a numeric digit such as 0.
+<HR></P>
+
+<P><A NAME="startup_alternative"></A><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>C</FONT></FONT></TT>
+(Startup alternative)</B></P>
+
+<P>Use <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>C</FONT></FONT></TT></B>
+to direct the linker to ignore any <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>STARTUP</FONT></FONT></TT></B>
+directive found in linker directive files. The <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>STARTUP</FONT></FONT></TT></B>
+file is the first object file encountered on the command line, or in a
+linker directive file.
+<HR></P>
+
+<P><A NAME="circular_search"></A><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>c</FONT></FONT></TT></B>
+<B>(Circular search)</B></P>
+
+<P>Causes the linker to iteratively resolve circular references in libraries.
+It is best to construct your libraries without circular references. However,
+in some rare instances it is not possible or practical to do so. The <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>c</FONT></FONT></TT></B>
+option allows you to cause the linker to resolve these references iteratively.
+<HR></P>
+
+<P><A NAME="Don't_compress_CAVE_sections"></A><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>D</B>
+</FONT></FONT></TT> <B>(Don't compress CAVE sections)</B></P>
+
+<p>To assign common-symbol space in an output file linked with the -r (Relocation) option, use dc or dp.  
+This option has the same effect as the FORCE_COMMON_ALLOCATION directive.  (It places common symbols by 
+default into the .bss section.) The final link automatically allocates space for common symbols.</p>
+
+<hr>
+
+
+<P><A NAME="define_common_symbol_space"></A><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>dc</B>
+| <B>dp</B></FONT></FONT></TT> <B>(Define common symbol space)</B></P>
+
+<P>The <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>dc</FONT></FONT></TT></B>
+and <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>dp</FONT></FONT></TT></B>
+options are equivalent; the multiple forms are available for backward compatibility.
+You can use this option to assign space to common symbols even when you
+also specify a relocatable output file with <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>r</FONT></FONT></TT></B>.
+The linker directive file command <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>FORCE_COMMON_ALLOCATION</FONT></FONT></TT></B>
+has the same effect as<TT><FONT FACE="Courier New"><FONT SIZE=+1> <B>dc</B></FONT></FONT></TT>
+or <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>dp</FONT></FONT></TT></B>.
+<HR></P>
+
+<P><A NAME="define_symbol"></A><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>defsym
+</B><I>symbol</I><B>=</B><I>expression</I></FONT></FONT></TT> <B>(Define
+symbol)</B></P>
+
+<P>Use <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>defsym</FONT></FONT></TT></B>
+to define an external absolute symbol on the linker invocation line. This
+invocation line definition overrides any library definition of the symbol
+and suppresses loading any library members otherwise needed to resolve
+references to the symbol.</P>
+
+<P>The symbol argument can be any ASCII string. To access the symbol from
+C code, prepend the symbol string with an extra underscore character.</P>
+
+<P>The expression defines the symbol value. When using other symbols in
+this expression, be sure to avoid circular definitions. When the expression
+contains white space or parentheses you must enclose the entire definition
+in quotes or somehow escape the expression through the command processor
+(shell). For example, the following defines a symbol named <B>_<TT><FONT FACE="Courier New"><FONT SIZE=+1>dspace</FONT></FONT></TT></B>
+with the value <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>0x12340: defsym
+&quot;_dspace=0x12340&quot;.</FONT></FONT></TT></B>
+<HR></P>
+
+<P><A NAME="entry_point"></A><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>e</B><I>symbol</I><B>
+</B></FONT></FONT></TT><B>(Entry point)</B></P>
+
+<P>Use <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>e</FONT></FONT></TT></B>
+to define an entry point other than the default for beginning execution
+of your program. The entry symbol name becomes the new entry point. By
+default, the linker defines the entry point as the symbol <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>start</FONT></FONT></TT></B>.
+If <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>start</FONT></FONT></TT></B>
+is not defined, it uses <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>main</FONT></FONT></TT></B>.
+If <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>main</FONT></FONT></TT></B>
+is not defined, it is defined as the first address in the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>.text</FONT></FONT></TT></B>
+section. If there is no <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>.text</FONT></FONT></TT></B>
+section, the entry is set to 0.
+<HR></P>
+
+<P><A NAME="format"></A><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>Fbout</B>
+| <B>Fcoff</B> | <B>Felf</B></FONT></FONT></TT> <B>(Format)</B></P>
+
+<P>Use <TT><FONT FACE="Courier New"><FONT SIZE=+1><B>F</B><I>arg</I></FONT></FONT></TT>
+to specify the format for output object files.</P>
+
+<P><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>Fbout</B> </FONT></FONT></TT>produces
+a b.out format output file named <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>b.out</FONT></FONT></TT></B>.</P>
+
+<P><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>Fcoff</FONT></FONT></TT></B>
+produces a COFF output file named <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>a.out</FONT></FONT></TT></B>.</P>
+
+<P><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>Felf</FONT></FONT></TT></B>
+produces an ELF output file named <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>e.out</FONT></FONT></TT></B>.</P>
+
+<P>When you do not specify <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>F</FONT></FONT></TT></B>,
+the linker uses the invocation name to determine the object-file format.
+For gld960 , the default is <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>Fbout</FONT></FONT></TT></B>.
+For lnk960, the default is <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>Fcoff</FONT></FONT></TT></B>.</P>
+
+<P>Specifying <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>Fbout</FONT></FONT></TT></B>
+as a lnk960 option is not supported.</P>
+
+<P>For all formats, header, section and symbol information in input files
+can be either big-endian or little-endian. The target code in b.out format
+output is always little-endian (the b.out format does not support big-endian
+code regions). The target code in COFF and ELF files can be little-endian,
+big-endian. (You can use mixed-endian but it is officially not supported
+in the toolset.)</P>
+
+<P>The linker outputs target code and data in the same byte order as its
+input object files. To link for a big-endian target, all input object files
+must be big- endian. You can create big-endian object files by compiling
+or assembling with the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>G</FONT></FONT></TT></B>
+option. The endianness of the output header, section and symbol information
+depends on the invocation name. When the linker is invoked as gld960, this
+information is little-endian. When the linker is invoked as lnk960, the
+information is host-endian.
+<HR></P>
+
+<P><A NAME="fill"></A><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>f</B><I>value<B>
+</B></I></FONT></FONT></TT><B>(Fill)</B></P>
+
+<P>Initializes the gaps within a section to <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>value</FONT></FONT></TT></I>.
+Default is 0.
+<HR></P>
+
+<P><A NAME="big_endian"></A><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>G
+</FONT></FONT></TT>(Big-endian)</B></P>
+
+<P>Informs gld960 that the target has big-endian memory regions. If the
+linker is invoked as gld960 and <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>G</FONT></FONT></TT></B>
+is specified, the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>Fcoff</FONT></FONT></TT></B>
+or <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>Felf</FONT></FONT></TT></B>
+option must also be used. If the linker is invoked as gld960, the linker's
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>G</FONT></FONT></TT></B>
+option establishes search paths that point to big-endian libraries and
+directive files.</P>
+
+<P>If the linker is invoked as lnk960, you must include the appropriate
+big-endian libraries and directive files manually.
+<HR></P>
+
+<P><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>g</FONT></FONT></TT></B></P>
+
+<P>The linker accepts and ignores the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>g</FONT></FONT></TT></B>
+option. This option is provided for compatibility with other tools.
+<HR></P>
+
+<P><A NAME="gcdm"></A><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>gcdm
+</FONT></FONT></TT>(Decision maker)</B></P>
+
+<P>Invokes the gcdm960 optimization decision maker. See the description
+of this option in your <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>gcc960</FONT></FONT></TT></B>
+or <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>ic960</FONT></FONT></TT></B>
+compiler driver documentation.
+<HR></P>
+
+<P><A NAME="sort_common"></A><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>H</FONT></FONT></TT></B>
+<B>(Sort common symbols)</B></P>
+
+<P>Sorts the common symbols in each file in the linkage, based on size.
+<HR></P>
+
+<P><A NAME="help"></A><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>h</FONT></FONT></TT>
+(Help)</B></P>
+
+<P>Displays the linker help information and exits without further processing.
+<HR></P>
+
+<P><A NAME="compress"></A><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>J</FONT></FONT></TT>
+(Compress)</B></P>
+
+<P>Removes unneeded COFF storage class tags from output symbol table.
+<HR></P>
+
+<P><A NAME="library_search_path"></A><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>L</B><I>dir</I></FONT></FONT></TT>
+<B>(Library search path)</B></P>
+
+<P>Adds <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>dir</FONT></FONT></TT></I>
+to the list of paths the linker searches for archive libraries. You can
+use this option any number of times on the invocation line. How <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>L</FONT></FONT></TT></B>
+interacts with the default search path depends on the linker's invocation
+name. You can also add directories to the search path using the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>SEARCH_DIR</FONT></FONT></TT></B>
+command in a linker directive file. Such directories are appended to the
+search path after any directories you specify with <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>L</FONT></FONT></TT></B>.
+<HR></P>
+
+<P><A NAME="library_input"></A><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>l</B><I>abbr</I><B>
+</B></FONT></FONT></TT><B>(Library input)</B></P>
+
+<P>Specifies an abbreviation for one of the four standard library types
+(standard ANSI, math, accelerated floating-point and low-level). The linker
+combines the abbreviation for the type with the architecture option and
+big-endian and position-independent code and data options, if any, to generate
+a list of candidate library names.</P>
+
+<P>A library is found by searching for the first library name in the candidate
+list in a series of directories and then the second library name in the
+series of directories, and so on until the library is found.</P>
+
+<P>For each <TT><FONT FACE="Courier New"><FONT SIZE=+1><B>-l</B><I>abbr
+</I></FONT></FONT></TT>option, the linker generates the following list
+of candidate library names:</P>
+
+<P><TT><FONT FACE="Courier New"><FONT SIZE=+1><I>abbrqual</I><B>.a<BR>
+lib</B><I>abbrqual</I><B>.a<BR>
+</B><I>abbrarchqual</I><B>.a<BR>
+lib</B><I>abbrarchqual</I><B>.a</B></FONT></FONT></TT></P>
+
+<P><TT><FONT FACE="Courier New"><FONT SIZE=+1><I>abbr</I> </FONT></FONT></TT>is
+the argument of the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>-l</FONT></FONT></TT></B>
+option, one of: <TT><FONT FACE="Courier New"><FONT SIZE=+1><B>c</B>, <B>m</B>,
+<B>h</B>, <B>ll</B></FONT></FONT></TT></P>
+
+<P><TT><FONT FACE="Courier New"><FONT SIZE=+1><I>qual</I> </FONT></FONT></TT>is
+null unless big-endian, PIC or PID options are specified on the linker
+command line. Then, <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>qual</FONT></FONT></TT></I><B>
+</B>is one of: <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>_b</FONT></FONT></TT></B>
+or <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>b</FONT></FONT></TT></B>;
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>_e</FONT></FONT></TT></B>
+or <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>e</FONT></FONT></TT></B>;
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>_p</FONT></FONT></TT></B>
+or <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>p</FONT></FONT></TT></B></P>
+
+<P><TT><FONT FACE="Courier New"><FONT SIZE=+1><I>arch</I><B> </B></FONT></FONT></TT>is
+the architecture option specified by the linker command line.</P>
+
+<P>The linker searches for each library name along a search path determined
+by the linker invocation. See Chapter 2 of your<I> i960 Processor Software
+Utilities User's Guide</I> for more information.
+<HR></P>
+
+<P><A NAME="multiple_definition_warning"></A><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>M
+</FONT></FONT></TT>(Multiple definition warning)</B></P>
+
+<P>This option is supported for backwards compatibility, but has no effect.<hr></P>
+
+<P><A NAME="memory_map"></A><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>m
+</FONT></FONT></TT>(Memory map)</B></P>
+
+<P>Specify <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>m</FONT></FONT></TT></B>
+to generate a linker map. By default, this option is sent to the standard
+output stream. See the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>N</FONT></FONT></TT></B>
+option on how to redirect this.
+<HR></P>
+
+<P><A NAME="noinhibit_output"></A><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>n
+</FONT></FONT></TT></B>(<B>Noinhibit output</B>)</P>
+
+<P>Use the <TT><FONT FACE="Courier New"><FONT SIZE=+1><B>n</B> </FONT></FONT></TT>option
+to create an output file, regardless of whether or not errors occurred
+during the link. (This option may be removed without notice).
+<HR></P>
+
+<P><A NAME="name_map_file"></A><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>N</B><I>file</I></FONT></FONT></TT><B>
+(Name map file)</B></P>
+
+<P>Redirects the linker memory map to the specified file.  When this option is not specified but the m option 
+is given, map information is written to standard output.  This option allows you to separate the linker map from 
+other information written to standard output, such as verbose messages and warnings.  
+<HR></P>
+
+<P><A NAME="optimization_inhibit"></A><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>Ob</B>
+| <B>Os </B></FONT></FONT></TT><B>(Optimization inhibit)</B></P>
+
+<P>Use these options to suppress optimization of CALLJ/CALLJX to BAL/BALX
+or to CALLS, respectively. Without such optimization, the instructions
+remain CALL or CALLX, and may be relocated incorrectly in the case of <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>Os</FONT></FONT></TT></B>.
+<HR></P>
+
+<P><A NAME="output"></A><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>o</B><I>filename</I></FONT></FONT></TT><B>
+(Output filename)</B></P>
+
+<P>Use <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>o</FONT></FONT></TT></B>
+to specify a name other than the default for the linker output file. When
+you do not specify <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>o</FONT></FONT></TT></B>,
+the linker names b.out output <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>b.out</FONT></FONT></TT></B>,
+COFF output <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>a.out</FONT></FONT></TT></B>,
+and ELF output <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>e.out</FONT></FONT></TT></B>.
+The <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>o</FONT></FONT></TT></B>
+option overrides any <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>OUTPUT</FONT></FONT></TT></B>
+linker directive file command.
+<HR></P>
+
+<P><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>P </FONT></FONT></TT>(<A NAME="profiling"></A>Profiling)</B></P>
+
+<P>Specify <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>P</FONT></FONT></TT></B>
+when you are producing a relocatable executable (with <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>r</FONT></FONT></TT></B>
+option) and also performing the first pass of a two-pass compilation. This
+option puts the profiling code in your linked output even when you also
+specify the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>r</FONT></FONT></TT></B>
+option for relocatable output.
+<HR></P>
+
+<P><A NAME="position_independence"></A><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>pb</B>
+| <B>pc</B> | <B>pd</B></FONT></FONT></TT><B> (Position independence)</B></P>
+
+<P>To link and mark the output file for position-independent code or data, invoke the linker with lnk960 and specify p, 
+as follows:</p>
+
+<dt><b>pb</b></dt>	
+<dd>Selects libraries with position-independent code and data.</dd>
+<dt><b>pc</b></dt>	
+<dd>Selects libraries with position-independent code.  Currently, all the libraries provided with your i960 processor software 
+toolset contain position-independent code.</dd>
+<dt><b>pd</b></dt>	
+<dd>Selects libraries with position-independent data.</dd>
+
+<p>For more information on library selection, see the Linker chapter in the <i>i960 Processor Software Utilities User's Guide</i>.
+By default, files are linked as position-dependent.  If you use these switches and the files are not marked as position 
+independent, the linker issues a warning message. 
+<p>For information on generating position-independent code and data, see 
+the <i>i960 Processor Compiler User's Guide</i>. </p> 
+<p>For information on marking unlinked object files for position independence, 
+see the <i>i960 Processor Assembler User's Guide</i>. </p>
+<p>For information on the position-independent and position-dependent 
+libraries, see the <i>i960 Processor Library Supplement</i>. </p>
+<p>When the linker directive file contains HLL(), the linker chooses 
+default libraries according to the position-independent flag.<HR></P>
+
+<P><A NAME="search_rules"></A><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>q</B>
+{ <B>o</B> | <B>n</B> | <B>b</B> }</FONT></FONT></TT> <B>(Search rules)</B></P>
+
+<P>Use <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>q</FONT></FONT></TT></B>
+to specify old (<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>o</FONT></FONT></TT></B>),
+new (<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>n</FONT></FONT></TT></B>)
+or both (<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>b</FONT></FONT></TT></B>)
+search rules. This option requires the tools to have been installed in
+compatibility mode.
+<HR></P>
+
+<P><A NAME="read_symbols_only"></A><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>R</B><I>filename</I><B>
+</B></FONT></FONT></TT><B>(Read symbols only)</B></P>
+
+<P>Use <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>R</FONT></FONT></TT></B>
+to read symbol names and their addresses from the filename object file
+without relocating or including the filename object file in your linked
+output file. When you specify this option, your output file can refer symbolically
+to absolute locations of memory defined in other programs.
+<HR></P>
+
+<P><A NAME="relocation"></A><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>r
+</FONT></FONT></TT>(Relocation)</B></P>
+
+<P>With the r option, relocation entries remain in the output object file for a subsequent linker call, and 
+the linker issues no warnings about unresolved references.</p> 
+
+<p>Relocation requires symbol table entries that you 
+can remove with the s option.  The linker accepts no command line containing both the -r and -s options.<HR></P>
+
+<P><A NAME="strip"></A><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>S
+</B>|<B> s </B></FONT></FONT></TT><B>(Strip)</B></P>
+
+<P>For a smaller output file, strip symbol information with s (lower case), removing:</p>
+<ul>
+<li>the line number entries</li>
+<li>the symbols</li>
+<li>the symbol-table information</li>
+<li>In ELF output, this eliminates all non-allocated sections (e.g., .debug_info, .debug_line).</li>
+</ul>
+
+<p>Using S (uppercase) retains the symbol table but removes debug symbols. This option is supported in COFF 
+and ELF only. In ELF, this removes all non-allocated sections (.debug* sections). By default, all information 
+remains in the output file.</p>
+
+<p>Since relocation requires the symbol table, using s with the relocation option (r) terminates the linker 
+with an error.<HR></P>
+
+<P><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>T </B>{ <B>bss </B>|<B>
+data </B>|<B> text </B>}<B> </B><I>addr</I><B> </B></FONT></FONT></TT><B>(Section
+start address)</B></P>
+
+<P>Use <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>T</FONT></FONT></TT></B>
+to specify a starting address other than the default for the <B>.<TT><FONT FACE="Courier New"><FONT SIZE=+1>bss</FONT></FONT></TT></B>,
+<B>.<TT><FONT FACE="Courier New"><FONT SIZE=+1>data</FONT></FONT></TT></B>,
+or <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>.text</FONT></FONT></TT></B>
+section of the output file. The <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>addr</FONT></FONT></TT></I>
+argument for each section must be a hexadecimal integer.</P>
+
+<P>The <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>T</FONT></FONT></TT></B>
+option continues to be supported for backwards compatibility, but <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>B</FONT></FONT></TT></B>
+offers a more general capability.
+<HR></P>
+
+<P><A NAME="target"></A><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>T</B><I>filename</I><B>
+</B></FONT></FONT></TT>(<B>Target</B>)</P>
+
+<P>Use<TT><FONT FACE="Courier New"><FONT SIZE=+1> <B>T</B></FONT></FONT></TT>
+to specify a linker directive file located in the linker search path. If
+a linker directive file is given on the command line without the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>T</FONT></FONT></TT></B>
+option, only the current directory is searched.
+<HR></P>
+
+<P><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>t</FONT></FONT></TT></B></P>
+
+<P>Suppresses warnings of multiple symbol definitions, even if they differ
+in size. (This option is accepted but has no effect.)
+<HR></P>
+
+<P><A NAME="unresolved_symbol"></A><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>u</B><I>symbol</I><B>
+</B></FONT></FONT></TT><B>(Unresolved symbol)</B></P>
+
+<P>When creating programs of libraries only, such as run-time libraries, build the symbol table with u.  This option 
+introduces an unresolved external symbol into the output file symbol table.  The linker resolves the reference with 
+the first module defining the symbol.  This option is useful when libraries are to be traversed in an order that 
+prevents your application from linking.
+<HR></P>
+
+<P><A NAME="version"></A><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>V
+</FONT></FONT></TT>(Version)</B></P>
+
+<P>Displays the linker version number and continues processing.
+<HR></P>
+
+<P><A NAME="verbose"></A><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>v
+</FONT></FONT></TT></B>(<B>Verbose</B>)</P>
+
+<P>Displays information about the actions of the linker.
+<HR></P>
+
+<P><A NAME="version_stop"></A><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>v960
+</FONT></FONT></TT>(Version; stop)</B></P>
+
+<P>Displays the linker version number and exits without further processing.
+<HR></P>
+
+<P><A NAME="warnings"></A><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>W
+</FONT></FONT></TT>(Warnings)</B></P>
+
+<P>Suppresses all warnings except multiple symbol definition warnings.
+<HR></P>
+
+<P><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>X </B>|<B> x<A NAME="xcompress"></A></B></FONT></FONT></TT><B>(Compress)</B></P>
+
+<P>Uses the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>X</FONT></FONT></TT></B>
+option to delete local symbols beginning with <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>L</FONT></FONT></TT></B>
+or '<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>.</FONT></FONT></TT></B>'.
+Use the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>x</FONT></FONT></TT></B>
+option to delete all local symbols.
+<HR></P>
+
+<P><A NAME="trace_symbol"></A><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>y
+</B><I>sym</I></FONT></FONT></TT><B> (Trace symbol)</B></P>
+
+<P>Traces the symbol <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>sym</FONT></FONT></TT></I>,
+indicating each object file in which <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>sym</FONT></FONT></TT></I>
+appears, the symbol's type (absolute or relocatable): if it is relocatable,
+then the section it is in, and whether the file defines or references it.
+Multiple symbols can be traced with multiple <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>y</FONT></FONT></TT></B>
+options. If <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>sym</FONT></FONT></TT></I>
+came from a C program, you must precede it with an underscore.
+<HR></P>
+
+<P><A NAME="specify_PDB"></A><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>Z
+</B><I>pdb_dir</I></FONT></FONT></TT><B> (Program database)</B></P>
+
+<P>Use this option to specify the location of the program database.  For information on the program database, 
+used when performing whole-program or profile-driven optimization, see <i>the i960 Processor Compiler User's Guide</i>.
+<HR></P>
+
+<P><A NAME="time_stamp_suppression"></A><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>z
+</FONT></FONT></TT>(Time stamp suppression)</B></P>
+
+<P>Tells the linker to mark the output file as created at UNIX time zero
+(4:00 p.m., December 31, 1969). You can use this option to suppress the
+COFF time stamp and make two linker output files identical.
+<HR></P>
+
+<P><A HREF="#top"><IMG SRC="../icons/uparw.gif" BORDER=2 HEIGHT=60 WIDTH=60 ALIGN=BOTTOM></A><I>Return
+to the top of this page.</I></P>
+
+<P><A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the ic960 Interface Index.</I></P>
+
+<P><A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the gcc960 Interface Index.</I></P>
+
+</BODY>
+</HTML>

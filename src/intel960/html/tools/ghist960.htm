@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>Statistical Profiler (ghist960)</TITLE>
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.0b6Gold (WinNT; I) [Netscape]">
+</HEAD>
+<BODY>
+
+<H1 ALIGN=CENTER>ghist960 Statistical Profiler</H1>
+
+<P>
+<HR></P>
+
+<P>The ghist960 statistical profiler facilitates statistical analysis of
+the execution behavior of programs containing debug information. To use
+ghist960, compile your program with the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>g</FONT></FONT></TT></B>
+(Debug) option and link it with the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>libhis</FONT></FONT></TT></B>
+profiling library. Executing the program with representative inputs causes
+a profile data file to be created. Specify this file when invoking ghist960.</P>
+
+<P>The ghist960 invocation command is:</P>
+
+<P><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>ghist960</B> [ <B>-</B><I>option</I>
+]...<B> </B><I>program</I><B> </B>[<B> </B><I>data_file<B> </B></I>]</FONT></FONT></TT></P>
+
+<P><A NAME="DDE_LINK2"></A>Each option must be preceded by a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>-</FONT></FONT></TT></B>
+character. (In Windows*, you can also use a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>/</FONT></FONT></TT></B>
+character.) The options are listed below.</P>
+
+<P><I><TT><FONT FACE="Courier New"><FONT SIZE=+1>program</FONT></FONT></TT></I>
+identifies your application.</P>
+
+<P><I><TT><FONT FACE="Courier New"><FONT SIZE=+1>data_file</FONT></FONT></TT></I>
+identifies the execution profile data file (<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>ghist.dat</FONT></FONT></TT></B>
+by default).
+<HR></P>
+
+<UL>
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>a<BR>
+</FONT></FONT></TT></B>Prints all buckets with one or more hits. Normally,
+ghist960 prints only buckets with 1% or greater of the total hits.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>d<BR>
+</FONT></FONT></TT></B>Prints a complete dump of ghist960's internal symbol
+table in addition to the standard data.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>f<BR>
+</FONT></FONT></TT></B>Tallies the number of hits for each of the line
+numbers of the functions in the application, and associates the sum with line zero of the function.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>h<BR>
+</FONT></FONT></TT></B>Displays help output and exits.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>n<BR>
+</FONT></FONT></TT></B>Prints the number of hits for each bucket, in addition
+to the standard data.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>s<BR>
+</FONT></FONT></TT></B>Suppresses printing of miscellaneous header and
+footer information and format lines.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>V<BR>
+</FONT></FONT></TT></B>Writes version information to <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>stdout</FONT></FONT></TT></B>
+and continues.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>v960<BR>
+</FONT></FONT></TT></B>Writes version information to <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>stdout</FONT></FONT></TT></B>
+and exits.</LI>
+</UL>
+
+<P>
+<HR></P>
+
+<P><A HREF="#top"><IMG SRC="../icons/uparw.gif" BORDER=2 HEIGHT=60 WIDTH=60 ALIGN=BOTTOM></A><I>Return
+to the top of this page.</I></P>
+
+<P><A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the ic960 Interface Index.</I></P>
+
+<P><A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the gcc960 Interface Index.</I></P>
+
+</BODY>
+</HTML>

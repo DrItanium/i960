@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>Section Size Printer (gsize960/siz960) </TITLE>
+   <META NAME="AUTHOR" CONTENT="David M. Gaffney">
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.0b6Gold (WinNT; I) [Netscape]">
+</HEAD>
+<BODY>
+
+<H1 ALIGN=CENTER>gsize960/siz960 Section Size Printer</H1>
+
+<P>
+<HR></P>
+
+<P>The gsize960/siz960 section size printer (&quot;sizer&quot;) prints
+the number of bytes required for each section of an object file, and their
+sum. It also displays the address for each of the sections.</P>
+
+<P>The invocation command is:</P>
+
+<P><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>gsize960</B> | <B>siz960</B>
+[ <B>-</B><I>option</I> ]... [ <I>filenames </I>]</FONT></FONT></TT></P>
+
+<P><A NAME="DDE_LINK2"></A>Each option must be preceded by a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>-</FONT></FONT></TT></B>
+character. (In Windows*, you can also use a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>/</FONT></FONT></TT></B>
+character.) The options are listed below. If no options are specified,
+sizes are displayed in decimal and addresses are displayed in hex.</P>
+
+<P><I><TT><FONT FACE="Courier New"><FONT SIZE=+1>filenames<B> </B></FONT></FONT></TT></I>identifies
+one or more object files. If the file is an object library, the sizer reports
+the size for each member of the library. If <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>file</FONT></FONT></TT></I>
+is omitted, the sizer reports the size of <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>a.out</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>b.out</FONT></FONT></TT></B>,
+or <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>e.out</FONT></FONT></TT></B>.
+<HR></P>
+
+<UL>
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>c<BR>
+</FONT></FONT></TT></B>Displays total size of COMMON symbols.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>d<BR>
+</FONT></FONT></TT></B>Displays the sizes and addresses in decimal.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>h<BR>
+</FONT></FONT></TT></B>Displays help information and exits.</LI>
+
+<LI><b>n</b><BR>
+Includes unallocated sections in the size calculation. For example, ELF
+.debug_ sections are included whereas they normally would not.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>o<BR>
+</FONT></FONT></TT></B>Displays the sizes and addresses in octal.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>p<BR>
+</FONT></FONT></TT></B>Suppresses header display.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>V<BR>
+</FONT></FONT></TT></B>Displays the section-size printer version and creation
+date and continues processing.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>v960<BR>
+</FONT></FONT></TT></B>Displays the section-size printer version and creation
+date and stops processing.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>x<BR>
+</FONT></FONT></TT></B>Displays the sizes and addresses in hexadecimal.</LI>
+</UL>
+
+<P>
+<HR></P>
+
+<P><A HREF="#top"><IMG SRC="../icons/uparw.gif" BORDER=2 HEIGHT=60 WIDTH=60 ALIGN=BOTTOM></A><I>Return
+to the top of this page.</I></P>
+
+<P><A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the ic960 Interface Index.</I></P>
+
+<P><A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the gcc960 Interface Index.</I></P>
+
+</BODY>
+</HTML>

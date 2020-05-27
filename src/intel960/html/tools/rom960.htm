@@ -1,0 +1,207 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>ROM Image Builder (rom960)</TITLE>
+   <META NAME="AUTHOR" CONTENT="David M. Gaffney">
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.0b6Gold (WinNT; I) [Netscape]">
+</HEAD>
+<BODY>
+
+<H1 ALIGN=CENTER>rom960 ROM Image Builder</H1>
+
+<P>
+<HR></P>
+
+<P>The rom960 ROM image builder interprets commands either from a configuration
+file or from standard input. The invocation command is:</P>
+
+<P><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>rom960 </B>[ <B>-</B><I>option</I>
+]... [ <I>dfile</I> [ <I>arglist</I> ]...]...</FONT></FONT></TT></P>
+
+<P>Each option must be preceded by a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>-</FONT></FONT></TT></B>
+character. (In Windows*, you can also use a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>/</FONT></FONT></TT></B>
+character.) The options are listed below.</P>
+
+<P>A rommer directive file (<I><TT>dfile</TT></I>) must be given without
+its <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>.ld</FONT></FONT></TT></B>
+extension. The configuration file is searched for lines beginning with
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>#*</FONT></FONT></TT></B>.
+This prefix is stripped, and script arguments (<I><TT>arglist</TT></I>)
+are substituted. The first script argument in the invocation is substituted
+for each occurrence of <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>$0</FONT></FONT></TT></B>,
+the second for each occurrence of <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>$1</FONT></FONT></TT></B>,
+and so on. After script argument substitution, the invocation command is
+interpreted and executed.</P>
+
+<P>If the <I><TT>arglist </TT></I>is omitted, rom960 reads commands from
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>stdin</FONT></FONT></TT></B>;
+no argument substitution is done.
+<HR></P>
+
+<H3>Options</H3>
+
+<P>
+<HR></P>
+
+<UL>
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>h<BR>
+</FONT></FONT></TT></B>Displays help information to <TT><FONT FACE="Courier New"><FONT SIZE=+1><B>stdout</B>
+</FONT></FONT></TT>and exits.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>V<BR>
+</FONT></FONT></TT></B>Displays the version number and copyright date to
+standard error and continues.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>v960<BR>
+</FONT></FONT></TT></B>Displays the version number and copyright date to
+standard error and exits.</LI>
+</UL>
+
+<P>
+<HR></P>
+
+<H3>rom960 Directives</H3>
+
+<P>
+<HR></P>
+
+<UL>
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>checksum </B><I>image
+start-addr end-addr<B> </B>checksum-addr <B>16 </B></I>| <B><I>32<BR>
+</I></B></FONT></FONT></TT>Computes a 16- or 32-bit crc checksum over the
+address range from <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>start-addr</FONT></FONT></TT></I>
+to <TT><FONT FACE="Courier New"><FONT SIZE=+1><I>end-addr</I> </FONT></FONT></TT>(inclusive)
+and stores it at the designated checksum address.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>help<BR>
+</FONT></FONT></TT></B>Displays help information and exits.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>ihex </B><I>image<B>
+</B>output_intel_hex_file</I> [ <B>mode16</B> | <B>mode32</B> ]<BR>
+</FONT></FONT></TT>Translates a binary ROM image to Intel hex format suitable
+for downloading to an intelligent PROM programmer. The optional <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>mode16</FONT></FONT></TT></B>
+argument produces extended segment address records; <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>mode32</FONT></FONT></TT></B>
+(the default) produces extended linear address records.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>map </B><I>object_file<BR>
+</I></FONT></FONT></TT>Produces a listing to <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>stdout</FONT></FONT></TT></B>
+of the sections in the object file in address order with their addresses
+and sizes in hexadecimal. It also shows in decimal the size of the image
+file that <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>mkimage</FONT></FONT></TT></B>
+would produce from this object file.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>mkfill </B><I>object_input
+image_output fill_character<BR>
+</I></FONT></FONT></TT>Translates a COFF executable file into a memory
+image containing an image of the program as it would appear when downloaded.
+Sections are padded with the fill character specified. No space is allowed
+for .bss. The file contains all sections of <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>STYP_TEXT</FONT></FONT></TT></B>
+and <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>STYP_DATA</FONT></FONT></TT></B>
+in order of their starting addresses.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>mkimage </B><I>object_input
+image_output</I> [<I>section</I>]…<BR>
+</FONT></FONT></TT>Translates an executable file into a memory image containing
+an image of the program as it would appear when downloaded. Sections are
+padded with zeros. No space is allowed for .bss. By default, the file contains
+all sections of <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>STYP_TEXT</FONT></FONT></TT></B>
+and <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>STYP_DATA</FONT></FONT></TT></B>
+in the order of their starting addresses. You can override this by specifying
+the section names.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>move </B><I>object-file<B>
+</B></I>[ <I>mem_sect </I>{<I> phys_address</I><B> </B>|<B> after<I> </I></B><I>section-name
+</I>}<B><I> </I></B>]<BR>
+</FONT></FONT></TT>Changes the physical address of <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>mem_sect</FONT></FONT></TT></I>
+in the object file header to <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>phys_address</FONT></FONT></TT></I>
+so that it can be used for a particular EPROM. If <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>mem_sect</FONT></FONT></TT></I>
+and <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>phys_address</FONT></FONT></TT></I>
+are not present, the .data section will be moved to immediately follow
+the .text section. You can also specify the address in the relative phrase
+<TT><FONT FACE="Courier New"><FONT SIZE=+1><B>after<I> </I></B><I>section-name</I></FONT></FONT></TT>.<BR>
+<BR>
+Note: This command alters the contents of the section headers in the object
+file. It does not revise references to addresses in the moved section.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>packhex </B><I>hex_file<BR>
+</I></FONT></FONT></TT>Compresses the hex file by repacking the data records;
+the hex file will be converted in place.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>patch </B><I>image pfile
+address<BR>
+</I></FONT></FONT></TT>Writes the contents of the <I>image </I>file holding
+the patch into the image to patch (<I>pfile</I>) at offset <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>address</FONT></FONT></TT></I>.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>permute-a </B><I>image_in
+order image_out<BR>
+</I></FONT></FONT></TT>Scrambles the ROM by specifying a permutation of
+the address lines. <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>order</FONT></FONT></TT></I>
+is a series of 32 integers separated by spaces that specifies, for each
+address bit from left to right, that bit's new position in the output ROM
+image. Thus, a new order of 1 0 2 3 4 5 6 78 9 10 11 12 13 14 15 16 17
+18 19 20 21 22 23 24 25 2627 28 29 30 31 reverses the positions of each
+odd/even pair of bytes. This command fails if the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>rom</FONT></FONT></TT></B>
+or <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>split</FONT></FONT></TT></B>
+command does not precede it to describe the ROM space to be filled.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>permute-d </B><I>image_input
+new_order image_output<BR>
+</I></FONT></FONT></TT>Permutes the bits in each ROM-width hunk of data
+in a ROM image. <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>new_order</FONT></FONT></TT></I>
+is a series of integers separated by spaces that specifies for each data
+bit from least to most significant position that bit's new position in
+the ROM image. Thus, a new order of 7 6 5 4 3 2 1 0 reverses the order
+of the bits in an 8-bit-wide ROM image. The ROM-width used by this command
+is the last ROM-width value provided by a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>rom</FONT></FONT></TT></B>
+or <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>split</FONT></FONT></TT></B>
+command.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>rom </B><I>length width<B>
+</B></I>[ <I>count</I> ]<BR>
+</FONT></FONT></TT>Specifies length and width of ROM images for subsequent
+<TT><FONT FACE="Courier New"><FONT SIZE=+1><B>permute-a</B> </FONT></FONT></TT>and
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>permute-d</FONT></FONT></TT></B>
+commands; allows the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>split</FONT></FONT></TT></B>
+command to issue warnings if its results will not fit the ROM space described.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>sh </B><I>command<BR>
+</I></FONT></FONT></TT>Executes a host system command. Upon completion
+of the command, returns control to rom960.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>split </B><I>image m-length
+m-width r-length r-width name<BR>
+</I></FONT></FONT></TT>Splits a memory image of one length in bytes and
+width in bits into ROM images, possibly of another length in bytes and
+width in bits. The <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>r-length</FONT></FONT></TT></I>
+and <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>r-width</FONT></FONT></TT></I>
+information given to this command can also be used in subsequent <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>permute-a</FONT></FONT></TT></B>
+and <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>permute-d</FONT></FONT></TT></B>
+commands. <I><TT><FONT SIZE=+1>name</FONT></TT></I> is used as a root name
+for the various images produced. Each output file is of the form <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>name.xy</FONT></FONT></TT></I>,
+where <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>x</FONT></FONT></TT></I>
+and <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>y</FONT></FONT></TT></I>
+specify the position of the ROM in the memory image. Thus, <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>x</FONT></FONT></TT></I>
+indicates the ROM's length-wise position in the image from 0 (lowest part
+of address range) to (<I><TT><FONT FACE="Courier New"><FONT SIZE=+1>m-length</FONT></FONT></TT></I>
+/ <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>r-length</FONT></FONT></TT></I>),
+and <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>y</FONT></FONT></TT></I>
+indicates the horizontal position in the image of the ROM, from 0 (first
+<I><TT><FONT FACE="Courier New"><FONT SIZE=+1>r-width</FONT></FONT></TT></I>
+bits of memory-width-bits-wide data path) to (<I><TT><FONT FACE="Courier New"><FONT SIZE=+1>m-length</FONT></FONT></TT></I>
+/ <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>r-width</FONT></FONT></TT></I>).</LI>
+</UL>
+
+<P>
+<HR></P>
+
+<P><A HREF="#top"><IMG SRC="../icons/uparw.gif" BORDER=2 HEIGHT=60 WIDTH=60 ALIGN=BOTTOM></A><I>Return
+to the top of this page.</I></P>
+
+<P><A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the ic960 Interface Index.</I></P>
+
+<P><A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the gcc960 Interface Index.</I></P>
+
+</BODY>
+</HTML>

@@ -1,0 +1,175 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>Coverage Analyzer (gcov960)</TITLE>
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.0b6Gold (WinNT; I) [Netscape]">
+</HEAD>
+<BODY>
+
+<H1 ALIGN=CENTER><A NAME="top"></A>Coverage Analyzer (gcov960)</H1>
+
+<P>
+<HR></P>
+
+<P>gcov960 produces basic-block coverage analysis of a program. When a
+program is compiled with the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>fdb</FONT></FONT></TT></B>
+compiler driver option, a corresponding database directory is created.
+Whenever the program is executed, test coverage information is recorded
+in a profile file called <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>default.pf</FONT></FONT></TT></B>.
+Subsequent runs will overwrite this file; use gmpf960 to merge profiles.</P>
+
+<P>gcov960 takes optional source files and module names as arguments. It
+reads the source file and produces an annotated listing of the source file
+with the coverage data in <TT><FONT FACE="Courier New"><FONT SIZE=+1><I>file</I><B>.cov</B></FONT></FONT></TT>
+(if the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>rl</FONT></FONT></TT></B>
+option is used). Each statement within a basic block is prefixed with the
+number of times it has been executed. Lines that have not been executed
+are prefixed with <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>########</FONT></FONT></TT></B>.</P>
+
+<P>The gcov960 coverage invocation command is:</P>
+
+<P><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>gcov960 </B>[ <B>-</B><I>control</I><B>
+</B>]... [ <I>file</I> [<B>=</B><I>module</I><B>,</B>...]...] [ <B>-</B><I>option</I><B>
+</B>]...</FONT></FONT></TT></P>
+
+<P>gcov960 <A HREF="#controls">controls</A> and <A HREF="#options">options</A>
+are described below. Each option must be preceded by a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>-</FONT></FONT></TT></B>
+character. (In Windows, you can also use a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>/</FONT></FONT></TT></B>
+character.)</P>
+
+<P><I><TT><FONT FACE="Courier New"><FONT SIZE=+1>file</FONT></FONT></TT></I>
+identifies a source file, from the profiled program represented in the
+program database. Specifying <TT><FONT FACE="Courier New"><FONT SIZE=+1><I>file</I><B>=</B><I>module</I><B>,</B>...</FONT></FONT></TT>
+restricts the operation of gcov960 to the file or module(s).
+<HR></P>
+
+<H2><A NAME="controls"></A>Controls</H2>
+
+<P>
+<HR></P>
+
+<UL>
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>c</B> { <B>p</B> | <B>m</B>
+| <B>f</B> | <B>s</B> }</FONT></FONT></TT></LI>
+
+<UL>
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>cp</FONT></FONT></TT></B>
+Produces a program-level coverage report.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>cm</FONT></FONT></TT></B>
+Produces module- and program-level coverage report.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>cf</FONT></FONT></TT></B>
+Produces function-, module-, and program-level coverage report.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>cs</FONT></FONT></TT></B>
+Produces a source- and module-level coverage report.</LI>
+</UL>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>f</B> <I>n<BR>
+</I></FONT></FONT></TT>Produces the n most frequently executed lines (when
+n is positive) or least frequently executed (when n is negative).</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>g </B>[<B>h</B>]<BR>
+</FONT></FONT></TT>Produces a call-graph listing of the profiled program.
+The h argument is optional; it attaches to the report an explanation of
+how to interpret the call-graph listing.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>n </B><I>new-profile<BR>
+</I></FONT></FONT></TT>Compares two profile files. The new profile is compared
+to the default or the profile specified with the p or iprof option, and
+just-hit or just-missed lines are reported. Requires r control. Multiple
+instances of this control and argument are supported. The profiles specified
+are automatically merged together.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>Q</B><I> n<BR>
+</I></FONT></FONT></TT>Ignore hits from functions whose profiles are of
+increasing accuracy (decreasing levels of interpolation). n is 0..9. The
+default is Q9, which means ignore hits for all functions except those with
+perfect profiles. Q0 means do not ignore hits for any functions, even those
+with completely guessed profiles.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>g </B>[<B>h</B>]<B>r
+</B>{ <B>l</B> | <B>h</B> | <B>m</B> }</FONT></FONT></TT></LI>
+
+<UL>
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>rl </FONT></FONT></TT></B>Produces
+a source-annotated listing.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>rh </FONT></FONT></TT></B>Produces
+the line numbers within basic blocks that were hit.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>rm </FONT></FONT></TT></B>Produces
+the line numbers within basic blocks that were missed.</LI>
+</UL>
+</UL>
+
+<P>
+<HR></P>
+
+<H2><A NAME="options"></A>Options</H2>
+
+<P>
+<HR></P>
+
+<UL>
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>C<BR>
+</FONT></FONT></TT></B>Calculates the total number of execution counts
+in a profile.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>help<BR>
+</FONT></FONT></TT></B>Prints help information.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>I </B><I>search-dir<BR>
+</I></FONT></FONT></TT>Adds directory to list that gcov960 searches for
+source files.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>p</B> | <B>iprof </B><I>file<BR>
+</I></FONT></FONT></TT>identifies profile to be used. Default is default.pf.
+Multiple instances of this option and argument are supported. The profiles
+specified are automatically merged together.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>Q</B>[<I>n</I>]<BR>
+</FONT></FONT></TT>Ignore hits except from functions whose profiles are
+at least &lt;n&gt; accurate. The valid range for &lt;n&gt; is 0-9. The
+default is -Q9, which ignores profile information for functions that have
+had source code changes since the profile was collected. -Q0 tells gcov960
+to use a profile even for functions with profile information that is completely
+interpolated. A profile's quality gradually drops as changes are made to
+the code from which it was collected and interpolation is done to make
+it useable by gcc960, ic960, and gcdm960.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>q<BR>
+</FONT></FONT></TT></B>Suppresses display of version, copyright notices,
+profile file and database used.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>t<BR>
+</FONT></FONT></TT></B>Truncates displayed names to keep them within column
+widths.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>V<BR>
+</FONT></FONT></TT></B>Prints the version number and continues.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>v960<BR>
+</FONT></FONT></TT></B>Prints the version number and exits.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>Z </B><I>pdb_dir<BR>
+</I></FONT></FONT></TT>Specifies the program database directory. Default
+is directory identified by G960PDB (gcc960) or I960PDB (ic960). See the
+Getting Started manual for more information on environment variables. </LI>
+</UL>
+
+<P>
+<HR></P>
+
+<P><A HREF="#top"><IMG SRC="../icons/uparw.gif" BORDER=2 HEIGHT=60 WIDTH=60 ALIGN=BOTTOM></A><I>Return
+to the top of this page.</I></P>
+
+<P><A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the ic960 Interface Index.</I></P>
+
+<P><A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the gcc960 Interface Index.</I></P>
+
+</BODY>
+</HTML>

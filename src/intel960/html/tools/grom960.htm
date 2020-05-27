@@ -1,0 +1,240 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>ROM Image Generator (grom960)</TITLE>
+   <META NAME="AUTHOR" CONTENT="David M. Gaffney">
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.0b6Gold (WinNT; I) [Netscape]">
+</HEAD>
+<BODY>
+
+<H1 ALIGN=CENTER>grom960 ROM Image Generator</H1>
+
+<P>
+<HR></P>
+
+<P>grom960 extracts the text (executable code) and data sections from one
+or more object files, places them in specified locations in a binary image,
+and converts the binary image into one or more files in Intel hex format.
+The resulting files can be downloaded to a PROM programming device. grom960
+also provides options that allow bytes from the binary image to be interleaved
+into multiple banks of PROMs.</P>
+
+<P>The invocation command is:</P>
+
+<P><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>grom960</B> [ <B>-</B><I>option</I>
+]... <I>section_spec</I>...</FONT></FONT></TT></P>
+
+<P><A NAME="DDE_LINK2"></A>Each option must be preceded by a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>-</FONT></FONT></TT></B>
+character. (In Windows*, you can also use a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>/</FONT></FONT></TT></B>
+character.) The options are listed below.</P>
+
+<P>A <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>section_spec</FONT></FONT></TT></I>
+specifies the placement of a text or data section into the binary image.
+Multiple specifications are allowed; they are processed in the order encountered.
+There are four types, listed below.
+<HR></P>
+
+<H2>Section Specifications</H2>
+
+<P>
+<HR></P>
+
+<UL>
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><I>filename</I>[<B>,</B><I>addr</I>]<BR>
+</FONT></FONT></TT>Places the text section of the specified file at address
+<I><TT><FONT FACE="Courier New"><FONT SIZE=+1>addr</FONT></FONT></TT></I>,
+relative to the start of the image, and places the data section immediately
+following the text section.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>B</B><I>filename</I>[<B>,</B><I>addr</I>]<BR>
+</FONT></FONT></TT>Also places both the text and data sections of the specified
+file at address <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>addr</FONT></FONT></TT></I>,
+relative to the start of the image. However, the order of the text and
+data sections will be the same as in the input file (i.e., the one linked
+at the lower address will come first); and any gap between the sections
+will be preserved in the output image.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>D</B><I>filename</I>[<B>,</B><I>addr</I>]<BR>
+</FONT></FONT></TT>Places the data section of the specified file at address
+<I><TT><FONT FACE="Courier New"><FONT SIZE=+1>addr</FONT></FONT></TT></I>.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>T</B><I>filename</I>[<B>,</B><I>addr</I>]<BR>
+</FONT></FONT></TT>Places the text section of the specified file at address
+<I><TT><FONT FACE="Courier New"><FONT SIZE=+1>addr</FONT></FONT></TT></I>.</LI>
+</UL>
+
+<P>The <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>addr</FONT></FONT></TT></I>
+argument is always optional. An omitted address causes the specified section(s)
+to be placed immediately after the one in the preceding specification (or
+at address 0 in the binary image, in the case of the first section specification).
+<HR></P>
+
+<H2>Options</H2>
+
+<P>
+<HR></P>
+
+<P>Numeric arguments are interpreted as decimal, unless preceded by <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>0x</FONT></FONT></TT></B>
+(hex).</P>
+
+<UL>
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>20<BR>
+</FONT></FONT></TT></B>Generates extended address records in 20-bit format
+(e.g., as used by the 8086), if the ROM is larger than 64K. The default
+is to generate 32-bit format records. This option is included primarily
+for compatibility with old ROM burner software that does not support 32-bit
+format..</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>A</B><I>n<BR>
+</I></FONT></FONT></TT>Sets checksum storage address to <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>n</FONT></FONT></TT></I>.
+Default = <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>0x10000</FONT></FONT></TT></B>.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>b</B><I>n<BR>
+</I></FONT></FONT></TT>Generates images for <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>n</FONT></FONT></TT>
+</I>banks of ROMs. Default = <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>1</FONT></FONT></TT></B>.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>c </B>{<B> 16</B> | <B>32</B>
+}<BR>
+</FONT></FONT></TT>Generates a 16-bit or 32-bit checksum.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>E</B><I>n<BR>
+</I></FONT></FONT></TT>Sets checksum end address to <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>n</FONT></FONT></TT></I>.
+Default = <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>0xffff</FONT></FONT></TT></B>.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>f<BR>
+</FONT></FONT></TT></B>Dumps a full image and does not skip records with
+all ones.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>h<BR>
+</FONT></FONT></TT></B>Displays a help message and quits.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>i<BR>
+</FONT></FONT></TT></B>Suppresses generating hex output files. Instead,
+dumps the raw binary image to output file <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>image</FONT></FONT></TT></B>.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>l</B><I>n<BR>
+</I></FONT></FONT></TT>Generates images for ROMs that are <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>n</FONT></FONT></TT></I>
+bytes long. The default is 0x10000 (64K).</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>m<BR>
+</FONT></FONT></TT></B>Writes a map of the binary image to <TT><FONT FACE="Courier New"><FONT SIZE=+1><B>stdout</B><I>.</I></FONT></FONT></TT></LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>o</B><I>name<BR>
+</I></FONT></FONT></TT>Specifies the base name of the output file(s). When
+the i option is used, the output file contains the binary image. (Default
+filename is image.) When the i option is not used, a series of files named
+namexy.hex contain the hex ROM images. (Default is a series of files named
+romxy.hex.)</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>S</B><I>n<BR>
+</I></FONT></FONT></TT>Sets the checksum start address to <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>n</FONT></FONT></TT></I>.
+Default is <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>0x0</FONT></FONT></TT></B>.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>V<BR>
+</FONT></FONT></TT></B>Print version number and continues.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>v<BR>
+</FONT></FONT></TT></B>Produces a map, as with the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>m</FONT></FONT></TT>
+</B>option, and summarizes the ROM configuration settings.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>v960<BR>
+</FONT></FONT></TT></B>Writes grom960 version information to <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>stdout</FONT></FONT></TT></B>
+and quits.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>w</B><I>n<BR>
+</I></FONT></FONT></TT>Generates ROMs that are <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>n</FONT></FONT></TT></I>
+bytes &quot;wide&quot;. (Default is 1.) <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>n</FONT></FONT></TT></I>
+bytes at a time are written from the binary image to each bank of ROM,
+before moving on to the next ROM bank. The combination of the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>b</FONT></FONT></TT></B>
+and <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>w</FONT></FONT></TT></B>
+options controls interleaving of ROMs.</LI>
+</UL>
+
+<P>
+<HR></P>
+
+<H2>Using grom960</H2>
+
+<P>
+<HR></P>
+
+<P>Generating ROM images is a two-step process: creation of a binary image,
+and conversion of the image to ROM image (Intel hex) files.</P>
+
+<H3>Generating Binary Images</H3>
+
+<P>Regardless of the addresses where the code was linked, all bytes in
+a ROM image appear in a contiguous address space relative to the ROMs'
+base address. For instance, a 64K ROM based at address <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>0xffff0000</FONT></FONT></TT></B>
+has a ROM address space of <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>[0,0xffff]</FONT></FONT></TT></B>,
+byte 0 of the ROM being the byte which will be addressed at <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>0xffff0000</FONT></FONT></TT></B>
+at run time.</P>
+
+<P>The binary image is generated by extracting the text and data sections
+of the input files and placing them at the specified locations in the ROM
+address space. Unused address space bytes are initialized to <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>0xff</FONT></FONT></TT></B>,
+the value of a byte in an erased PROM.</P>
+
+<H3>Hex File Generation</H3>
+
+<P>After a single binary image has been created, it is interleaved according
+to the ROM width and the number of banks requested. If the width is <B><I><TT><FONT FACE="Courier New"><FONT SIZE=+1>w</FONT></FONT></TT></I></B>,
+and the number of banks is <B><I><TT><FONT FACE="Courier New"><FONT SIZE=+1>b</FONT></FONT></TT></I></B>,
+the first <B><I><TT><FONT FACE="Courier New"><FONT SIZE=+1>w</FONT></FONT></TT></I></B>
+bytes in the image are written to the first bank of ROMs, then the second
+<B><I><TT><FONT FACE="Courier New"><FONT SIZE=+1>w</FONT></FONT></TT></I></B>
+bytes are written to the second bank, and so on. After <B><I><TT><FONT FACE="Courier New"><FONT SIZE=+1>b</FONT></FONT></TT></I></B>th
+bank has been written, output resumes at the first bank. For example, if
+the number of banks is four, the ROM width is two, and the first sixteen
+bytes of the image are:</P>
+
+<P><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>0x00112233445566778899aabbccddeeff</FONT></FONT></TT></B></P>
+
+<P>then the four banks would begin with the following values:</P>
+
+<P>bank 0: <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>0x00118899...</FONT></FONT></TT></B></P>
+
+<P>bank 1: <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>0x2233aabb...</FONT></FONT></TT></B></P>
+
+<P>bank 2: <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>0x4455ccdd...</FONT></FONT></TT></B></P>
+
+<P>bank 3: <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>0x6677eeff...</FONT></FONT></TT></B></P>
+
+<P>Each bank corresponds to at least one ROM. Every time the amount of
+data written to a bank exceeds the specified ROM length, a new ROM image
+file is started.</P>
+
+<P>Each output file is in Intel hex format and corresponds to a single
+ROM device. The output files are named <TT><FONT FACE="Courier New"><FONT SIZE=+1><I>basenamexy</I><B>.hex</B></FONT></FONT></TT>,
+where <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>y</FONT></FONT></TT></I>
+is the bank number and <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>x</FONT></FONT></TT></I>
+is the sequence number within the bank. Both <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>x</FONT></FONT></TT></I>
+and <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>y</FONT></FONT></TT></I>
+are numbered from 0. For example, if the number of banks is four, the ROM
+length is 64 K, and the total image size is 512K, then the following hex
+files would be output:</P>
+
+<P>bank 0: <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>rom00.hex</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>rom10.hex</FONT></FONT></TT></B></P>
+
+<P>bank 1: <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>rom01.hex</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>rom11.hex</FONT></FONT></TT></B></P>
+
+<P>bank 2: <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>rom02.hex</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>rom12.hex</FONT></FONT></TT></B></P>
+
+<P>bank 3: <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>rom 03.hex</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>rom13.hex</FONT></FONT></TT></B>.
+<HR></P>
+
+<P><A HREF="#top"><IMG SRC="../icons/uparw.gif" BORDER=2 HEIGHT=60 WIDTH=60 ALIGN=BOTTOM></A><I>Return
+to the top of this page.</I></P>
+
+<P><A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the ic960 Interface Index.</I></P>
+
+<P><A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the gcc960 Interface Index.</I></P>
+
+</BODY>
+</HTML>

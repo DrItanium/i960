@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>Name Lister (gnm960/nam960)</TITLE>
+   <META NAME="AUTHOR" CONTENT="David M. Gaffney">
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.0b6Gold (WinNT; I) [Netscape]">
+</HEAD>
+<BODY>
+
+<H1 ALIGN=CENTER>gnm960/nam960 Name Lister</H1>
+
+<P>
+<HR></P>
+
+<P>The gnm960/nam960 name lister is a symbol dumper: it prints the name
+list (symbol table entries) of each specified object or object library
+file. For libraries, a symbol table listing is produced for each member
+of the library. The information listed includes, for each symbol: value,
+class, type, size, line number, and section name.</P>
+
+<P>The invocation command is:</P>
+
+<P><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>gnm960</B> | <B>nam960</B>
+[ <B>-</B><I>option</I> ]... [ <I>file </I>]...</FONT></FONT></TT></P>
+
+<P><A NAME="DDE_LINK2"></A>Each option must be preceded by a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>-</FONT></FONT></TT></B>
+character. (In Windows*, you can also use a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>/</FONT></FONT></TT></B>
+character.) The options are listed below.</P>
+
+<P><I><TT><FONT FACE="Courier New"><FONT SIZE=+1>file</FONT></FONT></TT></I>
+specifies the file or library to be operated on. If <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>file</FONT></FONT></TT></I>
+is omitted, <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>a.out</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>b.out</FONT></FONT></TT></B>,
+and <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>e.out</FONT></FONT></TT></B>
+are tried, in that order.
+<HR></P>
+
+<H3>Options</H3>
+
+<P>
+<HR></P>
+
+<UL>
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>a<BR>
+</FONT></FONT></TT></B>Displays the debug information.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>d<BR>
+</FONT></FONT></TT></B>Displays the addresses in decimal.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>e<BR>
+</FONT></FONT></TT></B>Displays only the global (external) and static symbols,
+including the leaf-procedure names.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>f<BR>
+</FONT></FONT></TT></B>Displays all the symbols, including the redundant
+symbols (such as .text, .data, and .bss) that are usually suppressed. This
+option overrides the g or e option.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>g<BR>
+</FONT></FONT></TT></B>Prints only global (external) symbols. This is equivalent
+to the <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>e</FONT></FONT></TT></B>
+option.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>h<BR>
+</FONT></FONT></TT></B>Suppresses the output-header display.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>help<BR>
+</FONT></FONT></TT></B>Displays help information.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>n<BR>
+</FONT></FONT></TT></B>Sorts the symbols alphabetically by name. This option
+overrides v.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>o<BR>
+</FONT></FONT></TT></B>Displays the addresses in octal.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>p<BR>
+</FONT></FONT></TT></B>Displays the information in a three-column parseable
+format (the b.out and LEF format default).</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>R<BR>
+</FONT></FONT></TT></B>Reverses the sorting order to descending order.
+Also specify n or v.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>r<BR>
+</FONT></FONT></TT></B>Displays the names of the files defining or referencing
+each symbol.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>s<BR>
+</FONT></FONT></TT></B>Displays the library symbol map.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>T<BR>
+</FONT></FONT></TT></B>Truncates the symbol names to fit the display-column
+widths.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>u<BR>
+</FONT></FONT></TT></B>Displays only the undefined symbols. This option
+overrides g, e, or f.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>V<BR>
+</FONT></FONT></TT></B>Displays the name-lister version and creation date
+on stdout, and continues processing.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>v<BR>
+</FONT></FONT></TT></B>Sorts the symbols ascending numerically by value.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>v960<BR>
+</FONT></FONT></TT></B>Displays the version and creation date, and stops
+processing.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>x<BR>
+</FONT></FONT></TT></B>Displays the addresses in hexadecimal (the default).</LI>
+</UL>
+
+<P>
+<HR></P>
+
+<P><A HREF="#top"><IMG SRC="../icons/uparw.gif" BORDER=2 HEIGHT=60 WIDTH=60 ALIGN=BOTTOM></A><I>Return
+to the top of this page.</I></P>
+
+<P><A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the ic960 Interface Index.</I></P>
+
+<P><A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the gcc960 Interface Index.</I></P>
+
+</BODY>
+</HTML>

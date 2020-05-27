@@ -1,0 +1,161 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+   <TITLE>Archiver (arc960/gar960) </TITLE>
+   <META NAME="GENERATOR" CONTENT="Mozilla/3.0b6Gold (WinNT; I) [Netscape]">
+</HEAD>
+<BODY>
+
+<H1 ALIGN=CENTER>arc960/gar960<A NAME="top"></A>Archiver</H1>
+
+<P>
+<HR></P>
+
+<P>The archiver maintains a group of object files as a single library as
+used by the linker. The archiver operates on text and object files, but
+does not allow mixing object formats within an archive. The format of an
+archive is determined by the format of the first object file on the file
+list when the archive is created.</P>
+
+<P>The archiver invocation command is:</P>
+
+<DL>
+<DT><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>arc960 </B>| <B>gar960
+-</B><I>option</I><B> </B>[ <B>-</B><I>modifier</I><B> </B>... ] <I>archive</I>
+[ <I>name</I> ... ]</FONT></FONT></TT></DT>
+</DL>
+
+<P>Archiver options must be preceded by a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>-</FONT></FONT></TT></B>
+character. (In Windows, you can also use a <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>/</FONT></FONT></TT></B>
+character.) Some options have modifiers. The options and modifiers are
+listed below.</P>
+
+<P>The <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>archive</FONT></FONT></TT></I>
+argument identifies the archive to be operated on. You must specify a complete
+pathname if the archive is not in the current directory. <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>name</FONT></FONT></TT></I>
+specifies an archive member or external file.
+<HR></P>
+
+<H3>Options</H3>
+
+<P>
+<HR></P>
+
+<UL>
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>d</FONT></FONT></TT>
+(Delete)<BR>
+</B>Deletes members from the archive.</LI>
+
+<LI><TT><B>f</B> </TT><B>(Format)<BR>
+</B>Specifies the desired object module format for the an empty library.
+Object formats are b.out, COFF, and ELF.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>h</FONT></FONT></TT></B>
+(<B>Help</B>)<BR>
+Displays help information.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>m</FONT></FONT></TT></B>
+(<B>Move</B>)<BR>
+Moves members to the end of the archive or to the specified position.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>p</FONT></FONT></TT></B>
+(<B>Print</B>)<BR>
+Prints members in the archive.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>r</FONT></FONT></TT></B>
+(<B>Replace</B>)<BR>
+Replaces existing members or adds new members.</LI>
+
+<LI><B><TT>s</TT> (Symbols)<BR>
+</B>creates or updates library symbol table.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>t</FONT></FONT></TT></B>
+(<B>Table</B>)<BR>
+Prints member information or the archive table of contents.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>u</FONT></FONT></TT></B>
+(<B>Update</B>)<BR>
+updates existing members by the modification dates, or adds new members.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>V</FONT></FONT></TT></B>
+(<B>Version</B>)<BR>
+Reports the archiver version and continues processing. </LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>v960</FONT></FONT></TT></B>
+(<B>Version only</B>)<BR>
+Reports the archiver version and stops processing. </LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>x</FONT></FONT></TT></B>
+(<B>Extract</B>)<BR>
+Extracts members to files without modifying the archive.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>z</FONT></FONT></TT></B>
+(<B>Suppress</B>)<BR>
+Suppresses time stamp in archive header.</LI>
+</UL>
+
+<P>
+<HR></P>
+
+<H3>Modifiers</H3>
+
+<P>
+<HR></P>
+
+<UL>
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>a </B><I>pname</I></FONT></FONT></TT><B>
+(Position)<BR>
+</B>Adds or positions members after the <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>pname</FONT></FONT></TT></I>
+member. Used with <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>r</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>u</FONT></FONT></TT></B>,
+or <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>m</FONT></FONT></TT></B>.</LI>
+
+<LI><TT><FONT FACE="Courier New"><FONT SIZE=+1><B>b </B>|<B> i </B><I>pname</I></FONT></FONT></TT><B>
+(Before /Insert)<BR>
+</B>Adds or positions members before the <I><TT><FONT FACE="Courier New"><FONT SIZE=+1>pname</FONT></FONT></TT></I>
+member. Used with <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>r</FONT></FONT></TT></B>,
+<B><TT><FONT FACE="Courier New"><FONT SIZE=+1>u</FONT></FONT></TT></B>,
+or <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>m</FONT></FONT></TT></B>.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>c</FONT></FONT></TT></B>
+(<B>Creation</B>)<BR>
+Suppresses the archive-creation message. Used with <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>r</FONT></FONT></TT></B>
+or <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>u</FONT></FONT></TT></B>.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>l</FONT></FONT></TT></B>
+(<B>Local</B>)<BR>
+Uses the current directory for temporary files. Used with any option.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>o</FONT></FONT></TT></B>
+(<B>Output Date</B>)<BR>
+uses the member last-modified date as the extracted file-creation date.
+Used with <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>x</FONT></FONT></TT></B>.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>s</FONT></FONT></TT></B>
+(<B>Symbols</B>)<BR>
+Creates or updates the library symbol table. Used with any option or none.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>u</FONT></FONT></TT></B>
+(<B>Update)<BR>
+</B>Updates members only if the member last-modified date is older than
+the file last-modified date. Used with <B><TT><FONT FACE="Courier New"><FONT SIZE=+1>r</FONT></FONT></TT></B>.</LI>
+
+<LI><B><TT><FONT FACE="Courier New"><FONT SIZE=+1>v</FONT></FONT></TT></B>
+(<B>Progress</B>)<BR>
+Reports the archiver progress. Used with any option.</LI>
+</UL>
+
+<P>
+<HR></P>
+
+<P><A HREF="#top"><IMG SRC="../icons/uparw.gif" BORDER=2 HEIGHT=60 WIDTH=60 ALIGN=BOTTOM></A><I>Return
+to the top of this page.</I></P>
+
+<P><A HREF="ctoolshm.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the ic960 Interface Index.</I></P>
+
+<P><A HREF="gnuhome.htm"><IMG SRC="../icons/index2.gif" BORDER=2 HEIGHT=29 WIDTH=44 ALIGN=BOTTOM></A><I>Go
+to the gcc960 Interface Index.</I></P>
+
+</BODY>
+</HTML>
