@@ -374,30 +374,6 @@ namespace i960::Operation {
                 return std::monostate();
         }
     }
-    using AnyInstruction = std::variant<
-        std::monostate,
-        CTRL,
-        COBR,
-        REG,
-        MEM>;
-
-    constexpr AnyInstruction translate(i960::OpcodeValue op, UnsureClass) noexcept {
-        switch (op) {
-#define X(name, code, kind) case code : return name () ; 
-#define reg(name, code, __) X(name, code, REG)
-#define mem(name, code, __) X(name, code, MEM)
-#define cobr(name, code, __)  X(name, code, COBR)
-#define ctrl(name, code, __) X(name, code, CTRL)
-#include "opcodes.def"
-#undef X
-#undef reg
-#undef mem
-#undef cobr
-#undef ctrl
-            default:
-                return std::monostate();
-        }
-    }
 
 } // end namespace i960::Operation
 namespace i960 {
@@ -610,6 +586,12 @@ namespace i960 {
     constexpr auto IsMEMFormat = Opcode::IsMemoryFormat<T::Opcode>;
     template<typename T>
     constexpr auto HasSrcDestField = Opcode::IsMemoryFormat<T::Opcode> | Opcode::IsRegisterFormat<T::Opcode>;
+#define FACT_EXPANSION HasSrcDestField
+#define FACT_FUNC_NAME hasSrcDestField
+#include "DefFactQuery.def"
+#undef FACT_EXPANSION
+#undef FACT_FUNC_NAME
+
     template<typename T>
     constexpr auto IsLoadOperation = IsInCollection<T, Operation::ld,
                                                        Operation::ldib,
@@ -619,6 +601,12 @@ namespace i960 {
                                                        Operation::ldl,
                                                        Operation::ldq,
                                                        Operation::ldt>;
+#define FACT_EXPANSION IsLoadOperation 
+#define FACT_FUNC_NAME isLoadOperation 
+#include "DefFactQuery.def"
+#undef FACT_EXPANSION
+#undef FACT_FUNC_NAME
+
     template<typename T>
     constexpr auto IsStoreOperation = IsInCollection<T, Operation::st,
                                                         Operation::stib,
@@ -628,85 +616,50 @@ namespace i960 {
                                                         Operation::stl,
                                                         Operation::stq,
                                                         Operation::stt>;
-    template<typename T>
-    constexpr auto UsesSrcDestField = HasSrcDestField<T> &&
-                                      (!IsInCollection<T, Operation::bx,
-                                                          Operation::callx>);
-    template<typename T>
-    constexpr auto SrcDestIsDest = HasSrcDestField<T> && (IsLoadOperation<T> || IsInCollection<T, Operation::balx>);
-    template<typename T>
-    constexpr auto SrcDestIsSrc = HasSrcDestField<T> && IsStoreOperation<T>;
-    template<typename T>
-    constexpr auto IgnoresSrcDestField = HasSrcDestField<T> &&
-                                         (IsInCollection<T, Operation::bx, Operation::callx>);
-
-    constexpr bool ignoresSrcDestField(i960::OpcodeValue op) noexcept {
-        switch (op) {
-#define X(name, code, kind) case code : return IgnoresSrcDestField<Operation:: name>; 
-#define reg(name, code, __) X(name, code, REG)
-#define mem(name, code, __) X(name, code, MEM)
-#define cobr(name, code, __)  X(name, code, COBR)
-#define ctrl(name, code, __) X(name, code, CTRL)
-#include "opcodes.def"
-#undef X
-#undef reg
-#undef mem
-#undef cobr
-#undef ctrl
-            default:
-                return false;
-        }
-    }
-    constexpr bool usesSrcDestField(i960::OpcodeValue op) noexcept {
-        switch (op) {
-#define X(name, code, kind) case code : return UsesSrcDestField<Operation:: name>; 
-#define reg(name, code, __) X(name, code, REG)
-#define mem(name, code, __) X(name, code, MEM)
-#define cobr(name, code, __)  X(name, code, COBR)
-#define ctrl(name, code, __) X(name, code, CTRL)
-#include "opcodes.def"
-#undef X
-#undef reg
-#undef mem
-#undef cobr
-#undef ctrl
-            default:
-                return false;
-        }
-    }
-    constexpr bool hasSrcDestField(i960::OpcodeValue op) noexcept {
-        switch (op) {
-#define X(name, code, kind) case code : return HasSrcDestField<Operation:: name>; 
-#define reg(name, code, __) X(name, code, REG)
-#define mem(name, code, __) X(name, code, MEM)
-#define cobr(name, code, __)  X(name, code, COBR)
-#define ctrl(name, code, __) X(name, code, CTRL)
-#include "opcodes.def"
-#undef X
-#undef reg
-#undef mem
-#undef cobr
-#undef ctrl
-            default: 
-                return false;
-        }
-    }
-
-#define FACT_EXPANSION IsShiftLeftOperation
-#define FACT_FUNC_NAME isShiftLeftOperation
+#define FACT_EXPANSION IsStoreOperation 
+#define FACT_FUNC_NAME isStoreOperation 
 #include "DefFactQuery.def"
 #undef FACT_EXPANSION
 #undef FACT_FUNC_NAME
 
+    template<typename T>
+    constexpr auto UsesSrcDestField = HasSrcDestField<T> &&
+                                      (!IsInCollection<T, Operation::bx,
+                                                          Operation::callx>);
+#define FACT_EXPANSION UsesSrcDestField
+#define FACT_FUNC_NAME usesSrcDestField 
+#include "DefFactQuery.def"
+#undef FACT_EXPANSION
+#undef FACT_FUNC_NAME
+
+    template<typename T>
+    constexpr auto SrcDestIsDest = HasSrcDestField<T> && (IsLoadOperation<T> || IsInCollection<T, Operation::balx>);
 #define FACT_EXPANSION SrcDestIsDest 
 #define FACT_FUNC_NAME srcDestIsDest 
 #include "DefFactQuery.def"
 #undef FACT_EXPANSION
 #undef FACT_FUNC_NAME
+
+    template<typename T>
+    constexpr auto SrcDestIsSrc = HasSrcDestField<T> && IsStoreOperation<T>;
 #define FACT_EXPANSION SrcDestIsSrc
 #define FACT_FUNC_NAME srcDestIsSrc
 #include "DefFactQuery.def"
 #undef FACT_EXPANSION
 #undef FACT_FUNC_NAME
+
+    template<typename T>
+    constexpr auto IgnoresSrcDestField = HasSrcDestField<T> &&
+                                         (IsInCollection<T, Operation::bx, Operation::callx>);
+
+#define FACT_EXPANSION IgnoresSrcDestField 
+#define FACT_FUNC_NAME ignoresSrcDestField 
+#include "DefFactQuery.def"
+#undef FACT_EXPANSION
+#undef FACT_FUNC_NAME
+
+
+
+
 } // end namespace i960
 #endif // end I960_OPCODES_H__
