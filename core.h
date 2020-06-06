@@ -105,12 +105,9 @@ namespace i960 {
         LowestTwoBitsPattern<Ordinal> tmp;
         return tmp.decode(value) == 0;
     }
-    constexpr BitFragment<OpcodeValue, Ordinal, 0b111'0000, 4> LowestThreeBitsOfMajorOpcode{};
-    constexpr Ordinal lowestThreeBitsOfMajorOpcode(OpcodeValue v) noexcept {
-        return LowestThreeBitsOfMajorOpcode.decode(v);
-    }
-    constexpr SameWidthFragment<Ordinal, static_cast<Ordinal>(~0b111'111)> FramePointerAddress{};
-    constexpr LowestTwoBitsPattern<Ordinal> ProcedureKindField {};
+    using LowestThreeBitsOfMajorOpcode = BitFragment<OpcodeValue, Ordinal, 0b111'0000, 4>;
+    using FramePointerAddress = SameWidthFragment<Ordinal, static_cast<Ordinal>(~0b111'111)>;
+    using ProcedureKindField = LowestTwoBitsPattern<Ordinal>;
 
 
     class Core {
@@ -285,17 +282,18 @@ namespace i960 {
             static constexpr Ordinal getConditionalAddMask(OpcodeValue value) noexcept {
                 // mask is in bits 4-6 of the opcode in reg format so it is the
                 // lowest three bits of the opcode like before.
-                return lowestThreeBitsOfMajorOpcode(value);
+                return LowestThreeBitsOfMajorOpcode::decodePattern(value);
+
             }
             static constexpr Ordinal getConditionalSubtractMask(OpcodeValue value) noexcept {
                 // mask is in bits 4-6 of the opcode in reg format so it is the
                 // lowest three bits of the opcode like before.
-                return lowestThreeBitsOfMajorOpcode(value);
+                return LowestThreeBitsOfMajorOpcode::decodePattern(value);
             }
             static constexpr Ordinal getSelectMask(OpcodeValue value) noexcept {
                 // mask is in bits 4-6 of the opcode in reg format so it is the
                 // lowest three bits of the opcode like before.
-                return lowestThreeBitsOfMajorOpcode(value);
+                return LowestThreeBitsOfMajorOpcode::decodePattern(value);
             }
             template<typename T, std::enable_if_t<IsSelectOperation<std::decay_t<T>>, int> = 0> 
             void performOperation(const REGFormatInstruction& inst, T) noexcept {
@@ -579,7 +577,7 @@ namespace i960 {
                     if constexpr (std::is_same_v<K, Operation::testno>) {
                         setDest(inst, _ac.getConditionCode() == 0b000 ? 1 : 0);
                     } else {
-                        setDest(inst, ((lowestThreeBitsOfMajorOpcode(inst.getOpcode()) & _ac.getConditionCode()) != 0) ? 1 : 0);
+                        setDest(inst, ((LowestThreeBitsOfMajorOpcode::decodePattern(inst.getOpcode()) & _ac.getConditionCode()) != 0) ? 1 : 0);
                     }
                 } else if constexpr (IsCompareOrdinalAndBranchOperation<K> ||
                                      IsCompareIntegerAndBranchOperation<K>) {
@@ -587,7 +585,7 @@ namespace i960 {
                     using Z = std::conditional_t<IsIntegerOperation<T>, Integer, Ordinal>;
                     // use variants as a side effect :D
                     compare<Z>(getSrc(inst), getSrc2(inst));
-                    if (auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode()); (mask & _ac.getConditionCode()) != 0) {
+                    if (auto mask = LowestThreeBitsOfMajorOpcode::decodePattern(inst.getOpcode()); (mask & _ac.getConditionCode()) != 0) {
                         _instructionPointer += (inst.getDisplacement() * 4);
                         _instructionPointer = computeAlignedAddress(_instructionPointer);
                     }
@@ -620,7 +618,7 @@ namespace i960 {
             template<typename T, std::enable_if_t<IsCTRLFormat<T>, int> = 0> 
             void performOperation(const CTRLFormatInstruction& inst, T) noexcept {
                 using K = std::decay_t<T>;
-                auto mask = lowestThreeBitsOfMajorOpcode(inst.getOpcode());
+                auto mask = LowestThreeBitsOfMajorOpcode::decodePattern(inst.getOpcode());
                 if constexpr (IsConditionalBranchOperation<K>) {
                     auto tmp = static_cast<decltype(_instructionPointer)>(inst.getDisplacement());
                     bool condition = false;

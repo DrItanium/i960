@@ -56,7 +56,7 @@ namespace i960 {
 		_globalRegisters[FP.getOffset()].set(value);
 	}
 	Ordinal Core::getFramePointerAddress() const noexcept {
-        return FramePointerAddress.decode(_globalRegisters[FP.getOffset()].get<Ordinal>());
+        return FramePointerAddress::decodePattern(_globalRegisters[FP.getOffset()].get<Ordinal>());
 	}
 	PreviousFramePointer Core::getPFP() noexcept {
         return _localRegisters[PFP.getOffset()].viewAs<PreviousFramePointer>();
@@ -65,7 +65,7 @@ namespace i960 {
         return computeAlignedAddress(value);
 	}
 	constexpr Ordinal getProcedureKind(Ordinal value) noexcept {
-        return ProcedureKindField.decode(value);
+        return ProcedureKindField::decodePattern(value);
 	}
 	constexpr bool isLocalProcedure(Ordinal value) noexcept {
 		return getProcedureKind(value) == 0;
