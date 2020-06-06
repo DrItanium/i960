@@ -3,15 +3,6 @@
 namespace i960 {
     constexpr Ordinal MEMAoffsetMask = 0xFFF;
     constexpr Ordinal MEMBscaleMask = 0x380;
-    template<typename T>
-    constexpr bool isMEMBFormat(T value) noexcept {
-        constexpr auto toggleBit = 0b010000;
-        return value & toggleBit;
-    }
-    template<typename T>
-    constexpr bool isMEMAFormat(T value) noexcept {
-        return !isMEMBFormat(value);
-    }
     constexpr ByteOrdinal decodeMask(Ordinal value) noexcept {
         // bits [10,13] are the entire mask.
         constexpr auto memABModeMask = 0b11'1100'0000'0000;
@@ -23,19 +14,18 @@ namespace i960 {
         }
     }
     constexpr Ordinal encodeMode(Ordinal value, ByteOrdinal mode) noexcept {
-        if (auto maskedOutValue = static_cast<Ordinal>(mode); isMEMBFormat(mode)) {
+        if (MEMFormatInstruction::isMEMBFormat(mode)) {
             constexpr Ordinal mask = 0b1111'000'00'00000;
+            return encode<Ordinal, decltype(mode),  mask, 10>(value, mode);
             // we really only have four bits to deal with in this case
-            return (value & ~mask) | (((maskedOutValue >> 2) << 10) & mask);
         } else {
-            // we must process the upper two bits
             constexpr Ordinal mask = 0b11'000000'000000;
-            return (value & ~mask) | (((maskedOutValue >> 4) << 12) & mask);
+            return encode<Ordinal, decltype(mode), mask, 10>(value, mode);
         }
     }
     template<typename R = Operand>
     constexpr auto decodeSrcDest(Ordinal input) noexcept {
-        constexpr BitFragment<decltype(input), R, 0x00F80000, 19> srcDestMask;
+        constexpr BitFragment<decltype(input), R, HasSrcDest::EncoderDecoder::Mask, HasSrcDest::EncoderDecoder::Shift> srcDestMask;
         return srcDestMask.decode(input);
     }
     template<Ordinal mask>
@@ -43,13 +33,13 @@ namespace i960 {
         return Operand((modeBits & mask) != 0, decodeSrcDest<Ordinal>(input));
     }
     constexpr Ordinal encodeSrcDest(Ordinal value, Operand input) noexcept {
-        constexpr OrdinalToByteOrdinalField<0x00F8'0000, 19> fragment;
+        constexpr OrdinalToByteOrdinalField<HasSrcDest::EncoderDecoder::Mask, HasSrcDest::EncoderDecoder::Shift> fragment;
         return fragment.encode(value, input.getValue());
     }
     static_assert(encodeSrcDest(0, 1_lr) == 0x00080000);
     constexpr auto encodeSrc2(Ordinal value, Operand input) noexcept {
-        constexpr Ordinal Mask = 0x000C7000;
-        constexpr Ordinal Shift = 14;
+        constexpr Ordinal Mask = HasSrc2::EncoderDecoder::Mask;
+        constexpr Ordinal Shift = HasSrc2::EncoderDecoder::Shift;
         return encode<Ordinal, ByteOrdinal, Mask, Shift>(value, input.getValue());
     }
     static_assert(encodeSrc2(0, 1_lr) == (0x00080000 >> 5));
@@ -62,8 +52,9 @@ namespace i960 {
 
     template<typename R = ByteOrdinal>
     constexpr auto decodeSrc1(Ordinal input) noexcept {
-        constexpr Ordinal Mask = 0x1F;
-        return decode<Ordinal, R, Mask>(input);
+        constexpr Ordinal Mask = HasSrc1::EncoderDecoder::Mask;
+        constexpr Ordinal Shift = HasSrc1::EncoderDecoder::Shift;
+        return decode<Ordinal, R, Mask, Shift>(input);
     }
     template<Ordinal mask>
     constexpr auto decodeSrc1(Ordinal value, Ordinal modeBits) noexcept {
@@ -71,8 +62,8 @@ namespace i960 {
     }
     template<typename R = Operand>
     constexpr auto decodeSrc2(Ordinal input) noexcept {
-        constexpr Ordinal Mask = 0x000C7000;
-        constexpr Ordinal Shift = 14;
+        constexpr Ordinal Mask = HasSrc2::EncoderDecoder::Mask;
+        constexpr Ordinal Shift = HasSrc2::EncoderDecoder::Shift;
         return decode<Ordinal, R, Mask, Shift>(input);
     }
     template<Ordinal mask>
@@ -95,7 +86,7 @@ namespace i960 {
         instruction = encodeSrcDest(instruction, getSrcDest());
         instruction = encodeSrc2(instruction, getAbase());
         /// @todo implement
-        return 0u;
+        return instruction;
     }
 
 

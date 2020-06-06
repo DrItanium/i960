@@ -174,10 +174,10 @@ namespace i960 {
             Operand _src1;
     };
     class HasSrc2 {
-        // constexpr Ordinal Mask = 0x000C7000;
+        // constexpr Ordinal Mask = 0x0007C000;
         // constexpr Ordinal Shift = 14;
         public:
-            using EncoderDecoder = BitPattern<SingleEncodedInstructionValue, Ordinal, 0x000'C7'000, 14>;
+            using EncoderDecoder = BitPattern<SingleEncodedInstructionValue, Ordinal, 0x000'7C'000, 14>;
         public:
             constexpr explicit HasSrc2(Operand op) : _src2(op) { }
             constexpr explicit HasSrc2(const Instruction& inst) : _src2(EncoderDecoder::decodePattern(inst.getLowerHalf())) { }
@@ -300,6 +300,35 @@ namespace i960 {
                 IPWithDisplacement = 0b0101,
                 Bad = 0xFF,
             };
+            static constexpr auto isMEMAFormat(AddressingModes mode) noexcept {
+                switch (mode) {
+                    case AddressingModes::AbsoluteOffset:
+                    case AddressingModes::RegisterIndirectWithOffset:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+            static constexpr auto isMEMAFormat(ByteOrdinal mode) noexcept {
+                return isMEMAFormat(static_cast<AddressingModes>(mode));
+            }
+            static constexpr auto isMEMBFormat(AddressingModes mode) noexcept {
+                switch (mode) {
+                    case AddressingModes::RegisterIndirect:
+                    case AddressingModes::AbsoluteDisplacement:
+                    case AddressingModes::RegisterIndirectWithDisplacement:
+                    case AddressingModes::RegisterIndirectWithIndex:
+                    case AddressingModes::RegisterIndirectWithIndexAndDisplacement:
+                    case AddressingModes::IndexWithDisplacement:
+                    case AddressingModes::IPWithDisplacement:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+            static constexpr auto isMEMBFormat(ByteOrdinal mode) noexcept {
+                return isMEMBFormat(static_cast<AddressingModes>(mode));
+            }
         public:
             MEMFormatInstruction(const Instruction& inst);
             ~MEMFormatInstruction() override = default;

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <cstddef>
 #include <memory>
 #include "types.h"
@@ -6,6 +7,33 @@
 #include "Instruction.h"
 #include <string>
 #include <sstream>
+
+std::string
+binary(i960::Ordinal value) noexcept 
+{
+    std::ostringstream sstream;
+    auto tracker = value;
+    constexpr i960::Ordinal Mask = 0x8000'0000;
+    for (int i = 0; i < 32; ++i) {
+        sstream << ((Mask & tracker) ? "1" : "0");
+        tracker <<= 1;
+    }
+    auto str = sstream.str();
+    return str;
+}
+std::string
+binary(i960::LongOrdinal value) noexcept 
+{
+    std::ostringstream sstream;
+    auto tracker = value;
+    constexpr i960::LongOrdinal Mask = 0x8000'0000'0000'0000;
+    for (int i = 0; i < 64; ++i) {
+        sstream << ((Mask & tracker) ? "1" : "0");
+        tracker <<= 1;
+    }
+    auto str = sstream.str();
+    return str;
+}
 void decode(std::ostream& out, const i960::Opcode::Description& desc, const i960::REGFormatInstruction& inst) {
     if (desc.hasZeroArguments()) {
         return;
@@ -45,9 +73,10 @@ void decode(std::ostream& out, const i960::Opcode::Description& desc, const i960
 }
 void decode(std::ostream& out, const i960::Opcode::Description& desc, const i960::MEMFormatInstruction& inst) {
     using M = std::decay_t<i960::MEMFormatInstruction::AddressingModes>;
+    auto encoded = inst.encode();
     std::visit([&out, &desc](auto&& value) { 
                 out << std::hex << "0x" << value << ": " << desc.getString() << " "; 
-            }, inst.encode());
+            }, encoded);
     constexpr auto computeProperScaleFactor = [](auto scale) -> int {
         switch (scale) {
             case 0b000:
@@ -101,6 +130,12 @@ void decode(std::ostream& out, const i960::Opcode::Description& desc, const i960
             out << "ERROR: reserved (" << static_cast<int>(inst.getRawMode() >> 2) << ")";
             break;
     }
+
+    out << "  (0b";
+    std::visit([&out](auto&& value) {
+                out << binary(value);
+            }, encoded);
+    out << ")";
 }
 std::string decode(i960::Ordinal value) noexcept {
     i960::Instruction inst(value);
