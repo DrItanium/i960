@@ -75,7 +75,7 @@ void decode(std::ostream& out, const i960::Opcode::Description& desc, const i960
             out << "((" << inst.getIndex() << " * " << inst.getScale() << ") + " << inst.getDisplacement() << ")";
             break;
         default:
-            out << "ERROR: reserved (" << static_cast<uint8_t>(inst.getMode()) << ")";
+            out << "ERROR: reserved (" << static_cast<int>(inst.getRawMode() >> 2) << ")";
             break;
     }
 

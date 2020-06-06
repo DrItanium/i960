@@ -13,14 +13,13 @@ namespace i960 {
         return !isMEMBFormat(value);
     }
     constexpr ByteOrdinal decodeMask(Ordinal value) noexcept {
+        constexpr auto memAModeMask = 0b11'0000'0000'0000;
+        constexpr auto memBModeMask = 0b11'1100'0000'0000;
         // upper two bits of the mode are shared between types, thus we should do the 
         // mask of 0x3C and make a four bit type code in all cases. However, we also
         // have a 2-bit unused field inside of MEMB that we should use for sanity checking
-        constexpr auto memAModeMask = 0b110000;
-        constexpr auto memBExtraMask = 0x30;
-        constexpr auto mask = 0x3C00;
-        constexpr auto shift = 6;
-        if (auto shiftedValue = decode<Ordinal, ByteOrdinal, mask, shift>(value); isMEMBFormat(shiftedValue)) {
+        if (auto shiftedValue = decode<Ordinal, ByteOrdinal, memAModeMask, 12>(value); shiftedValue != 0b01 && shiftedValue != 0b11) {
+            // we must pull the correct value out and 
             // MEMB
             return shiftedValue | (value | memBExtraMask);
         } else {
