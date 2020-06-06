@@ -138,9 +138,7 @@ namespace i960::Opcode {
                 constexpr auto hasTwoArguments() const noexcept { return hasNumberOfArguments<2>(); }
                 constexpr auto hasThreeArguments() const noexcept { return hasNumberOfArguments<3>(); }
 			    constexpr operator OpcodeValue() const noexcept { return _opcode; }
-                constexpr bool operator==(const Description& other) noexcept {
-                    return other._opcode == _opcode;
-                }
+                constexpr bool operator==(const Description& other) noexcept { return other._opcode == _opcode; }
             private:
                 const char* _name;
                 const DecodedOpcode& _opcode;
@@ -611,7 +609,7 @@ namespace i960 {
     template<typename T>
     constexpr auto IsMEMFormat = Opcode::IsMemoryFormat<T::Opcode>;
     template<typename T>
-    constexpr auto HasSrcDestField = Opcode::IsMemoryFormat<T::Opcode>;
+    constexpr auto HasSrcDestField = Opcode::IsMemoryFormat<T::Opcode> | Opcode::IsRegisterFormat<T::Opcode>;
     template<typename T>
     constexpr auto IsLoadOperation = IsInCollection<T, Operation::ld,
                                                        Operation::ldib,

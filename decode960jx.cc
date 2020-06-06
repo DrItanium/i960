@@ -43,8 +43,8 @@ void decode(std::ostream& out, const i960::Opcode::Description& desc, const i960
         // we are done now
         return;
     }
+    out << ", ";
     if (desc.hasTwoArguments()) {
-        out << ", ";
         switch (desc) {
             case i960::Opcode::cmpos:
             case i960::Opcode::cmpob:
@@ -59,10 +59,10 @@ void decode(std::ostream& out, const i960::Opcode::Description& desc, const i960
                 break;
         }
     } else if (desc.hasThreeArguments()) {
-        out << ", " << inst.getSrc2() << ", " << inst.getSrcDest();
+        out << inst.getSrc2() << ", " << inst.getSrcDest();
     } else {
         // we need to state that the instruction is seemingly malformed
-        out << " could not decode rest!";
+        out << "could not decode rest!";
     }
 }
 void decode(std::ostream& out, const i960::Opcode::Description& desc, const i960::COBRFormatInstruction& inst) {
