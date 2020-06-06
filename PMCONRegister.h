@@ -43,12 +43,13 @@ namespace i960 {
     constexpr PMCONRegisterRange_t PMCONRegisterRange = getRegisterRange<kind>();
     class PMCONRegister final {
         public:
+            using BusWidthPattern = i960::BitPattern<Ordinal, uint8_t, 0xC0'0000, 22>;
             static constexpr ShiftMaskPair<Ordinal> BusWidthMask { 0xC0'0000, 22 };
-            static constexpr auto extractBusWidth(Ordinal value) noexcept {
-                return i960::decode<Ordinal, uint8_t, BusWidthMask>(value);
+            static constexpr decltype(auto) extractBusWidth(Ordinal value) noexcept {
+                return BusWidthPattern::decodePattern(value);
             }
             static constexpr auto encodeBusWidth(Ordinal base, uint8_t width) noexcept {
-                return i960::encode<Ordinal, uint8_t, BusWidthMask>(base, width);
+                return BusWidthPattern::encodePattern(base, width);
             }
             static constexpr auto encodeBusWidth(uint8_t width) noexcept {
                 return encodeBusWidth(0, width);
@@ -67,19 +68,22 @@ namespace i960 {
     };
 	class BCONRegister final {
         public:
+            using CTVPattern = BitPattern<Ordinal, bool, 0x1, 0>;
+            using IRPPattern = BitPattern<Ordinal, bool, 0x2, 1>;
+            using SIRPPattern = BitPattern<Ordinal, bool, 0x4, 2>;
+            using EncoderDecoder = BinaryEncoderDecoder<Ordinal, CTVPattern, IRPPattern, SIRPPattern>;
             static constexpr bool decodeCTV(Ordinal value) noexcept {
-                return i960::decode<Ordinal, bool, 0x1, 0>(value);
+                return CTVPattern::decodePattern(value);
             }
             static constexpr bool decodeIRP(Ordinal value) noexcept {
-                return i960::decode<Ordinal, bool, 0x2, 1>(value);
+                return IRPPattern::decodePattern(value);
             }
             static constexpr bool decodeSIRP(Ordinal value) noexcept {
-                return i960::decode<Ordinal, bool, 0x4, 2>(value);
+                return SIRPPattern::decodePattern(value);
             }
             static constexpr Ordinal encodeRawValue(bool ctv, bool irp, bool sirp) noexcept {
-                return i960::encode<Ordinal, bool, 0x1, 0>(
-                        i960::encode<Ordinal, bool, 0x2, 1>(
-                            i960::encode<Ordinal, bool, 0x4, 2>(0, sirp), irp) , ctv);
+                // order is important!
+                return EncoderDecoder::encode(0, ctv, irp, sirp);
             }
         public:
             constexpr BCONRegister() noexcept = default;
