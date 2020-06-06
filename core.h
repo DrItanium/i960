@@ -707,9 +707,6 @@ namespace i960 {
 			const CoreInformation& _deviceId;
 			// active by default but needs to be setup by processPrcb
 			bool unalignedFaultEnabled = true;
-            NormalRegister _temporary0;
-            NormalRegister _temporary1;
-            NormalRegister _temporary2;
             bool _frameAvailable = true;
     };
 
