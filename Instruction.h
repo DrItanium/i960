@@ -177,8 +177,6 @@ namespace i960 {
             Operand _src1;
     };
     class HasSrc2 {
-        // constexpr Ordinal Mask = 0x0007C000;
-        // constexpr Ordinal Shift = 14;
         public:
             template<typename R = Ordinal>
             using GenericEncoderDecoder = BitPattern<SingleEncodedInstructionValue, R, 0x000'7C'000, 14>;
@@ -228,10 +226,10 @@ namespace i960 {
     class COBRFlags : public GenericFlags {
         public:
             using Parent = GenericFlags;
-            static constexpr BitFragment<SingleEncodedInstructionValue, ByteOrdinal, 0b1'0000'0000'0000, 10> Part1{};
-            static constexpr BitFragment<SingleEncodedInstructionValue, ByteOrdinal, 0b11, 0> Part2{};
+            using Part1Pattern = BitFragment<SingleEncodedInstructionValue, ByteOrdinal, 0b1'0000'0000'0000, 10>;
+            using Part2Pattern = BitFragment<SingleEncodedInstructionValue, ByteOrdinal, 0b11, 0>;
             static constexpr ByteOrdinal decode(SingleEncodedInstructionValue value) noexcept {
-                return Part1.decode(value) | Part2.decode(value);
+                return Part1Pattern::decodePattern(value) | Part2Pattern::decodePattern(value);
             }
         public:
             constexpr COBRFlags(const Instruction& inst) : Parent(decode(inst.getLowerHalf())) { }
@@ -239,7 +237,7 @@ namespace i960 {
             constexpr bool getT()  const noexcept { return getFlag<0b010>(); }
             constexpr bool getS2() const noexcept { return getFlag<0b001>(); }
             constexpr SingleEncodedInstructionValue encode(SingleEncodedInstructionValue value) const noexcept {
-                return Part1.encode(value, getValue()) | Part2.encode(value, getValue());
+                return Part1Pattern::encodePattern(value, getValue()) | Part2Pattern::encodePattern(value, getValue());
             }
     };
     class COBRFormatInstruction : public GenericFormatInstruction, public COBRFlags, public HasSrcDest, public HasSrc2 {
