@@ -19,6 +19,9 @@ namespace i960::Opcode {
             COBR     = 0x20,
             Memory   = 0x30,
             Control  = 0x40,
+            REG = Register,
+            MEM = Memory,
+            CTRL = Control,
         };
         /**
          * 4 bit code field which describes the instruction's argument layout
@@ -155,7 +158,9 @@ namespace i960::Opcode {
         template<> constexpr auto RetrieveDecodedOpcode<code> = decoded_ ## name ; \
         static_assert(decoded_ ## name . getEncodedOpcode() == DecodedOpcode(Class:: kind, Arguments:: arg , code).getEncodedOpcode()); \
         constexpr Description name ( #name , decoded_ ## name );
-
+#include "ExpandAllOpcodes.def"
+#undef X
+#if 0
 #define reg(name, code, arg) X(name, code, arg, Register)
 #define cobr(name, code, arg) X(name, code, arg, COBR) 
 #define mem(name, code, arg) X(name, code, arg, Memory) 
@@ -166,6 +171,7 @@ namespace i960::Opcode {
 #undef mem
 #undef ctrl
 #undef X
+#endif
 
         template<OpcodeValue opcode>
         constexpr auto IsControlFormat = RetrieveDecodedOpcode<opcode>.getClass() == Class::Control;
