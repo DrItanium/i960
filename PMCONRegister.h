@@ -81,16 +81,19 @@ namespace i960 {
             static constexpr bool decodeSIRP(Ordinal value) noexcept {
                 return SIRPPattern::decodePattern(value);
             }
+            static constexpr auto decodeRawValue(Ordinal value) noexcept {
+                return EncoderDecoder::decode(value);
+            }
             static constexpr Ordinal encodeRawValue(bool ctv, bool irp, bool sirp) noexcept {
                 // order is important!
                 return EncoderDecoder::encode(0, ctv, irp, sirp);
             }
         public:
             constexpr BCONRegister() noexcept = default;
-            constexpr BCONRegister(Ordinal raw) noexcept : 
-                _configurationEntriesInControlTableValid(decodeCTV(raw)),
-                _internalRAMProtection(decodeIRP(raw)),
-                _supervisorInternalRAMProtection(decodeSIRP(raw)) { }
+            constexpr BCONRegister(Ordinal raw) noexcept :
+                _configurationEntriesInControlTableValid(std::get<0>(decodeRawValue(raw))),
+                _internalRAMProtection(std::get<1>(decodeRawValue(raw))),
+                _supervisorInternalRAMProtection(std::get<2>(decodeRawValue(raw))) { }
             constexpr Ordinal getRawValue() const noexcept { 
                 return encodeRawValue(getCTV(), getIRP(), getSIRP());
             }
