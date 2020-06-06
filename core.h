@@ -98,12 +98,10 @@ namespace i960 {
     constexpr Ordinal unusedAddressBits = 0b11;
 	constexpr Ordinal clearLowestTwoBitsMask = ~unusedAddressBits;
     constexpr Ordinal computeAlignedAddress(Ordinal value) noexcept {
-        InverseOfLowestTwoBitsPattern<Ordinal> tmp;
-        return tmp.decode(value);
+        return InverseOfLowestTwoBitsPattern<Ordinal>::decodePattern(value);
     }
     constexpr bool isAlignedAddress(Ordinal value) noexcept {
-        LowestTwoBitsPattern<Ordinal> tmp;
-        return tmp.decode(value) == 0;
+        return LowestTwoBitsPattern<Ordinal>::decodePattern(value) == 0;
     }
     using LowestThreeBitsOfMajorOpcode = BitFragment<OpcodeValue, Ordinal, 0b111'0000, 4>;
     using FramePointerAddress = SameWidthFragment<Ordinal, static_cast<Ordinal>(~0b111'111)>;
