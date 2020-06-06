@@ -45,41 +45,62 @@ void decode(std::ostream& out, const i960::Opcode::Description& desc, const i960
 }
 void decode(std::ostream& out, const i960::Opcode::Description& desc, const i960::MEMFormatInstruction& inst) {
     using M = std::decay_t<i960::MEMFormatInstruction::AddressingModes>;
-    std::visit([&out, &desc](auto&& value) { out << std::hex << "0x" << value << ": " << desc.getString() << " "; }, inst.encode());
+    std::visit([&out, &desc](auto&& value) { 
+                out << std::hex << "0x" << value << ": " << desc.getString() << " "; 
+            }, inst.encode());
+    constexpr auto computeProperScaleFactor = [](auto scale) -> int {
+        switch (scale) {
+            case 0b000:
+                return 1;
+            case 0b001:
+                return 2;
+            case 0b010:
+                return 4;
+            case 0b011:
+                return 8;
+            case 0b100:
+                return 16;
+            default:
+                return -666; // an obviously wrong value
+        }
+    };
+    auto properScale = computeProperScaleFactor(inst.getScale());
+    auto abase = inst.getAbase();
+    auto offset = inst.getOffset();
+    auto index = inst.getIndex();
+    out << inst.getSrcDest() << ", ";
     switch (inst.getMode()) {
-        case M::AbsoluteOffset:
-            out << "0x" << inst.getOffset();
+        case M::AbsoluteOffset: // MEMA Form of Absolute [0,2048]
+            out << "0x" << std::hex << offset;
             break;
-        case M::RegisterIndirectWithOffset:
-            out << "0x" << inst.getOffset() << "(" << inst.getAbase() << ")";
+        case M::AbsoluteDisplacement: // MEMB Form of Absolute, [-2^31, (2^31)-1]
+            out << "0x" << std::hex << inst.getDisplacement();
             break;
         case M::RegisterIndirect:
-            out << "(" << inst.getAbase() << ")";
+            out << "(" << abase << ")";
             break;
-        case M::IPWithDisplacement:
-            out << "((ip) + " << inst.getDisplacement() << " + 8)";
+        case M::RegisterIndirectWithOffset: // MEMA Form of Register Indirect with Offset
+            out << "0x" << std::hex << offset << "(" << abase << ")";
             break;
-        case M::RegisterIndirectWithIndex:
-            out << "((" << inst.getAbase() << ") + (" << inst.getIndex() << ") * " << inst.getScale() << ")";
+        case M::RegisterIndirectWithDisplacement: // MEMBForm of Register Indirect with Offset (use displacement)
+            out << "0x" << std::hex << inst.getDisplacement() << "(" << abase << ")";
             break;
-        case M::AbsoluteDisplacement:
-            out << inst.getDisplacement();
-            break;
-        case M::RegisterIndirectWithDisplacement:
-            out << "((" << inst.getAbase() << ") + " << inst.getDisplacement() << ")";
+        case M::RegisterIndirectWithIndex: // MEMA Form of Register Indirect with Index
+            out << "(" << abase << ")[" << index << "*" << std::dec << properScale << "]";
             break;
         case M::RegisterIndirectWithIndexAndDisplacement:
-            out << "((" << inst.getAbase() << ") + (" << inst.getIndex() << " * " << inst.getScale() << ") + " << inst.getDisplacement() << ")";
+            out << "0x" << std::hex << inst.getDisplacement() << "(" << abase << ")[" << index << "*" << std::dec << properScale << "]";
             break;
         case M::IndexWithDisplacement:
-            out << "((" << inst.getIndex() << " * " << inst.getScale() << ") + " << inst.getDisplacement() << ")";
+            out << "(" << index << " * " << std::dec << properScale << ") + 0x" << std::hex << inst.getDisplacement();
+            break;
+        case M::IPWithDisplacement:
+            out << "0x" << std::hex << inst.getDisplacement() << "(ip)";
             break;
         default:
             out << "ERROR: reserved (" << static_cast<int>(inst.getRawMode() >> 2) << ")";
             break;
     }
-
-    out << ", " << inst.getSrcDest();
 }
 std::string decode(i960::Ordinal value) noexcept {
     i960::Instruction inst(value);

@@ -23,7 +23,7 @@ std::ostream& operator<<(std::ostream& stream, const Operand& op) {
                 } else {
                     return 'r';
                 }
-            }() << std::dec << op.getOffset();
+            }() << std::dec << static_cast<int>(op.getOffset());
         }
     }
     stream.flags(f);
