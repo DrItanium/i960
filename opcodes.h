@@ -633,12 +633,9 @@ namespace i960 {
                                       (!IsInCollection<T, Operation::bx,
                                                           Operation::callx>);
     template<typename T>
-    constexpr auto SrcDestIsSrc = HasSrcDestField<T> && IsLoadOperation<T>;
+    constexpr auto SrcDestIsDest = HasSrcDestField<T> && (IsLoadOperation<T> || IsInCollection<T, Operation::balx>);
     template<typename T>
-    constexpr auto SrcDestIsDest = HasSrcDestField<T> &&
-                                   (IsStoreOperation<T> ||
-                                    IsInCollection<T, Operation::lda,
-                                                      Operation::balx>);
+    constexpr auto SrcDestIsSrc = HasSrcDestField<T> && IsStoreOperation<T>;
     template<typename T>
     constexpr auto IgnoresSrcDestField = HasSrcDestField<T> &&
                                          (IsInCollection<T, Operation::bx, Operation::callx>);
