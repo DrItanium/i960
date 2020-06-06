@@ -92,7 +92,7 @@ namespace i960::Opcode {
 
         class DecodedOpcode final {
             public:
-                static constexpr SameWidthFragment<OpcodeValue, 0b111'0000, 4> LowestThreeBitsOfMajorOpcode{};
+                using LowestThreeBitsOfMajorOpcode = SameWidthFragment<OpcodeValue, 0b111'0000, 4>;
             public:
                 constexpr DecodedOpcode(Class cl, Arguments args, OpcodeValue opcode) noexcept : _class(cl), _arguments(args), _actualOpcode(opcode) { }
                 constexpr DecodedOpcode(EncodedOpcode opcode) noexcept : DecodedOpcode(extractField<Class>(opcode), extractField<Arguments>(opcode), extractField<OpcodeValue>(opcode)) { }
@@ -119,7 +119,7 @@ namespace i960::Opcode {
                            (other._class == _class);
                 }
                 constexpr auto lowestThreeBitsOfMajorOpcode() const noexcept {
-                    return LowestThreeBitsOfMajorOpcode.decode(getActualOpcode());
+                    return LowestThreeBitsOfMajorOpcode::decodePattern(getActualOpcode());
                 }
             private:
                 Class _class;
