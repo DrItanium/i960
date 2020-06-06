@@ -3,8 +3,9 @@
 namespace i960 {
     struct ModeEncoderDecoder final {
         public:
+            using DataType = Ordinal;
             using SliceType = ByteOrdinal;
-            static constexpr ByteOrdinal decode(Ordinal value) noexcept {
+            static constexpr ByteOrdinal decodePattern(Ordinal value) noexcept {
                 // bits [10,13] are the entire mask.
                 constexpr auto memABModeMask = 0b11'1100'0000'0000;
                 if (auto typeSelect = i960::decode<Ordinal, ByteOrdinal, memABModeMask, 10>(value); (typeSelect & 0b0100) == 0) {
@@ -14,7 +15,7 @@ namespace i960 {
                     return typeSelect;
                 }
             }
-            static constexpr Ordinal encode(Ordinal value, ByteOrdinal mode) noexcept {
+            static constexpr Ordinal encodePattern(Ordinal value, ByteOrdinal mode) noexcept {
                 if (MEMFormatInstruction::isMEMBFormat(mode)) {
                     constexpr Ordinal mask = 0b1111'000'00'00000;
                     return i960::encode<Ordinal, decltype(mode),  mask, 10>(value, mode);
@@ -33,10 +34,10 @@ namespace i960 {
             ModeEncoderDecoder& operator=(ModeEncoderDecoder&&) = delete;
     };
     constexpr ByteOrdinal decodeMode(Ordinal value) noexcept {
-        return ModeEncoderDecoder::decode(value);
+        return ModeEncoderDecoder::decodePattern(value);
     }
     constexpr Ordinal encodeMode(Ordinal value, ByteOrdinal mode) noexcept {
-        return ModeEncoderDecoder::encode(value, mode);
+        return ModeEncoderDecoder::encodePattern(value, mode);
     }
     template<typename R = Operand>
     constexpr auto decodeSrcDest(Ordinal input) noexcept {
@@ -89,29 +90,26 @@ namespace i960 {
     HasSrcDest(inst),
     HasSrc1(inst),
     HasSrc2(inst),
-    _mode(ModeEncoderDecoder::decode(inst.getLowerHalf())),
+    _mode(ModeEncoderDecoder::decodePattern(inst.getLowerHalf())),
     _offset(MEMAOffsetPattern::decodePattern(inst.getLowerHalf())),
     _scale(MEMBScalePattern::decodePattern(inst.getLowerHalf())),
     _displacement(inst.getUpperHalf()),
     _target(Operation::translate(inst.getOpcode(), Operation::MEMClass())) { }
 
+    template<typename ... Others>
+    using MEMFormatPartialEncoder = i960::BinaryEncoderDecoder<SingleEncodedInstructionValue, 
+          HasSrcDest::EncoderDecoder, ModeEncoderDecoder, HasSrc2::EncoderDecoder, Others...>;
     EncodedInstruction
     MEMFormatInstruction::encode() const noexcept {
-        template<typename ... Others>
-        using PartialEncoder = i960::BinaryEncoderDecoder<SingleEncodedInstructionValue, 
-              HasSrcDest::EncoderDecoder,
-              ModeEncoderDecoder,
-              HasSrc2::EncoderDecoder,
-              Others...>;
         if (isMEMAFormat()) {
-            using MEMAFormatEncoder = PartialEncoder<MEMAOffsetPattern>;
+            using MEMAFormatEncoder = MEMFormatPartialEncoder<MEMAOffsetPattern>;
             return MEMAFormatEncoder::encode(encodeMajorOpcode(getOpcode()),
                     getSrcDest(),
                     getRawMode(),
                     getSrc2(), // abase
-                    _offset);
+                    getOffset());
         } else if (isMEMBFormat()) {
-            using MEMBFormatEncoder = PartialEncoder<MEMBScalePattern, 
+            using MEMBFormatEncoder = MEMFormatPartialEncoder<MEMBScalePattern, 
                   HasSrc1::EncoderDecoder,
                   BitPattern<SingleEncodedInstructionValue, SingleEncodedInstructionValue, 0b11'00000, 5>>; // zero out bits 5 and 6
             auto instruction = MEMBFormatEncoder::encode(
@@ -119,7 +117,7 @@ namespace i960 {
                     getSrcDest(),
                     getRawMode(),
                     getSrc2(),
-                    _scale, 
+                    getScale(),
                     getIndex(),
                     0); // zero out bits 5 and 6
             if (isDoubleWide()) {
@@ -163,7 +161,7 @@ namespace i960 {
               HasSrcDest::EncoderDecoder, 
               HasSrc2::EncoderDecoder,
               COBRDisplacementPattern>;
-        return Flags::encode(PartialEncoderPattern::encode(encodeMajorOpcode(0, getOpcode()), getSrc1(), getSrc2(), _displacement));
+        return Flags::encode(PartialEncoderPattern::encode(encodeMajorOpcode(0, getOpcode()), getSrc1(), getSrc2(), getDisplacement()));
     }
 
     REGFormatInstruction::REGFormatInstruction(const Instruction& inst) : Base(inst), 
