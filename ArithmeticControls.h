@@ -34,7 +34,7 @@ namespace i960 {
             constexpr auto integerOverflowFlagSet() const noexcept { return _integerOverflowFlag; }
             constexpr auto maskIntegerOverflow() const noexcept { return _integerOverflowMask; }
             constexpr auto noImpreciseFaults() const noexcept { return _noImpreciseFaults; }
-            void setConditionCode(Ordinal value) noexcept { _conditionCode = value; }
+            void setConditionCode(ByteOrdinal value) noexcept { _conditionCode = value; }
             void setConditionCode(bool cond, Ordinal onTrue, Ordinal onFalse) noexcept {
                 if (cond) {
                     setConditionCode(onTrue);
@@ -46,15 +46,15 @@ namespace i960 {
             void setIntegerOverflowMask(bool value) noexcept { _integerOverflowMask = value; }
             void setNoImpreciseFaults(bool value) noexcept { _noImpreciseFaults = value; }
             void clearConditionCode() noexcept { _conditionCode = 0; }
-            template<Ordinal mask>
+            template<ByteOrdinal mask>
             constexpr auto conditionCodeIs() const noexcept { return _conditionCode == mask; }
-            template<Ordinal ... masks>
+            template<ByteOrdinal ... masks>
             constexpr auto conditionCodeIsOneOf() const noexcept { 
                 return (conditionCodeIs<masks>() || ... );
             }
-            template<Ordinal mask>
+            template<ByteOrdinal mask>
             constexpr bool conditionCodeBitSet() const noexcept { return getConditionCode<mask>() != 0; }
-            constexpr bool conditionCodeBitSet(Ordinal mask) const noexcept { return getConditionCode(mask) != 0; }
+            constexpr bool conditionCodeBitSet(ByteOrdinal mask) const noexcept { return getConditionCode(mask) != 0; }
             constexpr bool shouldCarryOut() const noexcept {
                 // 0b01X where X is don't care
                 return conditionCodeIsOneOf<0b010, 0b011>();
@@ -64,7 +64,7 @@ namespace i960 {
                 return conditionCodeIsOneOf<0b001, 0b011>();
             }
             constexpr bool carrySet() const noexcept { return conditionCodeBitSet<0b010>(); }
-            constexpr Ordinal getCarryValue() const noexcept { return carrySet() ? 1 : 0; }
+            constexpr ByteOrdinal getCarryValue() const noexcept { return carrySet() ? 1 : 0; }
             constexpr Ordinal getRawValue() const noexcept { return create(_conditionCode, _integerOverflowFlag, _integerOverflowMask, _noImpreciseFaults); }
             void setRawValue(Ordinal value) noexcept {
                 _conditionCode = extractConditionCode(value);
@@ -77,12 +77,12 @@ namespace i960 {
             /**
              * The condition code computed by compare operations (3 bits)
              */
-            Ordinal _conditionCode : 3 = 0;
+             ByteOrdinal _conditionCode = 0;
 
             /**
              * Arithmetic status flags (4 bits)
              */
-            Ordinal _arithmeticStatusFlags : 4 = 0;
+            ByteOrdinal _arithmeticStatusFlags = 0;
 
             /**
              * Denotes an integer overflow happened
@@ -110,42 +110,82 @@ namespace i960 {
             bool _floatingZeroDivideMask = false;
             bool _floatingInexactMask = false;
             bool _floatingNormalizingMode = false;
-            Ordinal _floatingRoundingControls : 2 = 0;
+            ByteOrdinal _floatingRoundingControls = 0;
         public:
-            static constexpr Ordinal ConditionCodeMask       = 0x0000'0007;
-            static constexpr Ordinal IntegerOverflowFlagMask = 0x0000'0100;
-            static constexpr Ordinal IntegerOverflowMaskMask = 0x0000'1000;
-            static constexpr Ordinal NoImpreciseFaultsMask   = 0x0000'8000;
-            static constexpr Ordinal CoreArchitectureExtractMask = constructOrdinalMask(ConditionCodeMask, IntegerOverflowFlagMask, IntegerOverflowMaskMask, NoImpreciseFaultsMask);
+            enum Masks : Ordinal {
+                ConditionCode                = 0b0000'0000'0000'0000'0000'0000'0000'0111,
+                ArithmeticStatus             = 0b0000'0000'0000'0000'0000'0000'0111'1000,
+                Reserved0                    = 0b0000'0000'0000'0000'0000'0000'1000'0000,
+                IntegerOverflowFlag          = 0b0000'0000'0000'0000'0000'0001'0000'0000,
+                Reserved1                    = 0b0000'0000'0000'0000'0000'1110'0000'0000,
+                IntegerOverflowMask          = 0b0000'0000'0000'0000'0001'0000'0000'0000,
+                Reserved2                    = 0b0000'0000'0000'0000'0110'0000'0000'0000,
+                NoImpreciseFaults            = 0b0000'0000'0000'0000'1000'0000'0000'0000,
+                FloatingOverflowFlag         = 0b0000'0000'0000'0001'0000'0000'0000'0000,
+                FloatingUnderflowFlag        = 0b0000'0000'0000'0010'0000'0000'0000'0000,
+                FloatingInvalidOpFlag        = 0b0000'0000'0000'0100'0000'0000'0000'0000,
+                FloatingZeroDivideFlag       = 0b0000'0000'0000'1000'0000'0000'0000'0000,
+                FloatingInexactFlag          = 0b0000'0000'0001'0000'0000'0000'0000'0000,
+                Reserved3                    = 0b0000'0000'1110'0000'0000'0000'0000'0000,
+                FloatingOverflowMask         = 0b0000'0001'0000'0000'0000'0000'0000'0000,
+                FloatingUnderflowMask        = 0b0000'0010'0000'0000'0000'0000'0000'0000,
+                FloatingInvalidOpMask        = 0b0000'0100'0000'0000'0000'0000'0000'0000,
+                FloatingZeroDivideMask       = 0b0000'1000'0000'0000'0000'0000'0000'0000,
+                FloatingInexactMask          = 0b0001'0000'0000'0000'0000'0000'0000'0000,
+                FloatingPointNormalizingMode = 0b0010'0000'0000'0000'0000'0000'0000'0000,
+                FloatingPointRoundingControl = 0b1100'0000'0000'0000'0000'0000'0000'0000,
+            };
+            using ConditionCodeEncoderDecoder = BitPattern<Ordinal, ByteOrdinal, Masks::ConditionCode, 0>;
+            using ArithmeticStatusEncoderDecoder = BitPattern<Ordinal, ByteOrdinal, Masks::ArithmeticStatus, 3>;
+            using IntegerOverflowFlagEncoderDecoder = FlagFragment<Ordinal, Masks::IntegerOverflowFlag>;
+            using IntegerOverflowMaskEncoderDecoder = FlagFragment<Ordinal, Masks::IntegerOverflowMask>;
+            using NoImpreciseFaultsEncoderDecoder = FlagFragment<Ordinal, Masks::NoImpreciseFaults>;
+            using FloatingOverflowFlagEncoderDecoder = FlagFragment<Ordinal, Masks::FloatingOverflowFlag>;
+            using FloatingUnderflowFlagEncoderDecoder = FlagFragment<Ordinal, Masks::FloatingUnderflowFlag>;
+            using FloatingInvalidOpFlagEncoderDecoder = FlagFragment<Ordinal, Masks::FloatingInvalidOpFlag>;
+            using FloatingZeroDivideFlagEncoderDecoder = FlagFragment<Ordinal, Masks::FloatingZeroDivideFlag>;
+            using FloatingInexactFlagEncoderDecoder = FlagFragment<Ordinal, Masks::FloatingInexactFlag>;
+            using FloatingOverflowMaskEncoderDecoder = FlagFragment<Ordinal, Masks::FloatingOverflowMask>;
+            using FloatingUnderflowMaskEncoderDecoder = FlagFragment<Ordinal, Masks::FloatingUnderflowMask>;
+            using FloatingInvalidOpMaskEncoderDecoder = FlagFragment<Ordinal, Masks::FloatingInvalidOpMask>;
+            using FloatingZeroDivideMaskEncoderDecoder = FlagFragment<Ordinal, Masks::FloatingZeroDivideMask>;
+            using FloatingInexactMaskEncoderDecoder = FlagFragment<Ordinal, Masks::FloatingInexactMask>;
+            using FloatingPointNormalizingModeEncoderDecoder = FlagFragment<Ordinal, Masks::FloatingPointNormalizingMode>;
+            using FloatingPointRoundingControlEncoderDecoder = BitPattern<Ordinal, ByteOrdinal, Masks::FloatingPointRoundingControl, 30>;
+            static constexpr Ordinal CoreArchitectureExtractMask = constructOrdinalMask(
+                    Masks::ConditionCode, 
+                    Masks::IntegerOverflowFlag, 
+                    Masks::IntegerOverflowMask, 
+                    Masks::NoImpreciseFaults);
+            using CoreArchitectureEncoderDecoder = BinaryEncoderDecoder<Ordinal, 
+                  ConditionCodeEncoderDecoder, 
+                  IntegerOverflowFlagEncoderDecoder, 
+                  IntegerOverflowMaskEncoderDecoder, 
+                  NoImpreciseFaultsEncoderDecoder>;
         public:
-            static constexpr Ordinal create(Ordinal cc, bool integerOverflowFlag, bool integerOverflowMask, bool noImpreciseFaults) noexcept {
-                auto base = cc;
-                auto shiftedIOF = static_cast<Ordinal>(integerOverflowFlag ? (1 << 8) : 0);
-                auto shiftedIOM = static_cast<Ordinal>(integerOverflowMask ? (1 << 12) : 0);
-                auto shiftedNIF = static_cast<Ordinal>(noImpreciseFaults ? (1 << 15) : 0);
-                return (base | shiftedIOF | shiftedIOM | shiftedNIF) & CoreArchitectureExtractMask;
+            static constexpr Ordinal create(ByteOrdinal conditionCode, bool integerOverflowFlag, bool integerOverflowMask, bool noImpreciseFaults) noexcept {
+                return CoreArchitectureEncoderDecoder::encode(std::move(conditionCode), 
+                        std::move(integerOverflowFlag), 
+                        std::move(integerOverflowMask), 
+                        std::move(noImpreciseFaults));
             }
             static constexpr Ordinal extractConditionCode(Ordinal raw) noexcept {
-                constexpr ShiftMaskPair<decltype(raw)> MaskData { ConditionCodeMask, 0 };
-                return i960::decode<decltype(raw), Ordinal, MaskData>(raw);
+                return ConditionCodeEncoderDecoder::decodePattern(raw);
             }
             static constexpr bool extractIntegerOverflowFlag(Ordinal raw) noexcept {
-                constexpr ShiftMaskPair<decltype(raw)> MaskData { IntegerOverflowFlagMask, 8 };
-                return i960::decode<decltype(raw), bool, MaskData>(raw);
+                return IntegerOverflowFlagEncoderDecoder::decodePattern(raw);
             }
             static constexpr bool extractIntegerOverflowMask(Ordinal raw) noexcept {
-                constexpr ShiftMaskPair<decltype(raw)> MaskData { IntegerOverflowMaskMask, 12 };
-                return i960::decode<decltype(raw), bool, MaskData>(raw);
+                return IntegerOverflowMaskEncoderDecoder::decodePattern(raw);
             }
             static constexpr bool extractNoImpreciseFaults(Ordinal raw) noexcept {
-                constexpr ShiftMaskPair<decltype(raw)> MaskData { NoImpreciseFaultsMask, 15 };
-                return i960::decode<decltype(raw), bool, MaskData>(raw);
+                return NoImpreciseFaultsEncoderDecoder::decodePattern(raw);
             }
     };
     static_assert(ArithmeticControls::create(0b111, true, true, true) == ArithmeticControls::CoreArchitectureExtractMask, "create(CoreArchitecture) failed!");
-    static_assert(ArithmeticControls::extractIntegerOverflowFlag(ArithmeticControls::IntegerOverflowFlagMask));
-    static_assert(ArithmeticControls::extractIntegerOverflowMask(ArithmeticControls::IntegerOverflowMaskMask));
-    static_assert(ArithmeticControls::extractNoImpreciseFaults(ArithmeticControls::NoImpreciseFaultsMask));
+    static_assert(ArithmeticControls::extractIntegerOverflowFlag(ArithmeticControls::Masks::IntegerOverflowFlag));
+    static_assert(ArithmeticControls::extractIntegerOverflowMask(ArithmeticControls::Masks::IntegerOverflowMask));
+    static_assert(ArithmeticControls::extractNoImpreciseFaults(ArithmeticControls::Masks::NoImpreciseFaults));
     static_assert(ArithmeticControls::extractConditionCode(0xF5) == 0x5);
 
 } // end namespace i960
