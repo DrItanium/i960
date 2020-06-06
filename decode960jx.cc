@@ -97,7 +97,9 @@ void decode(std::ostream& out, const i960::Opcode::Description& desc, const i960
     auto abase = inst.getAbase();
     auto offset = inst.getOffset();
     auto index = inst.getIndex();
-    out << inst.getSrcDest() << ", ";
+    if (i960::srcDestIsSrc(desc)) {
+        out << inst.getSrcDest() << ", ";
+    }
     switch (inst.getMode()) {
         case M::AbsoluteOffset: // MEMA Form of Absolute [0,2048]
             out << "0x" << std::hex << offset;
@@ -129,6 +131,9 @@ void decode(std::ostream& out, const i960::Opcode::Description& desc, const i960
         default:
             out << "ERROR: reserved (" << static_cast<int>(inst.getRawMode() >> 2) << ")";
             break;
+    }
+    if (i960::srcDestIsDest(desc)) {
+        out << ", " << inst.getSrcDest();
     }
 
     out << "  (0b";

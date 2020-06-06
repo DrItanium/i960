@@ -307,6 +307,7 @@ namespace i960::Operation {
     struct COBRClass final { };
     struct REGClass final { };
     struct MEMClass final { };
+    struct UnsureClass final { };
     constexpr CTRL translate(i960::OpcodeValue op, CTRLClass) noexcept {
         switch (op) {
 #define X(name, code, kind) case code : return name () ; 
@@ -375,6 +376,31 @@ namespace i960::Operation {
                 return std::monostate();
         }
     }
+    using AnyInstruction = std::variant<
+        std::monostate,
+        CTRL,
+        COBR,
+        REG,
+        MEM>;
+
+    constexpr AnyInstruction translate(i960::OpcodeValue op, UnsureClass) noexcept {
+        switch (op) {
+#define X(name, code, kind) case code : return name () ; 
+#define reg(name, code, __) X(name, code, REG)
+#define mem(name, code, __) X(name, code, MEM)
+#define cobr(name, code, __)  X(name, code, COBR)
+#define ctrl(name, code, __) X(name, code, CTRL)
+#include "opcodes.def"
+#undef X
+#undef reg
+#undef mem
+#undef cobr
+#undef ctrl
+            default:
+                return std::monostate();
+        }
+    }
+
 } // end namespace i960::Operation
 namespace i960 {
 // Setup knowledge base about operations
@@ -584,5 +610,128 @@ namespace i960 {
     constexpr auto IsREGFormat = Opcode::IsRegisterFormat<T::Opcode>;
     template<typename T>
     constexpr auto IsMEMFormat = Opcode::IsMemoryFormat<T::Opcode>;
+    template<typename T>
+    constexpr auto HasSrcDestField = Opcode::IsMemoryFormat<T::Opcode>;
+    template<typename T>
+    constexpr auto IsLoadOperation = IsInCollection<T, Operation::ld,
+                                                       Operation::ldib,
+                                                       Operation::ldob,
+                                                       Operation::ldis,
+                                                       Operation::ldos,
+                                                       Operation::ldl,
+                                                       Operation::ldq,
+                                                       Operation::ldt>;
+    template<typename T>
+    constexpr auto IsStoreOperation = IsInCollection<T, Operation::st,
+                                                        Operation::stib,
+                                                        Operation::stob,
+                                                        Operation::stis,
+                                                        Operation::stos,
+                                                        Operation::stl,
+                                                        Operation::stq,
+                                                        Operation::stt>;
+    template<typename T>
+    constexpr auto UsesSrcDestField = HasSrcDestField<T> &&
+                                      (!IsInCollection<T, Operation::bx,
+                                                          Operation::callx>);
+    template<typename T>
+    constexpr auto SrcDestIsSrc = HasSrcDestField<T> && IsLoadOperation<T>;
+    template<typename T>
+    constexpr auto SrcDestIsDest = HasSrcDestField<T> &&
+                                   (IsStoreOperation<T> ||
+                                    IsInCollection<T, Operation::lda,
+                                                      Operation::balx>);
+    template<typename T>
+    constexpr auto IgnoresSrcDestField = HasSrcDestField<T> &&
+                                         (IsInCollection<T, Operation::bx, Operation::callx>);
+
+    constexpr bool ignoresSrcDestField(i960::OpcodeValue op) noexcept {
+        switch (op) {
+#define X(name, code, kind) case code : return IgnoresSrcDestField<Operation:: name>; 
+#define reg(name, code, __) X(name, code, REG)
+#define mem(name, code, __) X(name, code, MEM)
+#define cobr(name, code, __)  X(name, code, COBR)
+#define ctrl(name, code, __) X(name, code, CTRL)
+#include "opcodes.def"
+#undef X
+#undef reg
+#undef mem
+#undef cobr
+#undef ctrl
+            default:
+                return false;
+        }
+    }
+    constexpr bool usesSrcDestField(i960::OpcodeValue op) noexcept {
+        switch (op) {
+#define X(name, code, kind) case code : return UsesSrcDestField<Operation:: name>; 
+#define reg(name, code, __) X(name, code, REG)
+#define mem(name, code, __) X(name, code, MEM)
+#define cobr(name, code, __)  X(name, code, COBR)
+#define ctrl(name, code, __) X(name, code, CTRL)
+#include "opcodes.def"
+#undef X
+#undef reg
+#undef mem
+#undef cobr
+#undef ctrl
+            default:
+                return false;
+        }
+    }
+    constexpr bool hasSrcDestField(i960::OpcodeValue op) noexcept {
+        switch (op) {
+#define X(name, code, kind) case code : return HasSrcDestField<Operation:: name>; 
+#define reg(name, code, __) X(name, code, REG)
+#define mem(name, code, __) X(name, code, MEM)
+#define cobr(name, code, __)  X(name, code, COBR)
+#define ctrl(name, code, __) X(name, code, CTRL)
+#include "opcodes.def"
+#undef X
+#undef reg
+#undef mem
+#undef cobr
+#undef ctrl
+            default: 
+                return false;
+        }
+    }
+
+    constexpr bool srcDestIsSrc(i960::OpcodeValue op) noexcept {
+        switch (op) {
+#define X(name, code, kind) case code : return SrcDestIsSrc<Operation:: name>; 
+#define reg(name, code, __) X(name, code, REG)
+#define mem(name, code, __) X(name, code, MEM)
+#define cobr(name, code, __)  X(name, code, COBR)
+#define ctrl(name, code, __) X(name, code, CTRL)
+#include "opcodes.def"
+#undef X
+#undef reg
+#undef mem
+#undef cobr
+#undef ctrl
+            default: 
+                return false;
+        }
+    }
+
+    constexpr bool srcDestIsDest(i960::OpcodeValue op) noexcept {
+        switch (op) {
+#define X(name, code, kind) case code : return SrcDestIsDest<Operation:: name>; 
+#define reg(name, code, __) X(name, code, REG)
+#define mem(name, code, __) X(name, code, MEM)
+#define cobr(name, code, __)  X(name, code, COBR)
+#define ctrl(name, code, __) X(name, code, CTRL)
+#include "opcodes.def"
+#undef X
+#undef reg
+#undef mem
+#undef cobr
+#undef ctrl
+            default: 
+                return false;
+        }
+    }
+
 } // end namespace i960
 #endif // end I960_OPCODES_H__

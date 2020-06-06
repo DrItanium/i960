@@ -371,6 +371,9 @@ namespace i960 {
             }
             constexpr auto isMEMAFormat() const noexcept { return isMEMAFormat(_mode); }
             constexpr auto isMEMBFormat() const noexcept { return isMEMBFormat(_mode); }
+            bool srcDestIsSrc() const noexcept;
+            bool srcDestIsDest() const noexcept;
+            bool srcDestIsUnused() const noexcept;
             /// @todo add effective address computation support
         private:
             /// @todo convert this to be part of the code structure instead of wasting space
