@@ -532,18 +532,53 @@ namespace i960 {
     constexpr auto IsCompareAndDecrementOperation = IsInCollection<T, Operation::cmpdeci, Operation::cmpdeco>;
     template<typename T>
     constexpr auto IsShiftLeftOperation = IsInCollection<T, Operation::shli, Operation::shlo>;
+#define FACT_EXPANSION IsShiftLeftOperation 
+#define FACT_FUNC_NAME isShiftLeftOperation
+#include "DefFactQuery.def"
+#undef FACT_EXPANSION
+#undef FACT_FUNC_NAME
     template<typename T>
     constexpr auto IsShiftRightOperation = IsInCollection<T, Operation::shri, Operation::shro>;
+#define FACT_EXPANSION IsShiftRightOperation 
+#define FACT_FUNC_NAME isShiftRightOperation
+#include "DefFactQuery.def"
+#undef FACT_EXPANSION
+#undef FACT_FUNC_NAME
     template<typename T>
     constexpr auto IsShiftOperation = IsShiftLeftOperation<T> || IsShiftRightOperation<T>;
+#define FACT_EXPANSION IsShiftOperation 
+#define FACT_FUNC_NAME isShiftOperation
+#include "DefFactQuery.def"
+#undef FACT_EXPANSION
+#undef FACT_FUNC_NAME
     template<typename T>
     constexpr auto IsCheckBitAndBranchIfOperation = IsInCollection<T, Operation::bbc, Operation::bbs>;
+#define FACT_EXPANSION IsCheckBitAndBranchIfOperation 
+#define FACT_FUNC_NAME isCheckBitAndBranchIfOperation
+#include "DefFactQuery.def"
+#undef FACT_EXPANSION
+#undef FACT_FUNC_NAME
     template<typename T>
     constexpr auto IsCOBRFormat = Opcode::IsCompareAndBranchFormat<T::Opcode>;
+#define FACT_EXPANSION IsCOBRFormat 
+#define FACT_FUNC_NAME isCOBRFormat
+#include "DefFactQuery.def"
+#undef FACT_EXPANSION
+#undef FACT_FUNC_NAME
     template<typename T>
     constexpr auto IsCTRLFormat = Opcode::IsControlFormat<T::Opcode>;
+#define FACT_EXPANSION IsCTRLFormat 
+#define FACT_FUNC_NAME isCTRLFormat
+#include "DefFactQuery.def"
+#undef FACT_EXPANSION
+#undef FACT_FUNC_NAME
     template<typename T>
     constexpr auto IsREGFormat = Opcode::IsRegisterFormat<T::Opcode>;
+#define FACT_EXPANSION IsREGFormat 
+#define FACT_FUNC_NAME isREGFormat
+#include "DefFactQuery.def"
+#undef FACT_EXPANSION
+#undef FACT_FUNC_NAME
     template<typename T>
     constexpr auto IsMEMFormat = Opcode::IsMemoryFormat<T::Opcode>;
 #define FACT_EXPANSION IsMEMFormat 
