@@ -692,43 +692,19 @@ namespace i960 {
         }
     }
 
-    constexpr bool srcDestIsSrc(i960::OpcodeValue op) noexcept {
-        switch (op) {
-#define X(name, code, kind) case code : return SrcDestIsSrc<Operation:: name>; 
-#define reg(name, code, __) X(name, code, REG)
-#define mem(name, code, __) X(name, code, MEM)
-#define cobr(name, code, __)  X(name, code, COBR)
-#define ctrl(name, code, __) X(name, code, CTRL)
-#include "opcodes.def"
-#undef X
-#undef reg
-#undef mem
-#undef cobr
-#undef ctrl
-            default: 
-                return false;
-        }
-    }
-
-    constexpr bool srcDestIsDest(i960::OpcodeValue op) noexcept {
-        switch (op) {
-#define X(name, code, kind) case code : return SrcDestIsDest<Operation:: name>; 
-#define reg(name, code, __) X(name, code, REG)
-#define mem(name, code, __) X(name, code, MEM)
-#define cobr(name, code, __)  X(name, code, COBR)
-#define ctrl(name, code, __) X(name, code, CTRL)
-#include "opcodes.def"
-#undef X
-#undef reg
-#undef mem
-#undef cobr
-#undef ctrl
-            default: 
-                return false;
-        }
-    }
 #define FACT_EXPANSION IsShiftLeftOperation
 #define FACT_FUNC_NAME isShiftLeftOperation
+#include "DefFactQuery.def"
+#undef FACT_EXPANSION
+#undef FACT_FUNC_NAME
+
+#define FACT_EXPANSION SrcDestIsDest 
+#define FACT_FUNC_NAME srcDestIsDest 
+#include "DefFactQuery.def"
+#undef FACT_EXPANSION
+#undef FACT_FUNC_NAME
+#define FACT_EXPANSION SrcDestIsSrc
+#define FACT_FUNC_NAME srcDestIsSrc
 #include "DefFactQuery.def"
 #undef FACT_EXPANSION
 #undef FACT_FUNC_NAME
