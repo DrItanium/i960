@@ -1,7 +1,7 @@
-#define reg(name, code, __) X(name, code, REG)
-#define mem(name, code, __) X(name, code, MEM)
-#define cobr(name, code, __)  X(name, code, COBR)
-#define ctrl(name, code, __) X(name, code, CTRL)
+#define reg(name, code, arg) X(name, code, arg, REG)
+#define mem(name, code, arg) X(name, code, arg, MEM)
+#define cobr(name, code, arg)  X(name, code, arg, COBR)
+#define ctrl(name, code, arg) X(name, code, arg, CTRL)
 #include "opcodes.def" 
 #undef reg
 #undef mem

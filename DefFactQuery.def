@@ -1,6 +1,6 @@
     constexpr bool FACT_FUNC_NAME(i960::OpcodeValue op) noexcept { 
         switch (op) { 
-#define X(name, code, kind) case code : return FACT_EXPANSION<Operation:: name >;
+#define X(name, code, arg, kind) case code : return FACT_EXPANSION<Operation:: name >;
 #include "ExpandAllOpcodes.def"
 #undef X 
             default: 

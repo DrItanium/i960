@@ -150,21 +150,22 @@ namespace i960::Opcode {
         template<OpcodeValue opcode>
         constexpr auto RetrieveDecodedOpcode = undefinedOpcode;
 
-#define o(name, code, arg, kind) \
+#define X(name, code, arg, kind) \
         constexpr DecodedOpcode decoded_ ## name (i960::constructOrdinalMask(Class:: kind, Arguments:: arg , static_cast<EncodedOpcode>(code) << 16)); \
         template<> constexpr auto RetrieveDecodedOpcode<code> = decoded_ ## name ; \
         static_assert(decoded_ ## name . getEncodedOpcode() == DecodedOpcode(Class:: kind, Arguments:: arg , code).getEncodedOpcode()); \
         constexpr Description name ( #name , decoded_ ## name );
-#define reg(name, code, arg) o(name, code, arg, Register)
-#define cobr(name, code, arg) o(name, code, arg, COBR) 
-#define mem(name, code, arg) o(name, code, arg, Memory) 
-#define ctrl(name, code, arg) o(name, code, arg, Control)
+
+#define reg(name, code, arg) X(name, code, arg, Register)
+#define cobr(name, code, arg) X(name, code, arg, COBR) 
+#define mem(name, code, arg) X(name, code, arg, Memory) 
+#define ctrl(name, code, arg) X(name, code, arg, Control)
 #include "opcodes.def"
 #undef reg
 #undef cobr
 #undef mem
 #undef ctrl
-#undef o
+#undef X
 
         template<OpcodeValue opcode>
         constexpr auto IsControlFormat = RetrieveDecodedOpcode<opcode>.getClass() == Class::Control;
@@ -179,56 +180,32 @@ namespace i960::Opcode {
 
         constexpr const DecodedOpcode& decodeOpcode(OpcodeValue opcode) noexcept {
             switch(opcode) {
-#define o(name, code, arg, kind) case code : return RetrieveDecodedOpcode<code>;
-#define reg(name, code, arg) o(name, code, arg, Reg)
-#define cobr(name, code, arg) o(name, code, arg, Cobr) 
-#define mem(name, code, arg) o(name, code, arg, Mem) 
-#define ctrl(name, code, arg) o(name, code, arg, Ctrl)
-#include "opcodes.def"
-#undef reg
-#undef cobr
-#undef mem
-#undef ctrl
-#undef o
+#define X(name, code, arg, kind) case code : return RetrieveDecodedOpcode<code>;
+#include "ExpandAllOpcodes.def"
+#undef X
                 default: return undefinedOpcode;
             }
         }
         constexpr auto getNumberOfArguments(OpcodeValue opcode) noexcept {
             switch(opcode) {
-#define o(name, code, arg, kind) case code : return NumberOfArguments<code>;
-#define reg(name, code, arg) o(name, code, arg, Reg)
-#define cobr(name, code, arg) o(name, code, arg, Cobr) 
-#define mem(name, code, arg) o(name, code, arg, Mem) 
-#define ctrl(name, code, arg) o(name, code, arg, Ctrl)
-#include "opcodes.def"
-#undef reg
-#undef cobr
-#undef mem
-#undef ctrl
-#undef o
+#define X(name, code, arg, kind) case code : return NumberOfArguments<code>;
+#include "ExpandAllOpcodes.def"
+#undef X
                 default: return NumberOfArguments<0xFFFF>;
             }
         }
         constexpr const Description& getDescription(i960::OpcodeValue opcode) noexcept {
             switch (opcode) {
-#define o(name, code, arg, kind) case code : return name ;
-#define reg(name, code, arg) o(name, code, arg, Reg)
-#define cobr(name, code, arg) o(name, code, arg, Cobr) 
-#define mem(name, code, arg) o(name, code, arg, Mem) 
-#define ctrl(name, code, arg) o(name, code, arg, Ctrl)
-#include "opcodes.def"
-#undef reg
-#undef cobr
-#undef mem
-#undef ctrl
-#undef o
+#define X(name, code, arg, kind) case code : return name ;
+#include "ExpandAllOpcodes.def"
+#undef X
                 default: return undefinedOpcodeDescription; 
             }
         }
 } // end namespace i960::Opcode
 namespace i960::Operation {
 
-#define X(name, code, kind) \
+#define X(name, code, arg, kind) \
         struct name final { \
             static constexpr auto Opcode = static_cast<OpcodeValue>(code); \
             constexpr auto getOpcode() const noexcept { return Opcode; } \
