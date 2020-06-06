@@ -116,25 +116,13 @@ namespace i960 {
 	}
 
 	Ordinal Core::load(Ordinal address, bool atomic) noexcept {
-		if (address <= _internalDataRam.LargestAddress<0>) {
-			return _internalDataRam.read(computeAlignedAddress(address));
-		} else {
-			return _mem.load(address, atomic);
-		}
+        return _mem.load(address, atomic);
 	}
     LongOrdinal Core::loadDouble(Ordinal address, bool atomic) noexcept {
-        if (address <= _internalDataRam.LargestAddress<0>) {
-            return _internalDataRam.readDouble(computeAlignedAddress(address));
-        } else {
-            return _mem.loadDouble(address, atomic);
-        }
+        return _mem.loadDouble(address, atomic);
     }
 	void Core::store(Ordinal address, Ordinal value, bool atomic) noexcept {
-		if (address <= _internalDataRam.LargestAddress<0>) {
-			_internalDataRam.write(computeAlignedAddress(address), value);
-		} else {
-			_mem.store(address, value, atomic);
-		}
+        _mem.store(address, value, atomic);
 	}
 	NormalRegister& Core::getRegister(ByteOrdinal index) noexcept {
 		if (auto offset = (index & 0b01111) ; (index & 0b10000) == 0) {
@@ -820,7 +808,6 @@ namespace i960 {
 		return load(_prcbAddress + 0x24);
 	}
 	void Core::reset() {
-		_internalDataRam.reset();
 		initializeProcessor();
 	}
 	void Core::initializeProcessor() {
