@@ -169,6 +169,9 @@ namespace i960 {
             ~HasSrc1() = default;
             constexpr auto getSrc1() const noexcept { return _src1; }
             void setSrc1(Operand op) noexcept { _src1 = op; }
+            constexpr SingleEncodedInstructionValue encode(SingleEncodedInstructionValue value) const noexcept {
+                return EncoderDecoder::encodePattern(value, _src1);
+            }
             /// @todo insert encode operation here
         private:
             Operand _src1;
@@ -177,13 +180,18 @@ namespace i960 {
         // constexpr Ordinal Mask = 0x0007C000;
         // constexpr Ordinal Shift = 14;
         public:
-            using EncoderDecoder = BitPattern<SingleEncodedInstructionValue, Ordinal, 0x000'7C'000, 14>;
+            template<typename R = Ordinal>
+            using GenericEncoderDecoder = BitPattern<SingleEncodedInstructionValue, R, 0x000'7C'000, 14>;
+            using EncoderDecoder = GenericEncoderDecoder<Ordinal>;
         public:
             constexpr explicit HasSrc2(Operand op) : _src2(op) { }
             constexpr explicit HasSrc2(const Instruction& inst) : _src2(EncoderDecoder::decodePattern(inst.getLowerHalf())) { }
             ~HasSrc2() = default;
             constexpr auto getSrc2() const noexcept { return _src2; }
             void setSrc2(Operand op) noexcept { _src2 = op; }
+            constexpr SingleEncodedInstructionValue encode(SingleEncodedInstructionValue value) const noexcept {
+                return EncoderDecoder::encodePattern(value, _src2);
+            }
         private:
             Operand _src2;
     };
@@ -196,6 +204,9 @@ namespace i960 {
             ~HasSrcDest() = default;
             constexpr auto getSrcDest() const noexcept { return _srcDest; }
             void setSrcDest(Operand op) noexcept { _srcDest = op; }
+            constexpr SingleEncodedInstructionValue encode(SingleEncodedInstructionValue value) const noexcept {
+                return EncoderDecoder::encodePattern(value, _srcDest);
+            }
         private:
             Operand _srcDest;
     };
@@ -255,6 +266,8 @@ namespace i960 {
         public:
             using Base = GenericFormatInstruction;
             using OpcodeList = Operation::CTRL;
+            using DisplacementPattern = BitPattern<Ordinal, Integer, 0x00FFFFFC, 0>;
+            using TPattern = BitPattern<Ordinal, bool, 0b10, 0>;
         public:
             CTRLFormatInstruction(const Instruction&);
             ~CTRLFormatInstruction() override = default;
@@ -329,6 +342,10 @@ namespace i960 {
             static constexpr auto isMEMBFormat(ByteOrdinal mode) noexcept {
                 return isMEMBFormat(static_cast<AddressingModes>(mode));
             }
+        public:
+            //instruction = i960::encode<Ordinal, Ordinal, 0b1111'1111'1111, 0>(instruction, _offset);
+            using MEMAOffsetPattern = BitPattern<Ordinal, Ordinal, 0b1111'1111'1111, 0>;
+            using MEMBScalePattern = BitPattern<Ordinal, ByteOrdinal, 0x380, 7>;
         public:
             MEMFormatInstruction(const Instruction& inst);
             ~MEMFormatInstruction() override = default;
