@@ -234,16 +234,8 @@ namespace i960::Operation {
             constexpr auto getOpcode() const noexcept { return Opcode; } \
             constexpr const i960::Opcode::DecodedOpcode& getDecodedForm() const noexcept { return i960::Opcode::decodeOpcode(Opcode); } \
         };
-#define reg(name, code, __) X(name, code, REG)
-#define mem(name, code, __) X(name, code, MEM)
-#define cobr(name, code, __) X(name, code, COBR)
-#define ctrl(name, code, __) X(name, code, CTRL)
-#include "opcodes.def"
+#include "ExpandAllOpcodes.def"
 #undef X
-#undef reg
-#undef mem
-#undef cobr
-#undef ctrl
     using REG = std::variant<std::monostate
 #define X(name, code, kind) \
         , name 
@@ -584,6 +576,11 @@ namespace i960 {
     constexpr auto IsREGFormat = Opcode::IsRegisterFormat<T::Opcode>;
     template<typename T>
     constexpr auto IsMEMFormat = Opcode::IsMemoryFormat<T::Opcode>;
+#define FACT_EXPANSION IsMEMFormat 
+#define FACT_FUNC_NAME isMEMFormat
+#include "DefFactQuery.def"
+#undef FACT_EXPANSION
+#undef FACT_FUNC_NAME
     template<typename T>
     constexpr auto HasSrcDestField = Opcode::IsMemoryFormat<T::Opcode> | Opcode::IsRegisterFormat<T::Opcode>;
 #define FACT_EXPANSION HasSrcDestField
