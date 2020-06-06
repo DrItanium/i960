@@ -287,15 +287,17 @@ namespace i960 {
              * solves quite a few problems.
              */
             enum class AddressingModes : ByteOrdinal {
-                AbsoluteOffset = 0b00'0000, // offset
-                AbsoluteDisplacement = 0b11'0000, // displacement
-                RegisterIndirect = 0b01'0000,
-                RegisterIndirectWithOffset = 0b10'0000,
-                RegisterIndirectWithDisplacement = 0b11'0100,
-                RegisterIndirectWithIndex = 0b01'1100,
-                RegisterIndirectWithIndexAndDisplacement = 0b11'1100,
-                IndexWithDisplacement = 0b11'1000,
-                IPWithDisplacement = 0b01'0100,
+                // MEMA Modes
+                AbsoluteOffset = 0b0000, // offset
+                RegisterIndirectWithOffset = 0b1000,
+                // MEMB Modes
+                RegisterIndirect = 0b0100,
+                AbsoluteDisplacement = 0b1100,
+                RegisterIndirectWithDisplacement = 0b1101,
+                RegisterIndirectWithIndex = 0b0111,
+                RegisterIndirectWithIndexAndDisplacement = 0b1111,
+                IndexWithDisplacement = 0b1110,
+                IPWithDisplacement = 0b0101,
                 Bad = 0xFF,
             };
         public:
