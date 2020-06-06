@@ -181,6 +181,7 @@ namespace i960 {
             static constexpr bool extractNoImpreciseFaults(Ordinal raw) noexcept {
                 return NoImpreciseFaultsEncoderDecoder::decodePattern(raw);
             }
+            /// @todo handle the floating point fields
     };
     static_assert(ArithmeticControls::create(0b111, true, true, true) == ArithmeticControls::CoreArchitectureExtractMask, "create(CoreArchitecture) failed!");
     static_assert(ArithmeticControls::extractIntegerOverflowFlag(ArithmeticControls::Masks::IntegerOverflowFlag));
