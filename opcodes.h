@@ -160,18 +160,6 @@ namespace i960::Opcode {
         constexpr Description name ( #name , decoded_ ## name );
 #include "ExpandAllOpcodes.def"
 #undef X
-#if 0
-#define reg(name, code, arg) X(name, code, arg, Register)
-#define cobr(name, code, arg) X(name, code, arg, COBR) 
-#define mem(name, code, arg) X(name, code, arg, Memory) 
-#define ctrl(name, code, arg) X(name, code, arg, Control)
-#include "opcodes.def"
-#undef reg
-#undef cobr
-#undef mem
-#undef ctrl
-#undef X
-#endif
 
         template<OpcodeValue opcode>
         constexpr auto IsControlFormat = RetrieveDecodedOpcode<opcode>.getClass() == Class::Control;
@@ -280,7 +268,6 @@ namespace i960::Operation {
     struct COBRClass final { };
     struct REGClass final { };
     struct MEMClass final { };
-    struct UnsureClass final { };
     constexpr CTRL translate(i960::OpcodeValue op, CTRLClass) noexcept {
         switch (op) {
 #define X(name, code, kind) case code : return name () ; 
