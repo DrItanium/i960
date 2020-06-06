@@ -83,10 +83,29 @@ namespace i960 {
     EncodedInstruction
     MEMFormatInstruction::encode() const noexcept {
         auto instruction = encodeMajorOpcode(getOpcode());
-        instruction = encodeSrcDest(instruction, getSrcDest());
-        instruction = encodeSrc2(instruction, getAbase());
-        /// @todo implement
-        return instruction;
+        instruction = encodeSrcDest(instruction, getSrcDest()); // src/dst
+        instruction = encodeSrc2(instruction, getAbase()); // abase
+        instruction = encodeMode(instruction, getRawMode()); //
+        if (isMEMAFormat()) {
+            instruction = i960::encode<Ordinal, Ordinal, 0b1111'1111'1111, 0>(instruction, _offset);
+            return instruction;
+        } else if (isMEMBFormat()) {
+            instruction = i960::encode<Ordinal, ByteOrdinal, MEMBscaleMask, 7>(instruction, _scale);
+            instruction = encodeSrc1(instruction, getIndex());
+            instruction = i960::encode<Ordinal, Ordinal, 0b11'00000, 5>(instruction, 0); // zero out bits 5 and 6
+            if (isDoubleWide()) {
+                // need to make the instruction double wide so the instruction
+                // we've been encoding is the lower half
+                LongOrdinal doubleWideInstruction = instruction;
+                LongOrdinal doubleWideDisplacement = _displacement;
+                doubleWideDisplacement <<= 32; // after sign extension has taken place then move displacement up into the upper half 
+                return doubleWideDisplacement | doubleWideInstruction;
+            } else {
+                return instruction;
+            }
+        } else {
+            return static_cast<Ordinal>(0xFFFF'FFFF);
+        }
     }
 
 
