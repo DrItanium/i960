@@ -727,6 +727,10 @@ namespace i960 {
                 return false;
         }
     }
-
+#define FACT_EXPANSION IsShiftLeftOperation
+#define FACT_FUNC_NAME isShiftLeftOperation
+#include "DefFactQuery.def"
+#undef FACT_EXPANSION
+#undef FACT_FUNC_NAME
 } // end namespace i960
 #endif // end I960_OPCODES_H__
