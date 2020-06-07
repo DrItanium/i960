@@ -167,7 +167,12 @@ namespace i960 {
             static constexpr BinaryType encode(BinaryType value, typename Patterns::SliceType&& ... inputs) noexcept {
                 return (Patterns::encodePattern(value, inputs) | ... );
             }
-            /// @todo figure out how to unpack tuples automatically for encode procedures
+            static constexpr BinaryType encode(BinaryType value, UnpackedBinary&& tup) noexcept {
+                return std::apply([value](typename Patterns::SliceType&& ... args) noexcept { return encode(value, args...); }, tup);
+            }
+            static constexpr BinaryType encode(UnpackedBinary&& tup) noexcept {
+                return std::apply([](typename Patterns::SliceType&& ... args) noexcept { return encode(args...); }, tup);
+            }
 
     };
     using OrdinalHalvesEncoderDecoder = BinaryEncoderDecoder<Ordinal, LowerOrdinalHalf, UpperOrdinalHalf>;
