@@ -49,6 +49,7 @@ namespace i960 {
             using DataType = T;
             using SliceType = R;
             using InteractPair = std::tuple<DataType, DataType>;
+            using TupleSliceType = std::tuple<SliceType>;
         public:
             static constexpr auto Mask = mask;
             static constexpr auto Shift = shift;
@@ -154,9 +155,12 @@ namespace i960 {
         public:
             using BinaryType = T;
             using UnpackedBinary = std::tuple<typename Patterns::SliceType...>;
+            using DataType = T;
+            using SliceType = UnpackedBinary;
             static constexpr auto NumberOfPatterns = std::tuple_size_v<UnpackedBinary>;
             static_assert(NumberOfPatterns > 0, "Must have at least one pattern");
             static_assert((std::is_same_v<typename Patterns::DataType, BinaryType> && ...), "All patterns must operate on the provided binary type");
+            /// @todo figure out how to bind the return of tuple_cat from SliceTypes
         public:
             static constexpr UnpackedBinary decode(BinaryType input) noexcept {
                 return std::make_tuple<typename Patterns::SliceType...>(Patterns::decodePattern(input)...);
@@ -173,7 +177,11 @@ namespace i960 {
             static constexpr BinaryType encode(UnpackedBinary&& tup) noexcept {
                 return std::apply([](typename Patterns::SliceType&& ... args) noexcept { return encode(args...); }, tup);
             }
-
+            static constexpr auto decodePattern(BinaryType input) noexcept { return decode(input); }
+            static constexpr BinaryType encodePattern(UnpackedBinary&& tup) noexcept { return encode(tup); }
+            static constexpr BinaryType encodePattern(BinaryType value, UnpackedBinary&& tup) noexcept { return encode(value, tup); }
+            static constexpr BinaryType encodePattern(typename Patterns::SliceType&& ... values) noexcept { return encode(values...); }
+            static constexpr BinaryType encodePattern(BinaryType value, typename Patterns::SliceType&& ... tup) noexcept { return encode(value, tup...); }
     };
     using OrdinalHalvesEncoderDecoder = BinaryEncoderDecoder<Ordinal, LowerOrdinalHalf, UpperOrdinalHalf>;
     using OrdinalQuadrantsEncoderDecoder = BinaryEncoderDecoder<Ordinal, LowestOrdinalQuadrant, LowerOrdinalQuadrant, HigherOrdinalQuadrant, HighestOrdinalQuadrant>;
@@ -191,6 +199,20 @@ namespace i960 {
     constexpr OrdinalHalves getHalves(Ordinal input) noexcept {
         return OrdinalHalvesEncoderDecoder::decode(input);
     }
+
+    using OrdinalHalvesAndQuadsEncoderDecoder = 
+        BinaryEncoderDecoder<Ordinal, OrdinalHalvesEncoderDecoder, OrdinalQuadrantsEncoderDecoder>;
+    constexpr auto getQuadrantsAndHalves(Ordinal input) noexcept {
+        return OrdinalHalvesAndQuadsEncoderDecoder::decode(input);
+    }
+
+    static_assert(OrdinalHalvesAndQuadsEncoderDecoder::NumberOfPatterns == 2);
+    static_assert(std::get<3>(std::get<1>(getQuadrantsAndHalves(0xFDEDABCD))) == 0xFD);
+    static_assert(std::get<2>(std::get<1>(getQuadrantsAndHalves(0xFDEDABCD))) == 0xED);
+    static_assert(std::get<1>(std::get<1>(getQuadrantsAndHalves(0xFDEDABCD))) == 0xAB);
+    static_assert(std::get<0>(std::get<1>(getQuadrantsAndHalves(0xFDEDABCD))) == 0xCD);
+    static_assert(std::get<1>(std::get<0>(getQuadrantsAndHalves(0xFDEDABCD))) == 0xFDED);
+    static_assert(std::get<0>(std::get<0>(getQuadrantsAndHalves(0xFDEDABCD))) == 0xABCD);
 
     static_assert(std::get<1>(getHalves(0xFDEDABCD)) == 0xFDED);
     static_assert(std::get<0>(getHalves(0xFDEDABCD)) == 0xABCD);
