@@ -169,6 +169,8 @@ namespace i960 {
             static constexpr BinaryType encode(BinaryType value, typename Patterns::SliceType&& ... inputs) noexcept {
                 return (Patterns::encodePattern(value, inputs) | ... );
             }
+#if 0
+            // @todo fix this code
             static constexpr BinaryType encode(BinaryType value, UnpackedBinary&& tup) noexcept {
                 return std::apply([value](typename Patterns::SliceType&& ... args) noexcept { return encode(value, args...); }, tup);
             }
@@ -176,6 +178,7 @@ namespace i960 {
                 return std::apply([](typename Patterns::SliceType&& ... args) noexcept { 
                         return encode(std::move(args)...); }, tup);
             }
+#endif
     };
     using OrdinalHalvesEncoderDecoder = BinaryEncoderDecoder<Ordinal, LowerOrdinalHalf, UpperOrdinalHalf>;
     using OrdinalQuadrantsEncoderDecoder = BinaryEncoderDecoder<Ordinal, LowestOrdinalQuadrant, LowerOrdinalQuadrant, HigherOrdinalQuadrant, HighestOrdinalQuadrant>;
