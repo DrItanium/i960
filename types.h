@@ -345,10 +345,10 @@ namespace i960 {
     };
     class HardwareDeviceIdentificationCode final : public BaseDeviceIdenficationCode<true> {
         public:
-            static constexpr BitFragment<Ordinal, uint8_t, 0xF000'0000, 28 > VersionDecoder {};
-            static constexpr BitFragment<Ordinal, bool, 1<<27, 27> VCCDecoder { };
-            static constexpr BitFragment<Ordinal, uint8_t, (0b1111 << 17), 17> GenerationDecoder{};
-            static constexpr BitFragment<Ordinal, uint8_t, (0b11111 << 12), 12> ModelDecoder{};
+            using VersionDecoder = BitFragment<Ordinal, uint8_t, 0xF000'0000, 28 >;
+            using VCCDecoder = FlagFragment<Ordinal, 1<<27>;
+            using GenerationDecoder = BitFragment<Ordinal, uint8_t, (0b1111 << 17), 17>;
+            using ModelDecoder = BitFragment<Ordinal, uint8_t, (0b11111 << 12), 12>;
         public:
             constexpr HardwareDeviceIdentificationCode(uint8_t version, bool vcc, uint8_t generation, uint8_t model) noexcept :
                 _version(version & 0b11111),
@@ -356,19 +356,19 @@ namespace i960 {
                 _gen(generation & 0b1111),
                 _model(model & 0b11111) { }
             constexpr HardwareDeviceIdentificationCode(Ordinal raw) noexcept : HardwareDeviceIdentificationCode(
-                    VersionDecoder.decode(raw),
-                    VCCDecoder.decode(raw),
-                    GenerationDecoder.decode(raw),
-                    ModelDecoder.decode(raw)) { }
+                    VersionDecoder::decodePattern(raw),
+                    VCCDecoder::decodePattern(raw),
+                    GenerationDecoder::decodePattern(raw),
+                    ModelDecoder::decodePattern(raw)) { }
             constexpr auto getVersion() const noexcept { return _version; }
             constexpr auto getGeneration() const noexcept { return _gen; }
             constexpr auto getModel() const noexcept { return _model; }
             constexpr Ordinal getDeviceId() const noexcept { 
-                Ordinal start = VersionDecoder.encode(_version);
-                start |= VCCDecoder.encode(_vcc);
+                Ordinal start = VersionDecoder::encodePattern(_version);
+                start |= VCCDecoder::encodePattern(_vcc);
                 start |= (static_cast<Ordinal>(getProductType() & 0b111111) << 21);
-                start |= GenerationDecoder.encode(_gen);
-                start |= ModelDecoder.encode(_model);
+                start |= GenerationDecoder::encodePattern(_gen);
+                start |= ModelDecoder::encodePattern(_model);
                 start |= (static_cast<Ordinal>(getManufacturer()) << 1);
                 return (start | 1); // lsb must be 1
             }
