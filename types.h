@@ -192,30 +192,31 @@ namespace i960 {
     constexpr OrdinalQuadrants getQuadrants(Ordinal input) noexcept {
         return OrdinalQuadrantsEncoderDecoder::decode(input);
     }
-    static_assert(std::get<3>(getQuadrants(0xFDEDABCD)) == 0xFD);
-    static_assert(std::get<2>(getQuadrants(0xFDEDABCD)) == 0xED);
-    static_assert(std::get<1>(getQuadrants(0xFDEDABCD)) == 0xAB);
-    static_assert(std::get<0>(getQuadrants(0xFDEDABCD)) == 0xCD);
+    static_assert(std::get<3>(getQuadrants(TestValue)) == 0xFD);
+    static_assert(std::get<2>(getQuadrants(TestValue)) == 0xED);
+    static_assert(std::get<1>(getQuadrants(TestValue)) == 0xAB);
+    static_assert(std::get<0>(getQuadrants(TestValue)) == 0xCD);
     constexpr OrdinalHalves getHalves(Ordinal input) noexcept {
         return OrdinalHalvesEncoderDecoder::decode(input);
     }
+
+
+
+    static_assert(std::get<1>(getHalves(TestValue)) == 0xFDED);
+    static_assert(std::get<0>(getHalves(TestValue)) == 0xABCD);
 
     using OrdinalHalvesAndQuadsEncoderDecoder = 
         BinaryEncoderDecoder<Ordinal, OrdinalHalvesEncoderDecoder, OrdinalQuadrantsEncoderDecoder>;
     constexpr auto getQuadrantsAndHalves(Ordinal input) noexcept {
         return OrdinalHalvesAndQuadsEncoderDecoder::decode(input);
     }
-
     static_assert(OrdinalHalvesAndQuadsEncoderDecoder::NumberOfPatterns == 2);
-    static_assert(std::get<3>(std::get<1>(getQuadrantsAndHalves(0xFDEDABCD))) == 0xFD);
-    static_assert(std::get<2>(std::get<1>(getQuadrantsAndHalves(0xFDEDABCD))) == 0xED);
-    static_assert(std::get<1>(std::get<1>(getQuadrantsAndHalves(0xFDEDABCD))) == 0xAB);
-    static_assert(std::get<0>(std::get<1>(getQuadrantsAndHalves(0xFDEDABCD))) == 0xCD);
-    static_assert(std::get<1>(std::get<0>(getQuadrantsAndHalves(0xFDEDABCD))) == 0xFDED);
-    static_assert(std::get<0>(std::get<0>(getQuadrantsAndHalves(0xFDEDABCD))) == 0xABCD);
-
-    static_assert(std::get<1>(getHalves(0xFDEDABCD)) == 0xFDED);
-    static_assert(std::get<0>(getHalves(0xFDEDABCD)) == 0xABCD);
+    static_assert(std::get<3>(std::get<1>(getQuadrantsAndHalves(TestValue))) == 0xFD);
+    static_assert(std::get<2>(std::get<1>(getQuadrantsAndHalves(TestValue))) == 0xED);
+    static_assert(std::get<1>(std::get<1>(getQuadrantsAndHalves(TestValue))) == 0xAB);
+    static_assert(std::get<0>(std::get<1>(getQuadrantsAndHalves(TestValue))) == 0xCD);
+    static_assert(std::get<1>(std::get<0>(getQuadrantsAndHalves(TestValue))) == 0xFDED);
+    static_assert(std::get<0>(std::get<0>(getQuadrantsAndHalves(TestValue))) == 0xABCD);
 
     constexpr auto getMostSignificantBit(Ordinal value) noexcept {
         return MostSignificantBitPattern.decode(value);
