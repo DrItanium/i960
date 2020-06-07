@@ -155,8 +155,8 @@ namespace i960 {
         public:
             using BinaryType = T;
             using UnpackedBinary = std::tuple<typename Patterns::SliceType...>;
-            using DataType = T;
-            using SliceType = UnpackedBinary;
+            //using DataType = T;
+            //using SliceType = UnpackedBinary;
             static constexpr auto NumberOfPatterns = std::tuple_size_v<UnpackedBinary>;
             static_assert(NumberOfPatterns > 0, "Must have at least one pattern");
             static_assert((std::is_same_v<typename Patterns::DataType, BinaryType> && ...), "All patterns must operate on the provided binary type");
@@ -166,7 +166,7 @@ namespace i960 {
                 return std::make_tuple<typename Patterns::SliceType...>(Patterns::decodePattern(input)...);
             }
             static constexpr BinaryType encode(typename Patterns::SliceType&& ... values) noexcept {
-                return (Patterns::encodePattern(values) | ...);
+                return (Patterns::encodePattern(std::forward<typename Patterns::SliceType>(values)) | ...);
             }
             static constexpr BinaryType encode(BinaryType value, typename Patterns::SliceType&& ... inputs) noexcept {
                 return (Patterns::encodePattern(value, inputs) | ... );
@@ -175,13 +175,9 @@ namespace i960 {
                 return std::apply([value](typename Patterns::SliceType&& ... args) noexcept { return encode(value, args...); }, tup);
             }
             static constexpr BinaryType encode(UnpackedBinary&& tup) noexcept {
-                return std::apply([](typename Patterns::SliceType&& ... args) noexcept { return encode(args...); }, tup);
+                return std::apply([](typename Patterns::SliceType&& ... args) noexcept { 
+                        return encode(std::move(args)...); }, tup);
             }
-            static constexpr auto decodePattern(BinaryType input) noexcept { return decode(input); }
-            static constexpr BinaryType encodePattern(UnpackedBinary&& tup) noexcept { return encode(tup); }
-            static constexpr BinaryType encodePattern(BinaryType value, UnpackedBinary&& tup) noexcept { return encode(value, tup); }
-            static constexpr BinaryType encodePattern(typename Patterns::SliceType&& ... values) noexcept { return encode(values...); }
-            static constexpr BinaryType encodePattern(BinaryType value, typename Patterns::SliceType&& ... tup) noexcept { return encode(value, tup...); }
     };
     using OrdinalHalvesEncoderDecoder = BinaryEncoderDecoder<Ordinal, LowerOrdinalHalf, UpperOrdinalHalf>;
     using OrdinalQuadrantsEncoderDecoder = BinaryEncoderDecoder<Ordinal, LowestOrdinalQuadrant, LowerOrdinalQuadrant, HigherOrdinalQuadrant, HighestOrdinalQuadrant>;
@@ -205,18 +201,6 @@ namespace i960 {
     static_assert(std::get<1>(getHalves(TestValue)) == 0xFDED);
     static_assert(std::get<0>(getHalves(TestValue)) == 0xABCD);
 
-    using OrdinalHalvesAndQuadsEncoderDecoder = 
-        BinaryEncoderDecoder<Ordinal, OrdinalHalvesEncoderDecoder, OrdinalQuadrantsEncoderDecoder>;
-    constexpr auto getQuadrantsAndHalves(Ordinal input) noexcept {
-        return OrdinalHalvesAndQuadsEncoderDecoder::decode(input);
-    }
-    static_assert(OrdinalHalvesAndQuadsEncoderDecoder::NumberOfPatterns == 2);
-    static_assert(std::get<3>(std::get<1>(getQuadrantsAndHalves(TestValue))) == 0xFD);
-    static_assert(std::get<2>(std::get<1>(getQuadrantsAndHalves(TestValue))) == 0xED);
-    static_assert(std::get<1>(std::get<1>(getQuadrantsAndHalves(TestValue))) == 0xAB);
-    static_assert(std::get<0>(std::get<1>(getQuadrantsAndHalves(TestValue))) == 0xCD);
-    static_assert(std::get<1>(std::get<0>(getQuadrantsAndHalves(TestValue))) == 0xFDED);
-    static_assert(std::get<0>(std::get<0>(getQuadrantsAndHalves(TestValue))) == 0xABCD);
 
     constexpr auto getMostSignificantBit(Ordinal value) noexcept {
         return MostSignificantBitPattern.decode(value);
