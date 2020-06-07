@@ -155,8 +155,6 @@ namespace i960 {
         public:
             using BinaryType = T;
             using UnpackedBinary = std::tuple<typename Patterns::SliceType...>;
-            //using DataType = T;
-            //using SliceType = UnpackedBinary;
             static constexpr auto NumberOfPatterns = std::tuple_size_v<UnpackedBinary>;
             static_assert(NumberOfPatterns > 0, "Must have at least one pattern");
             static_assert((std::is_same_v<typename Patterns::DataType, BinaryType> && ...), "All patterns must operate on the provided binary type");
