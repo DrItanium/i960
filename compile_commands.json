@@ -1,0 +1,162 @@
+[
+ {
+  "directory": "/home/jwscoggins/dev/i960/sim",
+  "arguments": [
+   "g++",
+   "-std=c++2a",
+   "-Wall",
+   "-Wextra",
+   "-g3",
+   "-Og",
+   "-c",
+   "sim960jx.cc",
+   "-o",
+   "sim960jx.o"
+  ],
+  "file": "sim960jx.cc"
+ },
+ {
+  "directory": "/home/jwscoggins/dev/i960/sim",
+  "arguments": [
+   "g++",
+   "-std=c++2a",
+   "-Wall",
+   "-Wextra",
+   "-g3",
+   "-Og",
+   "-c",
+   "core.cc",
+   "-o",
+   "core.o"
+  ],
+  "file": "core.cc"
+ },
+ {
+  "directory": "/home/jwscoggins/dev/i960/sim",
+  "arguments": [
+   "g++",
+   "-std=c++2a",
+   "-Wall",
+   "-Wextra",
+   "-g3",
+   "-Og",
+   "-c",
+   "ProcessControls.cc",
+   "-o",
+   "ProcessControls.o"
+  ],
+  "file": "ProcessControls.cc"
+ },
+ {
+  "directory": "/home/jwscoggins/dev/i960/sim",
+  "arguments": [
+   "g++",
+   "-std=c++2a",
+   "-Wall",
+   "-Wextra",
+   "-g3",
+   "-Og",
+   "-c",
+   "NormalRegister.cc",
+   "-o",
+   "NormalRegister.o"
+  ],
+  "file": "NormalRegister.cc"
+ },
+ {
+  "directory": "/home/jwscoggins/dev/i960/sim",
+  "arguments": [
+   "g++",
+   "-std=c++2a",
+   "-Wall",
+   "-Wextra",
+   "-g3",
+   "-Og",
+   "-c",
+   "QuadRegister.cc",
+   "-o",
+   "QuadRegister.o"
+  ],
+  "file": "QuadRegister.cc"
+ },
+ {
+  "directory": "/home/jwscoggins/dev/i960/sim",
+  "arguments": [
+   "g++",
+   "-std=c++2a",
+   "-Wall",
+   "-Wextra",
+   "-g3",
+   "-Og",
+   "-c",
+   "TripleRegister.cc",
+   "-o",
+   "TripleRegister.o"
+  ],
+  "file": "TripleRegister.cc"
+ },
+ {
+  "directory": "/home/jwscoggins/dev/i960/sim",
+  "arguments": [
+   "g++",
+   "-std=c++2a",
+   "-Wall",
+   "-Wextra",
+   "-g3",
+   "-Og",
+   "-c",
+   "ArithmeticControls.cc",
+   "-o",
+   "ArithmeticControls.o"
+  ],
+  "file": "ArithmeticControls.cc"
+ },
+ {
+  "directory": "/home/jwscoggins/dev/i960/sim",
+  "arguments": [
+   "g++",
+   "-std=c++2a",
+   "-Wall",
+   "-Wextra",
+   "-g3",
+   "-Og",
+   "-c",
+   "Operand.cc",
+   "-o",
+   "Operand.o"
+  ],
+  "file": "Operand.cc"
+ },
+ {
+  "directory": "/home/jwscoggins/dev/i960/sim",
+  "arguments": [
+   "g++",
+   "-std=c++2a",
+   "-Wall",
+   "-Wextra",
+   "-g3",
+   "-Og",
+   "-c",
+   "Instruction.cc",
+   "-o",
+   "Instruction.o"
+  ],
+  "file": "Instruction.cc"
+ },
+ {
+  "directory": "/home/jwscoggins/dev/i960/sim",
+  "arguments": [
+   "g++",
+   "-std=c++2a",
+   "-Wall",
+   "-Wextra",
+   "-g3",
+   "-Og",
+   "-c",
+   "decode960jx.cc",
+   "-o",
+   "decode960jx.o"
+  ],
+  "file": "decode960jx.cc"
+ }
+]
