@@ -1,4 +1,4 @@
-#define creg(baseName, baseAddress, arg) \
+#define ConditionalRegisterBlock(baseName, baseAddress, arg) \
 		reg(baseName ## e, (baseAddress | 0x0a0), arg) \
 		reg(baseName ## g, (baseAddress | 0x090), arg) \
 		reg(baseName ## ge, (baseAddress | 0x0b0), arg) \
@@ -7,11 +7,11 @@
 		reg(baseName ## ne, (baseAddress | 0x0d0), arg) \
 		reg(baseName ## no, (baseAddress | 0x080), arg) \
 		reg(baseName ## o, (baseAddress | 0x0f0), arg)
-creg(addi, 0x701, RegLit_RegLit_Reg)
+ConditionalRegisterBlock(addi, 0x701, RegLit_RegLit_Reg)
 reg(addc, 0x5b0, RegLit_RegLit_Reg)
 reg(addi, 0x591, RegLit_RegLit_Reg)
 reg(addo, 0x590, RegLit_RegLit_Reg)
-creg(addo, 0x700, RegLit_RegLit_Reg)
+ConditionalRegisterBlock(addo, 0x700, RegLit_RegLit_Reg)
 reg(alterbit, 0x58f, RegLit_RegLit_Reg)
 reg(opand, 0x581, RegLit_RegLit_Reg )
 reg(andnot, 0x582, RegLit_RegLit_Reg)
@@ -72,7 +72,7 @@ reg(remo, 0x708, RegLit_RegLit_Reg)
 reg(rotate, 0x59d, RegLit_RegLit_Reg)
 reg(scanbit, 0x641, RegLit_Reg)
 reg(scanbyte, 0x5ac, RegLit_RegLit)
-creg(sel, 0x704, RegLit_RegLit_Reg) // select based on ...
+ConditionalRegisterBlock(sel, 0x704, RegLit_RegLit_Reg) // select based on ...
 reg(setbit, 0x583, RegLit_RegLit_Reg)
 reg(shli,  0x59e, RegLit_RegLit_Reg)
 reg(shlo,  0x59c, RegLit_RegLit_Reg)
@@ -82,9 +82,9 @@ reg(shro,  0x598, RegLit_RegLit_Reg)
 reg(spanbit, 0x640, RegLit_Reg)
 reg(subc, 0x5b2, RegLit_RegLit_Reg)
 reg(subi, 0x593, RegLit_RegLit_Reg)
-creg(subi, 0x703, RegLit_RegLit_Reg)
+ConditionalRegisterBlock(subi, 0x703, RegLit_RegLit_Reg)
 reg(subo, 0x592, RegLit_RegLit_Reg)
-creg(subo, 0x702, RegLit_RegLit_Reg)
+ConditionalRegisterBlock(subo, 0x702, RegLit_RegLit_Reg)
 reg(syncf, 0x66f, None)
 reg(sysctl, 0x659, RegLit_RegLit_Reg)
 reg(xnor, 0x589, RegLit_RegLit_Reg)
@@ -156,4 +156,4 @@ ctrl(faultl,  (0x1c << 4), None)
 ctrl(faultle, (0x1e << 4), None)
 ctrl(faultne, (0x1d << 4), None)
 ctrl(faulto,  (0x1f << 4), None)
-#undef creg
+#undef ConditionalRegisterBlock

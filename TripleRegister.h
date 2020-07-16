@@ -7,9 +7,9 @@ namespace i960 {
         public:
             constexpr TripleRegister(NormalRegister& lower, NormalRegister& mid, NormalRegister& upper) noexcept : _lower(lower), _mid(mid), _upper(upper) { }
             void set(Ordinal lower, Ordinal mid, Ordinal upper) noexcept;
-            constexpr Ordinal getLowerPart() const noexcept  { return _lower.get<Ordinal>(); }
-            constexpr Ordinal getMiddlePart() const noexcept { return _mid.get<Ordinal>(); }
-            constexpr Ordinal getUpperPart() const noexcept  { return _upper.get<Ordinal>(); }
+            [[nodiscard]] constexpr Ordinal getLowerPart() const noexcept  { return _lower.get<Ordinal>(); }
+            [[nodiscard]] constexpr Ordinal getMiddlePart() const noexcept { return _mid.get<Ordinal>(); }
+            [[nodiscard]] constexpr Ordinal getUpperPart() const noexcept  { return _upper.get<Ordinal>(); }
         private:
             NormalRegister& _lower;
             NormalRegister& _mid;
