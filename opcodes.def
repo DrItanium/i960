@@ -39,17 +39,13 @@
     reg(cmpdeco, 0x5a6, RegLit_RegLit_Reg)
     reg(cmpdeci, 0x5a7, RegLit_RegLit_Reg)
     reg(scanbyte, 0x5ac, RegLit_RegLit)
-#ifdef I960JX_ENABLED__
-    reg(bswap, 0x5ad, RegLit_Reg)
-#endif
+    reg(bswap, 0x5ad, RegLit_Reg) // i960 Opcode
     reg(chkbit, 0x5ae, RegLit_RegLit)
 
     reg(addc, 0x5b0, RegLit_RegLit_Reg)
     reg(subc, 0x5b2, RegLit_RegLit_Reg)
-#ifdef I960JX_ENABLED__
-    reg(intdis, 0x5b4, None) // global interrupt disable
-    reg(inten, 0x5b5, None) // global interrupt enable
-#endif
+    reg(intdis, 0x5b4, None) // global interrupt disable, Jx opcode
+    reg(inten, 0x5b5, None) // global interrupt enable, Jx opcode
 
     reg(mov,  0x5cc, RegLit_Reg)
 
@@ -77,13 +73,11 @@
     reg(extract, 0x651, RegLit_RegLit_Reg)
     reg(modtc, 0x654, RegLit_RegLit_Reg)
     reg(modpc, 0x655, RegLit_RegLit_Reg)
-#ifdef I960JX_ENABLED__
-    reg(intctl, 0x658, RegLit_Reg) // interrupt global enable and disable
-    reg(sysctl, 0x659, RegLit_RegLit_Reg)
-    reg(icctl, 0x65b, RegLit_RegLit_Reg) // instruction cache control
-    reg(dcctl, 0x65c, RegLit_Reg)
-    reg(halt, 0x65d, RegLit)
-#endif
+    reg(intctl, 0x658, RegLit_Reg) // interrupt global enable and disable, i960Jx opcode
+    reg(sysctl, 0x659, RegLit_RegLit_Reg) // i960Jx opcode
+    reg(icctl, 0x65b, RegLit_RegLit_Reg) // instruction cache control, i960Jx opcode
+    reg(dcctl, 0x65c, RegLit_Reg) // i960Jx opcode
+    reg(halt, 0x65d, RegLit) // i960Jx opcode
 
     reg(calls, 0x660, RegLit)
     reg(mark, 0x66b, None)
@@ -140,8 +134,7 @@
     reg(movre, 0x6E1, RegLit_Reg)
     reg(cpyrsre, 0x6E2, RegLit_RegLit_Reg)
     reg(cpysre, 0x6E3, RegLit_RegLit_Reg)
-
-#ifdef I960JX_ENABLED__
+// i960Jx opcodes
     #define ConditionalRegisterBlock(baseName, baseAddress, arg) \
 		reg(baseName ## e, (baseAddress | 0x0a0), arg) \
 		reg(baseName ## g, (baseAddress | 0x090), arg) \
@@ -156,7 +149,7 @@
     ConditionalRegisterBlock(subo, 0x702, RegLit_RegLit_Reg)
     ConditionalRegisterBlock(subi, 0x703, RegLit_RegLit_Reg)
     ConditionalRegisterBlock(sel, 0x704, RegLit_RegLit_Reg) // select based on ...
-#endif
+// end i960Jx opcodes
     reg(mulo, 0x701, RegLit_RegLit_Reg)
     reg(remo, 0x708, RegLit_RegLit_Reg)
     reg(divo, 0x70b, RegLit_RegLit_Reg)
