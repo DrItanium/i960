@@ -524,42 +524,67 @@ namespace i960 {
                 setDest(inst, result);
 
             }
-#define X(title) void performOperation(const REGFormatInstruction& inst, title ) noexcept
-            X(Operation::inten);
-            X(Operation::intdis);
-            X(Operation::sysctl);
-            X(Operation::icctl);
-            X(Operation::dcctl);
-            X(Operation::intctl);
-            X(Operation::bswap);
-            X(Operation::halt);
-            X(Operation::mark);
-            X(Operation::fmark);
-            X(Operation::atadd);
-            X(Operation::atmod);
-            X(Operation::scanbyte);
-            X(Operation::rotate);
-            X(Operation::modac);
-            X(Operation::modpc);
-            X(Operation::modtc);
-            X(Operation::flushreg);
-            X(Operation::syncf);
-            X(Operation::calls);
-            X(Operation::mov);
-            X(Operation::movl);
-            X(Operation::movt);
-            X(Operation::movq);
+#define X(title) void performOperation(const REGFormatInstruction& inst, Operation:: title ) noexcept
+        X(inten);
+        X(intdis);
+        X(sysctl);
+        X(icctl);
+        X(dcctl);
+        X(intctl);
+        X(bswap);
+        X(halt);
+        X(mark);
+        X(fmark);
+        X(atadd);
+        X(atmod);
+        X(scanbyte);
+        X(rotate);
+        X(modac);
+        X(modpc);
+        X(modtc);
+        X(flushreg);
+        X(syncf);
+        X(calls);
+        X(mov);
+        X(movl);
+        X(movt);
+        X(movq);
 
-            X(Operation::subc);
-            X(Operation::eshro);
-            X(Operation::ediv);
-            X(Operation::shrdi);
+        X(subc);
+        X(eshro);
+        X(ediv);
+        X(shrdi);
 
-            X(Operation::extract);
-            X(Operation::modify);
-            X(Operation::chkbit);
-            X(Operation::spanbit);
-            X(Operation::scanbit);
+        X(extract);
+        X(modify);
+        X(chkbit);
+        X(spanbit);
+        X(scanbit);
+#define Y(prefix) \
+        X(prefix ## r); \
+        X(prefix ## rl)
+        Y(exp);
+        Y(round);
+        Y(atan);
+        Y(logbn);
+        Y(logep);
+        Y(sqrt);
+        Y(sin);
+        Y(cos);
+        Y(tan);
+        Y(class);
+        Y(add);
+        Y(sub);
+        Y(mul);
+        Y(div);
+        Y(scale);
+        Y(mov);
+#undef Y
+        X(movre);
+        X(cpysre);
+        X(cpyrsre);
+        X(cvtir);
+        X(cvtilr);
 #undef X
 
 

@@ -434,35 +434,47 @@ namespace i960 {
                                                           Operation::modi>;
     template<typename T>
     constexpr auto IsUnconditionalAddOperation = IsInCollection<T, Operation::addo, 
-                                                      Operation::addi>;
+                                                      Operation::addi,
+                                                      Operation::addr,
+                                                      Operation::addrl>;
     template<typename T>
     constexpr auto IsUnconditionalSubtractOperation = IsInCollection<T, Operation::subo, 
-                                                           Operation::subi>;
+                                                           Operation::subi,
+                                                           Operation::subr,
+                                                           Operation::subrl>;
 
     template<typename T>
-    constexpr auto IsAddWithCarryOperation = IsInCollection<T, Operation::addc>;
+    constexpr auto IsAddWithCarryOperation = IsInCollection<T, Operation::addc, Operation::daddc>;
+    template<typename T>
+    constexpr auto IsSubtractWithCarryOperation = IsInCollection<T, Operation::dsubc>;
     template<typename T>
     constexpr auto IsAddOperation = IsUnconditionalAddOperation<T> || IsConditionalAddOperation<T> || IsAddWithCarryOperation<T>;
     template<typename T>
-    constexpr auto IsSubtractOperation = IsUnconditionalSubtractOperation<T> || IsConditionalSubtractOperation<T>;
+    constexpr auto IsSubtractOperation = IsUnconditionalSubtractOperation<T> || IsConditionalSubtractOperation<T> || IsSubtractWithCarryOperation<T>;
     template<typename T>
     constexpr auto IsMultiplyOperation  = IsInCollection<T, Operation::mulo, 
                                                             Operation::muli,
-                                                            Operation::emul>;
+                                                            Operation::emul,
+                                                            Operation::mulr,
+                                                            Operation::mulrl>;
     template<typename T>
     constexpr auto IsDivideOperation    = IsInCollection<T, Operation::divo, 
                                                            Operation::divi,
-                                                           Operation::ediv>;
+                                                           Operation::ediv,
+                                                           Operation::divr,
+                                                           Operation::divrl>;
 
     template<typename T>
     constexpr auto IsRemainderOperation = IsInCollection<T, Operation::remo, 
-                                                            Operation::remi>;
+                                                            Operation::remi,
+                                                            Operation::remr,
+                                                            Operation::remrl>;
 
     template<typename T>
     constexpr auto IsModuloOperation = IsInCollection<T, Operation::modi>;
 
     template<typename T>
-    constexpr auto CheckForDivideByZero = IsDivideOperation<T> || IsRemainderOperation<T>;
+    constexpr auto CheckForDivideByZero = (IsDivideOperation<T> || IsRemainderOperation<T>) && !IsInCollection<T, Operation::divr, Operation::divrl>;
     template<typename T>
     constexpr auto CheckForOverflow = IsInCollection<T, Operation::muli, Operation::addi, Operation::subi, Operation::divi> ||
                                        IsConditionalSubtractIntegerOperation<T> ||
@@ -660,7 +672,78 @@ namespace i960 {
 #undef FACT_EXPANSION
 #undef FACT_FUNC_NAME
 
+    template<typename T>
+    constexpr auto IsFloatingPointOperation = IsInCollection<T,
+            Operation::cvtir, Operation::cvtilr,
+            Operation::scaler, Operation::scalerl,
+            Operation::atanr,
+            Operation::logepr,
+            Operation::logr,
+            Operation::remr,
+            Operation::cmpr,
+            Operation::cmpor,
+            Operation::sqrtr,
+            Operation::expr,
+            Operation::logbnr,
+            Operation::roundr,
+            Operation::sinr,
+            Operation::cosr,
+            Operation::tanr,
+            Operation::classr,
+            Operation::atanrl,
+            Operation::logeprl,
+            Operation::logrl,
+            Operation::remrl,
+            Operation::cmprl,
+            Operation::cmporl,
+            Operation::sqrtrl,
+            Operation::exprl,
+            Operation::logbnrl,
+            Operation::roundrl,
+            Operation::sinrl,
+            Operation::cosrl,
+            Operation::tanrl,
+            Operation::classrl,
+            Operation::cvtri,
+            Operation::cvtril,
+            Operation::cvtzri,
+            Operation::cvtzril,
+            Operation::movr,
+            Operation::movrl,
+            Operation::movre,
+            Operation::cpyrsre,
+            Operation::cpysre,
+            Operation::divr, Operation::divrl,
+            Operation::mulr, Operation::mulrl,
+            Operation::subr, Operation::subrl,
+            Operation::addr, Operation::addrl>;
 
+#define FACT_EXPANSION IsFloatingPointOperation
+#define FACT_FUNC_NAME isFloatingPointOperation
+#include "DefFactQuery.def"
+#undef FACT_EXPANSION
+#undef FACT_FUNC_NAME
+    template<typename T>
+    constexpr auto IsDecimalOperation = IsInCollection<T, Operation::dmovt, Operation::daddc, Operation::dsubc>;
+#define FACT_EXPANSION IsDecimalOperation
+#define FACT_FUNC_NAME isDecimalOperation
+#include "DefFactQuery.def"
+#undef FACT_EXPANSION
+#undef FACT_FUNC_NAME
+    template<typename T>
+    constexpr auto IsSynchronousLoadOrMoveOperation = IsInCollection<T, Operation::synld, Operation::synmov, Operation::synmovl, Operation::synmovq>;
+#define FACT_EXPANSION IsSynchronousLoadOrMoveOperation
+#define FACT_FUNC_NAME isSynchronousLoadOrMoveOperation
+#include "DefFactQuery.def"
+#undef FACT_EXPANSION
+#undef FACT_FUNC_NAME
+    template<typename T>
+    constexpr auto IsNumericsArchitectureOperation = IsFloatingPointOperation<T> || IsDecimalOperation<T> || IsSynchronousLoadOrMoveOperation<T>;
+#define FACT_EXPANSION IsNumericsArchitectureOperation
+#define FACT_FUNC_NAME isNumericsArchitectureOperation
+#include "DefFactQuery.def"
+#undef FACT_EXPANSION
+#undef FACT_FUNC_NAME
 
 
 } // end namespace i960

@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 project(i960 VERSION 0.3)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_EXTRA_FLAGS}")
 add_library(core960
 	types.h
 	opcodes.h
