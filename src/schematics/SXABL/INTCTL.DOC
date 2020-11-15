@@ -1,0 +1,143 @@
+
+
+                                                                     Page 1
+ABEL(tm) 3.20  -  Document Generator              15-Feb-91 11:19 AM
+Read, Write, Ack. Timing for 8259A-2
+
+Source File:	intctl.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   August 28, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+		Rev. 0.1 - Add intreq term for bug workaround
+		Rev. 0.2 - Add (as) term to branch form IDLE during ack cycle
+Equations for Module Interrupt_Control
+
+Device U61
+
+
+- Reduced Equations for device U61:
+
+    !~icrd := (~icen & !~icrdy 
+               # ~icen & !~cnten 
+               # !~icrdy & !~cnten 
+               # ~intack & !~rd & !~icen & ~icrdy);
+             
+
+    !~icwr := (~icen & !~icrdy 
+               # ~icen & !~cnten 
+               # !~icrdy & !~cnten 
+               # ~intack & ~rd & !~icen & ~icrdy & ~cnten 
+               # ~intack & ~rd & !~icen & ~icrdy & ~cnt1 
+               # ~intack & ~rd & !~icen & ~icrdy & !~cnt0);
+             
+
+    !~icack := (~icen & !~icrdy 
+                # ~icen & !~cnten 
+                # !~icrdy & !~cnten 
+                # !~intack & !~icen & ~icrdy);
+              
+
+    !~icrdy := (~icen & !~icrdy 
+                # ~icen & !~cnten 
+                # !~icrdy & !~cnten 
+                # !~intack & !~cnten & ~cnt1 & !~cnt0 
+                # !~rd & !~cnten & ~cnt1 & !~cnt0 
+                # ~intack & ~rd & !~cnten & !~cnt1 & ~cnt0);
+              
+
+    !~icen := (!~cnten 
+               # !~icen & ~icrdy 
+               # ~icen & !~icrdy 
+               # !~as & !~iccs & ~icen 
+               # !~intack & !~as & intreq & ~icrdy);
+             
+
+    !~cnten := (~icen & !~icrdy 
+                # ~icen & !~cnten 
+
+
+                                                                     Page 2
+ABEL(tm) 3.20  -  Document Generator              15-Feb-91 11:19 AM
+Read, Write, Ack. Timing for 8259A-2
+
+Source File:	intctl.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   August 28, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+		Rev. 0.1 - Add intreq term for bug workaround
+		Rev. 0.2 - Add (as) term to branch form IDLE during ack cycle
+Equations for Module Interrupt_Control
+
+Device U61
+
+                # !~icrdy & !~cnten 
+                # !~icen & ~icrdy & ~cnten 
+                # !~intack & !~icen & ~icrdy & ~cnt0 
+                # !~rd & !~icen & ~icrdy & ~cnt0 
+                # !~icen & ~icrdy & !~cnt1 & !~cnt0 
+                # ~intack & ~rd & !~icen & ~icrdy & ~cnt1);
+              
+
+    !~cnt1 := (!~cnten & !~cnt0);
+
+    !~cnt0 := (!~cnten & ~cnt1);
+
+
+
+                                                                     Page 3
+ABEL(tm) 3.20  -  Document Generator              15-Feb-91 11:19 AM
+Read, Write, Ack. Timing for 8259A-2
+
+Source File:	intctl.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   August 28, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+		Rev. 0.1 - Add intreq term for bug workaround
+		Rev. 0.2 - Add (as) term to branch form IDLE during ack cycle
+Chip diagram for Module Interrupt_Control
+
+Device U61
+
+
+                             P16R8
+
+                 ----------\       /----------
+                 |          \     /          |
+                 |           -----           |
+         sysclk2 |  1                    20  |                 
+                 |                           |
+         ~intack |  2                    19  | ~cnt0           
+                 |                           |
+             ~as |  3                    18  | ~cnt1           
+                 |                           |
+          ~blast |  4                    17  | ~cnten          
+                 |                           |
+           ~iccs |  5                    16  | ~icrdy          
+                 |                           |
+             ~rd |  6                    15  | ~icen           
+                 |                           |
+          intreq |  7                    14  | ~icack          
+                 |                           |
+                 |  8                    13  | ~icwr           
+                 |                           |
+                 |  9                    12  | ~icrd           
+                 |                           |
+                 | 10                    11  |                 
+                 |                           |
+                 |                           |
+                 -----------------------------
+
+
+end of module Interrupt_Control

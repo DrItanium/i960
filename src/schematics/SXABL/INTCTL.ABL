@@ -1,0 +1,233 @@
+module	Interrupt_Control flag '-r3'
+title	'Read, Write, Ack. Timing for 8259A-2
+
+Source File:	intctl.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   August 28, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+		Rev. 0.1 - Add intreq term for bug workaround
+		Rev. 0.2 - Add (as) term to branch form IDLE during ack cycle'
+
+	U61	 	device 'P16R8';
+
+"-----------------------------------------------------------------------------
+"
+" Compile using r9 flag
+"
+" The interrupt control PLD handles the timing for reads, writes, and 
+" acknowledge cycles for the 8259A-2 interrupt controller.  
+"-----------------------------------------------------------------------------
+
+"--Inputs-------------------------------
+
+sysclk2		pin 1;
+!intack	 	pin 2;
+!as		pin 3;
+!blast		pin 4;
+!iccs	 	pin 5;
+!rd		pin 6;
+intreq		pin 7;
+
+
+"--Outputs--------------------------------
+
+!icrd		pin 12;
+!icwr		pin 13;
+!icack		pin 14;
+!icen		pin 15;
+!icrdy		pin 16;
+!cnten		pin 17;
+!cnt1		pin 18;
+!cnt0		pin 19;
+
+
+"--Constants/Declarations-----------------
+
+C = .C.;
+X = .X.;
+
+as_bl_cs	= [!as,!blast,!iccs,intreq];
+
+"--States---------------------------------
+
+INT_CTL_STATE	= [!icrdy,!icen,!cnten];
+CNTR_STATE	= [!cnt1,!cnt0];
+
+
+"--State Declarations (INT_CTL_STATE)----
+
+IDLE	= ^b111;
+SETUP	= ^b101;
+ACC	= ^b100;
+RDY	= ^b001;
+
+
+"--State Declarations (CNTR_STATE)--------
+
+
+CNT0	= ^b11;
+CNT1	= ^b10;
+CNT2	= ^b00;
+CNT3	= ^b01;
+
+
+
+"--State Machines-------------------------
+
+
+state_diagram INT_CTL_STATE
+
+
+	"--Idle (reset)-------------------
+
+	state IDLE:
+				   
+		icrd:=0;
+		icwr:=0;
+		icack:=0;
+
+		if ((as&iccs)#(as&intack&intreq))
+			then SETUP
+
+
+		else
+			IDLE;
+
+
+
+	"--SETUP--------------------------
+			     
+	state SETUP:
+
+		icrd:=rd&!intack;
+		icwr:=!rd&!intack;
+		icack:=intack;
+
+		goto
+			ACC;
+
+
+	"--ACC----------------------------
+			     
+	state ACC:
+				   
+		if (((rd#intack)&(CNTR_STATE==CNT1))
+		  #((!rd&!intack)&(CNTR_STATE==CNT3)))
+			then RDY with
+				icrd:=rd&!intack;
+				icwr:=0;
+				icack:=intack;
+				endwith;
+
+		else
+			ACC with
+				icrd:=rd&!intack;
+				icwr:=!rd&!intack;
+				icack:=intack;
+				endwith;
+
+
+	"--RDY----------------------------
+			     
+	state RDY:
+				   
+		icrd:=0;
+		icwr:=0;
+		icack:=0;
+
+		goto
+			IDLE;
+
+
+			
+
+state_diagram CNTR_STATE
+
+
+	"--Count 0 (reset)----------------
+
+	state CNT0:
+
+		if (cnten)
+			then CNT1
+
+		else
+			CNT0;
+
+	"--Count 1------------------------
+
+	state CNT1:
+
+		if (cnten)
+			then CNT2
+
+		else
+			CNT0;
+
+	"--Count 2------------------------
+
+	state CNT2:
+
+		if (cnten)
+			then CNT3
+
+		else
+			CNT0;
+
+	"--Count 3------------------------
+
+	state CNT3:
+
+		goto
+			CNT0;
+
+
+"--Test  Vectors----------------------------
+
+test_vectors 'Read Cycle'
+([sysclk2,as_bl_cs,!rd,!intack]->[INT_CTL_STATE,CNTR_STATE,!icrd,!icwr,!icack])
+
+ [X      ,^b1110  ,1  ,1      ]->[IDLE          ,CNT0     ,1    ,1    ,1    ];
+ [C      ,^b1110  ,1  ,1      ]->[IDLE          ,CNT0     ,1    ,1    ,1    ];
+ [C      ,^b0100  ,0  ,1      ]->[SETUP         ,CNT0     ,1    ,1    ,1    ];
+ [C      ,^b1000  ,0  ,1      ]->[ACC           ,CNT0     ,0    ,1    ,1    ];
+ [C      ,^b1000  ,0  ,1      ]->[ACC           ,CNT1     ,0    ,1    ,1    ];
+ [C      ,^b1000  ,0  ,1      ]->[RDY           ,CNT2     ,0    ,1    ,1    ];
+ [C      ,^b1000  ,1  ,1      ]->[IDLE          ,CNT0     ,1    ,1    ,1    ];
+ [C      ,^b1110  ,1  ,1      ]->[IDLE          ,CNT0     ,1    ,1    ,1    ];
+
+test_vectors 'Ack.  Cycle'
+([sysclk2,as_bl_cs,!rd,!intack]->[INT_CTL_STATE,CNTR_STATE,!icrd,!icwr,!icack])
+
+ [C      ,^b1110  ,1  ,1      ]->[IDLE          ,CNT0     ,1    ,1    ,1    ];
+ [C      ,^b1111  ,1  ,1      ]->[IDLE          ,CNT0     ,1    ,1    ,1    ];
+ [C      ,^b0101  ,1  ,0      ]->[SETUP         ,CNT0     ,1    ,1    ,1    ];
+ [C      ,^b1001  ,1  ,0      ]->[ACC           ,CNT0     ,1    ,1    ,0    ];
+ [C      ,^b1001  ,1  ,0      ]->[ACC           ,CNT1     ,1    ,1    ,0    ];
+ [C      ,^b1000  ,1  ,0      ]->[RDY           ,CNT2     ,1    ,1    ,0    ];
+ [C      ,^b1000  ,1  ,1      ]->[IDLE          ,CNT0     ,1    ,1    ,1    ];
+ [C      ,^b1110  ,1  ,1      ]->[IDLE          ,CNT0     ,1    ,1    ,1    ];
+
+test_vectors 'Write Cycle'
+([sysclk2,as_bl_cs,!rd,!intack]->[INT_CTL_STATE,CNTR_STATE,!icrd,!icwr,!icack])
+
+ [C      ,^b1110  ,1  ,1      ]->[IDLE          ,CNT0     ,1    ,1    ,1    ];
+ [C      ,^b1110  ,1  ,1      ]->[IDLE          ,CNT0     ,1    ,1    ,1    ];
+ [C      ,^b0100  ,1  ,1      ]->[SETUP         ,CNT0     ,1    ,1    ,1    ];
+ [C      ,^b1000  ,1  ,1      ]->[ACC           ,CNT0     ,1    ,0    ,1    ];
+ [C      ,^b1000  ,1  ,1      ]->[ACC           ,CNT1     ,1    ,0    ,1    ];
+ [C      ,^b1000  ,1  ,1      ]->[ACC           ,CNT2     ,1    ,0    ,1    ];
+ [C      ,^b1000  ,1  ,1      ]->[ACC           ,CNT3     ,1    ,0    ,1    ];
+ [C      ,^b1000  ,1  ,1      ]->[RDY           ,CNT0     ,1    ,1    ,1    ];
+ [C      ,^b1000  ,1  ,1      ]->[IDLE          ,CNT0     ,1    ,1    ,1    ];
+ [C      ,^b1110  ,1  ,1      ]->[IDLE          ,CNT0     ,1    ,1    ,1    ];
+
+
+end Interrupt_Control;
+
+
+

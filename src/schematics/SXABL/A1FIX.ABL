@@ -1,0 +1,188 @@
+module xbus_pal
+title	'DRAM Access and Refresh Control
+
+Source File:	xbus.abl
+
+Created by:	Sig Peterson
+	   	Intel Corp. Chandler,AZ   July 29, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+		Rev. 0.1 - DWD - Add A1 fix and hlda term
+		Rev. 0.2 - DWD - Fix polarities to make readable'
+
+U78_A1   device 'p16L8';
+
+"-----------------------------------------------------------------------------
+"
+" The XBUS PLD provide direction and enable control for the XBUS
+" transceivers, generates the ready signal from the XBUS, and handles an
+" interrupt acknowledge cycle if a slave 8259A is used on an XBUS 
+" peripheral
+"
+"-----------------------------------------------------------------------------
+
+"--Inputs-------------------------------
+   
+   no_con	pin 1 ;
+   !int_sel	pin 2 ;
+   !xbusy	pin 3 ;
+   !den		pin 4 ;
+   !xready	pin 5 ;
+   !xb0_cs	pin 6 ;
+   !xb1_cs	pin 7 ;
+   !inta 	pin 8 ;
+   hlda		pin 9 ;
+   nc_oe	pin 11;
+
+"--Outputs--------------------------------
+   
+   !xb_rdy  pin 12;
+   dtr      pin 13;
+   !hldaout pin 17;
+   xbdtr    pin 18;
+   xbbe     pin 19;
+
+"--Constants/Declarations-----------------
+
+   L,H,X,Z = 0,1,.x.,.z.;
+
+"--Comb. Equations------------------------
+
+equations
+
+	xbdtr = hlda $ dtr;
+	hldaout = hlda;
+	xb_rdy = (xbusy & xready & xb0_cs & !xb1_cs)#(!den&!hlda);
+
+
+truth_table
+([!xbusy,!den,!xb0_cs,!xb1_cs,!int_sel,!inta] ->xbbe)
+ [     1,   X,      X,      X,       1,    X] ->   1; " Inactive bus
+ [     X,   1,      X,      X,       1,    X] ->   1; " Inactive bus
+ [     0,   0,      0,      X,       X,    X] ->   0; " Normal I/O Cycle
+ [     0,   0,      X,      0,       X,    X] ->   0; " Normal I/O Cycle
+ [     X,   X,      1,      1,       1,    X] ->   1; " Deselected bus
+ [     X,   X,      1,      1,       0,    1] ->   1; " Deselected bus
+ [     0,   0,      X,      X,       0,    0] ->   0; " Interupt Ack. Cycle
+ [     1,   X,      X,      X,       0,    0] ->   1; " Interupt Ack. Cycle
+ [     X,   1,      X,      X,       0,    0] ->   1; " Interupt Ack. Cycle
+
+
+"--Test  Vectors----------------------------
+
+test_vectors '!xb_rdy'  
+
+([hlda,!den,!xbusy,!xready,!xb0_cs,!xb1_cs] ->!xb_rdy)
+ [   0,   1,     1,      0,      0,      0] ->      0;
+ [   1,   1,     1,      0,      0,      0] ->      1;
+ [   1,   0,     1,      0,      0,      0] ->      1;
+ [   0,   0,     1,      0,      0,      0] ->      1;
+ [   0,   0,     1,      0,      0,      1] ->      1;
+ [   0,   0,     1,      1,      0,      1] ->      1;
+ [   0,   0,     1,      1,      0,      0] ->      1;
+ [   0,   0,     1,      1,      1,      0] ->      1;
+ [   0,   0,     1,      1,      0,      0] ->      1;
+ [   0,   0,     1,      0,      1,      0] ->      1;
+ [   0,   0,     1,      0,      1,      1] ->      1;
+ [   0,   0,     1,      1,      1,      1] ->      1;
+ [   0,   0,     0,      1,      1,      1] ->      1;
+ [   0,   0,     0,      0,      1,      1] ->      1;
+ [   0,   0,     0,      0,      1,      0] ->      1;
+ [   0,   0,     0,      1,      1,      0] ->      1;
+ [   0,   0,     0,      1,      0,      1] ->      1;
+ [   0,   0,     0,      0,      0,      1] ->      0;
+
+test_vectors 'xbbe'
+
+([!xbusy,!den,!xb0_cs,!xb1_cs,!int_sel,!inta] ->xbbe)
+ [     1,   0,      0,      0,       1,    0] ->   1; " Inactive bus
+ [     1,   1,      0,      0,       1,    0] ->   1; " Inactive bus
+ [     1,   0,      1,      0,       1,    0] ->   1; " Inactive bus
+ [     1,   1,      1,      0,       1,    0] ->   1; " Inactive bus
+ [     1,   0,      0,      1,       1,    0] ->   1; " Inactive bus
+ [     1,   1,      0,      1,       1,    0] ->   1; " Inactive bus
+ [     1,   0,      1,      1,       1,    0] ->   1; " Inactive bus
+ [     1,   1,      1,      1,       1,    0] ->   1; " Inactive bus
+ [     1,   0,      0,      0,       1,    1] ->   1; " Inactive bus
+ [     1,   1,      0,      0,       1,    1] ->   1; " Inactive bus
+ [     1,   0,      1,      0,       1,    1] ->   1; " Inactive bus
+ [     1,   1,      1,      0,       1,    1] ->   1; " Inactive bus
+ [     1,   0,      0,      1,       1,    1] ->   1; " Inactive bus
+ [     1,   1,      0,      1,       1,    1] ->   1; " Inactive bus
+ [     1,   0,      1,      1,       1,    1] ->   1; " Inactive bus
+ [     1,   1,      1,      1,       1,    1] ->   1; " Inactive bus
+
+ [     0,   1,      0,      0,       1,    0] ->   1; " Inactive bus
+ [     1,   1,      0,      0,       1,    0] ->   1; " Inactive bus
+ [     0,   1,      1,      0,       1,    0] ->   1; " Inactive bus
+ [     1,   1,      1,      0,       1,    0] ->   1; " Inactive bus
+ [     0,   1,      0,      1,       1,    0] ->   1; " Inactive bus
+ [     1,   1,      0,      1,       1,    0] ->   1; " Inactive bus
+ [     0,   1,      1,      1,       1,    0] ->   1; " Inactive bus
+ [     1,   1,      1,      1,       1,    0] ->   1; " Inactive bus
+ [     0,   1,      0,      0,       1,    1] ->   1; " Inactive bus
+ [     1,   1,      0,      0,       1,    1] ->   1; " Inactive bus
+ [     0,   1,      1,      0,       1,    1] ->   1; " Inactive bus
+ [     1,   1,      1,      0,       1,    1] ->   1; " Inactive bus
+ [     0,   1,      0,      1,       1,    1] ->   1; " Inactive bus
+ [     1,   1,      0,      1,       1,    1] ->   1; " Inactive bus
+ [     0,   1,      1,      1,       1,    1] ->   1; " Inactive bus
+ [     1,   1,      1,      1,       1,    1] ->   1; " Inactive bus
+
+ [     0,   0,      0,      0,       0,    0] ->   0; " Normal I/O Cycle
+ [     0,   0,      0,      1,       0,    0] ->   0; " Normal I/O Cycle
+ [     0,   0,      0,      0,       1,    0] ->   0; " Normal I/O Cycle
+ [     0,   0,      0,      1,       1,    0] ->   0; " Normal I/O Cycle
+ [     0,   0,      0,      0,       0,    1] ->   0; " Normal I/O Cycle
+ [     0,   0,      0,      1,       0,    1] ->   0; " Normal I/O Cycle
+ [     0,   0,      0,      0,       1,    1] ->   0; " Normal I/O Cycle
+ [     0,   0,      0,      1,       1,    1] ->   0; " Normal I/O Cycle
+
+ [     0,   0,      0,      0,       0,    0] ->   0; " Normal I/O Cycle
+ [     0,   0,      1,      0,       0,    0] ->   0; " Normal I/O Cycle
+ [     0,   0,      0,      0,       1,    0] ->   0; " Normal I/O Cycle
+ [     0,   0,      1,      0,       1,    0] ->   0; " Normal I/O Cycle
+ [     0,   0,      0,      0,       0,    1] ->   0; " Normal I/O Cycle
+ [     0,   0,      1,      0,       0,    1] ->   0; " Normal I/O Cycle
+ [     0,   0,      0,      0,       1,    1] ->   0; " Normal I/O Cycle
+ [     0,   0,      1,      0,       1,    1] ->   0; " Normal I/O Cycle
+
+ [     0,   0,      1,      1,       1,    0] ->   1; " Deselected bus
+ [     1,   0,      1,      1,       1,    0] ->   1; " Deselected bus
+ [     0,   1,      1,      1,       1,    0] ->   1; " Deselected bus
+ [     1,   1,      1,      1,       1,    0] ->   1; " Deselected bus
+ [     0,   0,      1,      1,       1,    1] ->   1; " Deselected bus
+ [     1,   0,      1,      1,       1,    1] ->   1; " Deselected bus
+ [     0,   1,      1,      1,       1,    1] ->   1; " Deselected bus
+ [     1,   1,      1,      1,       1,    1] ->   1; " Deselected bus
+
+ [     0,   0,      0,      0,       0,    0] ->   0; " Interupt Ack. Cycle
+ [     0,   0,      1,      0,       0,    0] ->   0; " Interupt Ack. Cycle
+ [     0,   0,      0,      1,       0,    0] ->   0; " Interupt Ack. Cycle
+ [     0,   0,      1,      1,       0,    0] ->   0; " Interupt Ack. Cycle
+       	                                      	   
+ [     1,   0,      0,      0,       0,    0] ->   1; " Interupt Ack. Cycle
+ [     1,   1,      0,      0,       0,    0] ->   1; " Interupt Ack. Cycle
+ [     1,   0,      1,      0,       0,    0] ->   1; " Interupt Ack. Cycle
+ [     1,   1,      1,      0,       0,    0] ->   1; " Interupt Ack. Cycle
+ [     1,   0,      0,      1,       0,    0] ->   1; " Interupt Ack. Cycle
+ [     1,   1,      0,      1,       0,    0] ->   1; " Interupt Ack. Cycle
+ [     1,   0,      1,      1,       0,    0] ->   1; " Interupt Ack. Cycle
+ [     1,   1,      1,      1,       0,    0] ->   1; " Interupt Ack. Cycle
+
+
+ [     0,   1,      0,      0,       0,    0] ->   1; " Interupt Ack. Cycle
+ [     1,   1,      0,      0,       0,    0] ->   1; " Interupt Ack. Cycle
+ [     0,   1,      1,      0,       0,    0] ->   1; " Interupt Ack. Cycle
+ [     1,   1,      1,      0,       0,    0] ->   1; " Interupt Ack. Cycle
+ [     0,   1,      0,      1,       0,    0] ->   1; " Interupt Ack. Cycle
+ [     1,   1,      0,      1,       0,    0] ->   1; " Interupt Ack. Cycle
+ [     0,   1,      1,      1,       0,    0] ->   1; " Interupt Ack. Cycle
+ [     1,   1,      1,      1,       0,    0] ->   1; " Interupt Ack. Cycle
+       	                                      	   
+
+
+
+end xbus_pal

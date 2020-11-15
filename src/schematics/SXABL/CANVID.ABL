@@ -1,0 +1,79 @@
+MODULE MOD
+
+TITLE  'Intel Low Cost Printer Controller'
+
+"------------------------------------------------------------------------------
+" History:
+"       89-Sep-25  MRL     Rev A1.  First Created.
+"       89-Oct-20  Butter  Rev A1.  Changed to GAL.
+"       89-Oct-22  MRL     Rev A1.  Added VSY_Bx for TEC printer engine.
+"------------------------------------------------------------------------------
+
+U25_CAN  DEVICE 'P16R6';        "Speed = STD  U45   Canon Video State Machine
+
+VIDCLK          pin  1;         "I - Video clock
+SERVID          pin  2;         "I - Serial video
+SYNCBDx         pin  3;         "I - Syncronized beam detect, for Canon
+FIFOMTx         pin  4;         "I - FIFO empty
+VSY_Bx          pin  5;         "I - Horiz sync, for TEC
+"               pin  6;
+"               pin  7;
+"               pin  8;
+RESETx          pin  9;         "I - Reset
+GND             pin 10;
+OEx             pin 11;         "I - Output enable
+"               pin 12;
+CNT0            pin 13;         "Q - Counter bit 0
+CNT1            pin 14;         "Q - Counter bit 1
+CNT2            pin 15;         "Q - Counter bit 2
+ARMED           pin 16;         "Q - Shift reg load armed (internal use only)
+BDDLYx          pin 17;         "Q - Delayed SYNCBDx (internal use only)
+VIDEOx          pin 18;         "Q - Video
+VIDLDx          pin 19;         "O - Video load
+VCC             pin 20;
+
+"Definition for Canon
+ HORIZx  = SYNCBDx;
+
+"Definition for TEC
+"HORIZx  = VSY_Bx;               (commented out here)
+
+C, X, Z = .C., .X., .Z.;
+CNT     = [CNT2,CNT1,CNT0];
+BDPULSE = !HORIZx & BDDLYx;
+ZERO    = [0,0,0];
+
+"------------------------------------------------------------------------------
+  EQUATIONS
+"------------------------------------------------------------------------------
+
+!VIDEOx := SERVID;                      "Clean up uneven LS166 prop delays
+                                        "  and invert video
+
+!BDDLYx := !HORIZx;                     "Delay SYNCBDx to make leading
+                                        "  edge detector
+
+ARMED   := BDPULSE & FIFOMTx            "Arm SR loading on BD's leading edge
+                                        "  when data is in FIFO
+         # ARMED & FIFOMTx;             "Stay armed as long as FIFO has data
+
+CNT     := ZERO & BDPULSE               "Reset octal counter on BD's leading
+                                        "  edge
+         # (CNT + 1) & !BDPULSE;        "Otherwise count up (free running)
+
+!VIDLDx = (CNT == ZERO) & ARMED;        "Read FIFO & syunchronously load
+                                        "  SR when armed at count of zero
+
+"------------------------------------------------------------------------------
+" Description
+"------------------------------------------------------------------------------
+"
+" Note that VIDLDx could be clocked if needed, which would simply add one
+" blank dot after BD* falling edge, which would reduce the left margin by
+" only 1/300 inch.
+"
+" This PAL will support either the Canon, or the TEC depending on
+" how HORIZx is defined above.
+"------------------------------------------------------------------------------
+
+END MOD

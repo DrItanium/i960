@@ -1,0 +1,106 @@
+
+
+       TITLE   82596 Control PAL w/ Level or Pulse Interrupts
+     PATTERN   C401
+    REVISION   C
+      AUTHOR   Joe Niedermeyer
+     COMPANY   Cyclone Microsystems
+        DATE   8-04-94
+    
+      ;C401-   7-26-94  jpn  Original.
+      ;C401A   8-04-94  jpn  -2723-  Simplified tristate control of READYn
+      ;C401B   8-31-94  jpn  -0C30-  Need to reset SQIRQ when entering SxMODE
+      ;C401C   9-02-94  jpn  -FEDC-  Pulse SQIRQ w/ LANINT or STACKED & IACK
+
+        CHIP   C401  MACH110 ; -15nS
+    
+    ;INPUTS
+    Pin  35   CLK             ; INP:  pclk
+    Pin  25   RESETn          ; INP:  squall reset
+    Pin  13   SQSELn          ; INP:  squall select
+    Pin  11   A5              ; INP:  address bit 5
+    Pin  10   A4              ; INP:  address but 4
+    Pin  33   HOLD            ; INP:  82596 bus request
+    Pin  32   SQBGRTn         ; INP:  squall bus grant
+    Pin  42   LANINTn         ; INP:  82596 bus request
+    
+    ;BURIED
+    Pin   4   SxMODE          ; BRY:  level interrupts if HIGH
+    Pin  28   RDYENn          ; BRY:  ready tristate control
+    Pin  36   LANINT0n        ; BRY:  LANINTn shifted one clock
+    Pin   2   STACKED         ; BRY:  indicates multiple interrupts 
+    Pin  29   INTn            ; BRY:  single pulse at interupt start
+    Pin   6   SxMODE0         ; BRY:  SxMODE shifted one clock 
+    Pin  24   MODErst         ; BRY:  reset SQIRQ on mode change
+    Pin  21   REINTn          ; BRY:  re-interrupts for multiple interrupts
+
+    ;OUTPUTS
+    Pin  43   LANRST          ; OUT:  RESET to 82596 
+    Pin   7   PORTn           ; OUT:  PORT* to 82596
+    Pin  14   CA              ; OUT:  CA to 82596
+    Pin  26   HOLDA           ; OUT:  HOLDA to 82596
+    Pin  31   SQIRQn          ; OUT:  squall interrupt request
+    Pin  27   SQBREQn         ; OUT:  squall bus request
+    Pin   3   READYn          ; OUT:  READY* to Processor
+    
+    
+    GROUP FF           LANRST SQIRQn SxMODE RDYENn SQBREQn REINTn
+                       LANINT0n INTn STACKED READYn MODErst SxMODE0
+  ;  GROUP MACH_SEG_A   PORTn  CA  RDYENn  READYn
+  ;  GROUP MACH_SEG_B   LANRST HOLDA SQIRQn SxMODE SQBREQn 
+                      LANINT0n INTn STACKED
+
+
+    STRING  port_addr  '( /A5 * /A4  )'    ; Cxxx xx0x
+    STRING    ca_addr  '( /A5 *  A4  )'    ; Cxxx xx1x
+    STRING  iack_addr  '(  A5 * /A4  )'    ; Cxxx xx2x
+    STRING  mode_addr  '(  A5 *  A4  )'    ; Cxxx xx3x
+
+    STRING  IACK  '( /SQSELn * iack_addr * /READYn )'
+
+    EQUATIONS
+         FF.CLKF = CLK
+         FF.SETF = GND
+         FF.RSTF = GND
+    
+      LANRST := /RESETn                                   ; active high reset
+    
+      SxMODE := /LANRST * /SQSELn * mode_addr * /READYn   ; sets Sx Mode
+              + /LANRST *  SxMODE                         ; stays high once set
+                                                          ; default is low
+
+     SxMODE0 := SxMODE
+
+    /MODErst := SxMODE * /SxMODE0
+
+      /PORTn  = /SQSELn * port_addr                       ; Cxxx xx0x
+
+          CA  = /SQSELn * ca_addr                         ; Cxxx xx1x
+    
+     /READYn := /SQSELn * /RDYENn * READYn             ; READY* always returned
+    READYn.TRST  = /RDYENn
+     /RDYENn := /SQSELn
+ 
+    /SQBREQn :=  HOLD
+       HOLDA  = /SQBREQn * /SQBGRTn
+    
+    ;*******************************;
+    ;***   INTERRUPT EQUATIONS   ***;
+    ;*******************************;
+    
+    /LANINT0n := /LANINTn                            ; creates single pulse
+        /INTn := /LANINTn * LANINT0n                 ; (INTn) at interrupt start
+    
+      /REINTn := IACK *  STACKED                     ; creates single pulse at
+               + IACK * /STACKED * /INTn             ; IACK when STACKED
+    
+      STACKED := /LANRST * /INTn * /SQIRQn * /IACK   ; assert if more INTs 
+               + /LANRST * STACKED * /IACK           ; hold until ack'ed
+        
+      /SQIRQn := /SxMODE * /LANINTn                    ; reqular mode
+               +  SxMODE *  MODErst * /INTn * /IACK    ; Sx, assert if INT
+               +  SxMODE *  MODErst * /REINTn          ; Sx, reassert if pending
+               +  SxMODE *  MODErst *  INTn * /SQIRQn * /IACK   
+                                                       ; Sx, hold if not ack'ed
+    
+    

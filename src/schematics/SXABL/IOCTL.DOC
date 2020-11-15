@@ -1,0 +1,252 @@
+
+
+                                                                     Page 1
+ABEL(tm) 3.20  -  Document Generator              15-Feb-91 11:10 AM
+I/O Read/Write and Chip Enable Timing Control
+
+Source File:	ioctl.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   August 13, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+Equations for Module IO_Control
+
+Device U7
+
+
+- Reduced Equations for device U7:
+
+    iows3.OE = (0);
+
+    reset = (~iocs & ~xb1cs);
+
+    preset = (0);
+
+    !~iord := (!iowsres & !s0 
+               # !~iordy & !s0 
+               # !iowsres & !~iordy 
+               # ioa26 & !~rd & iowsres & ~iordy & s0 
+               # ioa24 & ioa25 & ioa26 & iows0 & iows1 & !iows2 & !~rd & 
+             !iows3 & iowsres & ~iordy 
+               # !ioa24 & ioa25 & ioa26 & iows0 & iows1 & !iows2 & !~rd & 
+             iows3 & iowsres & ~iordy 
+               # ioa24 & !ioa25 & ioa26 & !iows0 & !iows1 & !iows2 & !~rd & 
+             !iows3 & iowsres & ~iordy 
+               # !ioa24 & !ioa25 & ioa26 & iows0 & !iows1 & !iows2 & !~rd & 
+             !iows3 & iowsres & ~iordy);
+
+    !~iowr := (!iowsres & !s0 
+               # !~iordy & !s0 
+               # !iowsres & !~iordy 
+               # ioa24 & ioa25 & ioa26 & iows0 & iows1 & !iows2 & ~rd & 
+             !iows3 & iowsres & ~iordy 
+               # !ioa24 & ioa25 & ioa26 & iows0 & iows1 & !iows2 & ~rd & 
+             iows3 & iowsres & ~iordy 
+               # !ioa24 & !ioa25 & ioa26 & iows0 & !iows1 & !iows2 & ~rd & 
+             !iows3 & iowsres & ~iordy 
+               # ioa25 & ioa26 & iows0 & ~rd & iowsres & ~iordy & s0 
+               # ioa24 & ioa26 & !iows0 & !iows1 & ~rd & iowsres & ~iordy & 
+             s0 
+               # ioa24 & !ioa25 & ioa26 & !iows0 & !iows1 & !iows2 & ~rd & 
+             !iows3 & iowsres & ~iordy 
+               # !ioa24 & !ioa25 & ioa26 & !iows1 & ~rd & iowsres & ~iordy & 
+             s0 
+               # ioa24 & ioa26 & !iows0 & !iows2 & ~rd & iowsres & ~iordy & 
+             s0 
+               # ioa26 & ~rd & iows3 & iowsres & ~iordy & s0 
+               # !ioa24 & ioa26 & !iows0 & iows1 & ~rd & iowsres & ~iordy & 
+
+
+                                                                     Page 2
+ABEL(tm) 3.20  -  Document Generator              15-Feb-91 11:10 AM
+I/O Read/Write and Chip Enable Timing Control
+
+Source File:	ioctl.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   August 13, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+Equations for Module IO_Control
+
+Device U7
+
+             s0 
+               # !ioa24 & ioa26 & iows2 & ~rd & iowsres & ~iordy & s0 
+               # ioa24 & !ioa25 & ioa26 & iows1 & ~rd & iowsres & ~iordy & 
+             s0 
+               # !ioa25 & ioa26 & iows2 & ~rd & iowsres & ~iordy & s0);
+
+    !~ioxcvren := (!iowsres & !s0 
+                   # !~iordy & !s0 
+                   # !iowsres & !~iordy 
+                   # !~iocs & iowsres & ~iordy 
+                   # !~iocs & ~iordy & ioacc 
+                   # !~as & !~iocs & ~iordy);
+                 
+
+    ioen0 := (!ioa24 & ioa25 & !ioa26 & iows0 & ~rd & !~iocs & iowsres & 
+            ~iordy & s0 
+              # ioa25 & !ioa26 & iows2 & ~rd & !~iocs & iowsres & ~iordy & 
+            s0 
+              # ioa24 & ioa25 & !ioa26 & !iows0 & ~rd & !~iocs & iowsres & 
+            ~iordy & s0 
+              # ioa25 & !ioa26 & ~rd & !~iocs & iows3 & iowsres & ~iordy & 
+            s0 
+              # ioa25 & !ioa26 & iows1 & ~rd & !~iocs & iowsres & ~iordy & 
+            s0 
+              # !ioa25 & !ioa26 & !~rd & !~iocs & iowsres & ~iordy & s0 
+              # ioa25 & !ioa26 & ~rd & !~iocs & !iowsres & ~iordy & s0 & 
+            ioacc 
+              # ioa25 & !ioa26 & !~as & ~rd & !~iocs & !iowsres & ~iordy & 
+            s0 
+              # !ioa25 & !ioa26 & !~rd & !~iocs & ~iordy & s0 & ioacc 
+              # !ioa25 & !ioa26 & !~as & !~rd & !~iocs & ~iordy & s0);
+            
+
+    !~ioen1 := (!~iocs & !s0 
+                # !iowsres & !s0 
+                # !~iordy & !s0 
+                # !iowsres & !~iordy 
+                # ioa26 & !~iocs & iowsres & ~iordy 
+                # ioa26 & !~iocs & ~iordy & ioacc 
+                # ioa26 & !~as & !~iocs & ~iordy);
+              
+
+
+
+                                                                     Page 3
+ABEL(tm) 3.20  -  Document Generator              15-Feb-91 11:10 AM
+I/O Read/Write and Chip Enable Timing Control
+
+Source File:	ioctl.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   August 13, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+Equations for Module IO_Control
+
+Device U7
+
+    !~iordy := (!iowsres & !s0 
+                # !~iordy & !s0 
+                # !iowsres & !~iordy 
+                # ioa24 & ioa25 & ioa26 & !iows0 & iows1 & iows2 & !iows3 & 
+              iowsres & ~iordy & s0 
+                # !ioa24 & ioa25 & !iows0 & !iows1 & !iows2 & !iows3 & 
+              iowsres & ~iordy & s0 
+                # ioa24 & !ioa25 & ioa26 & iows0 & !iows1 & !iows2 & !iows3 
+              & iowsres & ~iordy & s0 
+                # !ioa24 & !ioa25 & ioa26 & iows0 & iows1 & !iows2 & !iows3 
+              & iowsres & ~iordy & s0 
+                # ioa24 & ioa25 & !ioa26 & iows0 & !iows1 & !iows2 & !iows3 
+              & iowsres & ~iordy & s0 
+                # !ioa25 & !ioa26 & !iows0 & !iows1 & !iows2 & !iows3 & 
+              iowsres & ~iordy & s0);
+
+    iowsres := (iowsres & ~iordy 
+                # ~iordy & s0 & ioacc 
+                # !~as & !~xb1cs & ~iordy & s0 
+                # !~as & !~iocs & ~iordy & s0);
+              
+
+    !s0 := (!ioa24 & !iows0 & iowsres & ~iordy & !s0 
+            # ioa25 & !iows0 & iowsres & ~iordy & !s0 
+            # ioa25 & !iows1 & iowsres & ~iordy & !s0 
+            # iows2 & iowsres & ~iordy & !s0 
+            # ioa24 & iows3 & iowsres & ~iordy & !s0 
+            # !ioa25 & iows3 & iowsres & ~iordy & !s0 
+            # !ioa24 & ioa25 & !iows3 & iowsres & ~iordy & !s0 
+            # !ioa25 & iows1 & iowsres & ~iordy & !s0 
+            # ioa24 & !ioa25 & iows0 & iowsres & ~iordy & !s0 
+            # !ioa26 & iowsres & ~iordy & !s0 
+            # ioa26 & !iowsres & ~iordy & s0 & ioacc 
+            # ioa26 & !~as & !~xb1cs & !iowsres & ~iordy & s0 
+            # ioa26 & !~as & !~iocs & !iowsres & ~iordy & s0);
+          
+
+    ioacc := (~blast & ioacc 
+              # ~iordy & ioacc 
+              # !~as & !~xb1cs & !ioacc 
+              # !~as & !~iocs & !ioacc);
+            
+
+
+                                                                     Page 4
+ABEL(tm) 3.20  -  Document Generator              15-Feb-91 11:10 AM
+I/O Read/Write and Chip Enable Timing Control
+
+Source File:	ioctl.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   August 13, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+Equations for Module IO_Control
+
+Device U7
+
+
+
+
+                                                                     Page 5
+ABEL(tm) 3.20  -  Document Generator              15-Feb-91 11:10 AM
+I/O Read/Write and Chip Enable Timing Control
+
+Source File:	ioctl.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   August 13, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+Chip diagram for Module IO_Control
+
+Device U7
+
+
+                            P22V10
+
+                 ----------\       /----------
+                 |          \     /          |
+                 |           -----           |
+         sysclk2 |  1                    24  |                 
+                 |                           |
+           ioa24 |  2                    23  | iows3           
+                 |                           |
+           ioa25 |  3                    22  | ioacc           
+                 |                           |
+           ioa26 |  4                    21  | ~ioen1          
+                 |                           |
+           iows0 |  5                    20  | ioen0           
+                 |                           |
+           iows1 |  6                    19  | ~iowr           
+                 |                           |
+           iows2 |  7                    18  | s0              
+                 |                           |
+             ~as |  8                    17  | ~iordy          
+                 |                           |
+          ~blast |  9                    16  | ~iord           
+                 |                           |
+             ~rd | 10                    15  | ~ioxcvren       
+                 |                           |
+           ~iocs | 11                    14  | iowsres         
+                 |                           |
+                 | 12                    13  | ~xb1cs          
+                 |                           |
+                 |                           |
+                 -----------------------------
+
+
+end of module IO_Control

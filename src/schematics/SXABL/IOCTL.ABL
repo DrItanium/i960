@@ -1,0 +1,468 @@
+module	IO_Control flag '-r3'
+title	'I/O Read/Write and Chip Enable Timing Control
+
+Source File:	ioctl.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   August 13, 1990
+
+Revision:
+
+		Rev. 0.0 - Original'
+
+	U7	 	device 'P22V10';
+
+"-----------------------------------------------------------------------------
+" 
+" The IO Control PLD generates IORD# and IOWR# signals for slow IO devices
+" based on an IO region which is selected by address bits 24, 25, and 26.
+" An IO chip enable signal is generated when either of the first two regions
+" are selected to simplify interface to registered IO.   
+"
+"-----------------------------------------------------------------------------
+
+"--Inputs-------------------------------
+
+sysclk2		pin 1;
+ioa24	 	pin 2;
+ioa25	 	pin 3;
+ioa26		pin 4;
+iows0		pin 5;
+iows1 		pin 6;
+iows2		pin 7;
+!as		pin 8;
+!blast		pin 9;
+!rd		pin 10;
+!iocs		pin 11;
+!xb1cs		pin 13;
+iows3		pin 23 = 'com,feed_pin';
+
+"--Outputs--------------------------------
+
+iowsres		pin 14 = 'pos,feed_reg';
+!ioxcvren 	pin 15 = 'neg,feed_reg';
+!iord	 	pin 16 = 'neg,feed_reg';
+!iordy		pin 17 = 'neg,feed_reg';
+s0		pin 18 = 'neg,feed_reg';
+!iowr		pin 19 = 'neg,feed_reg';
+ioen0		pin 20 = 'pos,feed_reg';
+!ioen1		pin 21 = 'neg,feed_reg';
+ioacc		pin 22 = 'pos,feed_reg';
+
+"--Nodes----------------------------------
+
+reset		node 25;
+preset		node 26;
+
+
+"--Constants/Declarations-----------------
+
+C = .C.;
+X = .X.;
+
+
+RSEL	= [ioa26,ioa25,ioa24];
+WSCNT	= [iows3,iows2,iows1,iows0];
+
+a_b_r	= [!as,!blast,!rd];
+is	= !iocs;
+xs	= !xb1cs;
+en_i_r	= [!ioen1,ioen0];
+
+"--Wait State Selection------------------------
+"
+" Read low, Write low and recovery times
+" are programmable for regions 2 through
+" 7 by inserting the value of the IO wait
+" state counter in the following definitions.
+" The wait state counter is reset to 0 after
+" each access and begins counting on the clock
+" cycle after AS is asserted.
+"
+"----------------------------------------------
+
+" Wait state count for read/write recovery
+
+TS4	=	1;  "Harris 82C54"
+TS5	=	0;  "NS16552"
+TS6	=	11; "Zilog CTC"
+TS7	=	3;  "Used for testing"
+
+" Write Strobe goes high on the following 
+" wait state count.  Read strobe goes high
+" on the following clock.
+
+TA0	=	0;  "Read Only Registers"
+TA1	=	0;  "Unused, Test only"
+TA2	=	0;  "Write Only Registers"
+TA3	=	1;  "IDT 7201 FIFO,596 Port"
+TA4	=	3;  "Harris 82C54"
+TA5	=	1;  "NS16C552"
+TA6	=	0;  "Zilog CTC"
+TA7	=	6;  "Used for testing"
+
+"--States---------------------------------
+
+IO_CTL_STATE	= [!iordy,iowsres,s0];
+IO_ACC_STATE	= ioacc;
+
+"--State Declarations (IO_CTL_STATE)---
+
+IDLE	= ^b101;
+SETUP	= ^b110;
+IOACC	= ^b111;
+IORDY 	= ^b011;
+
+"--State Declarations (IO_ACC_STATE)---
+
+ACC	= ^b1;
+NO_ACC	= ^b0;
+
+"--Equations------------------------------
+
+equations
+
+	iows3.oe	= 0;
+	reset		= !iocs&!xb1cs;
+	preset		= 0;
+
+
+"--State Machines-------------------------
+
+state_diagram IO_CTL_STATE
+
+
+	"--Idle (reset)-------------------
+
+	state IDLE:
+				   
+		iord     := 0;
+		iowr     := 0;
+
+		if ((ioa26==0)&((as&(iocs#xb1cs))#(IO_ACC_STATE==ACC)))
+			then IOACC with
+				ioxcvren := iocs;
+				ioen0    := (iocs&!ioa26)
+					    &((!ioa25&rd)#(ioa25&!rd));
+				ioen1    := ioa26&iocs;
+				endwith;
+
+
+		else if ((as&(iocs#xb1cs))#(IO_ACC_STATE==ACC))
+			then SETUP with
+				ioxcvren := iocs;
+				ioen0    := (iocs&!ioa26)
+					    &((!ioa25&rd)#(ioa25&!rd));
+				ioen1    := ioa26&iocs;
+				endwith;
+
+
+		else
+			IDLE with
+				ioxcvren := 0;
+				ioen0    := 0;
+				ioen1    := 0;
+				endwith;
+
+
+
+	"--IO Recovery/Add Setup----------
+			     
+	state SETUP:
+			  
+		ioxcvren := iocs;
+		ioen0    := 0;
+		ioen1    := iocs;
+
+		
+		if (((RSEL==4)&(WSCNT==TS4))
+		   #((RSEL==5)&(WSCNT==TS5))
+		   #((RSEL==6)&(WSCNT==TS6))
+		   #((RSEL==7)&(WSCNT==TS7)))
+		   	then IOACC with 
+				iord     := rd;
+				iowr     := !rd;
+				endwith;
+		else
+			SETUP with
+				iord     := 0;
+				iowr     := 0;
+				endwith;
+
+
+	"--IO Read/Write------------------
+			     
+	state IOACC:
+		
+		ioxcvren := iocs;
+		iord     := ioa26&rd;
+		ioen1    := ioa26&iocs;
+
+		if (((RSEL==0)&(WSCNT==TA0))
+		   #((RSEL==1)&(WSCNT==TA1))
+		   #((RSEL==2)&(WSCNT==TA2))
+		   #((RSEL==3)&(WSCNT==TA3))
+		   #((RSEL==4)&(WSCNT==TA4))
+		   #((RSEL==5)&(WSCNT==TA5))
+		   #((RSEL==6)&(WSCNT==TA6))
+		   #((RSEL==7)&(WSCNT==TA7)))
+		   	then IORDY with
+				iowr     := 0;
+				ioen0    := iocs&!ioa26&!ioa25&rd;
+				endwith;
+
+		else
+			IOACC with
+				iowr     := ioa26&!rd;
+				ioen0    := (iocs&!ioa26)
+					    &((!ioa25&rd)#(ioa25&!rd));
+				endwith;
+
+
+				   
+
+	"--Return Ready-------------------
+			     
+	state IORDY:
+
+	    	ioxcvren := 0;
+		iord     := 0;
+		iowr     := 0;
+		ioen0    := 0;
+		ioen1    := 0;
+
+		goto
+			IDLE;
+
+
+state_diagram IO_ACC_STATE
+
+
+	"--Idle (reset)-------------------
+
+	state NO_ACC:
+
+		if (as&(iocs#xb1cs))
+			then ACC
+
+		else
+			NO_ACC;
+
+	state ACC:
+
+		if (iordy&blast)
+			then NO_ACC
+
+		else
+			ACC;
+
+
+"--Test  Vectors----------------------------
+
+test_vectors 'Region 0/1 - Read Only'
+([sysclk2,RSEL,WSCNT,a_b_r,is,xs]->[IO_CTL_STATE,!iord,!iowr,en_i_r,!ioxcvren])
+
+ [X      ,X   ,X    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,0   ,0    ,^b010,0 ,1 ]->[IOACC       ,1    ,1    ,^b11  ,0       ];
+ [C      ,0   ,0    ,^b100,0 ,1 ]->[IORDY       ,1    ,1    ,^b11  ,0       ];
+ [C      ,0   ,1    ,^b100,0 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,2    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,0   ,0    ,^b011,0 ,1 ]->[IOACC       ,1    ,1    ,^b10  ,0       ];
+ [C      ,0   ,0    ,^b101,0 ,1 ]->[IORDY       ,1    ,1    ,^b10  ,0       ];
+ [C      ,0   ,1    ,^b101,0 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,2    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,1   ,0    ,^b010,0 ,1 ]->[IOACC       ,1    ,1    ,^b11  ,0       ];
+ [C      ,1   ,0    ,^b100,0 ,1 ]->[IORDY       ,1    ,1    ,^b11  ,0       ];
+ [C      ,1   ,1    ,^b100,0 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,2    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,1   ,0    ,^b011,0 ,1 ]->[IOACC       ,1    ,1    ,^b10  ,0       ];
+ [C      ,1   ,0    ,^b101,0 ,1 ]->[IORDY       ,1    ,1    ,^b10  ,0       ];
+ [C      ,1   ,1    ,^b101,0 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,2    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+
+ [X      ,X   ,X    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,0   ,0    ,^b010,1 ,0 ]->[IOACC       ,1    ,1    ,^b10  ,1       ];
+ [C      ,0   ,0    ,^b100,1 ,0 ]->[IORDY       ,1    ,1    ,^b10  ,1       ];
+ [C      ,0   ,1    ,^b100,1 ,0 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,2    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,0   ,0    ,^b011,1 ,0 ]->[IOACC       ,1    ,1    ,^b10  ,1       ];
+ [C      ,0   ,0    ,^b101,1 ,0 ]->[IORDY       ,1    ,1    ,^b10  ,1       ];
+ [C      ,0   ,1    ,^b101,1 ,0 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,2    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+
+test_vectors 'Region 2/3 Write Only'
+([sysclk2,RSEL,WSCNT,a_b_r,is,xs]->[IO_CTL_STATE,!iord,!iowr,en_i_r,!ioxcvren])
+
+ [X      ,X   ,X    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,2   ,0    ,^b010,0 ,1 ]->[IOACC       ,1    ,1    ,^b10  ,0       ];
+ [C      ,2   ,0    ,^b100,0 ,1 ]->[IORDY       ,1    ,1    ,^b10  ,0       ];
+ [C      ,2   ,1    ,^b100,0 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,2    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+
+ [X      ,X   ,X    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,2   ,0    ,^b011,0 ,1 ]->[IOACC       ,1    ,1    ,^b11  ,0       ];
+ [C      ,2   ,0    ,^b101,0 ,1 ]->[IORDY       ,1    ,1    ,^b10  ,0       ];
+ [C      ,2   ,1    ,^b101,0 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,2    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+
+ [X      ,X   ,X    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,3   ,0    ,^b010,0 ,1 ]->[IOACC       ,1    ,1    ,^b10  ,0       ];
+ [C      ,3   ,0    ,^b100,0 ,1 ]->[IOACC       ,1    ,1    ,^b10  ,0       ];
+ [C      ,3   ,1    ,^b100,0 ,1 ]->[IORDY       ,1    ,1    ,^b10  ,0       ];
+ [C      ,3   ,2    ,^b100,0 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,3    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+
+ [X      ,X   ,X    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,3   ,0    ,^b011,0 ,1 ]->[IOACC       ,1    ,1    ,^b11  ,0       ];
+ [C      ,3   ,0    ,^b101,0 ,1 ]->[IOACC       ,1    ,1    ,^b11  ,0       ];
+ [C      ,3   ,1    ,^b101,0 ,1 ]->[IORDY       ,1    ,1    ,^b10  ,0       ];
+ [C      ,3   ,2    ,^b101,0 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,3    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+
+test_vectors 'Region 4 - Read and Write'
+([sysclk2,RSEL,WSCNT,a_b_r,is,xs]->[IO_CTL_STATE,!iord,!iowr,en_i_r,!ioxcvren])
+
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,4   ,0    ,^b010,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,4   ,0    ,^b100,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,4   ,1    ,^b100,0 ,1 ]->[IOACC       ,0    ,1    ,^b00  ,0       ];
+ [C      ,4   ,2    ,^b100,0 ,1 ]->[IOACC       ,0    ,1    ,^b00  ,0       ];
+ [C      ,4   ,3    ,^b100,0 ,1 ]->[IORDY       ,0    ,1    ,^b00  ,0       ];
+ [C      ,4   ,4    ,^b100,0 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,5    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,4   ,0    ,^b011,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,4   ,0    ,^b101,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,4   ,1    ,^b101,0 ,1 ]->[IOACC       ,1    ,0    ,^b00  ,0       ];
+ [C      ,4   ,2    ,^b101,0 ,1 ]->[IOACC       ,1    ,0    ,^b00  ,0       ];
+ [C      ,4   ,3    ,^b101,0 ,1 ]->[IORDY       ,1    ,1    ,^b00  ,0       ];
+ [C      ,4   ,4    ,^b101,0 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,5    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+
+test_vectors 'Region 6 - Read and Write'
+([sysclk2,RSEL,WSCNT,a_b_r,is,xs]->[IO_CTL_STATE,!iord,!iowr,en_i_r,!ioxcvren])
+
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,6   ,0    ,^b010,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,0    ,^b100,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,1    ,^b100,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,2    ,^b100,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,3    ,^b100,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,4    ,^b100,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,5    ,^b100,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,6    ,^b100,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,7    ,^b100,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,8    ,^b100,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,9    ,^b100,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,10   ,^b100,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,11   ,^b100,0 ,1 ]->[IOACC       ,0    ,1    ,^b00  ,0       ];
+ [C      ,6   ,12   ,^b100,0 ,1 ]->[IOACC       ,0    ,1    ,^b00  ,0       ];
+ [C      ,6   ,13   ,^b100,0 ,1 ]->[IOACC       ,0    ,1    ,^b00  ,0       ];
+ [C      ,6   ,14   ,^b100,0 ,1 ]->[IOACC       ,0    ,1    ,^b00  ,0       ];
+ [C      ,6   ,15   ,^b100,0 ,1 ]->[IOACC       ,0    ,1    ,^b00  ,0       ];
+ [C      ,6   ,0    ,^b100,0 ,1 ]->[IORDY       ,0    ,1    ,^b00  ,0       ];
+ [C      ,6   ,1    ,^b100,0 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,2    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,6   ,0    ,^b011,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,0    ,^b101,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,1    ,^b101,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,2    ,^b101,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,3    ,^b101,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,4    ,^b101,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,5    ,^b101,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,6    ,^b101,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,7    ,^b101,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,8    ,^b101,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,9    ,^b101,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,10   ,^b101,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,11   ,^b101,0 ,1 ]->[IOACC       ,1    ,0    ,^b00  ,0       ];
+ [C      ,6   ,12   ,^b101,0 ,1 ]->[IOACC       ,1    ,0    ,^b00  ,0       ];
+ [C      ,6   ,13   ,^b101,0 ,1 ]->[IOACC       ,1    ,0    ,^b00  ,0       ];
+ [C      ,6   ,14   ,^b101,0 ,1 ]->[IOACC       ,1    ,0    ,^b00  ,0       ];
+ [C      ,6   ,15   ,^b101,0 ,1 ]->[IOACC       ,1    ,0    ,^b00  ,0       ];
+ [C      ,6   ,0    ,^b101,0 ,1 ]->[IORDY       ,1    ,1    ,^b00  ,0       ];
+ [C      ,6   ,1    ,^b101,0 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,2    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+
+test_vectors 'Region 7 - Read and Write'
+([sysclk2,RSEL,WSCNT,a_b_r,is,xs]->[IO_CTL_STATE,!iord,!iowr,en_i_r,!ioxcvren])
+
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,7   ,0    ,^b010,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,7   ,0    ,^b100,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,7   ,1    ,^b100,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,7   ,2    ,^b100,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,7   ,3    ,^b100,0 ,1 ]->[IOACC       ,0    ,1    ,^b00  ,0       ];
+ [C      ,7   ,4    ,^b100,0 ,1 ]->[IOACC       ,0    ,1    ,^b00  ,0       ];
+ [C      ,7   ,5    ,^b100,0 ,1 ]->[IOACC       ,0    ,1    ,^b00  ,0       ];
+ [C      ,7   ,6    ,^b100,0 ,1 ]->[IORDY       ,0    ,1    ,^b00  ,0       ];
+ [C      ,7   ,7    ,^b100,0 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,7   ,0    ,^b011,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,7   ,0    ,^b101,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,7   ,1    ,^b101,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,7   ,2    ,^b101,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,7   ,3    ,^b101,0 ,1 ]->[IOACC       ,1    ,0    ,^b00  ,0       ];
+ [C      ,7   ,4    ,^b101,0 ,1 ]->[IOACC       ,1    ,0    ,^b00  ,0       ];
+ [C      ,7   ,5    ,^b101,0 ,1 ]->[IOACC       ,1    ,0    ,^b00  ,0       ];
+ [C      ,7   ,6    ,^b101,0 ,1 ]->[IORDY       ,1    ,1    ,^b00  ,0       ];
+ [C      ,7   ,7    ,^b101,0 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,7   ,0    ,^b010,1 ,0 ]->[SETUP       ,1    ,1    ,^b10  ,1       ];
+ [C      ,7   ,0    ,^b100,1 ,0 ]->[SETUP       ,1    ,1    ,^b10  ,1       ];
+ [C      ,7   ,1    ,^b100,1 ,0 ]->[SETUP       ,1    ,1    ,^b10  ,1       ];
+ [C      ,7   ,2    ,^b100,1 ,0 ]->[SETUP       ,1    ,1    ,^b10  ,1       ];
+ [C      ,7   ,3    ,^b100,1 ,0 ]->[IOACC       ,0    ,1    ,^b10  ,1       ];
+ [C      ,7   ,4    ,^b100,1 ,0 ]->[IOACC       ,0    ,1    ,^b10  ,1       ];
+ [C      ,7   ,5    ,^b100,1 ,0 ]->[IOACC       ,0    ,1    ,^b10  ,1       ];
+ [C      ,7   ,6    ,^b100,1 ,0 ]->[IORDY       ,0    ,1    ,^b10  ,1       ];
+ [C      ,7   ,7    ,^b100,1 ,0 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,7   ,0    ,^b010,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,7   ,0    ,^b110,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,7   ,1    ,^b110,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,7   ,2    ,^b110,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,7   ,3    ,^b110,0 ,1 ]->[IOACC       ,0    ,1    ,^b00  ,0       ];
+ [C      ,7   ,4    ,^b110,0 ,1 ]->[IOACC       ,0    ,1    ,^b00  ,0       ];
+ [C      ,7   ,5    ,^b110,0 ,1 ]->[IOACC       ,0    ,1    ,^b00  ,0       ];
+ [C      ,7   ,6    ,^b110,0 ,1 ]->[IORDY       ,0    ,1    ,^b00  ,0       ];
+ [C      ,7   ,7    ,^b110,0 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,7   ,0    ,^b100,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,7   ,0    ,^b100,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,7   ,1    ,^b100,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,7   ,2    ,^b100,0 ,1 ]->[SETUP       ,1    ,1    ,^b00  ,0       ];
+ [C      ,7   ,3    ,^b100,0 ,1 ]->[IOACC       ,0    ,1    ,^b00  ,0       ];
+ [C      ,7   ,4    ,^b100,0 ,1 ]->[IOACC       ,0    ,1    ,^b00  ,0       ];
+ [C      ,7   ,5    ,^b100,0 ,1 ]->[IOACC       ,0    ,1    ,^b00  ,0       ];
+ [C      ,7   ,6    ,^b100,0 ,1 ]->[IORDY       ,0    ,1    ,^b00  ,0       ];
+ [C      ,X   ,7    ,^b100,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+ [C      ,X   ,0    ,^b111,1 ,1 ]->[IDLE        ,1    ,1    ,^b10  ,1       ];
+
+
+end IO_Control;
+
+
+

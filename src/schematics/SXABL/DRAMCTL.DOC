@@ -1,0 +1,148 @@
+
+
+                                                                     Page 1
+ABEL(tm) 3.20  -  Document Generator              29-Jan-91 11:35 AM
+DRAM Access and Refresh Control
+
+Source File:	dramctl.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   July 29, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+		Rev. 0.1 - Fixed MUX state during refresh
+		Rev. 0.2 - Fixed MUX state during precharge for 596
+Equations for Module DRAM_Control
+
+Device U50
+
+
+- Reduced Equations for device U50:
+
+    !~dram_start := (!~dram_rdy & ~dram_ras 
+                     # !~dram_rdy & !~ref_ack 
+                     # !~as & !~dram_cs & s0 & ~ref_pending & ~dram_ras & 
+                   ~ref_ack 
+                     # s0 & ~ref_pending & !~acc_pending & ~dram_ras & 
+                   ~ref_ack 
+                     # !~dram_rdy & !s0 
+                     # !s0 & !~ref_ack);
+
+    !mux := (~dram_rdy & s0 & !~ref_ack 
+             # ~dram_rdy & !s0 & ~ref_ack 
+             # !~blast & !~dram_rdy & s0 & !~dram_ras & ~ref_ack 
+             # ~dram_cs & ~dram_rdy & ~acc_pending & ~dram_ras & ~ref_ack 
+             # ~as & ~dram_rdy & ~acc_pending & ~dram_ras & ~ref_ack 
+             # ~dram_rdy & !~ref_pending & ~dram_ras & ~ref_ack);
+           
+
+    !~dram_ras := (~dram_rdy & s0 & !~dram_ras 
+                   # !~as & !~dram_cs & s0 & ~ref_pending & ~dram_ras 
+                   # s0 & ~ref_pending & !~acc_pending & ~dram_ras 
+                   # !~dram_rdy & ~dram_ras 
+                   # ~blast & !~dram_rdy 
+                   # !~dram_rdy & !s0 
+                   # !~ref_ack);
+                 
+
+    !~ref_ack := (!~dram_rdy & ~dram_ras 
+                  # !~dram_rdy & !~ref_ack 
+                  # s0 & !~ref_pending & ~dram_ras 
+                  # ~dram_ras & !~ref_ack 
+                  # !~dram_rdy & !s0 
+                  # !s0 & !~ref_ack);
+                
+
+    !~dram_rdy := (!~dram_rdy & ~dram_ras 
+                   # !~dram_rdy & !~ref_ack 
+                   # ~blast & s0 & !~dram_ras & ~ref_ack 
+
+
+                                                                     Page 2
+ABEL(tm) 3.20  -  Document Generator              29-Jan-91 11:35 AM
+DRAM Access and Refresh Control
+
+Source File:	dramctl.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   July 29, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+		Rev. 0.1 - Fixed MUX state during refresh
+		Rev. 0.2 - Fixed MUX state during precharge for 596
+Equations for Module DRAM_Control
+
+Device U50
+
+                   # ~dram_rdy & s0 & !~dram_ras & ~ref_ack 
+                   # !~dram_rdy & !s0 
+                   # !s0 & !~ref_ack);
+                 
+
+    !s0 := (~dram_rdy & !s0 & !~dram_ras & ~ref_ack 
+            # ~dram_rdy & s0 & !~dram_ras & !~ref_ack 
+            # !~blast & !~dram_rdy & s0 & !~dram_ras & ~ref_ack);
+          
+
+    !~acc_pending := (~dram_rdy & !~acc_pending 
+                      # ~blast & !~acc_pending 
+                      # !~as & !~dram_cs & ~acc_pending);
+                    
+
+    !~ref_pending := (!~ref_req # !~ref_pending & ~ref_ack);
+
+
+
+                                                                     Page 3
+ABEL(tm) 3.20  -  Document Generator              29-Jan-91 11:35 AM
+DRAM Access and Refresh Control
+
+Source File:	dramctl.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   July 29, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+		Rev. 0.1 - Fixed MUX state during refresh
+		Rev. 0.2 - Fixed MUX state during precharge for 596
+Chip diagram for Module DRAM_Control
+
+Device U50
+
+
+                             P16R8
+
+                 ----------\       /----------
+                 |          \     /          |
+                 |           -----           |
+         sysclk1 |  1                    20  |                 
+                 |                           |
+        ~ref_req |  2                    19  | ~ref_ack        
+                 |                           |
+             ~as |  3                    18  | ~dram_ras       
+                 |                           |
+          ~blast |  4                    17  | mux             
+                 |                           |
+        ~dram_cs |  5                    16  | ~acc_pending    
+                 |                           |
+        ~inrange |  6                    15  | ~ref_pending    
+                 |                           |
+           extra |  7                    14  | s0              
+                 |                           |
+                 |  8                    13  | ~dram_rdy       
+                 |                           |
+                 |  9                    12  | ~dram_start     
+                 |                           |
+                 | 10                    11  |                 
+                 |                           |
+                 |                           |
+                 -----------------------------
+
+
+end of module DRAM_Control

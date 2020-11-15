@@ -1,0 +1,109 @@
+
+
+                                                                     Page 1
+ABEL(tm) 3.20  -  Document Generator              15-Feb-91 11:15 AM
+Intel Low Cost Printer Controller
+Equations for Module PLL_8X
+
+Device U26
+
+
+- Reduced Equations for device U26:
+
+    !META_BDn := (!BDn);
+
+    !SYNCBDn := (!META_BDn);
+
+    !ERR2 := (SYNCBDn & !VIDCLK & !META_BDn 
+              # !SYNCBDn & VIDCLK & !ERR2 
+              # VIDCLK & META_BDn & !ERR2 
+              # !VIDCLK & VCLK0 & !ERR2 
+              # !VIDCLK & VCLK1 & !ERR2 
+              # !VIDCLK & !ERR0 & !ERR2 
+              # !VIDCLK & !ERR1 & !ERR2 
+              # !VIDCLK & !VCLK0 & !VCLK1 & ERR0 & ERR1 & ERR2);
+            
+
+    !ERR1 := (SYNCBDn & !META_BDn & !VCLK1 
+              # !SYNCBDn & VCLK1 & !ERR1 
+              # META_BDn & VCLK1 & !ERR1 
+              # VIDCLK & !VCLK1 & !ERR1 
+              # VCLK0 & !VCLK1 & !ERR1 
+              # !VCLK1 & !ERR0 & !ERR1 
+              # !VIDCLK & !VCLK0 & !VCLK1 & ERR0 & ERR1);
+            
+
+    !ERR0 := (SYNCBDn & !META_BDn & !VCLK0 
+              # !SYNCBDn & VCLK0 & !ERR0 
+              # META_BDn & VCLK0 & !ERR0 
+              # VIDCLK & !VCLK0 & !ERR0 
+              # !VCLK0 & VCLK1 & !ERR0 
+              # !VIDCLK & !VCLK0 & !VCLK1 & ERR0 
+              # !VCLK0 & !ERR0 & ERR1 & !ERR2);
+            
+
+    !VIDCLK := (!VIDCLK & !VCLK0 
+                # !VIDCLK & !VCLK1 
+                # VIDCLK & VCLK0 & VCLK1);
+              
+
+    !VCLK1 := (VCLK0 & VCLK1 
+               # VIDCLK & !VCLK0 & !VCLK1 
+               # !VCLK0 & !VCLK1 & !ERR0 & ERR1 & !ERR2);
+             
+
+    !VCLK0 := (VCLK0 
+               # !VIDCLK & !VCLK1 & ERR0 
+               # !VIDCLK & !VCLK1 & !ERR1 
+               # !VIDCLK & !VCLK1 & ERR2);
+             
+
+
+
+                                                                     Page 2
+ABEL(tm) 3.20  -  Document Generator              15-Feb-91 11:15 AM
+Intel Low Cost Printer Controller
+Equations for Module PLL_8X
+
+Device U26
+
+
+
+                                                                     Page 3
+ABEL(tm) 3.20  -  Document Generator              15-Feb-91 11:15 AM
+Intel Low Cost Printer Controller
+Chip diagram for Module PLL_8X
+
+Device U26
+
+
+                             P16R8
+
+                 ----------\       /----------
+                 |          \     /          |
+                 |           -----           |
+           CLK8X |  1                    20  | VCC             
+                 |                           |
+             BDn |  2                    19  | ERR2            
+                 |                           |
+                 |  3                    18  | ERR1            
+                 |                           |
+                 |  4                    17  | ERR0            
+                 |                           |
+                 |  5                    16  | VCLK1           
+                 |                           |
+                 |  6                    15  | VCLK0           
+                 |                           |
+                 |  7                    14  | META_BDn        
+                 |                           |
+                 |  8                    13  | VIDCLK          
+                 |                           |
+                 |  9                    12  | SYNCBDn         
+                 |                           |
+             GND | 10                    11  | OEx             
+                 |                           |
+                 |                           |
+                 -----------------------------
+
+
+end of module PLL_8X

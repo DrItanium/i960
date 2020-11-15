@@ -1,0 +1,83 @@
+
+
+                                                                     Page 1
+ABEL(tm) 3.20  -  Document Generator              28-Jan-91 03:03 PM
+DRAM Access and Refresh Control
+
+Source File:	xbus.abl
+
+Created by:	Sig Peterson
+	   	Intel Corp. Chandler,AZ   July 29, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+		Rev. 0.1 - DWD - Fix polarities to make readable
+Equations for Module xbus_pal
+
+Device U78
+
+
+- Reduced Equations for device U78:
+
+    !xbdtr = (hlda & dtr # !hlda & !dtr);
+
+    !~hldaout = (hlda);
+
+    !~xb_rdy = (!~xbusy & !~xready & !~xb0_cs & ~xb1_cs);
+
+    !xbbe = (!~int_sel & !~xbusy & !~den & !~inta 
+             # !~xbusy & !~den & !~xb1_cs 
+             # !~xbusy & !~den & !~xb0_cs);
+           
+
+
+
+                                                                     Page 2
+ABEL(tm) 3.20  -  Document Generator              28-Jan-91 03:03 PM
+DRAM Access and Refresh Control
+
+Source File:	xbus.abl
+
+Created by:	Sig Peterson
+	   	Intel Corp. Chandler,AZ   July 29, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+		Rev. 0.1 - DWD - Fix polarities to make readable
+Chip diagram for Module xbus_pal
+
+Device U78
+
+
+                             P16L8
+
+                 ----------\       /----------
+                 |          \     /          |
+                 |           -----           |
+          no_con |  1                    20  |                 
+                 |                           |
+        ~int_sel |  2                    19  | xbbe            
+                 |                           |
+          ~xbusy |  3                    18  | xbdtr           
+                 |                           |
+            ~den |  4                    17  | ~hldaout        
+                 |                           |
+         ~xready |  5                    16  |                 
+                 |                           |
+         ~xb0_cs |  6                    15  |                 
+                 |                           |
+         ~xb1_cs |  7                    14  |                 
+                 |                           |
+           ~inta |  8                    13  | dtr             
+                 |                           |
+            hlda |  9                    12  | ~xb_rdy         
+                 |                           |
+                 | 10                    11  | nc_oe           
+                 |                           |
+                 |                           |
+                 -----------------------------
+
+
+end of module xbus_pal
