@@ -1,0 +1,381 @@
+MODULE PLL_8X
+
+flag '-r3'
+
+TITLE  'Intel Low Cost Printer Controller'
+
+"------------------------------------------------------------------------------
+" History:
+"	89-Sep-25  MRL	   Rev A1.  First Created.
+"	89-Oct-20  Butter  Rev A1.  Changed to GAL.
+"	89-Oct-22  MRL	   Rev A1.  Added comments.
+"	90-Aug-28  DWD		    Compile with optimization r9
+"------------------------------------------------------------------------------
+
+U26	  DEVICE 'P16R8';	"Speed = STD  U46    Canon PLL
+
+CLK8X		pin  1; 	"I - 8 x clock, 14.91 MHz
+BDn		pin  2; 	"I - Beam detect from printer
+"		pin  3;
+"		pin  4;
+"		pin  5;
+"		pin  6;
+"		pin  7;
+"		pin  8;
+"		pin  9;
+GND		pin 10;
+OEx		pin 11; 	"I - Output enable
+SYNCBDn 	pin 12; 	"Q - Synced beam detect
+VIDCLK		pin 13; 	"Q - Video clock
+META_BDn	pin 14; 	"Q - Metastable synced beam detect
+VCLK0		pin 15; 	"Q - Video clock counter bit 0
+VCLK1		pin 16; 	"Q - Video clock counter bit 1
+ERR0		pin 17; 	"Q - PLL phase error bit 0
+ERR1		pin 18; 	"Q - PLL phase error bit 1
+ERR2		pin 19; 	"Q - PLL phase error bit 2
+VCC		pin 20;
+
+
+	H,L,X,C = 1,0,.X.,.C.;
+	VCLK	= [VIDCLK,VCLK1,VCLK0];
+	ERR	= [ERR2,ERR1,ERR0];
+	BDPULSE = !META_BDn & SYNCBDn;
+
+"------------------------------------------------------------------------------
+  EQUATIONS
+"------------------------------------------------------------------------------
+
+	META_BDn  := BDn;
+	SYNCBDn   := META_BDn;
+
+	!ERR	  := !(
+		      BDPULSE & 		VCLK
+		   # !BDPULSE & (   ERR   & ( (ERR == 2) # (VCLK != 0) )
+			      # (ERR + 1) &   (ERR != 2) & (VCLK == 0) ));
+
+	VCLK	  := (VCLK + 1) & (VCLK != 0)
+		   #   [0,1,0]	& (VCLK == 0) & (ERR != 2)
+		   #   [0,0,1]	& (VCLK == 0) & (ERR == 2);
+
+"------------------------------------------------------------------------------
+" Description
+"------------------------------------------------------------------------------
+"	This PAL is used for the Canon printer engine.	It is not
+"	needed for the TEC printer engine.
+"
+"	BDn runs through two flipflops to remove metastable conditions
+"
+"	ERR is an octal down-counter which is latched with the current
+"	   value of VCLK when a BDn is detected.  It counts down each
+"	   time VCLK reaches 000, and holds once it (ERR) reaches 000.
+"
+"	VCLK is a divide by 8 or 7 counter.  Normally, VLCK is a divide
+"	   by 8 of the 8XCLK input, but is a divide by 7 whenever ERR is
+"	   not 000.  This causes the VIDCLK output to speed up slightly
+"	   until any error is resolved.
+"------------------------------------------------------------------------------
+" Test Vectors
+"------------------------------------------------------------------------------
+
+TEST_VECTORS	'Run some vectors to get ERR to 2 and VCLK to 0'
+	([CLK8X,GND,BDn] -> [VCLK,META_BDn,SYNCBDn,ERR])
+	 [  C  , L , H ] -> [ 0  ,    H   ,   H   , X ];
+	 [  C  , L , L ] -> [ 2  ,    L   ,   H   , X ];
+	 [  C  , L , H ] -> [ 3  ,    H   ,   L   , 2 ];
+	 [  C  , L , H ] -> [ 4  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 5  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 6  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 7  ,    H   ,   H   , 2 ];
+
+TEST_VECTORS	'Test count function with an ERR of 2'
+	([CLK8X,GND,BDn] -> [VCLK,META_BDn,SYNCBDn,ERR])
+	 [  C  , L , H ] -> [ 0  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 1  ,    H   ,   H   , 2 ];
+	 [  C  , L , L ] -> [ 2  ,    L   ,   H   , 2 ];
+	 [  C  , L , L ] -> [ 3  ,    L   ,   L   , 2 ];
+	 [  C  , L , L ] -> [ 4  ,    L   ,   L   , 2 ];
+	 [  C  , L , L ] -> [ 5  ,    L   ,   L   , 2 ];
+	 [  C  , L , L ] -> [ 6  ,    L   ,   L   , 2 ];
+	 [  C  , L , L ] -> [ 7  ,    L   ,   L   , 2 ];
+	 [  C  , L , L ] -> [ 0  ,    L   ,   L   , 2 ];
+	 [  C  , L , L ] -> [ 1  ,    L   ,   L   , 2 ];
+"
+	 [  C  , L , L ] -> [ 2  ,    L   ,   L   , 2 ];
+	 [  C  , L , L ] -> [ 3  ,    L   ,   L   , 2 ];
+	 [  C  , L , L ] -> [ 4  ,    L   ,   L   , 2 ];
+	 [  C  , L , L ] -> [ 5  ,    L   ,   L   , 2 ];
+	 [  C  , L , L ] -> [ 6  ,    L   ,   L   , 2 ];
+	 [  C  , L , H ] -> [ 7  ,    H   ,   L   , 2 ];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 1  ,    H   ,   H   , 2 ];
+@repeat 6 {
+	 [  C  , L , H ] -> [ 2  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 3  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 4  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 5  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 6  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 7  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 1  ,    H   ,   H   , 2 ];
+}
+
+TEST_VECTORS	'Test count function with an ERR of 1'
+	([CLK8X,GND,BDn] -> [VCLK,META_BDn,SYNCBDn,ERR])
+	 [  C  , L , H ] -> [ 2  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 3  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 4  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 5  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 6  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 7  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   H   , 2 ];
+	 [  C  , L , L ] -> [ 1  ,    L   ,   H   , 2 ];
+"
+	 [  C  , L , L ] -> [ 2  ,    L   ,   L   , 1 ];
+	 [  C  , L , L ] -> [ 3  ,    L   ,   L   , 1 ];
+	 [  C  , L , L ] -> [ 4  ,    L   ,   L   , 1 ];
+	 [  C  , L , L ] -> [ 5  ,    L   ,   L   , 1 ];
+	 [  C  , L , L ] -> [ 6  ,    L   ,   L   , 1 ];
+	 [  C  , L , H ] -> [ 7  ,    H   ,   L   , 1 ];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   H   , 1 ];
+@repeat 7 {
+	 [  C  , L , H ] -> [ 2  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 3  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 4  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 5  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 6  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 7  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 1  ,    H   ,   H   , 2 ];
+}
+
+TEST_VECTORS	'Test count function with an ERR of 0'
+	([CLK8X,GND,BDn] -> [VCLK,META_BDn,SYNCBDn,ERR])
+	 [  C  , L , H ] -> [ 2  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 3  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 4  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 5  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 6  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 7  ,    H   ,   H   , 2 ];
+	 [  C  , L , L ] -> [ 0  ,    L   ,   H   , 2 ];
+	 [  C  , L , L ] -> [ 1  ,    L   ,   L   , 0 ];
+	 [  C  , L , L ] -> [ 2  ,    L   ,   L   , 0 ];
+	 [  C  , L , L ] -> [ 3  ,    L   ,   L   , 0 ];
+	 [  C  , L , L ] -> [ 4  ,    L   ,   L   , 0 ];
+	 [  C  , L , L ] -> [ 5  ,    L   ,   L   , 0 ];
+	 [  C  , L , L ] -> [ 6  ,    L   ,   L   , 0 ];
+	 [  C  , L , L ] -> [ 7  ,    L   ,   L   , 0 ];
+	 [  C  , L , L ] -> [ 0  ,    L   ,   L   , 0 ];
+"
+	 [  C  , L , L ] -> [ 2  ,    L   ,   L   , 1 ];
+	 [  C  , L , L ] -> [ 3  ,    L   ,   L   , 1 ];
+	 [  C  , L , L ] -> [ 4  ,    L   ,   L   , 1 ];
+	 [  C  , L , L ] -> [ 5  ,    L   ,   L   , 1 ];
+	 [  C  , L , L ] -> [ 6  ,    L   ,   L   , 1 ];
+	 [  C  , L , H ] -> [ 7  ,    H   ,   L   , 1 ];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   H   , 1 ];
+"
+@repeat 6 {
+	 [  C  , L , H ] -> [ 2  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 3  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 4  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 5  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 6  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 7  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 1  ,    H   ,   H   , 2 ];
+}
+
+TEST_VECTORS	'Test count function with an ERR of 7'
+	([CLK8X,GND,BDn] -> [VCLK,META_BDn,SYNCBDn,ERR])
+	 [  C  , L , H ] -> [ 2  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 3  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 4  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 5  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 6  ,    H   ,   H   , 2 ];
+	 [  C  , L , L ] -> [ 7  ,    L   ,   H   , 2 ];
+	 [  C  , L , L ] -> [ 0  ,    L   ,   L   , 7 ];
+"
+	 [  C  , L , L ] -> [ 2  ,    L   ,   L   , 0 ];
+	 [  C  , L , L ] -> [ 3  ,    L   ,   L   , 0 ];
+	 [  C  , L , L ] -> [ 4  ,    L   ,   L   , 0 ];
+	 [  C  , L , L ] -> [ 5  ,    L   ,   L   , 0 ];
+	 [  C  , L , L ] -> [ 6  ,    L   ,   L   , 0 ];
+	 [  C  , L , L ] -> [ 7  ,    L   ,   L   , 0 ];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   L   , 0 ];
+"
+	 [  C  , L , H ] -> [ 2  ,    H   ,   H   , 1 ];
+	 [  C  , L , H ] -> [ 3  ,    H   ,   H   , 1 ];
+	 [  C  , L , H ] -> [ 4  ,    H   ,   H   , 1 ];
+	 [  C  , L , H ] -> [ 5  ,    H   ,   H   , 1 ];
+	 [  C  , L , H ] -> [ 6  ,    H   ,   H   , 1 ];
+	 [  C  , L , H ] -> [ 7  ,    H   ,   H   , 1 ];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   H   , 1 ];
+"
+@repeat 5 {
+	 [  C  , L , H ] -> [ 2  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 3  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 4  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 5  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 6  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 7  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 1  ,    H   ,   H   , 2 ];
+}
+
+TEST_VECTORS	'Test count function with an ERR of 6'
+	([CLK8X,GND,BDn] -> [VCLK,META_BDn,SYNCBDn,ERR])
+	 [  C  , L , H ] -> [ 2  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 3  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 4  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 5  ,    H   ,   H   , 2 ];
+	 [  C  , L , L ] -> [ 6  ,    L   ,   H   , 2 ];
+	 [  C  , L , L ] -> [ 7  ,    L   ,   L   , 6 ];
+	 [  C  , L , L ] -> [ 0  ,    L   ,   L   , 6 ];
+"
+	 [  C  , L , L ] -> [ 2  ,    L   ,   L   , 7 ];
+	 [  C  , L , L ] -> [ 3  ,    L   ,   L   , 7 ];
+	 [  C  , L , L ] -> [ 4  ,    L   ,   L   , 7 ];
+	 [  C  , L , L ] -> [ 5  ,    L   ,   L   , 7 ];
+	 [  C  , L , L ] -> [ 6  ,    L   ,   L   , 7 ];
+	 [  C  , L , L ] -> [ 7  ,    L   ,   L   , 7 ];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   L   , 7 ];
+"
+@const i=0; @repeat 2 {
+	 [  C  , L , H ] -> [ 2  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 3  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 4  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 5  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 6  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 7  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   H   ,@expr i;];
+@const i=i+1; }
+"
+@repeat 4 {
+	 [  C  , L , H ] -> [ 2  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 3  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 4  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 5  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 6  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 7  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 1  ,    H   ,   H   , 2 ];
+}
+
+TEST_VECTORS	'Test count function with an ERR of 5'
+	([CLK8X,GND,BDn] -> [VCLK,META_BDn,SYNCBDn,ERR])
+	 [  C  , L , H ] -> [ 2  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 3  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 4  ,    H   ,   H   , 2 ];
+	 [  C  , L , L ] -> [ 5  ,    L   ,   H   , 2 ];
+	 [  C  , L , L ] -> [ 6  ,    L   ,   L   , 5 ];
+	 [  C  , L , L ] -> [ 7  ,    L   ,   L   , 5 ];
+	 [  C  , L , L ] -> [ 0  ,    L   ,   L   , 5 ];
+"
+	 [  C  , L , L ] -> [ 2  ,    L   ,   L   , 6 ];
+	 [  C  , L , L ] -> [ 3  ,    L   ,   L   , 6 ];
+	 [  C  , L , L ] -> [ 4  ,    L   ,   L   , 6 ];
+	 [  C  , L , L ] -> [ 5  ,    L   ,   L   , 6 ];
+	 [  C  , L , L ] -> [ 6  ,    L   ,   L   , 6 ];
+	 [  C  , L , L ] -> [ 7  ,    L   ,   L   , 6 ];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   L   , 6 ];
+"
+@const i=7; @repeat 3 {
+	 [  C  , L , H ] -> [ 2  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 3  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 4  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 5  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 6  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 7  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   H   ,@expr i;];
+@const i=i+1; }
+"
+@repeat 3 {
+	 [  C  , L , H ] -> [ 2  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 3  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 4  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 5  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 6  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 7  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 1  ,    H   ,   H   , 2 ];
+}
+
+TEST_VECTORS	'Test count function with an ERR of 4'
+	([CLK8X,GND,BDn] -> [VCLK,META_BDn,SYNCBDn,ERR])
+	 [  C  , L , H ] -> [ 2  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 3  ,    H   ,   H   , 2 ];
+	 [  C  , L , L ] -> [ 4  ,    L   ,   H   , 2 ];
+	 [  C  , L , L ] -> [ 5  ,    L   ,   L   , 4 ];
+	 [  C  , L , L ] -> [ 6  ,    L   ,   L   , 4 ];
+	 [  C  , L , L ] -> [ 7  ,    L   ,   L   , 4 ];
+	 [  C  , L , L ] -> [ 0  ,    L   ,   L   , 4 ];
+"
+	 [  C  , L , L ] -> [ 2  ,    L   ,   L   , 5 ];
+	 [  C  , L , L ] -> [ 3  ,    L   ,   L   , 5 ];
+	 [  C  , L , L ] -> [ 4  ,    L   ,   L   , 5 ];
+	 [  C  , L , L ] -> [ 5  ,    L   ,   L   , 5 ];
+	 [  C  , L , L ] -> [ 6  ,    L   ,   L   , 5 ];
+	 [  C  , L , L ] -> [ 7  ,    L   ,   L   , 5 ];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   L   , 5 ];
+"
+@const i=6; @repeat 4 {
+	 [  C  , L , H ] -> [ 2  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 3  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 4  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 5  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 6  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 7  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   H   ,@expr i;];
+@const i=i+1; }
+"
+@repeat 2 {
+	 [  C  , L , H ] -> [ 2  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 3  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 4  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 5  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 6  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 7  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 1  ,    H   ,   H   , 2 ];
+}
+
+TEST_VECTORS	'Test count function with an ERR of 3'
+	([CLK8X,GND,BDn] -> [VCLK,META_BDn,SYNCBDn,ERR])
+	 [  C  , L , H ] -> [ 2  ,    H   ,   H   , 2 ];
+	 [  C  , L , L ] -> [ 3  ,    L   ,   H   , 2 ];
+	 [  C  , L , L ] -> [ 4  ,    L   ,   L   , 3 ];
+	 [  C  , L , L ] -> [ 5  ,    L   ,   L   , 3 ];
+	 [  C  , L , L ] -> [ 6  ,    L   ,   L   , 3 ];
+	 [  C  , L , L ] -> [ 7  ,    L   ,   L   , 3 ];
+	 [  C  , L , L ] -> [ 0  ,    L   ,   L   , 3 ];
+"
+	 [  C  , L , L ] -> [ 2  ,    L   ,   L   , 4 ];
+	 [  C  , L , L ] -> [ 3  ,    L   ,   L   , 4 ];
+	 [  C  , L , L ] -> [ 4  ,    L   ,   L   , 4 ];
+	 [  C  , L , L ] -> [ 5  ,    L   ,   L   , 4 ];
+	 [  C  , L , L ] -> [ 6  ,    L   ,   L   , 4 ];
+	 [  C  , L , L ] -> [ 7  ,    L   ,   L   , 4 ];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   L   , 4 ];
+"
+@const i=5; @repeat 5 {
+	 [  C  , L , H ] -> [ 2  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 3  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 4  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 5  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 6  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 7  ,    H   ,   H   ,@expr i;];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   H   ,@expr i;];
+@const i=i+1; }
+"
+@repeat 1 {
+	 [  C  , L , H ] -> [ 2  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 3  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 4  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 5  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 6  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 7  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 0  ,    H   ,   H   , 2 ];
+	 [  C  , L , H ] -> [ 1  ,    H   ,   H   , 2 ];
+}
+
+	end PLL_8X

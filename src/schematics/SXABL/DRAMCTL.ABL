@@ -1,0 +1,325 @@
+module	DRAM_Control flag '-r3'
+title	'DRAM Access and Refresh Control
+
+Source File:	dramctl.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   July 29, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+		Rev. 0.1 - Fixed MUX state during refresh
+		Rev. 0.2 - Fixed MUX state during precharge for 596'
+
+	U50	 	device 'P16R8';
+
+"-----------------------------------------------------------------------------
+"
+" The DRAM control PLD handles the timing for read, write, and refresh
+" cycles.  The DRAM's RAS input (dram_ras) is generated directly by the 
+" DRAM control PLD.  The dram_start signal is active on the clock cycle
+" before the CAS cycle begins.  This signal is used elsewhere to produce
+" CAS.  The refack# signal is used to reset the refresh counter and to 
+" signal the clock generator PLD that a CAS-before-RAS refresh has started.  
+" The DRAM control PLD produces the READY# input to the SX processor which
+" comes from the DRAM subsystem.  The mux signal is an inverted duplicate
+" of RAS, used for the DRAM address muxes.   
+"
+"-----------------------------------------------------------------------------
+
+"--Inputs-------------------------------
+
+sysclk1		pin 1;
+!ref_req 	pin 2;
+!as		pin 3;
+!blast		pin 4;
+!dram_cs 	pin 5;
+!inrange	pin 6;
+extra		pin 7;
+
+
+"--Outputs--------------------------------
+
+!dram_start	pin 12;
+!dram_rdy	pin 13;
+s0		pin 14;
+!ref_pending	pin 15;
+!acc_pending	pin 16;
+mux		pin 17;
+!dram_ras	pin 18;
+!ref_ack	pin 19;
+
+
+"--Constants/Declarations-----------------
+
+C = .C.;
+X = .X.;
+
+cs_as_bl	= [!dram_cs,!as,!blast];
+
+"--States---------------------------------
+
+DRAM_CTL_STATE	= [!dram_ras,!ref_ack,!dram_rdy,s0];
+DRAM_ACC_STATE	= !acc_pending;
+REF_REQ_STATE	= !ref_pending;
+
+
+"--State Declarations (DRAM_CTL_STATE)----
+
+IDLE	= ^b1111;
+RAS	= ^b0111;
+CAS	= ^b0101;
+PRE	= ^b1110;
+REFCAS	= ^b1011;
+REFRAS1	= ^b0011;
+REFRAS2	= ^b0110;
+
+
+"--State Declarations (DRAM_ACC_STATE)----
+
+NO_ACC	= ^b1;
+ACC	= ^b0;
+
+
+"--State Declarations (REF_REQ_STATE)----
+
+NO_REQ	= ^b1;
+REQ	= ^b0;
+
+
+
+
+"--State Machines-------------------------
+
+
+state_diagram DRAM_CTL_STATE
+
+
+	"--Idle (reset)-------------------
+
+	state IDLE:
+				   
+
+		if (REF_REQ_STATE==REQ)
+			then REFCAS with
+				dram_start:=0;
+				mux:=0;
+				endwith;
+
+		else if ((DRAM_ACC_STATE==ACC)#(as&dram_cs))
+			then RAS with
+				dram_start:=1;
+				mux:=1;
+				endwith;
+				
+
+		else
+			IDLE with
+				dram_start:=0;
+				mux:=0;
+				endwith;
+
+
+
+	"--RAS----------------------------
+			     
+	state RAS:
+
+		mux:=1;
+		dram_start:=0;
+		goto
+			CAS;
+
+
+	"--CAS----------------------------
+			     
+	state CAS:
+				   
+		dram_start:=0;
+		if (blast)
+			then PRE with
+				mux:=0;
+
+		else
+			CAS with
+				mux:=1;
+				endwith;
+
+	"--PRE----------------------------
+			     
+	state PRE:
+				   
+		dram_start:=0;
+		mux:=0;
+		goto
+			IDLE;
+
+
+			
+	"--REFCAS-------------------------
+			     
+	state REFCAS:
+
+		dram_start:=0;
+		mux:=0;
+		goto
+			REFRAS1;
+
+
+	"--REFRAS1------------------------
+			     
+	state REFRAS1:
+
+		dram_start:=0;
+		mux:=0;
+		goto
+			REFRAS2;
+			
+	"--REFRAS2------------------------
+			     
+	state REFRAS2:
+
+		dram_start:=0;
+		mux:=0;
+		goto
+			PRE;
+			
+
+state_diagram DRAM_ACC_STATE
+
+
+	"--No Access (reset)--------------
+
+	state NO_ACC:
+
+		if (as&dram_cs)
+			then ACC
+
+		else
+			NO_ACC;
+
+	"--DRAM Access--------------------
+	
+	state ACC:
+
+		if (blast&dram_rdy)
+			then NO_ACC
+		else
+			ACC;
+
+
+
+state_diagram REF_REQ_STATE
+
+	"--No refresh req. (reset)--------
+
+	state NO_REQ:
+
+		if (ref_req)
+			then REQ
+		else
+			NO_REQ;
+
+	state REQ:
+
+		if (ref_ack&!ref_req)
+			then NO_REQ
+		else
+			REQ;
+
+
+
+"--Test  Vectors----------------------------
+
+test_vectors 'Read or write - single word burst'
+([sysclk1,cs_as_bl,!ref_req]->[DRAM_CTL_STATE,!dram_start,mux])
+
+ [X      ,^b111   ,1       ]->[IDLE          ,1          ,1  ];
+ [C      ,^b111   ,1       ]->[IDLE          ,1          ,0  ];
+ [C      ,^b001   ,1       ]->[RAS           ,0          ,1  ];
+ [C      ,^b011   ,1       ]->[CAS           ,1          ,1  ];
+ [C      ,^b010   ,1       ]->[PRE           ,1          ,0  ];
+ [C      ,^b111   ,1       ]->[IDLE          ,1          ,0  ];
+
+test_vectors 'Read or write - multi-word burst'
+([sysclk1,cs_as_bl,!ref_req]->[DRAM_CTL_STATE,!dram_start,mux])
+
+ [C      ,^b111   ,1       ]->[IDLE          ,1          ,0  ];
+ [C      ,^b111   ,1       ]->[IDLE          ,1          ,0  ];
+ [C      ,^b001   ,1       ]->[RAS           ,0          ,1  ];
+ [C      ,^b011   ,1       ]->[CAS           ,1          ,1  ];
+ [C      ,^b011   ,1       ]->[CAS           ,1          ,1  ];
+ [C      ,^b011   ,1       ]->[CAS           ,1          ,1  ];
+ [C      ,^b011   ,1       ]->[CAS           ,1          ,1  ];
+ [C      ,^b010   ,1       ]->[PRE           ,1          ,0  ];
+ [C      ,^b111   ,1       ]->[IDLE          ,1          ,0  ];
+
+
+test_vectors 'Refresh - Idle bus'
+([sysclk1,cs_as_bl,!ref_req]->[DRAM_CTL_STATE,!dram_start,mux])
+
+ [C      ,^b111   ,1       ]->[IDLE          ,1          ,0  ];
+ [C      ,^b111   ,0       ]->[IDLE          ,1          ,0  ];
+ [C      ,^b111   ,0       ]->[REFCAS        ,1          ,0  ];
+ [C      ,^b111   ,1       ]->[REFRAS1       ,1          ,0  ];
+ [C      ,^b111   ,1       ]->[REFRAS2       ,1          ,0  ];
+ [C      ,^b111   ,1       ]->[PRE           ,1          ,0  ];
+ [C      ,^b111   ,1       ]->[IDLE          ,1          ,0  ];
+ [C      ,^b111   ,1       ]->[IDLE          ,1          ,0  ];
+ [C      ,^b111   ,1       ]->[IDLE          ,1          ,0  ];
+
+
+test_vectors 'Refresh - Co-incident Access'
+([sysclk1,cs_as_bl,!ref_req]->[DRAM_CTL_STATE,!dram_start,mux])
+
+ [C      ,^b111   ,1       ]->[IDLE          ,1          ,0  ];
+ [C      ,^b111   ,0       ]->[IDLE          ,1          ,0  ];
+ [C      ,^b001   ,0       ]->[REFCAS        ,1          ,0  ];
+ [C      ,^b011   ,1       ]->[REFRAS1       ,1          ,0  ];
+ [C      ,^b011   ,1       ]->[REFRAS2       ,1          ,0  ];
+ [C      ,^b011   ,1       ]->[PRE           ,1          ,0  ];
+ [C      ,^b011   ,1       ]->[IDLE          ,1          ,0  ];
+ [C      ,^b011   ,1       ]->[RAS           ,0          ,1  ];
+ [C      ,^b011   ,1       ]->[CAS           ,1          ,1  ];
+ [C      ,^b010   ,1       ]->[PRE           ,1          ,0  ];
+ [C      ,^b111   ,1       ]->[IDLE          ,1          ,0  ];
+
+test_vectors 'Refresh - Access Pending'
+([sysclk1,cs_as_bl,!ref_req]->[DRAM_CTL_STATE,!dram_start,mux])
+
+ [C      ,^b111   ,1       ]->[IDLE          ,1          ,0  ];
+ [C      ,^b111   ,0       ]->[IDLE          ,1          ,0  ];
+ [C      ,^b111   ,0       ]->[REFCAS        ,1          ,0  ];
+ [C      ,^b001   ,1       ]->[REFRAS1       ,1          ,0  ];
+ [C      ,^b011   ,1       ]->[REFRAS2       ,1          ,0  ];
+ [C      ,^b011   ,1       ]->[PRE           ,1          ,0  ];
+ [C      ,^b011   ,1       ]->[IDLE          ,1          ,0  ];
+ [C      ,^b011   ,1       ]->[RAS           ,0          ,1  ];
+ [C      ,^b011   ,1       ]->[CAS           ,1          ,1  ];
+ [C      ,^b010   ,1       ]->[PRE           ,1          ,0  ];
+ [C      ,^b111   ,1       ]->[IDLE          ,1          ,0  ];
+
+
+test_vectors 'Refresh - Refresh Pending'
+([sysclk1,cs_as_bl,!ref_req]->[DRAM_CTL_STATE,!dram_start,mux])
+
+ [C      ,^b111   ,1       ]->[IDLE          ,1          ,0  ];
+ [C      ,^b111   ,1       ]->[IDLE          ,1          ,0  ];
+ [C      ,^b001   ,0       ]->[RAS           ,0          ,1  ];
+ [C      ,^b011   ,0       ]->[CAS           ,1          ,1  ];
+ [C      ,^b011   ,1       ]->[CAS           ,1          ,1  ];
+ [C      ,^b011   ,1       ]->[CAS           ,1          ,1  ];
+ [C      ,^b011   ,1       ]->[CAS           ,1          ,1  ];
+ [C      ,^b010   ,1       ]->[PRE           ,1          ,0  ];
+ [C      ,^b111   ,1       ]->[IDLE          ,1          ,0  ];
+ [C      ,^b111   ,1       ]->[REFCAS        ,1          ,0  ];
+ [C      ,^b111   ,1       ]->[REFRAS1       ,1          ,0  ];
+ [C      ,^b111   ,1       ]->[REFRAS2       ,1          ,0  ];
+ [C      ,^b111   ,1       ]->[PRE           ,1          ,0  ];
+ [C      ,^b111   ,1       ]->[IDLE          ,1          ,0  ];
+
+end DRAM_Control;
+
+
+

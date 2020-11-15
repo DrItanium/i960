@@ -1,0 +1,210 @@
+module	DRAM_Read_Write flag '-r3'
+title	'DRAM Read and Write Control
+
+Source File:	dramrw.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   July 29, 1990
+
+Revision:
+
+		Rev. 0.0 - Original'
+
+	U58	 	device 'E0320';
+
+"-----------------------------------------------------------------------------
+"
+" The Read and Write Control PLD handles the DRAM bank selection for reads and 
+" writes by generating output enables (oe0, oe1) for each bank, and the bank
+" qualifiers for the write enables (we_cmd0,we_cmd1) for each bank.  The
+" actual write enables come from the clock generation block.  The PLD 
+" synchronizes the dram_start signal with dram_clk so this signal is able to
+" gate the CAS and WE signals which come from the clock generation block.
+" The ld_add_cnt signal is a signal which loads the DRAM row and column
+" addresses into the address counter.
+" 
+"-----------------------------------------------------------------------------
+
+"--Inputs-------------------------------
+
+dram_clk	pin 1;
+!dram_rdy 	pin 2;
+!dram_start	pin 3;
+bank_sel	pin 4;
+size		pin 5;
+!rd	 	pin 6;
+!as		pin 7;
+!dram_cs	pin 8;
+!blast		pin 9;
+
+
+"--Outputs--------------------------------
+
+!ld_add_cnt	pin 12 = 'com';
+!we_cmd1	pin 13 = 'com';
+!we_cmd0	pin 14 = 'com';
+!oe1		pin 15 = 'com';
+!oe0		pin 16 = 'com';
+dram_acc	pin 17;
+extra		pin 18;
+!inrange	pin 19;
+
+
+"--Constants/Declarations-----------------
+
+C = .C.;
+X = .X.;
+
+cs_as_bl_rd_bs_sz_ry_st = [!dram_cs,!as,!blast,!rd,bank_sel,size,!dram_rdy,!dram_start];
+OE = [!oe1,!oe0];
+WE = [!we_cmd1,!we_cmd0];
+
+"--States---------------------------------
+
+DRAM_ACC_STATE	= dram_acc;
+RANGE_STATE	= inrange;
+
+
+
+"--State Declarations (DRAM_ACC_STATE)----
+
+NO_ACC	= ^b0;
+ACC	= ^b1;
+
+
+"--State Declarations (RANGE_STATE)-------
+
+IN_RANGE	= ^b0;
+OUT_RANGE	= ^b1;
+
+
+"--Comb. Equations------------------------
+
+equations
+
+	oe0	= dram_rdy&rd&!bank_sel;
+	oe1	= dram_rdy&rd&bank_sel;
+
+	we_cmd0	= dram_cs&!rd&!bank_sel&(RANGE_STATE==IN_RANGE);
+	we_cmd1	= dram_cs&!rd&bank_sel&(RANGE_STATE==IN_RANGE);
+
+	ld_add_cnt = as#dram_start;
+
+
+
+"--State Machines-------------------------
+
+
+
+state_diagram DRAM_ACC_STATE
+
+
+	"--No Access (reset)--------------
+
+	state NO_ACC:
+
+		if (dram_start)
+			then ACC
+
+		else
+			NO_ACC;
+
+	"--DRAM Access--------------------
+	
+	state ACC:
+
+		if (blast&dram_rdy)
+			then NO_ACC
+		else
+			ACC;
+
+
+
+state_diagram RANGE_STATE
+
+	"--In Range (reset)--------
+
+	state IN_RANGE:
+
+		if ((as&dram_cs)&(bank_sel==1)&(size==0))
+			then OUT_RANGE
+		else
+			IN_RANGE;
+
+	state OUT_RANGE:
+
+		if ((as&dram_cs)&(((bank_sel==0)&(size==0))#(size==1)))
+			then IN_RANGE
+		else
+			OUT_RANGE;
+
+
+
+
+"--Test  Vectors----------------------------
+
+test_vectors 'DRAM Access Signal, oe0,oe1,we_cmd0,we_cmd1'
+([dram_clk,cs_as_bl_rd_bs_sz_ry_st]->[RANGE_STATE,DRAM_ACC_STATE,OE  ,WE  ,!ld_add_cnt])
+
+ [X       ,^b11111111             ]->[OUT_RANGE  ,NO_ACC        ,^b11,^b11,1          ];
+ [C       ,^b00101111             ]->[IN_RANGE   ,NO_ACC        ,^b11,^b11,0          ];
+ [C       ,^b01101110             ]->[IN_RANGE   ,ACC           ,^b11,^b11,0          ];
+ [C       ,^b01101101             ]->[IN_RANGE   ,ACC           ,^b01,^b11,1          ];
+ [C       ,^b01101101             ]->[IN_RANGE   ,ACC           ,^b01,^b11,1          ];
+ [C       ,^b01101101             ]->[IN_RANGE   ,ACC           ,^b01,^b11,1          ];
+ [C       ,^b01001101             ]->[IN_RANGE   ,NO_ACC        ,^b01,^b11,1          ];
+ [C       ,^b11111111             ]->[IN_RANGE   ,NO_ACC        ,^b11,^b11,1          ];
+
+ [C       ,^b11111111             ]->[IN_RANGE   ,NO_ACC        ,^b11,^b11,1          ];
+ [C       ,^b00100111             ]->[IN_RANGE   ,NO_ACC        ,^b11,^b11,0          ];
+ [C       ,^b01100110             ]->[IN_RANGE   ,ACC           ,^b11,^b11,0          ];
+ [C       ,^b01100101             ]->[IN_RANGE   ,ACC           ,^b10,^b11,1          ];
+ [C       ,^b01100101             ]->[IN_RANGE   ,ACC           ,^b10,^b11,1          ];
+ [C       ,^b01100101             ]->[IN_RANGE   ,ACC           ,^b10,^b11,1          ];
+ [C       ,^b01000101             ]->[IN_RANGE   ,NO_ACC        ,^b10,^b11,1          ];
+ [C       ,^b11111111             ]->[IN_RANGE   ,NO_ACC        ,^b11,^b11,1          ];
+
+ [C       ,^b11111111             ]->[IN_RANGE   ,NO_ACC        ,^b11,^b11,1          ];
+ [C       ,^b00111111             ]->[IN_RANGE   ,NO_ACC        ,^b11,^b01,0          ];
+ [C       ,^b01111110             ]->[IN_RANGE   ,ACC           ,^b11,^b01,0          ];
+ [C       ,^b01111101             ]->[IN_RANGE   ,ACC           ,^b11,^b01,1          ];
+ [C       ,^b01111101             ]->[IN_RANGE   ,ACC           ,^b11,^b01,1          ];
+ [C       ,^b01111101             ]->[IN_RANGE   ,ACC           ,^b11,^b01,1          ];
+ [C       ,^b01011101             ]->[IN_RANGE   ,NO_ACC        ,^b11,^b01,1          ];
+ [C       ,^b11111111             ]->[IN_RANGE   ,NO_ACC        ,^b11,^b11,1          ];
+
+ [C       ,^b11111111             ]->[IN_RANGE   ,NO_ACC        ,^b11,^b11,1          ];
+ [C       ,^b00110111             ]->[IN_RANGE   ,NO_ACC        ,^b11,^b10,0          ];
+ [C       ,^b01110110             ]->[IN_RANGE   ,ACC           ,^b11,^b10,0          ];
+ [C       ,^b01110101             ]->[IN_RANGE   ,ACC           ,^b11,^b10,1          ];
+ [C       ,^b01110101             ]->[IN_RANGE   ,ACC           ,^b11,^b10,1          ];
+ [C       ,^b01110101             ]->[IN_RANGE   ,ACC           ,^b11,^b10,1          ];
+ [C       ,^b01010101             ]->[IN_RANGE   ,NO_ACC        ,^b11,^b10,1          ];
+ [C       ,^b11111111             ]->[IN_RANGE   ,NO_ACC        ,^b11,^b11,1          ];
+
+test_vectors 'DRAM Range Checking'
+([dram_clk,cs_as_bl_rd_bs_sz_ry_st]->[RANGE_STATE,DRAM_ACC_STATE,OE  ,WE  ,!ld_add_cnt])
+
+ [C       ,^b11111011             ]->[IN_RANGE   ,NO_ACC        ,^b11,^b11,1          ];
+ [C       ,^b00111011             ]->[OUT_RANGE  ,NO_ACC        ,^b11,^b11,0          ];
+ [C       ,^b01111010             ]->[OUT_RANGE  ,ACC           ,^b11,^b11,0          ];
+ [C       ,^b01111001             ]->[OUT_RANGE  ,ACC           ,^b11,^b11,1          ];
+ [C       ,^b01111001             ]->[OUT_RANGE  ,ACC           ,^b11,^b11,1          ];
+ [C       ,^b01111001             ]->[OUT_RANGE  ,ACC           ,^b11,^b11,1          ];
+ [C       ,^b01011001             ]->[OUT_RANGE  ,NO_ACC        ,^b11,^b11,1          ];
+ [C       ,^b11111011             ]->[OUT_RANGE  ,NO_ACC        ,^b11,^b11,1          ];
+
+ [C       ,^b11111011             ]->[OUT_RANGE  ,NO_ACC        ,^b11,^b11,1          ];
+ [C       ,^b00110011             ]->[IN_RANGE   ,NO_ACC        ,^b11,^b10,0          ];
+ [C       ,^b01110010             ]->[IN_RANGE   ,ACC           ,^b11,^b10,0          ];
+ [C       ,^b01110001             ]->[IN_RANGE   ,ACC           ,^b11,^b10,1          ];
+ [C       ,^b01110001             ]->[IN_RANGE   ,ACC           ,^b11,^b10,1          ];
+ [C       ,^b01110001             ]->[IN_RANGE   ,ACC           ,^b11,^b10,1          ];
+ [C       ,^b01010001             ]->[IN_RANGE   ,NO_ACC        ,^b11,^b10,1          ];
+ [C       ,^b11111011             ]->[IN_RANGE   ,NO_ACC        ,^b11,^b11,1          ];
+
+
+end DRAM_Read_Write;
+
+
+

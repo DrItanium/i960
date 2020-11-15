@@ -1,0 +1,338 @@
+module	Clock_Generation flag '-r3'
+title	'Clock and DRAM Timing Generation
+
+Source File:	clkgen.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   July 27, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+		Rev. 0.1 - XBCLK changed to 2X clock'
+
+	U53	 	device 'P16R8';
+
+"-----------------------------------------------------------------------------
+"
+" The clock generation PLD generates synchronized clocks for the EV960SX
+" This includes the system clocks (sysclk1, sysclk2), the XBUS clock (xbclk)
+" and the 2X clock input to the processor (clk2x).  The PLD is clocked with
+" an external oscillator which is 4x the frequency of the system clock.
+"
+" Special timing for the DRAM subsystem is also generated in this PLD.  These
+" signals are synchronized to the system clock to provide the critical 
+" timings for CAS# and WE# required of a 0 wait state DRAM design.  The 
+" clock generation PLD produces the signals dram_cas#, dram_we0#, dram_we1#,
+" and dram_clk for the DRAM subsystem.  The PLD inputs are used to qualify
+" the DRAM signals.
+"
+"-----------------------------------------------------------------------------
+
+"--Inputs-------------------------------
+
+clk4x		pin 1;
+dram_acc	pin 2;
+!we_cmd0	pin 3;
+!we_cmd1	pin 4;
+!ref_ack 	pin 5;
+
+"--Outputs--------------------------------
+
+clk2x		pin 12;
+sysclk1		pin 13;
+sysclk2		pin 14;
+xbclk		pin 15;
+!dram_cas	pin 16;
+!dram_we0	pin 17;
+!dram_we1	pin 18;
+dram_clk	pin 19;
+
+
+"--Constants/Declarations-----------------
+
+C = .C.;
+X = .X.;
+
+CLOCKS		= [sysclk2,xbclk,dram_clk];
+ALL_CLOCKS	= [clk2x,sysclk1,sysclk2,xbclk,dram_clk];
+WE_CMD		= [!we_cmd1,!we_cmd0];
+
+A_CLOCKS 	= ^b111;
+B_CLOCKS	= ^b100;
+C_CLOCKS	= ^b010;
+D_CLOCKS	= ^b001;
+
+
+"--States---------------------------------
+
+CLK_STATE	= [clk2x,sysclk1];
+DRAM_CAS_STATE	= dram_cas;
+DRAM_WE0_STATE	= dram_we0;
+DRAM_WE1_STATE	= dram_we1;
+
+
+"--State Declarations (CLK_STATE)---------
+
+PHASE_A	= ^b11;
+PHASE_B	= ^b01;
+PHASE_C	= ^b10;
+PHASE_D	= ^b00;
+
+
+"--State Declarations (DRAM_CAS_STATE)----
+
+CAS_ON	= ^b1;
+CAS_OFF	= ^b0;
+
+
+"--State Declarations (DRAM_WE0_STATE)----
+"--State Declarations (DRAM_WE1_STATE)----
+
+WE_ON	= ^b1;
+WE_OFF	= ^b0;
+
+
+
+
+"--State Machines-------------------------
+
+
+state_diagram CLK_STATE
+
+
+	"--Phase A (reset)-------------
+
+	state PHASE_A:
+				   
+		CLOCKS := B_CLOCKS;
+		goto
+			PHASE_B;
+
+
+
+	"--Phase B---------------------
+			     
+	state PHASE_B:
+
+		CLOCKS := C_CLOCKS;
+		goto
+			PHASE_C;
+
+
+	"--Phase C---------------------
+			     
+	state PHASE_C:
+				   
+		CLOCKS := D_CLOCKS;
+		goto
+			PHASE_D;
+
+	"--Phase D---------------------
+			     
+	state PHASE_D:
+				   
+		CLOCKS := A_CLOCKS;
+		goto
+			PHASE_A;
+
+
+			
+state_diagram DRAM_CAS_STATE
+
+
+	"--CAS Off (reset)-------------
+
+	state CAS_OFF:
+
+		if (ref_ack&(CLK_STATE==PHASE_B))
+			then CAS_ON
+		else if (dram_acc&(CLK_STATE==PHASE_A))
+			then CAS_ON
+		else
+			CAS_OFF;
+
+	"--CAS On----------------------
+	
+	state CAS_ON:
+
+		if (!ref_ack&(CLK_STATE==PHASE_D))
+			then CAS_OFF
+		else
+			CAS_ON;
+
+
+
+state_diagram DRAM_WE0_STATE
+
+	"--WE Off (reset)--------------
+
+	state WE_OFF:
+
+		if (dram_acc&we_cmd0&(CLK_STATE==PHASE_B))
+			then WE_ON
+		else
+			WE_OFF;
+
+	state WE_ON:
+
+		if (CLK_STATE==PHASE_D)
+			then WE_OFF
+		else
+			WE_ON;
+
+
+
+state_diagram DRAM_WE1_STATE
+
+	"--WE Off (reset)--------------
+
+	state WE_OFF:
+
+		if (dram_acc&we_cmd1&(CLK_STATE==PHASE_B))
+			then WE_ON
+		else
+			WE_OFF;
+
+	state WE_ON:
+
+		if (CLK_STATE==PHASE_D)
+			then WE_OFF
+		else
+			WE_ON;
+
+"--Test  Vectors----------------------------
+
+test_vectors 'Basic Clocks Test'
+([clk4x,!dram_acc,WE_CMD,!ref_ack]->[ALL_CLOCKS,!dram_cas,!dram_we0,!dram_we1])
+
+ [X    ,1        ,^b11   ,1      ]->[   ^b11111,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b01100,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b10010,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b00001,        1,        1,        1];
+
+ [C    ,1        ,^b11   ,1      ]->[   ^b11111,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b01100,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b10010,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b00001,        1,        1,        1];
+
+test_vectors 'CAS Generation Test'
+([clk4x,!dram_acc,WE_CMD,!ref_ack]->[ALL_CLOCKS,!dram_cas,!dram_we0,!dram_we1])
+
+ [C    ,1        ,^b11   ,1      ]->[   ^b11111,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b01100,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b10010,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b00001,        1,        1,        1];
+
+ [C    ,0        ,^b11   ,1      ]->[   ^b11111,        1,        1,        1];
+ [C    ,0        ,^b11   ,1      ]->[   ^b01100,        0,        1,        1];
+ [C    ,0        ,^b11   ,1      ]->[   ^b10010,        0,        1,        1];
+ [C    ,0        ,^b11   ,1      ]->[   ^b00001,        0,        1,        1];
+
+ [C    ,1        ,^b11   ,1      ]->[   ^b11111,        1,        1,        1];
+ [C    ,0        ,^b11   ,1      ]->[   ^b01100,        0,        1,        1];
+ [C    ,0        ,^b11   ,1      ]->[   ^b10010,        0,        1,        1];
+ [C    ,0        ,^b11   ,1      ]->[   ^b00001,        0,        1,        1];
+ 
+ [C    ,0        ,^b11   ,1      ]->[   ^b11111,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b01100,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b10010,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b00001,        1,        1,        1];
+
+test_vectors 'WE0 Test'
+([clk4x,!dram_acc,WE_CMD,!ref_ack]->[ALL_CLOCKS,!dram_cas,!dram_we0,!dram_we1])
+
+ [C    ,1        ,^b10   ,1      ]->[   ^b11111,        1,        1,        1];
+ [C    ,1        ,^b10   ,1      ]->[   ^b01100,        1,        1,        1];
+ [C    ,1        ,^b10   ,1      ]->[   ^b10010,        1,        1,        1];
+ [C    ,1        ,^b10   ,1      ]->[   ^b00001,        1,        1,        1];
+
+ [C    ,0        ,^b10   ,1      ]->[   ^b11111,        1,        1,        1];
+ [C    ,0        ,^b10   ,1      ]->[   ^b01100,        0,        1,        1];
+ [C    ,0        ,^b10   ,1      ]->[   ^b10010,        0,        0,        1];
+ [C    ,0        ,^b10   ,1      ]->[   ^b00001,        0,        0,        1];
+
+ [C    ,1        ,^b10   ,1      ]->[   ^b11111,        1,        1,        1];
+ [C    ,0        ,^b10   ,1      ]->[   ^b01100,        0,        1,        1];
+ [C    ,0        ,^b10   ,1      ]->[   ^b10010,        0,        0,        1];
+ [C    ,0        ,^b10   ,1      ]->[   ^b00001,        0,        0,        1];
+ 
+ [C    ,0        ,^b10   ,1      ]->[   ^b11111,        1,        1,        1];
+ [C    ,1        ,^b10   ,1      ]->[   ^b01100,        1,        1,        1];
+ [C    ,1        ,^b10   ,1      ]->[   ^b10010,        1,        1,        1];
+ [C    ,1        ,^b10   ,1      ]->[   ^b00001,        1,        1,        1];
+
+test_vectors 'WE1 Test'
+([clk4x,!dram_acc,WE_CMD,!ref_ack]->[ALL_CLOCKS,!dram_cas,!dram_we0,!dram_we1])
+
+ [C    ,1        ,^b01   ,1      ]->[   ^b11111,        1,        1,        1];
+ [C    ,1        ,^b01   ,1      ]->[   ^b01100,        1,        1,        1];
+ [C    ,1        ,^b01   ,1      ]->[   ^b10010,        1,        1,        1];
+ [C    ,1        ,^b01   ,1      ]->[   ^b00001,        1,        1,        1];
+
+ [C    ,0        ,^b01   ,1      ]->[   ^b11111,        1,        1,        1];
+ [C    ,0        ,^b01   ,1      ]->[   ^b01100,        0,        1,        1];
+ [C    ,0        ,^b01   ,1      ]->[   ^b10010,        0,        1,        0];
+ [C    ,0        ,^b01   ,1      ]->[   ^b00001,        0,        1,        0];
+
+ [C    ,1        ,^b01   ,1      ]->[   ^b11111,        1,        1,        1];
+ [C    ,0        ,^b01   ,1      ]->[   ^b01100,        0,        1,        1];
+ [C    ,0        ,^b01   ,1      ]->[   ^b10010,        0,        1,        0];
+ [C    ,0        ,^b01   ,1      ]->[   ^b00001,        0,        1,        0];
+ 
+ [C    ,0        ,^b01   ,1      ]->[   ^b11111,        1,        1,        1];
+ [C    ,1        ,^b01   ,1      ]->[   ^b01100,        1,        1,        1];
+ [C    ,1        ,^b01   ,1      ]->[   ^b10010,        1,        1,        1];
+ [C    ,1        ,^b01   ,1      ]->[   ^b00001,        1,        1,        1];
+
+test_vectors 'Refresh Acknowledge Test'
+([clk4x,!dram_acc,WE_CMD,!ref_ack]->[ALL_CLOCKS,!dram_cas,!dram_we0,!dram_we1])
+
+ [C    ,1        ,^b11   ,1      ]->[   ^b11111,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b01100,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b10010,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b00001,        1,        1,        1];
+
+ [C    ,1        ,^b11   ,1      ]->[   ^b11111,        1,        1,        1];
+ [C    ,1        ,^b11   ,0      ]->[   ^b01100,        1,        1,        1];
+ [C    ,1        ,^b11   ,0      ]->[   ^b10010,        0,        1,        1];
+ [C    ,1        ,^b11   ,0      ]->[   ^b00001,        0,        1,        1];
+
+ [C    ,1        ,^b11   ,0      ]->[   ^b11111,        0,        1,        1];
+ [C    ,1        ,^b11   ,0      ]->[   ^b01100,        0,        1,        1];
+ [C    ,1        ,^b11   ,0      ]->[   ^b10010,        0,        1,        1];
+ [C    ,1        ,^b11   ,0      ]->[   ^b00001,        0,        1,        1];
+ 			  
+ [C    ,1        ,^b11   ,0      ]->[   ^b11111,        0,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b01100,        0,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b10010,        0,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b00001,        0,        1,        1];
+
+ [C    ,1        ,^b11   ,1      ]->[   ^b11111,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b01100,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b10010,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b00001,        1,        1,        1];
+
+ [C    ,1        ,^b11   ,1      ]->[   ^b11111,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b01100,        1,        1,        1];
+ [C    ,1        ,^b11   ,0      ]->[   ^b10010,        0,        1,        1];
+ [C    ,1        ,^b11   ,0      ]->[   ^b00001,        0,        1,        1];
+
+ [C    ,1        ,^b11   ,0      ]->[   ^b11111,        0,        1,        1];
+ [C    ,1        ,^b11   ,0      ]->[   ^b01100,        0,        1,        1];
+ [C    ,1        ,^b11   ,0      ]->[   ^b10010,        0,        1,        1];
+ [C    ,1        ,^b11   ,0      ]->[   ^b00001,        0,        1,        1];
+ 			  
+ [C    ,1        ,^b11   ,0      ]->[   ^b11111,        0,        1,        1];
+ [C    ,1        ,^b11   ,0      ]->[   ^b01100,        0,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b10010,        0,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b00001,        0,        1,        1];
+
+ [C    ,1        ,^b11   ,1      ]->[   ^b11111,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b01100,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b10010,        1,        1,        1];
+ [C    ,1        ,^b11   ,1      ]->[   ^b00001,        1,        1,        1];
+
+end Clock_Generation;
+
+

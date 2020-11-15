@@ -1,0 +1,99 @@
+
+
+                                                                     Page 1
+ABEL(tm) 3.20  -  Document Generator              15-Feb-91 11:05 AM
+Clock and DRAM Timing Generation
+
+Source File:	clkgen.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   July 27, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+		Rev. 0.1 - XBCLK changed to 2X clock
+Equations for Module Clock_Generation
+
+Device U53
+
+
+- Reduced Equations for device U53:
+
+    !sysclk2 := (clk2x & !sysclk1 # !clk2x & sysclk1);
+
+    !xbclk := (clk2x);
+
+    !dram_clk := (sysclk1);
+
+    !clk2x := (clk2x);
+
+    !sysclk1 := (clk2x & !sysclk1 # !clk2x & sysclk1);
+
+    !~dram_cas := (dram_acc & clk2x & sysclk1 
+                   # !~ref_ack & !clk2x & sysclk1 
+                   # sysclk1 & !~dram_cas 
+                   # clk2x & !~dram_cas 
+                   # !~ref_ack & !~dram_cas);
+                 
+
+    !~dram_we0 := (dram_acc & !~we_cmd0 & !clk2x & sysclk1 
+                   # sysclk1 & !~dram_we0 
+                   # clk2x & !~dram_we0);
+                 
+
+    !~dram_we1 := (dram_acc & !~we_cmd1 & !clk2x & sysclk1 
+                   # sysclk1 & !~dram_we1 
+                   # clk2x & !~dram_we1);
+                 
+
+
+
+                                                                     Page 2
+ABEL(tm) 3.20  -  Document Generator              15-Feb-91 11:05 AM
+Clock and DRAM Timing Generation
+
+Source File:	clkgen.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   July 27, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+		Rev. 0.1 - XBCLK changed to 2X clock
+Chip diagram for Module Clock_Generation
+
+Device U53
+
+
+                             P16R8
+
+                 ----------\       /----------
+                 |          \     /          |
+                 |           -----           |
+           clk4x |  1                    20  |                 
+                 |                           |
+        dram_acc |  2                    19  | dram_clk        
+                 |                           |
+        ~we_cmd0 |  3                    18  | ~dram_we1       
+                 |                           |
+        ~we_cmd1 |  4                    17  | ~dram_we0       
+                 |                           |
+        ~ref_ack |  5                    16  | ~dram_cas       
+                 |                           |
+                 |  6                    15  | xbclk           
+                 |                           |
+                 |  7                    14  | sysclk2         
+                 |                           |
+                 |  8                    13  | sysclk1         
+                 |                           |
+                 |  9                    12  | clk2x           
+                 |                           |
+                 | 10                    11  |                 
+                 |                           |
+                 |                           |
+                 -----------------------------
+
+
+end of module Clock_Generation

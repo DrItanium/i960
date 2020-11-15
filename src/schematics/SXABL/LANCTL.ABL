@@ -1,0 +1,174 @@
+module	LAN_Control flag '-r3'
+title	'82596SX Bus Master Control
+
+Source File:	lanctl.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   August 30, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+		Rev. 0.1 - Added term to enable trans. on port command
+		Rev. 0.2 - Fix polarity of the lcaout signal'
+
+	U79	 	device 'E0320';
+
+"-----------------------------------------------------------------------------
+"
+" The LAN control PLD translates produces the BLAST# signal when the 596
+" is the bus master.  This PLD also generates the enable signals for the
+" data transcievers and provides delays for several of the 596 inputs to 
+" ensure that the input hold times are satisfied.
+" 
+"-----------------------------------------------------------------------------
+
+"--Inputs-------------------------------
+
+sysclk1 	pin 1;
+!as	 	pin 2;
+holda		pin 3;
+!rd		pin 4;
+!ready		pin 5;
+!reset	 	pin 6;
+!lcain		pin 7;
+!lportin	pin 8;
+
+
+"--Outputs--------------------------------
+
+rw		pin 13;
+!lportout	pin 14 = 'com';
+lcaout		pin 15 = 'com';
+!lenba		pin 16 = 'com';
+!lenab		pin 17 = 'com';
+!lready		pin 18 = 'com';
+!blast		pin 19;
+
+
+
+
+"--Constants/Declarations-----------------
+L = ^b0;
+H = ^b1;
+C = .C.;
+X = .X.;
+HIZ = .Z.;
+
+
+"--States---------------------------------
+
+ACC_STATE	= !blast;
+RW_STATE	= rw;
+
+
+
+"--State Declarations (ACC_STATE)---------
+
+NOACC	= ^b1;
+ACC	= ^b0;
+
+
+"--State Declarations (RW_STATE)----------
+
+RD	= ^b1;
+WR	= ^b0;
+
+
+"--Comb. Equations------------------------
+
+equations
+
+	lready	= ready;
+	lenab	= ((ACC_STATE==ACC)&(RW_STATE==RD)&holda)#lportin;
+	lenba	= (ACC_STATE==ACC)&(RW_STATE==WR)&holda;
+	lportout= lportin;
+	lcaout	= lcain;
+	blast.oe = holda;
+	
+"--State Machines-------------------------
+
+
+
+state_diagram ACC_STATE
+
+
+	"--DRAM Access (reset) -----------
+	
+	state ACC:
+
+		if (ready#reset)
+			then NOACC
+		else
+			ACC;
+
+
+	"--No Access ---------------------
+
+	state NOACC:
+
+		if (as&holda)
+			then ACC
+
+		else
+			NOACC;
+
+
+state_diagram RW_STATE
+
+
+	"--Write (reset)------------------
+
+	state WR:
+
+		if (as&rd&holda)
+			then RD
+		else
+			WR;
+
+	"--Read---------------------------
+
+	state RD:
+
+		if (as&!rd&holda)
+			then WR
+		else
+			RD;
+
+"--Test  Vectors----------------------------
+
+test_vectors 'Read/Write'
+([sysclk1,!as,holda,!rd,!ready,reset,!lportin]->[ACC_STATE,RW_STATE,!lenab,!lenba])
+
+ [X      ,1  ,0    ,X  ,1     ,0    ,1]->[HIZ      ,WR      ,1     ,1     ];
+ [C      ,1  ,0    ,X  ,1     ,0    ,1]->[HIZ      ,WR      ,1     ,1     ];
+ [C      ,1  ,0    ,X  ,1     ,1    ,1]->[HIZ      ,WR      ,1     ,1     ];
+ [C      ,1  ,0    ,X  ,1     ,1    ,1]->[HIZ      ,WR      ,1     ,1     ];
+ [C      ,1  ,1    ,X  ,1     ,1    ,1]->[NOACC    ,WR      ,1     ,1     ];
+ [C      ,1  ,1    ,X  ,1     ,1    ,1]->[NOACC    ,WR      ,1     ,1     ];
+
+ [C      ,1  ,1    ,X  ,1     ,0    ,1]->[NOACC    ,WR      ,1     ,1     ];
+ [C      ,0  ,1    ,0  ,1     ,0    ,1]->[ACC      ,RD      ,0     ,1     ];
+ [C      ,1  ,1    ,0  ,1     ,0    ,1]->[ACC      ,RD      ,0     ,1     ];
+ [C      ,1  ,1    ,0  ,0     ,0    ,1]->[NOACC    ,RD      ,1     ,1     ];
+
+ [C      ,1  ,1    ,X  ,1     ,0    ,1]->[NOACC    ,RD      ,1     ,1     ];
+ [C      ,0  ,1    ,1  ,1     ,0    ,1]->[ACC      ,WR      ,1     ,0     ];
+ [C      ,1  ,1    ,1  ,1     ,0    ,1]->[ACC      ,WR      ,1     ,0     ];
+ [C      ,1  ,1    ,1  ,0     ,0    ,1]->[NOACC    ,WR      ,1     ,1     ];
+
+ [C      ,1  ,0    ,X  ,1     ,0    ,1]->[HIZ      ,WR      ,1     ,1     ];
+ [C      ,0  ,0    ,0  ,1     ,0    ,1]->[HIZ      ,WR      ,1     ,1     ];
+ [C      ,1  ,0    ,0  ,1     ,0    ,1]->[HIZ      ,WR      ,1     ,1     ];
+ [C      ,1  ,0    ,0  ,0     ,0    ,1]->[HIZ      ,WR      ,1     ,1     ];
+
+ [C      ,1  ,0    ,X  ,1     ,0    ,1]->[HIZ      ,WR      ,1     ,1     ];
+ [C      ,0  ,0    ,1  ,1     ,0    ,1]->[HIZ      ,WR      ,1     ,1     ];
+ [C      ,1  ,0    ,1  ,1     ,0    ,1]->[HIZ      ,WR      ,1     ,1     ];
+ [C      ,1  ,0    ,1  ,0     ,0    ,1]->[HIZ      ,WR      ,1     ,1     ];
+
+end LAN_Control;
+
+
+
+

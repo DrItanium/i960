@@ -1,0 +1,515 @@
+module	EPROM_Control flag '-r3'
+title	'Interleaved EPROM and Flash EPROM Control
+
+Source File:	eprctl.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   August 1, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+		Rev. 0.1 - Allowed writes to EPROM 2-14-91
+		Rev. 0.2 - 4-10-91 Fix for unaligned access (SHP)'
+
+	U29	 	device 'P22V10';
+
+"-----------------------------------------------------------------------------
+"
+" The EPROM control PLD handles the read timing for the interleaved EPROM
+" and also the read/write control for the FLASH eprom.  The control 
+" produces 2-0-1-0 W.S. for the interleaved EPROM and 2-2-2-2 wait states
+" for the Flash EPROM. The EPROM control PLD generates separate 
+" output enables and address 0 bits for the odd and even EPROM leaves.
+" A separate output enable and write enable is generated for the Flash
+" EPROM.
+"
+"-----------------------------------------------------------------------------
+
+"--Inputs-------------------------------
+
+sysclk2		pin 1;
+!eprom_cs 	pin 2;
+!flash_cs 	pin 3;
+!as		pin 4;
+!blast		pin 5;
+!rd 		pin 6;
+a1		pin 7;
+a2		pin 8;
+a3		pin 9;
+!be1		pin 10;
+!be0		pin 11;
+
+
+"--Outputs--------------------------------
+
+flsh_oe 	pin 14 = 'pos';
+!epr_oe 	pin 15 = 'neg';
+!epr_ma2ev	pin 16 = 'neg';
+!epr_ma2od	pin 17 = 'neg';
+!epr_ma3	pin 18 = 'neg';
+!flsh_we0	pin 19 = 'neg';
+!flsh_we1	pin 20 = 'neg';
+!epr_rdy	pin 21 = 'neg';
+s1		pin 22 = 'neg';
+s0		pin 23 = 'neg';
+
+
+"--Nodes----------------------------------
+
+reset		node 25;
+preset		node 26;
+
+
+"--Constants/Declarations-----------------
+
+C = .C.;
+X = .X.;
+abrB		= [!as,!blast,!rd,!be1,!be0];
+ADDIN		= [a3,a2,a1];
+CSe_f		= [!eprom_cs,!flash_cs];
+ADDOUT		= [epr_ma3,epr_ma2ev,epr_ma2od];
+OEe_f		= [!epr_oe,!flsh_oe];
+WEOUT		= [!flsh_we1,!flsh_we0];
+
+
+"--States---------------------------------
+
+EPR_CTL_STATE	= [s1,s0,!epr_rdy];
+ADD_EV_STATE	= !epr_ma2ev;
+ADD_OD_STATE	= !epr_ma2od;
+MA3_STATE	= !epr_ma3;
+FLSH_OE_STATE	= flsh_oe;
+EPR_OE_STATE	= !epr_oe;
+
+
+"--State Declarations (EPR_CTL_STATE)--
+
+IDLE	= ^b111;
+W1	= ^b101;
+W2	= ^b001;
+D1	= ^b100;
+D2	= ^b110;
+
+
+"--State Declarations (EPR_OE_STATE)----
+
+EPR_OFF	= ^b1;
+EPR_ON	= ^b0;
+
+
+"--State Declarations (ADD_EV_STATE)---
+"--State Declarations (ADD_OD_STATE)---
+
+MA2_0	= ^b1;
+MA2_1	= ^b0;
+
+"--State Declarations (ADD_OD_STATE)---
+
+MA3_0	= ^b1;
+MA3_1	= ^b0;
+
+"--State Declarations (FLSH_OE_STATE)--
+
+FLSH_OFF	= ^b0;
+FLSH_ON		= ^b1;
+
+
+"--Equations------------------------------
+
+equations
+
+	reset		= !eprom_cs&!flash_cs;
+	preset		= 0;
+
+
+"--State Machines-------------------------
+
+
+state_diagram EPR_CTL_STATE
+
+
+	"--Idle (reset)-------------------
+
+	state IDLE:
+				   
+		flsh_we0 := 0;
+		flsh_we1 := 0;
+		if ((as&eprom_cs)#(as&flash_cs))
+			then W1
+
+		else
+			IDLE;
+
+
+
+	"--Wait 1-------------------------
+			     
+	state W1:
+
+		flsh_we0 := flash_cs&!rd&be0;
+		flsh_we1 := flash_cs&!rd&be1;
+		goto
+			W2;
+
+
+
+	"--Wait 2-------------------------
+			     
+	state W2:
+				   
+		flsh_we0 := 0;
+		flsh_we1 := 0;
+
+		if (eprom_cs&(a1==1))
+			then D2
+		else
+			D1;
+
+	"--DATA 1-------------------------
+			     
+	state D1:
+
+		flsh_we0 := 0;
+		flsh_we1 := 0;
+
+
+		if (blast)
+			then IDLE;
+
+		if (eprom_cs&!blast)
+			then D2;
+
+		if (flash_cs&!blast)
+			then W1;
+				   
+
+	"--DATA 2-------------------------
+			     
+	state D2:
+
+		flsh_we0 := 0;
+		flsh_we1 := 0;
+
+		if (blast)
+			then IDLE;
+
+		else if ((a1==1)&(a2==1))
+			then W1;
+
+		else
+			W2;
+
+
+			
+
+state_diagram ADD_EV_STATE
+
+
+	"--MA2=0 (reset)------------------
+
+	state MA2_0:
+
+		if ((as&(a2==1)&(a1==0))
+		   #(as&(a2==0)&(a1==1))
+		   #(epr_rdy&(a1==0)))
+			then MA2_1
+
+		else
+			MA2_0;
+
+	"--MA2=1--------------------------
+	
+	state MA2_1:
+
+		if ((as&(a2==0)&(a1==0))
+		   #(as&(a2==1)&(a1==1))
+		   #(epr_rdy&(a1==0)))
+			then MA2_0
+		else
+			MA2_1;
+
+
+state_diagram ADD_OD_STATE
+
+
+	"--MA2=0 (reset)------------------
+
+	state MA2_0:
+
+		if ((as&(a2==1))#(epr_rdy&(a1==1)))
+			then MA2_1
+
+		else
+			MA2_0;
+
+	"--MA2=1--------------------------
+	
+	state MA2_1:
+
+		if ((as&(a2==0))#(epr_rdy&(a1==1)))
+			then MA2_0
+		else
+			MA2_1;
+
+
+state_diagram MA3_STATE
+
+
+	"--MA3=0 (reset)------------------
+
+	state MA3_0:
+
+		if ((as&(a3==1))#(epr_rdy&(a1==1)&(a2==1)))
+			then MA3_1
+
+		else
+			MA3_0;
+
+	"--MA0=1--------------------------
+	
+	state MA3_1:
+
+		if ((as&(a3==0))#(epr_rdy&(a1==1)&(a2==1)))
+			then MA3_0
+		else
+			MA3_1;
+
+
+
+state_diagram EPR_OE_STATE
+
+	"--Output Enable Off (reset)------
+
+	state EPR_OFF:
+
+		if (as&eprom_cs&rd)
+			then EPR_ON
+		else
+			EPR_OFF;
+
+	"--Output Enable On---------------
+
+	state EPR_ON:
+
+		if (epr_rdy&blast)
+			then EPR_OFF
+		else
+			EPR_ON;
+
+
+state_diagram FLSH_OE_STATE
+
+	"--Output Enable Off (reset)------
+
+	state FLSH_OFF:
+
+		if (as&flash_cs&rd)
+			then FLSH_ON
+		else
+			FLSH_OFF;
+
+	"--Output Enable On---------------
+
+	state FLSH_ON:
+
+		if (epr_rdy&blast)
+			then FLSH_OFF
+		else
+			FLSH_ON;
+
+
+"--Test  Vectors----------------------------
+
+test_vectors '1 - Quad Interleaved Reads - EPROM'
+([sysclk2,abrB   ,ADDIN,CSe_f]->[EPR_CTL_STATE,ADDOUT,OEe_f,WEOUT])
+
+ [X      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b01011,0    ,^b01 ]->[W1           ,^b000 ,^b01 ,^b11 ];
+ [C      ,^b11000,0    ,^b01 ]->[W2           ,^b000 ,^b01 ,^b11 ];
+ [C      ,^b11000,0    ,^b01 ]->[D1           ,^b000 ,^b01 ,^b11 ];
+ [C      ,^b11000,0    ,^b01 ]->[D2           ,^b010 ,^b01 ,^b11 ];
+ [C      ,^b11000,1    ,^b01 ]->[W2           ,^b011 ,^b01 ,^b11 ];
+ [C      ,^b11000,2    ,^b01 ]->[D1           ,^b011 ,^b01 ,^b11 ];
+ [C      ,^b11000,2    ,^b01 ]->[D2           ,^b001 ,^b01 ,^b11 ];
+ [C      ,^b11000,3    ,^b01 ]->[W1           ,^b100 ,^b01 ,^b11 ];
+ [C      ,^b11000,4    ,^b01 ]->[W2           ,^b100 ,^b01 ,^b11 ];
+ [C      ,^b11000,4    ,^b01 ]->[D1           ,^b100 ,^b01 ,^b11 ];
+ [C      ,^b11000,4    ,^b01 ]->[D2           ,^b110 ,^b01 ,^b11 ];
+ [C      ,^b11000,5    ,^b01 ]->[W2           ,^b111 ,^b01 ,^b11 ];
+ [C      ,^b11000,6    ,^b01 ]->[D1           ,^b111 ,^b01 ,^b11 ];
+ [C      ,^b11000,6    ,^b01 ]->[D2           ,^b101 ,^b01 ,^b11 ];
+ [C      ,^b10000,7    ,^b01 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+							   
+test_vectors '19 - Unaligned 1 Interleaved Reads - EPROM'
+([sysclk2,abrB   ,ADDIN,CSe_f]->[EPR_CTL_STATE,ADDOUT,OEe_f,WEOUT])
+
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b01011,1    ,^b01 ]->[W1           ,^b010 ,^b01 ,^b11 ];
+ [C      ,^b11000,1    ,^b01 ]->[W2           ,^b010 ,^b01 ,^b11 ];
+ [C      ,^b11000,1    ,^b01 ]->[D2           ,^b010 ,^b01 ,^b11 ];
+ [C      ,^b11000,1    ,^b01 ]->[W2           ,^b011 ,^b01 ,^b11 ];
+ [C      ,^b11000,2    ,^b01 ]->[D1           ,^b011 ,^b01 ,^b11 ];
+ [C      ,^b11000,2    ,^b01 ]->[D2           ,^b001 ,^b01 ,^b11 ];
+ [C      ,^b11000,3    ,^b01 ]->[W1           ,^b100 ,^b01 ,^b11 ];
+ [C      ,^b11000,4    ,^b01 ]->[W2           ,^b100 ,^b01 ,^b11 ];
+ [C      ,^b11000,4    ,^b01 ]->[D1           ,^b100 ,^b01 ,^b11 ];
+ [C      ,^b11000,4    ,^b01 ]->[D2           ,^b110 ,^b01 ,^b11 ];
+ [C      ,^b11000,5    ,^b01 ]->[W2           ,^b111 ,^b01 ,^b11 ];
+ [C      ,^b11000,6    ,^b01 ]->[D1           ,^b111 ,^b01 ,^b11 ];
+ [C      ,^b11000,6    ,^b01 ]->[D2           ,^b101 ,^b01 ,^b11 ];
+ [C      ,^b10000,7    ,^b01 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+							   
+test_vectors '36 - Unaligned 2 Interleaved Reads - EPROM'
+([sysclk2,abrB   ,ADDIN,CSe_f]->[EPR_CTL_STATE,ADDOUT,OEe_f,WEOUT])
+
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b01011,2    ,^b01 ]->[W1           ,^b011 ,^b01 ,^b11 ];
+ [C      ,^b11000,2    ,^b01 ]->[W2           ,^b011 ,^b01 ,^b11 ];
+ [C      ,^b11000,2    ,^b01 ]->[D1           ,^b011 ,^b01 ,^b11 ];
+ [C      ,^b11000,2    ,^b01 ]->[D2           ,^b001 ,^b01 ,^b11 ];
+ [C      ,^b11000,3    ,^b01 ]->[W1           ,^b100 ,^b01 ,^b11 ];
+ [C      ,^b11000,4    ,^b01 ]->[W2           ,^b100 ,^b01 ,^b11 ];
+ [C      ,^b11000,4    ,^b01 ]->[D1           ,^b100 ,^b01 ,^b11 ];
+ [C      ,^b11000,4    ,^b01 ]->[D2           ,^b110 ,^b01 ,^b11 ];
+ [C      ,^b11000,5    ,^b01 ]->[W2           ,^b111 ,^b01 ,^b11 ];
+ [C      ,^b11000,6    ,^b01 ]->[D1           ,^b111 ,^b01 ,^b11 ];
+ [C      ,^b11000,6    ,^b01 ]->[D2           ,^b101 ,^b01 ,^b11 ];
+ [C      ,^b10000,7    ,^b01 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+							   
+test_vectors '51 - Unaligned 3 Interleaved Reads - EPROM'
+([sysclk2,abrB   ,ADDIN,CSe_f]->[EPR_CTL_STATE,ADDOUT,OEe_f,WEOUT])
+
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b01011,3    ,^b01 ]->[W1           ,^b001 ,^b01 ,^b11 ];
+ [C      ,^b11000,3    ,^b01 ]->[W2           ,^b001 ,^b01 ,^b11 ];
+ [C      ,^b11000,3    ,^b01 ]->[D2           ,^b001 ,^b01 ,^b11 ];
+ [C      ,^b11000,3    ,^b01 ]->[W1           ,^b100 ,^b01 ,^b11 ];
+ [C      ,^b11000,4    ,^b01 ]->[W2           ,^b100 ,^b01 ,^b11 ];
+ [C      ,^b11000,4    ,^b01 ]->[D1           ,^b100 ,^b01 ,^b11 ];
+ [C      ,^b11000,4    ,^b01 ]->[D2           ,^b110 ,^b01 ,^b11 ];
+ [C      ,^b11000,5    ,^b01 ]->[W2           ,^b111 ,^b01 ,^b11 ];
+ [C      ,^b11000,6    ,^b01 ]->[D1           ,^b111 ,^b01 ,^b11 ];
+ [C      ,^b11000,6    ,^b01 ]->[D2           ,^b101 ,^b01 ,^b11 ];
+ [C      ,^b10000,7    ,^b01 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+							   
+test_vectors '65 - Unaligned 4 Interleaved Reads - EPROM'
+([sysclk2,abrB   ,ADDIN,CSe_f]->[EPR_CTL_STATE,ADDOUT,OEe_f,WEOUT])
+
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b01011,1    ,^b01 ]->[W1           ,^b010 ,^b01 ,^b11 ];
+ [C      ,^b11000,1    ,^b01 ]->[W2           ,^b010 ,^b01 ,^b11 ];
+ [C      ,^b11000,1    ,^b01 ]->[D2           ,^b010 ,^b01 ,^b11 ];
+ [C      ,^b11000,1    ,^b01 ]->[W2           ,^b011 ,^b01 ,^b11 ];
+ [C      ,^b11000,2    ,^b01 ]->[D1           ,^b011 ,^b01 ,^b11 ];
+ [C      ,^b11000,2    ,^b01 ]->[D2           ,^b001 ,^b01 ,^b11 ];
+ [C      ,^b11000,3    ,^b01 ]->[W1           ,^b100 ,^b01 ,^b11 ];
+ [C      ,^b11000,4    ,^b01 ]->[W2           ,^b100 ,^b01 ,^b11 ];
+ [C      ,^b11000,4    ,^b01 ]->[D1           ,^b100 ,^b01 ,^b11 ];
+ [C      ,^b11000,4    ,^b01 ]->[D2           ,^b110 ,^b01 ,^b11 ];
+ [C      ,^b11000,5    ,^b01 ]->[W2           ,^b111 ,^b01 ,^b11 ];
+ [C      ,^b11000,6    ,^b01 ]->[D1           ,^b111 ,^b01 ,^b11 ];
+ [C      ,^b10000,7    ,^b01 ]->[IDLE         ,^b010 ,^b11 ,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+							   
+test_vectors '81 - Single Interleaved Reads - EPROM'
+([sysclk2,abrB   ,ADDIN,CSe_f]->[EPR_CTL_STATE,ADDOUT,OEe_f,WEOUT])
+
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b01011,0    ,^b01 ]->[W1           ,^b000 ,^b01 ,^b11 ];
+ [C      ,^b10000,0    ,^b01 ]->[W2           ,^b000 ,^b01 ,^b11 ];
+ [C      ,^b10000,0    ,^b01 ]->[D1           ,^b000 ,^b01 ,^b11 ];
+ [C      ,^b10000,0    ,^b01 ]->[IDLE         ,^b010 ,^b11 ,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+							   
+test_vectors '88 - Single unaligned Interleaved Reads - EPROM'
+([sysclk2,abrB   ,ADDIN,CSe_f]->[EPR_CTL_STATE,ADDOUT,OEe_f,WEOUT])
+
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b01011,7    ,^b01 ]->[W1           ,^b101 ,^b01 ,^b11 ];
+ [C      ,^b10000,7    ,^b01 ]->[W2           ,^b101 ,^b01 ,^b11 ];
+ [C      ,^b10000,7    ,^b01 ]->[D2           ,^b101 ,^b01 ,^b11 ];
+ [C      ,^b10000,7    ,^b01 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+
+test_vectors '95 - Non-interleaved reads - FLASH'
+([sysclk2,abrB   ,ADDIN,CSe_f]->[EPR_CTL_STATE,ADDOUT,OEe_f,WEOUT])
+
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b01011,0    ,^b10 ]->[W1           ,^b000 ,^b10 ,^b11 ];
+ [C      ,^b11000,0    ,^b10 ]->[W2           ,^b000 ,^b10 ,^b11 ];
+ [C      ,^b11000,0    ,^b10 ]->[D1           ,^b000 ,^b10 ,^b11 ];
+ [C      ,^b11000,0    ,^b10 ]->[W1           ,^b010 ,^b10 ,^b11 ];
+ [C      ,^b11000,1    ,^b10 ]->[W2           ,^b010 ,^b10 ,^b11 ];
+ [C      ,^b11000,1    ,^b10 ]->[D1           ,^b010 ,^b10 ,^b11 ];
+ [C      ,^b11000,1    ,^b10 ]->[W1           ,^b011 ,^b10 ,^b11 ];
+ [C      ,^b11000,2    ,^b10 ]->[W2           ,^b011 ,^b10 ,^b11 ];
+ [C      ,^b11000,2    ,^b10 ]->[D1           ,^b011 ,^b10 ,^b11 ];
+ [C      ,^b11000,2    ,^b10 ]->[W1           ,^b001 ,^b10 ,^b11 ];
+ [C      ,^b11000,3    ,^b10 ]->[W2           ,^b001 ,^b10 ,^b11 ];
+ [C      ,^b11000,3    ,^b10 ]->[D1           ,^b001 ,^b10 ,^b11 ];
+ [C      ,^b11000,3    ,^b10 ]->[W1           ,^b100 ,^b10 ,^b11 ];
+ [C      ,^b11000,4    ,^b10 ]->[W2           ,^b100 ,^b10 ,^b11 ];
+ [C      ,^b11000,4    ,^b10 ]->[D1           ,^b100 ,^b10 ,^b11 ];
+ [C      ,^b11000,4    ,^b10 ]->[W1           ,^b110 ,^b10 ,^b11 ];
+ [C      ,^b11000,5    ,^b10 ]->[W2           ,^b110 ,^b10 ,^b11 ];
+ [C      ,^b11000,5    ,^b10 ]->[D1           ,^b110 ,^b10 ,^b11 ];
+ [C      ,^b11000,5    ,^b10 ]->[W1           ,^b111 ,^b10 ,^b11 ];
+ [C      ,^b11000,6    ,^b10 ]->[W2           ,^b111 ,^b10 ,^b11 ];
+ [C      ,^b11000,6    ,^b10 ]->[D1           ,^b111 ,^b10 ,^b11 ];
+ [C      ,^b11000,6    ,^b10 ]->[W1           ,^b101 ,^b10 ,^b11 ];
+ [C      ,^b10000,7    ,^b10 ]->[W2           ,^b101 ,^b10 ,^b11 ];
+ [C      ,^b10011,7    ,^b10 ]->[D1           ,^b101 ,^b10 ,^b11 ];
+ [C      ,^b10011,7    ,^b10 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b01011,6    ,^b10 ]->[W1           ,^b111 ,^b10 ,^b11 ];
+ [C      ,^b10000,6    ,^b10 ]->[W2           ,^b111 ,^b10 ,^b11 ];
+ [C      ,^b10000,6    ,^b10 ]->[D1           ,^b111 ,^b10 ,^b11 ];
+ [C      ,^b10000,6    ,^b10 ]->[IDLE         ,^b101 ,^b11 ,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+						      
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+ [C      ,^b01011,0    ,^b10 ]->[W1           ,^b000 ,^b10 ,^b11 ];
+ [C      ,^b10000,0    ,^b10 ]->[W2           ,^b000 ,^b10 ,^b11 ];
+ [C      ,^b10000,0    ,^b10 ]->[D1           ,^b000 ,^b10 ,^b11 ];
+ [C      ,^b10000,0    ,^b10 ]->[IDLE         ,^b010 ,^b11 ,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11 ,^b11 ];
+							   
+test_vectors '137 - Byte write - FLASH'
+([sysclk2,abrB   ,ADDIN,CSe_f]->[EPR_CTL_STATE,ADDOUT,OEe_f,WEOUT])
+
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11,^b11 ];
+ [C      ,^b01111,0    ,^b10 ]->[W1           ,^b000 ,^b11,^b11 ];
+ [C      ,^b11110,0    ,^b10 ]->[W2           ,^b000 ,^b11,^b10 ];
+ [C      ,^b11110,0    ,^b10 ]->[D1           ,^b000 ,^b11,^b11 ];
+ [C      ,^b10110,0    ,^b10 ]->[IDLE         ,^b010 ,^b11,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11,^b11 ];
+ [C      ,^b01111,0    ,^b10 ]->[W1           ,^b000 ,^b11,^b11 ];
+ [C      ,^b11101,0    ,^b10 ]->[W2           ,^b000 ,^b11,^b01 ];
+ [C      ,^b11101,0    ,^b10 ]->[D1           ,^b000 ,^b11,^b11 ];
+ [C      ,^b10101,0    ,^b10 ]->[IDLE         ,^b010 ,^b11,^b11 ];
+ [C      ,^b11011,X    ,^b11 ]->[IDLE         ,^b000 ,^b11,^b11 ];
+
+
+end EPROM_Control;
+
+
+

@@ -1,0 +1,74 @@
+
+
+                                                                     Page 1
+ABEL(tm) 3.20  -  Document Generator              15-Feb-91 11:16 AM
+Intel Low Cost Printer Controller
+Equations for Module MOD
+
+Device U25_IBM
+
+
+- Reduced Equations for device U25_IBM:
+
+    !VIDEOx := (SERVID);
+
+    !BDDLYx := (!VSY_Bx);
+
+    !ARMED := (!FIFOMTx # !ARMED & !BDDLYx # VSY_Bx & !ARMED);
+
+    !CNT2 := (!VSY_Bx & BDDLYx 
+              # CNT0 & CNT1 & CNT2 
+              # !CNT0 & !CNT2 
+              # !CNT1 & !CNT2);
+            
+
+    !CNT1 := (!VSY_Bx & BDDLYx # CNT0 & CNT1 # !CNT0 & !CNT1);
+
+    !CNT0 := (!VSY_Bx & BDDLYx # CNT0);
+
+    !VIDLDx = (!CNT0 & !CNT1 & !CNT2 & ARMED);
+
+    Sout.OE = (SoutEN);
+
+    !Sout = (!Sin);
+
+
+
+                                                                     Page 2
+ABEL(tm) 3.20  -  Document Generator              15-Feb-91 11:16 AM
+Intel Low Cost Printer Controller
+Chip diagram for Module MOD
+
+Device U25_IBM
+
+
+                             P16R6
+
+                 ----------\       /----------
+                 |          \     /          |
+                 |           -----           |
+          VIDCLK |  1                    20  | VCC             
+                 |                           |
+          SERVID |  2                    19  | VIDLDx          
+                 |                           |
+         SYNCBDx |  3                    18  | VIDEOx          
+                 |                           |
+         FIFOMTx |  4                    17  | BDDLYx          
+                 |                           |
+          VSY_Bx |  5                    16  | ARMED           
+                 |                           |
+             Sin |  6                    15  | CNT2            
+                 |                           |
+          SoutEN |  7                    14  | CNT1            
+                 |                           |
+                 |  8                    13  | CNT0            
+                 |                           |
+          RESETx |  9                    12  | Sout            
+                 |                           |
+             GND | 10                    11  | OEx             
+                 |                           |
+                 |                           |
+                 -----------------------------
+
+
+end of module MOD

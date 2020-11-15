@@ -1,0 +1,94 @@
+
+
+                                                                     Page 1
+ABEL(tm) 3.20  -  Document Generator              25-Jan-91 10:52 AM
+82596SX Bus Master Control
+
+Source File:	lanctl.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   August 30, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+		Rev. 0.1 - Added term to enable trans. on port command
+		Rev. 0.2 - Fix polarity of the lcaout signal
+Equations for Module LAN_Control
+
+Device U79
+
+
+- Reduced Equations for device U79:
+
+    ~lready = (~ready);
+
+    !~lenab = (!~lportin # holda & rw & !~blast);
+
+    !~lenba = (holda & !rw & !~blast);
+
+    ~lportout = (~lportin);
+
+    !lcaout = (~lcain);
+
+    blast.OE = (holda);
+
+    ~blast := (!holda & ~blast 
+               # ~as & ~blast 
+               # !~reset & !~blast 
+               # !~ready & !~blast);
+             
+
+    !rw := (!~as & holda & ~rd # !holda & !rw # ~as & !rw);
+
+
+
+                                                                     Page 2
+ABEL(tm) 3.20  -  Document Generator              25-Jan-91 10:52 AM
+82596SX Bus Master Control
+
+Source File:	lanctl.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   August 30, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+		Rev. 0.1 - Added term to enable trans. on port command
+		Rev. 0.2 - Fix polarity of the lcaout signal
+Chip diagram for Module LAN_Control
+
+Device U79
+
+
+                             E0320
+
+                 ----------\       /----------
+                 |          \     /          |
+                 |           -----           |
+         sysclk1 |  1                    20  |                 
+                 |                           |
+             ~as |  2                    19  | ~blast          
+                 |                           |
+           holda |  3                    18  | ~lready         
+                 |                           |
+             ~rd |  4                    17  | ~lenab          
+                 |                           |
+          ~ready |  5                    16  | ~lenba          
+                 |                           |
+          ~reset |  6                    15  | lcaout          
+                 |                           |
+          ~lcain |  7                    14  | ~lportout       
+                 |                           |
+        ~lportin |  8                    13  | rw              
+                 |                           |
+                 |  9                    12  |                 
+                 |                           |
+                 | 10                    11  |                 
+                 |                           |
+                 |                           |
+                 -----------------------------
+
+
+end of module LAN_Control

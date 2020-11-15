@@ -1,0 +1,88 @@
+
+
+                                                                     Page 1
+ABEL(tm) 3.20  -  Document Generator              15-Feb-91 11:04 AM
+DRAM Read and Write Control
+
+Source File:	dramrw.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   July 29, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+Equations for Module DRAM_Read_Write
+
+Device U58
+
+
+- Reduced Equations for device U58:
+
+    !~oe0 = (!~dram_rdy & !bank_sel & !~rd);
+
+    !~oe1 = (!~dram_rdy & bank_sel & !~rd);
+
+    !~we_cmd0 = (!bank_sel & ~rd & !~dram_cs & ~inrange);
+
+    !~we_cmd1 = (bank_sel & ~rd & !~dram_cs & ~inrange);
+
+    !~ld_add_cnt = (!~dram_start # !~as);
+
+    !dram_acc := (!~dram_rdy & !~blast & dram_acc # ~dram_start & !dram_acc);
+
+    ~inrange := (size & !~as & !~dram_cs 
+                 # !bank_sel & !~as & !~dram_cs 
+                 # ~dram_cs & ~inrange 
+                 # ~as & ~inrange);
+               
+
+
+
+                                                                     Page 2
+ABEL(tm) 3.20  -  Document Generator              15-Feb-91 11:04 AM
+DRAM Read and Write Control
+
+Source File:	dramrw.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   July 29, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+Chip diagram for Module DRAM_Read_Write
+
+Device U58
+
+
+                             E0320
+
+                 ----------\       /----------
+                 |          \     /          |
+                 |           -----           |
+        dram_clk |  1                    20  |                 
+                 |                           |
+       ~dram_rdy |  2                    19  | ~inrange        
+                 |                           |
+     ~dram_start |  3                    18  | extra           
+                 |                           |
+        bank_sel |  4                    17  | dram_acc        
+                 |                           |
+            size |  5                    16  | ~oe0            
+                 |                           |
+             ~rd |  6                    15  | ~oe1            
+                 |                           |
+             ~as |  7                    14  | ~we_cmd0        
+                 |                           |
+        ~dram_cs |  8                    13  | ~we_cmd1        
+                 |                           |
+          ~blast |  9                    12  | ~ld_add_cnt     
+                 |                           |
+                 | 10                    11  |                 
+                 |                           |
+                 |                           |
+                 -----------------------------
+
+
+end of module DRAM_Read_Write

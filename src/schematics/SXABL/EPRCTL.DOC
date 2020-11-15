@@ -1,0 +1,156 @@
+
+
+                                                                     Page 1
+ABEL(tm) 3.20  -  Document Generator              14-Feb-91 10:09 AM
+Interleaved EPROM and Flash EPROM Control
+
+Source File:	eprctl.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   August 1, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+		Rev. 0.1 - Allowed writes to EPROM 2-14-91
+Equations for Module EPROM_Control
+
+Device U29
+
+
+- Reduced Equations for device U29:
+
+    reset = (~eprom_cs & ~flash_cs);
+
+    preset = (0);
+
+    !~flsh_we0 := (!~flash_cs & ~rd & !~be0 & ~epr_rdy & s1 & !s0 
+                   # !~epr_rdy & !s1 
+                   # !s1 & s0);
+                 
+
+    !~flsh_we1 := (!~flash_cs & ~rd & !~be1 & ~epr_rdy & s1 & !s0 
+                   # !~epr_rdy & !s1 
+                   # !s1 & s0);
+                 
+
+    !s1 := (~blast & !~epr_rdy & s1 & s0 # ~epr_rdy & s1 & !s0);
+
+    !s0 := (~blast & !~epr_rdy & s1 & s0 
+            # !~flash_cs & ~blast & s1 & !s0 
+            # ~epr_rdy & !s0 
+            # !~flash_cs & !~as & ~epr_rdy & s1 
+            # !~eprom_cs & !~as & ~epr_rdy & s1);
+          
+
+    !~epr_rdy := (~flash_cs & ~blast & !~epr_rdy & !s0 # !s1);
+
+    !~epr_ma2ev := (a1 & a2 & !~epr_ma2ev 
+                    # ~as & a1 & !~epr_ma2ev 
+                    # a2 & !~epr_ma2ev & ~epr_rdy 
+                    # ~as & !~epr_ma2ev & ~epr_rdy 
+                    # !a1 & ~epr_ma2ev & !~epr_rdy 
+                    # !~as & a2 & ~epr_ma2ev);
+                  
+
+    !~epr_ma2od := (!a1 & a2 & !~epr_ma2od 
+                    # ~as & !a1 & !~epr_ma2od 
+                    # a2 & !~epr_ma2od & ~epr_rdy 
+                    # ~as & !~epr_ma2od & ~epr_rdy 
+                    # a1 & ~epr_ma2od & !~epr_rdy 
+
+
+                                                                     Page 2
+ABEL(tm) 3.20  -  Document Generator              14-Feb-91 10:09 AM
+Interleaved EPROM and Flash EPROM Control
+
+Source File:	eprctl.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   August 1, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+		Rev. 0.1 - Allowed writes to EPROM 2-14-91
+Equations for Module EPROM_Control
+
+Device U29
+
+                    # !~as & a2 & ~epr_ma2od);
+                  
+
+    !~epr_ma3 := (!a2 & a3 & !~epr_ma3 
+                  # ~as & !a2 & !~epr_ma3 
+                  # !a1 & a3 & !~epr_ma3 
+                  # ~as & !a1 & !~epr_ma3 
+                  # a3 & !~epr_ma3 & ~epr_rdy 
+                  # ~as & !~epr_ma3 & ~epr_rdy 
+                  # a1 & a2 & ~epr_ma3 & !~epr_rdy 
+                  # !~as & a3 & ~epr_ma3);
+                
+
+    !~epr_oe := (~blast & !~epr_oe 
+                 # !~epr_oe & ~epr_rdy 
+                 # !~eprom_cs & !~as & !~rd & ~epr_oe);
+               
+
+    flsh_oe := (~blast & flsh_oe 
+                # flsh_oe & ~epr_rdy 
+                # !~flash_cs & !~as & !~rd & !flsh_oe);
+              
+
+
+
+                                                                     Page 3
+ABEL(tm) 3.20  -  Document Generator              14-Feb-91 10:09 AM
+Interleaved EPROM and Flash EPROM Control
+
+Source File:	eprctl.abl
+
+Created by:	David Dannenberg
+	   	Intel Corp. Chandler,AZ   August 1, 1990
+
+Revision:
+
+		Rev. 0.0 - Original
+		Rev. 0.1 - Allowed writes to EPROM 2-14-91
+Chip diagram for Module EPROM_Control
+
+Device U29
+
+
+                            P22V10
+
+                 ----------\       /----------
+                 |          \     /          |
+                 |           -----           |
+         sysclk2 |  1                    24  |                 
+                 |                           |
+       ~eprom_cs |  2                    23  | s0              
+                 |                           |
+       ~flash_cs |  3                    22  | s1              
+                 |                           |
+             ~as |  4                    21  | ~epr_rdy        
+                 |                           |
+          ~blast |  5                    20  | ~flsh_we1       
+                 |                           |
+             ~rd |  6                    19  | ~flsh_we0       
+                 |                           |
+              a1 |  7                    18  | ~epr_ma3        
+                 |                           |
+              a2 |  8                    17  | ~epr_ma2od      
+                 |                           |
+              a3 |  9                    16  | ~epr_ma2ev      
+                 |                           |
+            ~be1 | 10                    15  | ~epr_oe         
+                 |                           |
+            ~be0 | 11                    14  | flsh_oe         
+                 |                           |
+                 | 12                    13  |                 
+                 |                           |
+                 |                           |
+                 -----------------------------
+
+
+end of module EPROM_Control
